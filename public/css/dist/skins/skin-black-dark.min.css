@@ -170,12 +170,20 @@ a:visited {
   --background: #222;
   --back-main: #333;
   --back-sub: #444;
+  --back-sub-alt: #dfd9d8;
+  --button-default: #000000;
+  --button-primary: #000000;
+  --button-hover: #000000;
   --header: #111;
   /* Use same as Header picker */
-  --text-main: #FFF;
-  --text-sub: #BBB;
-  --link: #919191;
-  /* Use same as Header picker */
+  --text-main: #BBB;
+  --text-sub: #9b9b9b;
+  --link: #AAA;
+  /* Use same as Header picker, lighten by 70% */
+  --visited-link: #777777;
+  /* Use same as Header picker, lighten by 70% */
+  --hover-link: #848484;
+  /* Use same as Header picker, lighten by 70% */
   --nav-link: #FFF;
   /* Use same as Header picker */
   --light-link: #fff;
@@ -188,6 +196,10 @@ a:visited {
   background: linear-gradient(to bottom, var(--header) 0%, var(--header) 100%);
   border-color: var(--header);
 }
+.bootstrap-table .fixed-table-container .table thead th .sortable {
+  color: var(--nav-link);
+}
+.thead,
 .navbar-nav > li > a:link {
   color: var(--nav-link);
 }
@@ -195,18 +207,41 @@ a:visited {
   background-color: var(--back-main);
   color: var(--text-main);
 }
-.popover {
-  background-color: var(--back-main);
+a:link {
+  color: var(--link);
 }
-.popover-title {
-  background-color: #111;
+a:visited {
+  color: var(--nav-link);
 }
-a,
-a:link,
-a:visited,
+a:hover {
+  color: var(--hover-link);
+}
 .btn-primary.hover {
-  color: var(--text-main);
+  color: var(--nav-link);
 }
+.small-box h3,
+.small-box p {
+  color: var(--nav-link) !important;
+}
+.small-box h3 a:hover,
+.small-box p a:hover {
+  text-decoration: none;
+  color: var(--nav-link) !important;
+}
+a:link.btn-default {
+  color: var(--nav-link);
+}
+/* Trying to figure out a way of having links different shades based on what row they are on (even/odd).
+a unique challenge for this dark mode skin.
+Probably writing the specificity for this incorrectly. --Godfrey Martinez 02/04/21
+
+.table-striped>tbody>tr:nth-of-type(even)>a:link{
+  color:#000d07;
+}
+.table-striped>tbody>tr:nth-of-type(odd)>a:link{
+  color:#bfbfbf;
+
+}*/
 #accessoriesTable > tbody > tr > td > nobr > a > i.fa {
   color: var(--text-main);
 }
@@ -228,28 +263,32 @@ body {
 .box-footer,
 .box-header {
   background-color: var(--back-sub);
-  color: var(--text-main);
+  color: var(--header);
 }
 .btn-default {
-  background-color: var(--back-main);
-  color: var(--text-main);
+  background-color: var(--button-default);
+  color: var(--nav-link);
+}
+.btn-default dropdown-toggle {
+  background-color: var(--button-default);
+  color: var(--nav-link);
 }
 .btn-default:active,
 .btn-default:focus,
 .btn-default:hover,
 .btn-default.active {
-  background-color: var(--back-sub);
-  color: var(--header);
+  background-color: var(--button-hover);
+  color: var(--nav-link);
 }
 .btn-primary,
 .btn-primary.hover,
 .btn-primary:active,
-.text-blue {
-  color: var(--text-main) !important;
+.text-black {
+  color: var(--nav-link) !important;
 }
 .btn-primary:hover {
-  background-color: var(--back-main);
-  color: var(--header) !important;
+  background-color: var(--button-primary);
+  color: var(--link) !important;
 }
 #componentsTable > tbody > tr > td > nobr > a > i.fa {
   color: var(--text-main);
@@ -282,11 +321,11 @@ body {
 .dropdown-menu,
 .dropdown-menu > li > a {
   background-color: var(--back-sub);
-  color: var(--text-main);
+  color: var(--text-main) !important;
 }
 .dropdown-menu > li > a:hover {
   background-color: var(--back-main);
-  color: var(--text-main);
+  color: var(--nav-link);
 }
 .form-control {
   background-color: var(--back-main);
@@ -400,21 +439,33 @@ input[type=search] {
 }
 .table-striped > tbody > tr:nth-of-type(odd) {
   background-color: var(--back-sub);
-}
-#webui > div > div > div > div > div > table > tbody > tr > td > a > i.fa {
   color: var(--text-main);
+}
+.table-striped > tbody > tr:nth-of-type(even) {
+  background-color: var(--back-sub-alt);
+  color: var(--header);
+}
+#webui > div > div > div > div > div > table > tbody > tr > td > a > i.fa,
+.box-body,
+.box-footer,
+.box-header {
+  color: var(--text-main);
+}
+.box-header.with-border {
+  border-bottom: #000;
 }
 a {
   color: var(--link);
 }
 a:link {
-  color: var(--text-main);
+  color: var(--link);
 }
 a:hover {
-  color: var(--light-link);
+  color: var(--hover-link);
+  text-decoration: underline;
 }
 a:visited {
-  color: var(--text-sub);
+  color: var(--visited-link);
 }
 .row-striped {
   vertical-align: top;
