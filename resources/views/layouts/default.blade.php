@@ -86,6 +86,7 @@
         <script src="{{ url(asset('js/html5shiv.js')) }}" nonce="{{ csrf_token() }}"></script>
         <script src="{{ url(asset('js/respond.js')) }}" nonce="{{ csrf_token() }}"></script>
 
+    @livewireStyles
 
   </head>
   <body class="sidebar-mini skin-{{ $snipeSettings->skin!='' ? $snipeSettings->skin : 'blue' }} {{ (session('menu_state')!='open') ? 'sidebar-mini sidebar-collapse' : ''  }}">
@@ -926,6 +927,6 @@
     @endif
 
 
-
+    @livewireScripts
   </body>
 </html>
