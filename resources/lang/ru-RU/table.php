@@ -2,10 +2,9 @@
 
 return array(
 
-    'id'                        => 'ID',
-    'name'                      => 'Department Name',
-    'manager'                   => 'Manager',
-    'location'                  => 'Location',
-    'create'                    => 'Create Department',
-    'update'                    => 'Update Department',
-    );
+    'id'      => 'ID',
+    'months'   => 'Months',
+    'term'   => 'Term',
+    'title'      => 'Name ',
+
+);
