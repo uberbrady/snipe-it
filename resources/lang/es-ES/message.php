@@ -2,44 +2,41 @@
 
 return array(
 
-    'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found'      => 'The username or password is incorrect.',
-    'account_not_activated'  => 'This user account is not activated.',
-    'account_suspended'      => 'This user account is suspended.',
-    'account_banned'         => 'This user account is banned.',
-    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'does_not_exist' => 'Model does not exist.',
+    'assoc_users'	 => 'This model is currently associated with one or more assets and cannot be deleted. Please delete the assets, and then try deleting again. ',
 
-    'two_factor' => array(
-        'already_enrolled'      => 'Your device is already enrolled.',
-        'success'               => 'You have successfully logged in.',
-        'code_required'         => 'Two-factor code is required.',
-        'invalid_code'          => 'Two-factor code is invalid.',
+
+    'create' => array(
+        'error'   => 'Model was not created, please try again.',
+        'success' => 'Model created successfully.',
+        'duplicate_set' => 'An asset model with that name, manufacturer and model number already exists.',
     ),
 
-    'signin' => array(
-        'error'   => 'There was a problem while trying to log you in, please try again.',
-        'success' => 'You have successfully logged in.',
+    'update' => array(
+        'error'   => 'Model was not updated, please try again',
+        'success' => 'Model updated successfully.'
     ),
 
-    'logout' => array(
-        'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this asset model?',
+        'error'   => 'There was an issue deleting the model. Please try again.',
+        'success' => 'The model was deleted successfully.'
     ),
 
-    'signup' => array(
-        'error'   => 'There was a problem while trying to create your account, please try again.',
-        'success' => 'Account sucessfully created.',
+    'restore' => array(
+        'error'   		=> 'Model was not restored, please try again',
+        'success' 		=> 'Model restored successfully.'
     ),
 
-    'forgot-password' => array(
-        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
-        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
+    'bulkedit' => array(
+        'error'   		=> 'No fields were changed, so nothing was updated.',
+        'success' 		=> 'Models updated.'
     ),
 
-    'forgot-password-confirm' => array(
-        'error'   => 'There was a problem while trying to reset your password, please try again.',
-        'success' => 'Your password has been successfully reset.',
+    'bulkdelete' => array(
+        'error'   		    => 'No models were selected, so nothing was deleted.',
+        'success' 		    => ':success_count model(s) deleted!',
+        'success_partial' 	=> ':success_count model(s) were deleted, however :fail_count were unable to be deleted because they still have assets associated with them.'
     ),
-
 
 );
