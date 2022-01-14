@@ -1,11 +1,12 @@
 <?php
 
 return array(
-    'checkout'                          => 'Checkout Consumable to User',
-    'consumable_name'                   => 'Consumable Name',
-    'create'                            => 'Create Consumable',
-    'item_no'                           => 'Item No.',
-    'remaining' 			            => 'Remaining',
-    'total' 			                => 'Total',
-    'update'                            => 'Update Consumable',
+    'about_asset_depreciations'  			=> 'About Asset Depreciations',
+    'about_depreciations'  					=> 'You can set up asset depreciations to depreciate assets based on straight-line depreciation.',
+    'asset_depreciations'  					=> 'Asset Depreciations',
+    'create'  					            => 'Create Depreciation',
+    'depreciation_name'  					=> 'Depreciation Name',
+    'number_of_months'  					=> 'Number of Months',
+    'update'  					            => 'Update Depreciation',
+
 );
