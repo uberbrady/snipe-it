@@ -2,21 +2,28 @@
 
 return array(
 
+    'does_not_exist' => 'Manufacturer does not exist.',
+    'assoc_users'	 => 'This manufacturer is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this manufacturer and try again. ',
+
+    'create' => array(
+        'error'   => 'Manufacturer was not created, please try again.',
+        'success' => 'Manufacturer created successfully.'
+    ),
 
     'update' => array(
-        'error'                 => 'An error has occurred while updating. ',
-        'success'               => 'Settings updated successfully.'
+        'error'   => 'Manufacturer was not updated, please try again',
+        'success' => 'Manufacturer updated successfully.'
     ),
-    'backup' => array(
-        'delete_confirm'        => 'Are you sure you would like to delete this backup file? This action cannot be undone. ',
-        'file_deleted'          => 'The backup file was successfully deleted. ',
-        'generated'             => 'A new backup file was successfully created.',
-        'file_not_found'        => 'That backup file could not be found on the server.',
+
+    'restore' => array(
+        'error'   => 'Manufacturer was not restored, please try again',
+        'success' => 'Manufacturer restored successfully.'
     ),
-    'purge' => array(
-        'error'     => 'An error has occurred while purging. ',
-        'validation_failed'     => 'Your purge confirmation is incorrect. Please type the word "DELETE" in the confirmation box.',
-        'success'               => 'Deleted records successfully purged.'
-    ),
+
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this manufacturer?',
+        'error'   => 'There was an issue deleting the manufacturer. Please try again.',
+        'success' => 'The Manufacturer was deleted successfully.'
+    )
 
 );
