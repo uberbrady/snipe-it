@@ -2,44 +2,35 @@
 
 return array(
 
-    'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found'      => 'The username or password is incorrect.',
-    'account_not_activated'  => 'This user account is not activated.',
-    'account_suspended'      => 'This user account is suspended.',
-    'account_banned'         => 'This user account is banned.',
-    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'does_not_exist' => 'Consumable does not exist.',
 
-    'two_factor' => array(
-        'already_enrolled'      => 'Your device is already enrolled.',
-        'success'               => 'You have successfully logged in.',
-        'code_required'         => 'Two-factor code is required.',
-        'invalid_code'          => 'Two-factor code is invalid.',
+    'create' => array(
+        'error'   => 'Consumable was not created, please try again.',
+        'success' => 'Consumable created successfully.'
     ),
 
-    'signin' => array(
-        'error'   => 'There was a problem while trying to log you in, please try again.',
-        'success' => 'You have successfully logged in.',
+    'update' => array(
+        'error'   => 'Consumable was not updated, please try again',
+        'success' => 'Consumable updated successfully.'
     ),
 
-    'logout' => array(
-        'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this consumable?',
+        'error'   => 'There was an issue deleting the consumable. Please try again.',
+        'success' => 'The consumable was deleted successfully.'
     ),
 
-    'signup' => array(
-        'error'   => 'There was a problem while trying to create your account, please try again.',
-        'success' => 'Account sucessfully created.',
+     'checkout' => array(
+        'error'   		=> 'Consumable was not checked out, please try again',
+        'success' 		=> 'Consumable checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     ),
 
-    'forgot-password' => array(
-        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
-        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
-    ),
-
-    'forgot-password-confirm' => array(
-        'error'   => 'There was a problem while trying to reset your password, please try again.',
-        'success' => 'Your password has been successfully reset.',
-    ),
+    'checkin' => array(
+        'error'   		=> 'Consumable was not checked in, please try again',
+        'success' 		=> 'Consumable checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    )
 
 
 );
