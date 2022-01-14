@@ -2,26 +2,26 @@
 
 return array(
 
-    'does_not_exist' => 'Supplier does not exist.',
+    'does_not_exist' => 'Location does not exist.',
+    'assoc_users'	 => 'This location is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this location and try again. ',
+    'assoc_assets'	 => 'This location is currently associated with at least one asset and cannot be deleted. Please update your assets to no longer reference this location and try again. ',
+    'assoc_child_loc'	 => 'This location is currently the parent of at least one child location and cannot be deleted. Please update your locations to no longer reference this location and try again. ',
 
 
     'create' => array(
-        'error'   => 'Supplier was not created, please try again.',
-        'success' => 'Supplier created successfully.'
+        'error'   => 'Location was not created, please try again.',
+        'success' => 'Location created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Supplier was not updated, please try again',
-        'success' => 'Supplier updated successfully.'
+        'error'   => 'Location was not updated, please try again',
+        'success' => 'Location updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this supplier?',
-        'error'   => 'There was an issue deleting the supplier. Please try again.',
-        'success' => 'Supplier was deleted successfully.',
-        'assoc_assets'	 => 'This supplier is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this supplier and try again. ',
-        'assoc_licenses'	 => 'This supplier is currently associated with :licenses_count licences(s) and cannot be deleted. Please update your licenses to no longer reference this supplier and try again. ',
-        'assoc_maintenances'	 => 'This supplier is currently associated with :asset_maintenances_count asset maintenances(s) and cannot be deleted. Please update your asset maintenances to no longer reference this supplier and try again. ',
+        'confirm'   	=> 'Are you sure you wish to delete this location?',
+        'error'   => 'There was an issue deleting the location. Please try again.',
+        'success' => 'The location was deleted successfully.'
     )
 
 );
