@@ -1,10 +1,8 @@
 <?php
 
-return array(
-
-    'actions'	 	=> 'Ações',
-    'action' 		=> 'Ação',
-    'by'      		=> 'Por',
-    'item' 			=> 'Item',
-
-);
+    return [
+        'title'         => 'Asset Maintenance',
+        'asset_name'    => 'Asset Name',
+        'is_warranty'   => 'Warranty',
+        'dl_csv'        => 'Download CSV'
+    ];
