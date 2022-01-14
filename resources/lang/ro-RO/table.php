@@ -1,9 +1,11 @@
 <?php
+
 return array(
-    'companies' => 'Companies',
-    'create'    => 'Create Company',
-    'title'     => 'Company',
-    'update'    => 'Update Company',
-    'name'      => 'Company Name',
-    'id'        => 'ID',
+	'dl_csv'      				=> 'Download CSV',
+	'eula_text'      			=> 'EULA',
+    'id'      					=> 'ID',
+    'require_acceptance'      	=> 'Acceptance',
+    'title'      				=> 'Accessory Name',
+
+
 );
