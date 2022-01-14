@@ -2,35 +2,21 @@
 
 return array(
 
-    'does_not_exist' => 'Component does not exist.',
+    'group_exists'        => 'Group already exists!',
+    'group_not_found'     => 'Group [:id] does not exist.',
+    'group_name_required' => 'The name field is required',
 
-    'create' => array(
-        'error'   => 'Component was not created, please try again.',
-        'success' => 'Component created successfully.'
-    ),
-
-    'update' => array(
-        'error'   => 'Component was not updated, please try again',
-        'success' => 'Component updated successfully.'
+    'success' => array(
+        'create' => 'Group was successfully created.',
+        'update' => 'Group was successfully updated.',
+        'delete' => 'Group was successfully deleted.',
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this component?',
-        'error'   => 'There was an issue deleting the component. Please try again.',
-        'success' => 'The component was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this group?',
+        'create' => 'There was an issue creating the group. Please try again.',
+        'update' => 'There was an issue updating the group. Please try again.',
+        'delete' => 'There was an issue deleting the group. Please try again.',
     ),
-
-     'checkout' => array(
-        'error'   		=> 'Component was not checked out, please try again',
-        'success' 		=> 'Component checked out successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
-    ),
-
-    'checkin' => array(
-        'error'   		=> 'Component was not checked in, please try again',
-        'success' 		=> 'Component checked in successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
-    )
-
 
 );
