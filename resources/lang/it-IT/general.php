@@ -1,16 +1,22 @@
 <?php
 
-return [
-    'send_password_link'	        => 'Send Password Reset Link',
-    'email_reset_password'			=> 'Email Password Reset',
-    'reset_password'			    => 'Reset Password',
-    'saml_login'                    => 'Login via SAML',
-    'login'                         => 'Login',
-    'login_prompt'                  => 'Please Login',
-    'forgot_password'               => 'I forgot my password',
-    'ldap_reset_password'           => 'Please click here to reset your LDAP password',
-    'remember_me'                   => 'Remember Me',
-    'username_help_top'                 => 'Enter your <strong>username</strong> to be emailed a password reset link.',
-    'username_help_bottom'          => 'Your username and email address <em>may</em> be the same, but may not be, depending on your configuration. If you cannot remember your username, contact your administrator. <br><br><strong>Usernames without an associated email address will not be emailed a password reset link.</strong> ',
-    ];
-
+return array(
+    'about_assets_title'           => 'About Assets',
+    'about_assets_text'            => 'Assets are items tracked by serial number or asset tag.  They tend to be higher value items where identifying a specific item matters.',
+	'archived'  				=> 'Archived',
+    'asset'  					=> 'Asset',
+    'bulk_checkout'             => 'Checkout Assets',
+    'checkin'  					=> 'Checkin Asset',
+    'checkout'  				=> 'Checkout Asset',
+    'clone'  					=> 'Clone Asset',
+    'deployable'  				=> 'Deployable',
+    'deleted'  					=> 'This asset has been deleted. <a href="/hardware/:asset_id/restore">Click here to restore it</a>.',
+    'edit'  					=> 'Edit Asset',
+    'model_deleted'  			=> 'This Assets model has been deleted. You must restore the model before you can restore the Asset.<br/> <a href="/hardware/models/:model_id/restore">Click here to restore the model</a>.',
+    'requestable'               => 'Requestable',
+    'requested'				    => 'Requested',
+    'restore'  					=> 'Restore Asset',
+    'pending'  					=> 'Pending',
+    'undeployable'  			=> 'Undeployable',
+    'view'  					=> 'View Asset',
+);
