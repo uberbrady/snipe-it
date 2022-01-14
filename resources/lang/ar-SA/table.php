@@ -1,10 +1,9 @@
 <?php
-
 return array(
-
-    'actions'	 	=> 'Actions',
-    'action' 		=> 'Action',
-    'by'      		=> 'By',
-    'item' 			=> 'Item',
-
+    'companies' => 'Companies',
+    'create'    => 'Create Company',
+    'title'     => 'Company',
+    'update'    => 'Update Company',
+    'name'      => 'Company Name',
+    'id'        => 'ID',
 );
