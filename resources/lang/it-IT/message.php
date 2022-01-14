@@ -1,36 +1,21 @@
 <?php
 
-return array(
-
-    'does_not_exist' => 'Consumable does not exist.',
-
-    'create' => array(
-        'error'   => 'Consumable was not created, please try again.',
-        'success' => 'Consumable created successfully.'
-    ),
-
-    'update' => array(
-        'error'   => 'Consumable was not updated, please try again',
-        'success' => 'Consumable updated successfully.'
-    ),
-
-    'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this consumable?',
-        'error'   => 'There was an issue deleting the consumable. Please try again.',
-        'success' => 'The consumable was deleted successfully.'
-    ),
-
-     'checkout' => array(
-        'error'   		=> 'Consumable was not checked out, please try again',
-        'success' 		=> 'Consumable checked out successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
-    ),
-
-    'checkin' => array(
-        'error'   		=> 'Consumable was not checked in, please try again',
-        'success' 		=> 'Consumable checked in successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
-    )
-
-
-);
+    return [
+        'not_found'                    => 'Asset Maintenance you were looking for was not found!',
+        'delete'                       => [
+            'confirm' => 'Are you sure you wish to delete this asset maintenance?',
+            'error'   => 'There was an issue deleting the asset maintenance. Please try again.',
+            'success' => 'The asset maintenance was deleted successfully.'
+        ],
+        'create'                       => [
+            'error'   => 'Asset Maintenance was not created, please try again.',
+            'success' => 'Asset Maintenance created successfully.'
+        ],
+        'edit'                       => [
+            'error'   => 'Asset Maintenance was not edited, please try again.',
+            'success' => 'Asset Maintenance edited successfully.'
+        ],
+        'asset_maintenance_incomplete' => 'Not Completed Yet',
+        'warranty'                     => 'Warranty',
+        'not_warranty'                 => 'Not Warranty',
+    ];
