@@ -2,21 +2,28 @@
 
 return array(
 
-    'group_exists'        => 'Group already exists!',
-    'group_not_found'     => 'Group [:id] does not exist.',
-    'group_name_required' => 'The name field is required',
+    'does_not_exist' => 'Manufacturer does not exist.',
+    'assoc_users'	 => 'This manufacturer is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this manufacturer and try again. ',
 
-    'success' => array(
-        'create' => 'Group was successfully created.',
-        'update' => 'Group was successfully updated.',
-        'delete' => 'Group was successfully deleted.',
+    'create' => array(
+        'error'   => 'Manufacturer was not created, please try again.',
+        'success' => 'Manufacturer created successfully.'
+    ),
+
+    'update' => array(
+        'error'   => 'Manufacturer was not updated, please try again',
+        'success' => 'Manufacturer updated successfully.'
+    ),
+
+    'restore' => array(
+        'error'   => 'Manufacturer was not restored, please try again',
+        'success' => 'Manufacturer restored successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this group?',
-        'create' => 'There was an issue creating the group. Please try again.',
-        'update' => 'There was an issue updating the group. Please try again.',
-        'delete' => 'There was an issue deleting the group. Please try again.',
-    ),
+        'confirm'   => 'Are you sure you wish to delete this manufacturer?',
+        'error'   => 'There was an issue deleting the manufacturer. Please try again.',
+        'success' => 'The Manufacturer was deleted successfully.'
+    )
 
 );
