@@ -2,24 +2,36 @@
 
 return array(
 
-    'does_not_exist' => 'Category does not exist.',
-    'assoc_models'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
-    'assoc_items'	 => 'This category is currently associated with at least one :asset_type and cannot be deleted. Please update your :asset_type  to no longer reference this category and try again. ',
+    'does_not_exist' => 'The accessory [:id] does not exist.',
+    'assoc_users'	 => 'This accessory currently has :count items checked out to users. Please check in the accessories and and try again. ',
 
     'create' => array(
-        'error'   => 'Category was not created, please try again.',
-        'success' => 'Category created successfully.'
+        'error'   => 'The accessory was not created, please try again.',
+        'success' => 'The accessory was successfully created.'
     ),
 
     'update' => array(
-        'error'   => 'Category was not updated, please try again',
-        'success' => 'Category updated successfully.'
+        'error'   => 'The accessory was not updated, please try again',
+        'success' => 'The accessory was updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this category?',
-        'error'   => 'There was an issue deleting the category. Please try again.',
-        'success' => 'The category was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this accessory?',
+        'error'   => 'There was an issue deleting the accessory. Please try again.',
+        'success' => 'The accessory was deleted successfully.'
+    ),
+
+     'checkout' => array(
+        'error'   		=> 'Accessory was not checked out, please try again',
+        'success' 		=> 'Accessory checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    ),
+
+    'checkin' => array(
+        'error'   		=> 'Accessory was not checked in, please try again',
+        'success' 		=> 'Accessory checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
+
 
 );
