@@ -2,26 +2,35 @@
 
 return array(
 
-    'does_not_exist' => 'Location does not exist.',
-    'assoc_users'	 => 'This location is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this location and try again. ',
-    'assoc_assets'	 => 'This location is currently associated with at least one asset and cannot be deleted. Please update your assets to no longer reference this location and try again. ',
-    'assoc_child_loc'	 => 'This location is currently the parent of at least one child location and cannot be deleted. Please update your locations to no longer reference this location and try again. ',
-
+    'does_not_exist' => 'Component does not exist.',
 
     'create' => array(
-        'error'   => 'Location was not created, please try again.',
-        'success' => 'Location created successfully.'
+        'error'   => 'Component was not created, please try again.',
+        'success' => 'Component created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Location was not updated, please try again',
-        'success' => 'Location updated successfully.'
+        'error'   => 'Component was not updated, please try again',
+        'success' => 'Component updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   	=> 'Are you sure you wish to delete this location?',
-        'error'   => 'There was an issue deleting the location. Please try again.',
-        'success' => 'The location was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this component?',
+        'error'   => 'There was an issue deleting the component. Please try again.',
+        'success' => 'The component was deleted successfully.'
+    ),
+
+     'checkout' => array(
+        'error'   		=> 'Component was not checked out, please try again',
+        'success' 		=> 'Component checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    ),
+
+    'checkin' => array(
+        'error'   		=> 'Component was not checked in, please try again',
+        'success' 		=> 'Component checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
+
 
 );
