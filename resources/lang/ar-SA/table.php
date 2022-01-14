@@ -2,16 +2,16 @@
 
 return array(
 
-    'create'				=> 'Create Asset Model',
-    'created_at' 			=> 'Created at',
-    'eol'	 				=> 'EOL',
-    'modelnumber'   		=> 'Model No.',
-    'name'      			=> 'Asset Model Name',
-    'numassets' 			=> 'Assets',
-    'title'					=> 'Asset Models',
-    'update'				=> 'Update Asset Model',
-    'view'					=> 'View Asset Model',
-    'update'				=> 'Update Asset Model',
-    'clone'				=> 'Clone Model',
-    'edit'				=> 'Edit Model',
+    'assigned_to'   	=> 'Assigned To',
+    'checkout'   		=> 'In/Out',
+    'id'      			=> 'ID',
+    'license_email'   	=> 'License Email',
+    'license_name'   	=> 'Licensed To',
+    'purchase_date'   	=> 'Purchase Date',
+    'purchased'   		=> 'Purchased',
+    'seats'   			=> 'Seats',
+    'hardware'   		=> 'Hardware',
+    'serial'   			=> 'Serial',
+    'title'      		=> 'License',
+
 );
