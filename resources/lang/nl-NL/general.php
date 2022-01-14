@@ -1,11 +1,14 @@
 <?php
 
-return array(
-    'checkout'                          => 'Checkout Consumable to User',
-    'consumable_name'                   => 'Consumable Name',
-    'create'                            => 'Create Consumable',
-    'item_no'                           => 'Item No.',
-    'remaining' 			            => 'Remaining',
-    'total' 			                => 'Total',
-    'update'                            => 'Update Consumable',
-);
+    return [
+        'asset_maintenances' => 'Asset Maintenances',
+        'edit'               => 'Edit Asset Maintenance',
+        'delete'             => 'Delete Asset Maintenance',
+        'view'               => 'View Asset Maintenance Details',
+        'repair'             => 'Repair',
+        'maintenance'        => 'Maintenance',
+        'upgrade'            => 'Upgrade',
+        'calibration'        => 'Calibration',
+        'software_support'   => 'Software Support',
+        'hardware_support'   => 'Hardware Support',
+    ];
