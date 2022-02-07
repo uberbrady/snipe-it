@@ -2,24 +2,21 @@
 
 return array(
 
-    'does_not_exist' => 'Category does not exist.',
-    'assoc_models'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
-    'assoc_items'	 => 'This category is currently associated with at least one :asset_type and cannot be deleted. Please update your :asset_type  to no longer reference this category and try again. ',
+    'group_exists'        => 'Group already exists!',
+    'group_not_found'     => 'Group [:id] does not exist.',
+    'group_name_required' => 'The name field is required',
 
-    'create' => array(
-        'error'   => 'Category was not created, please try again.',
-        'success' => 'Category created successfully.'
-    ),
-
-    'update' => array(
-        'error'   => 'Category was not updated, please try again',
-        'success' => 'Category updated successfully.'
+    'success' => array(
+        'create' => 'Group was successfully created.',
+        'update' => 'Group was successfully updated.',
+        'delete' => 'Group was successfully deleted.',
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this category?',
-        'error'   => 'There was an issue deleting the category. Please try again.',
-        'success' => 'The category was deleted successfully.'
-    )
+        'confirm'   => 'Are you sure you wish to delete this group?',
+        'create' => 'There was an issue creating the group. Please try again.',
+        'update' => 'There was an issue updating the group. Please try again.',
+        'delete' => 'There was an issue deleting the group. Please try again.',
+    ),
 
 );
