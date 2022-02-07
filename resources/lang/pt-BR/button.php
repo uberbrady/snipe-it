@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     'actions' 	                => 'Ações',
     'add'    	                => 'Adicionar Novo',
     'cancel'                    => 'Cancelar',
@@ -8,11 +8,17 @@ return array(
     'delete'  	                => 'Excluir',
     'edit'    	                => 'Editar',
     'restore' 	                => 'Restaurar',
+    'remove'                    => 'Remove',
     'request'                   => 'Solicitação',
     'submit'  	                => 'Enviar',
     'upload'                    => 'Carregar',
-	'select_file'				=> 'Selecionar arquivo...',
+    'select_file'				=> 'Selecionar arquivo...',
     'select_files'				=> 'Selecionar arquivos...',
     'generate_labels'           => '{1} Gerar Etiqueta|[2,*] Gerar Etiquetas',
-    'send_password_link'       => 'Send Password Reset Link',
-);
+    'send_password_link'        => 'Send Password Reset Link',
+    'go'                        => 'Go',
+    'bulk_actions'              => 'Bulk Actions',
+    'add_maintenance'           => 'Add Maintenance',
+    'append'                    => 'Append',
+    'new'                       => 'New',
+];
