@@ -2,44 +2,26 @@
 
 return array(
 
-    'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found'      => 'The username or password is incorrect.',
-    'account_not_activated'  => 'This user account is not activated.',
-    'account_suspended'      => 'This user account is suspended.',
-    'account_banned'         => 'This user account is banned.',
-    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'does_not_exist' => 'Supplier does not exist.',
 
-    'two_factor' => array(
-        'already_enrolled'      => 'Your device is already enrolled.',
-        'success'               => 'You have successfully logged in.',
-        'code_required'         => 'Two-factor code is required.',
-        'invalid_code'          => 'Two-factor code is invalid.',
+
+    'create' => array(
+        'error'   => 'Supplier was not created, please try again.',
+        'success' => 'Supplier created successfully.'
     ),
 
-    'signin' => array(
-        'error'   => 'There was a problem while trying to log you in, please try again.',
-        'success' => 'You have successfully logged in.',
+    'update' => array(
+        'error'   => 'Supplier was not updated, please try again',
+        'success' => 'Supplier updated successfully.'
     ),
 
-    'logout' => array(
-        'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
-    ),
-
-    'signup' => array(
-        'error'   => 'There was a problem while trying to create your account, please try again.',
-        'success' => 'Account sucessfully created.',
-    ),
-
-    'forgot-password' => array(
-        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
-        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
-    ),
-
-    'forgot-password-confirm' => array(
-        'error'   => 'There was a problem while trying to reset your password, please try again.',
-        'success' => 'Your password has been successfully reset.',
-    ),
-
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this supplier?',
+        'error'   => 'There was an issue deleting the supplier. Please try again.',
+        'success' => 'Supplier was deleted successfully.',
+        'assoc_assets'	 => 'This supplier is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this supplier and try again. ',
+        'assoc_licenses'	 => 'This supplier is currently associated with :licenses_count licences(s) and cannot be deleted. Please update your licenses to no longer reference this supplier and try again. ',
+        'assoc_maintenances'	 => 'This supplier is currently associated with :asset_maintenances_count asset maintenances(s) and cannot be deleted. Please update your asset maintenances to no longer reference this supplier and try again. ',
+    )
 
 );
