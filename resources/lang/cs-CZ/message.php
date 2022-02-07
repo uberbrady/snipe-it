@@ -2,31 +2,44 @@
 
 return array(
 
-    'does_not_exist' => 'Status Label does not exist.',
-    'assoc_assets'	 => 'This Status Label is currently associated with at least one Asset and cannot be deleted. Please update your assets to no longer reference this status and try again. ',
+    'account_already_exists' => 'An account with the this email already exists.',
+    'account_not_found'      => 'The username or password is incorrect.',
+    'account_not_activated'  => 'This user account is not activated.',
+    'account_suspended'      => 'This user account is suspended.',
+    'account_banned'         => 'This user account is banned.',
+    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
 
-
-    'create' => array(
-        'error'   => 'Status Label was not created, please try again.',
-        'success' => 'Status Label created successfully.'
+    'two_factor' => array(
+        'already_enrolled'      => 'Your device is already enrolled.',
+        'success'               => 'You have successfully logged in.',
+        'code_required'         => 'Two-factor code is required.',
+        'invalid_code'          => 'Two-factor code is invalid.',
     ),
 
-    'update' => array(
-        'error'   => 'Status Label was not updated, please try again',
-        'success' => 'Status Label updated successfully.'
+    'signin' => array(
+        'error'   => 'There was a problem while trying to log you in, please try again.',
+        'success' => 'You have successfully logged in.',
     ),
 
-    'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this Status Label?',
-        'error'   => 'There was an issue deleting the Status Label. Please try again.',
-        'success' => 'The Status Label was deleted successfully.'
+    'logout' => array(
+        'error'   => 'There was a problem while trying to log you out, please try again.',
+        'success' => 'You have successfully logged out.',
     ),
 
-    'help' => array(
-        'undeployable'   => 'These assets cannot be assigned to anyone.',
-        'deployable'   => 'These assets can be checked out. Once they are assigned, they will assume a meta status of <i class="fa fa-circle text-blue"></i> <strong>Deployed</strong>.',
-        'archived'   => 'These assets cannot be checked out, and will only show up in the Archived view. This is useful for retaining information about assets for budgeting/historic purposes but keeping them out of the day-to-day asset list.',
-        'pending'   => 'These assets can not yet be assigned to anyone, often used for items that are out for repair, but are expected to return to circulation.',
+    'signup' => array(
+        'error'   => 'There was a problem while trying to create your account, please try again.',
+        'success' => 'Account sucessfully created.',
     ),
+
+    'forgot-password' => array(
+        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
+        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
+    ),
+
+    'forgot-password-confirm' => array(
+        'error'   => 'There was a problem while trying to reset your password, please try again.',
+        'success' => 'Your password has been successfully reset.',
+    ),
+
 
 );
