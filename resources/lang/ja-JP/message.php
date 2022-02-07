@@ -2,44 +2,51 @@
 
 return array(
 
-    'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found'      => 'The username or password is incorrect.',
-    'account_not_activated'  => 'This user account is not activated.',
-    'account_suspended'      => 'This user account is suspended.',
-    'account_banned'         => 'This user account is banned.',
-    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'does_not_exist' => 'License does not exist.',
+    'user_does_not_exist' => 'User does not exist.',
+    'asset_does_not_exist' 	=> 'The asset you are trying to associate with this license does not exist.',
+    'owner_doesnt_match_asset' => 'The asset you are trying to associate with this license is owned by somene other than the person selected in the assigned to dropdown.',
+    'assoc_users'	 => 'This license is currently checked out to a user and cannot be deleted. Please check the license in first, and then try deleting again. ',
+    'select_asset_or_person' => 'You must select an asset or a user, but not both.',
+    'not_found' => 'License not found',
 
-    'two_factor' => array(
-        'already_enrolled'      => 'Your device is already enrolled.',
-        'success'               => 'You have successfully logged in.',
-        'code_required'         => 'Two-factor code is required.',
-        'invalid_code'          => 'Two-factor code is invalid.',
+
+    'create' => array(
+        'error'   => 'License was not created, please try again.',
+        'success' => 'License created successfully.'
     ),
 
-    'signin' => array(
-        'error'   => 'There was a problem while trying to log you in, please try again.',
-        'success' => 'You have successfully logged in.',
+    'deletefile' => array(
+        'error'   => 'File not deleted. Please try again.',
+        'success' => 'File successfully deleted.',
     ),
 
-    'logout' => array(
-        'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
+    'upload' => array(
+        'error'   => 'File(s) not uploaded. Please try again.',
+        'success' => 'File(s) successfully uploaded.',
+        'nofiles' => 'You did not select any files for upload, or the file you are trying to upload is too large',
+        'invalidfiles' => 'One or more of your files is too large or is a filetype that is not allowed. Allowed filetypes are png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, rar, rtf, xml, and lic.',
     ),
 
-    'signup' => array(
-        'error'   => 'There was a problem while trying to create your account, please try again.',
-        'success' => 'Account sucessfully created.',
+    'update' => array(
+        'error'   => 'License was not updated, please try again',
+        'success' => 'License updated successfully.'
     ),
 
-    'forgot-password' => array(
-        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
-        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this license?',
+        'error'   => 'There was an issue deleting the license. Please try again.',
+        'success' => 'The license was deleted successfully.'
     ),
 
-    'forgot-password-confirm' => array(
-        'error'   => 'There was a problem while trying to reset your password, please try again.',
-        'success' => 'Your password has been successfully reset.',
+    'checkout' => array(
+        'error'   => 'There was an issue checking out the license. Please try again.',
+        'success' => 'The license was checked out successfully'
     ),
 
+    'checkin' => array(
+        'error'   => 'There was an issue checking in the license. Please try again.',
+        'success' => 'The license was checked in successfully'
+    ),
 
 );
