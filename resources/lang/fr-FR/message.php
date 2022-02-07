@@ -1,21 +1,18 @@
 <?php
-
 return array(
-
-    'does_not_exist' => 'Department does not exist.',
-    'assoc_users'	 => 'This department is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this department and try again. ',
+    'does_not_exist' => 'Company does not exist.',
+    'assoc_users'    => 'This company is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this company and try again. ',
     'create' => array(
-        'error'   => 'Department was not created, please try again.',
-        'success' => 'Department created successfully.'
+        'error'   => 'Company was not created, please try again.',
+        'success' => 'Company created successfully.'
     ),
     'update' => array(
-        'error'   => 'Department was not updated, please try again',
-        'success' => 'Department updated successfully.'
+        'error'   => 'Company was not updated, please try again',
+        'success' => 'Company updated successfully.'
     ),
     'delete' => array(
-        'confirm'   	=> 'Are you sure you wish to delete this department?',
-        'error'   => 'There was an issue deleting the department. Please try again.',
-        'success' => 'The department was deleted successfully.'
+        'confirm' => 'Are you sure you wish to delete this company?',
+        'error'   => 'There was an issue deleting the company. Please try again.',
+        'success' => 'The Company was deleted successfully.'
     )
-
 );
