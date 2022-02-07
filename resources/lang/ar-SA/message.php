@@ -2,31 +2,60 @@
 
 return array(
 
-    'does_not_exist' => 'Status Label does not exist.',
-    'assoc_assets'	 => 'This Status Label is currently associated with at least one Asset and cannot be deleted. Please update your assets to no longer reference this status and try again. ',
+    'accepted'                  => 'You have successfully accepted this asset.',
+    'declined'                  => 'You have successfully declined this asset.',
+    'bulk_manager_warn'	        => 'Your users have been successfully updated, however your manager entry was not saved because the manager you selected was also in the user list to be edited, and users may not be their own manager. Please select your users again, excluding the manager.',
+    'user_exists'               => 'User already exists!',
+    'user_not_found'            => 'User [:id] does not exist.',
+    'user_login_required'       => 'The login field is required',
+    'user_password_required'    => 'The password is required.',
+    'insufficient_permissions'  => 'Insufficient Permissions.',
+    'user_deleted_warning'      => 'This user has been deleted. You will have to restore this user to edit them or assign them new assets.',
+    'ldap_not_configured'        => 'LDAP integration has not been configured for this installation.',
+    'password_resets_sent'      => 'The selected users who are activated and have a valid email addresses have been sent a password reset link.',
+    'password_reset_sent'       => 'A password reset link has been sent to :email!',
 
 
-    'create' => array(
-        'error'   => 'Status Label was not created, please try again.',
-        'success' => 'Status Label created successfully.'
+    'success' => array(
+        'create'    => 'User was successfully created.',
+        'update'    => 'User was successfully updated.',
+        'update_bulk'    => 'Users were successfully updated!',
+        'delete'    => 'User was successfully deleted.',
+        'ban'       => 'User was successfully banned.',
+        'unban'     => 'User was successfully unbanned.',
+        'suspend'   => 'User was successfully suspended.',
+        'unsuspend' => 'User was successfully unsuspended.',
+        'restored'  => 'User was successfully restored.',
+        'import'    => 'Users imported successfully.',
     ),
 
-    'update' => array(
-        'error'   => 'Status Label was not updated, please try again',
-        'success' => 'Status Label updated successfully.'
+    'error' => array(
+        'create' => 'There was an issue creating the user. Please try again.',
+        'update' => 'There was an issue updating the user. Please try again.',
+        'delete' => 'There was an issue deleting the user. Please try again.',
+        'delete_has_assets' => 'This user has items assigned and could not be deleted.',
+        'unsuspend' => 'There was an issue unsuspending the user. Please try again.',
+        'import'    => 'There was an issue importing users. Please try again.',
+        'asset_already_accepted' => 'This asset has already been accepted.',
+        'accept_or_decline' => 'You must either accept or decline this asset.',
+        'incorrect_user_accepted' => 'The asset you have attempted to accept was not checked out to you.',
+        'ldap_could_not_connect' => 'Could not connect to the LDAP server. Please check your LDAP server configuration in the LDAP config file. <br>Error from LDAP Server:',
+        'ldap_could_not_bind' => 'Could not bind to the LDAP server. Please check your LDAP server configuration in the LDAP config file. <br>Error from LDAP Server: ',
+        'ldap_could_not_search' => 'Could not search the LDAP server. Please check your LDAP server configuration in the LDAP config file. <br>Error from LDAP Server:',
+        'ldap_could_not_get_entries' => 'Could not get entries from the LDAP server. Please check your LDAP server configuration in the LDAP config file. <br>Error from LDAP Server:',
+        'password_ldap' => 'The password for this account is managed by LDAP/Active Directory. Please contact your IT department to change your password. ',
     ),
 
-    'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this Status Label?',
-        'error'   => 'There was an issue deleting the Status Label. Please try again.',
-        'success' => 'The Status Label was deleted successfully.'
+    'deletefile' => array(
+        'error'   => 'File not deleted. Please try again.',
+        'success' => 'File successfully deleted.',
     ),
 
-    'help' => array(
-        'undeployable'   => 'These assets cannot be assigned to anyone.',
-        'deployable'   => 'These assets can be checked out. Once they are assigned, they will assume a meta status of <i class="fa fa-circle text-blue"></i> <strong>Deployed</strong>.',
-        'archived'   => 'These assets cannot be checked out, and will only show up in the Archived view. This is useful for retaining information about assets for budgeting/historic purposes but keeping them out of the day-to-day asset list.',
-        'pending'   => 'These assets can not yet be assigned to anyone, often used for items that are out for repair, but are expected to return to circulation.',
+    'upload' => array(
+        'error'   => 'File(s) not uploaded. Please try again.',
+        'success' => 'File(s) successfully uploaded.',
+        'nofiles' => 'You did not select any files for upload',
+        'invalidfiles' => 'One or more of your files is too large or is a filetype that is not allowed. Allowed filetypes are png, gif, jpg, doc, docx, pdf, and txt.',
     ),
 
 );
