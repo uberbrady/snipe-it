@@ -1,21 +1,16 @@
 <?php
 
-return array(
-    'about_licenses_title'            => 'About Licenses',
-    'about_licenses'                  => 'Licenses are used to track software.  They have a specified number of seats that can be checked out to individuals',
-    'checkin'  					=> 'Checkin License Seat',
-    'checkout_history'  		=> 'Checkout History',
-    'checkout'  				=> 'Checkout License Seat',
-    'edit'  					=> 'Edit License',
-    'filetype_info'				=> 'Allowed filetypes are png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, and rar.',
-    'clone'  					=> 'Clone License',
-    'history_for'  				=> 'History for ',
-    'in_out'  					=> 'In/Out',
-    'info'  					=> 'License Info',
-    'license_seats'  			=> 'License Seats',
-    'seat'  					=> 'Seat',
-    'seats'  					=> 'Seats',
-    'software_licenses'  		=> 'Software Licenses',
-    'user'  					=> 'User',
-    'view'  					=> 'View License',
-);
+return [
+    'about_asset_depreciations'  			=> 'About Asset Depreciations',
+    'about_depreciations'  					=> 'You can set up asset depreciations to depreciate assets based on straight-line depreciation.',
+    'asset_depreciations'  					=> 'Asset Depreciations',
+    'create'  					            => 'Create Depreciation',
+    'depreciation_name'  					=> 'Depreciation Name',
+    'depreciation_min'                      => 'Floor Value of Depreciation',
+    'number_of_months'  					=> 'Number of Months',
+    'update'  					            => 'Update Depreciation',
+    'depreciation_min'                      => 'Minimum Value after Depreciation',
+    'no_depreciations_warning'               => '<strong>Warning: </strong>
+                      You do not currently have any depreciations set up.
+                      Please set up at least one depreciation to view the depreciation report.',
+];
