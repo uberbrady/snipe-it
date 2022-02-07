@@ -1,25 +1,23 @@
 <?php
 
 return array(
-
-    'asset_tag'   	=> 'Asset Tag',
-    'asset_model'       => 'Model',
-    'book_value'  	=> 'Value',
-    'change' 		=> 'In/Out',
-    'checkout_date' => 'Checkout Date',
-    'checkoutto' 	=> 'Checked Out',
-    'diff' 			=> 'Diff',
-    'dl_csv' 		=> 'Download CSV',
-    'eol' 			=> 'EOL',
-    'id'      		=> 'ID',
-    'location' 		=> 'Location',
-    'purchase_cost'	=> 'Cost',
-    'purchase_date'	=> 'Purchased',
-    'serial'   		=> 'Serial',
-    'status'   		=> 'Status',
-    'title'      	=> 'Asset ',
-    'image'		=> 'Device Image',
-    'days_without_acceptance' => 'Days Without Acceptance',
-    'monthly_depreciation' => 'Monthly Depreciation'
-
-);
+    'about_locations_title'     => 'About Locations',
+    'about_locations'           => 'Locations are used to track location information for users, assets, and other items',
+    'assets_rtd'                => 'Assets', // This has NEVER meant Assets Retired. I don't know how it keeps getting reverted.
+    'assets_checkedout'         => 'Assets Assigned',
+    'id'                        => 'ID',
+    'city'                      => 'City',
+    'state'                     => 'State',
+    'country'                   => 'Country',
+    'create'                    => 'Create Location',
+    'update'                    => 'Update Location',
+    'print_assigned'            => 'Print Assigned',
+    'print_all_assigned'        => 'Print All Assigned',
+    'name'                      => 'Location Name',
+    'address'                   => 'Address',
+    'zip'                       => 'Postal Code',
+    'locations'                 => 'Locations',
+    'parent'                    => 'Parent',
+    'currency'                  => 'Location Currency',
+    'ldap_ou'                   => 'LDAP Search OU',
+    );
