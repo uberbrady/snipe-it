@@ -2,21 +2,24 @@
 
 return array(
 
+    'does_not_exist' => 'Category does not exist.',
+    'assoc_models'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
+    'assoc_items'	 => 'This category is currently associated with at least one :asset_type and cannot be deleted. Please update your :asset_type  to no longer reference this category and try again. ',
+
+    'create' => array(
+        'error'   => 'Category was not created, please try again.',
+        'success' => 'Category created successfully.'
+    ),
 
     'update' => array(
-        'error'                 => 'An error has occurred while updating. ',
-        'success'               => 'Settings updated successfully.'
+        'error'   => 'Category was not updated, please try again',
+        'success' => 'Category updated successfully.'
     ),
-    'backup' => array(
-        'delete_confirm'        => 'Are you sure you would like to delete this backup file? This action cannot be undone. ',
-        'file_deleted'          => 'The backup file was successfully deleted. ',
-        'generated'             => 'A new backup file was successfully created.',
-        'file_not_found'        => 'That backup file could not be found on the server.',
-    ),
-    'purge' => array(
-        'error'     => 'An error has occurred while purging. ',
-        'validation_failed'     => 'Your purge confirmation is incorrect. Please type the word "DELETE" in the confirmation box.',
-        'success'               => 'Deleted records successfully purged.'
-    ),
+
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this category?',
+        'error'   => 'There was an issue deleting the category. Please try again.',
+        'success' => 'The category was deleted successfully.'
+    )
 
 );
