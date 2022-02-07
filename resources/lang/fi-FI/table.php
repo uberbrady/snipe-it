@@ -1,30 +1,16 @@
 <?php
 
-return [
+return array(
+    'about_manufacturers_title'    => 'About manufacturers',
+    'about_manufacturers_text'  => 'Manufacturers are the companies that create your assets. You can store important support contact information about them here, which will be displayed on your asset detail pages.',
+    'asset_manufacturers'	=> 'Asset Manufacturers',
+    'create'				=> 'Create Manufacturer',
+    'id'   					=> 'ID',
+    'name'      			=> 'Name',
+    'support_email'   		=> 'Support Email',
+    'support_phone'   		=> 'Support Phone',
+    'support_url'   		=> 'Support URL',
+    'update'				=> 'Update Manufacturer',
+    'url'   				=> 'URL',
 
-    'asset_tag'   	=> 'Asset Tag',
-    'asset_model'       => 'Model',
-    'book_value'  	=> 'Current Value',
-    'change' 		=> 'In/Out',
-    'checkout_date' => 'Checkout Date',
-    'checkoutto' 	=> 'Checked Out',
-    'current_value' => 'Current Value',
-    'diff' 			=> 'Diff',
-    'dl_csv' 		=> 'Download CSV',
-    'eol' 			=> 'EOL',
-    'id'      		=> 'ID',
-    'location' 		=> 'Location',
-    'purchase_cost'	=> 'Cost',
-    'purchase_date'	=> 'Purchased',
-    'serial'   		=> 'Serial',
-    'status'   		=> 'Status',
-    'title'      	=> 'Asset ',
-    'image'		    => 'Device Image',
-    'days_without_acceptance' => 'Days Without Acceptance',
-    'monthly_depreciation' => 'Monthly Depreciation',
-    'assigned_to'    => 'Assigned To',
-    'requesting_user' => 'Requesting User',
-    'requested_date' => 'Requested Date',
-    'changed'       => 'Changed',
-    'icon' => 'Icon',
-];
+);
