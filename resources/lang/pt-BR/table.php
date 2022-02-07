@@ -2,16 +2,24 @@
 
 return array(
 
-    'create'				=> 'Create Asset Model',
-    'created_at' 			=> 'Created at',
-    'eol'	 				=> 'EOL',
-    'modelnumber'   		=> 'Model No.',
-    'name'      			=> 'Asset Model Name',
-    'numassets' 			=> 'Assets',
-    'title'					=> 'Asset Models',
-    'update'				=> 'Update Asset Model',
-    'view'					=> 'View Asset Model',
-    'update'				=> 'Update Asset Model',
-    'clone'				=> 'Clone Model',
-    'edit'				=> 'Edit Model',
+    'asset_tag'   	=> 'Asset Tag',
+    'asset_model'       => 'Model',
+    'book_value'  	=> 'Value',
+    'change' 		=> 'In/Out',
+    'checkout_date' => 'Checkout Date',
+    'checkoutto' 	=> 'Checked Out',
+    'diff' 			=> 'Diff',
+    'dl_csv' 		=> 'Download CSV',
+    'eol' 			=> 'EOL',
+    'id'      		=> 'ID',
+    'location' 		=> 'Location',
+    'purchase_cost'	=> 'Cost',
+    'purchase_date'	=> 'Purchased',
+    'serial'   		=> 'Serial',
+    'status'   		=> 'Status',
+    'title'      	=> 'Asset ',
+    'image'		=> 'Device Image',
+    'days_without_acceptance' => 'Days Without Acceptance',
+    'monthly_depreciation' => 'Monthly Depreciation'
+
 );
