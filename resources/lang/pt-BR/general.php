@@ -1,17 +1,16 @@
 <?php
 
-return array(
-    'about_kits_title'                  => 'About Predefined Kits',
-    'about_kits_text'                   => 'Predefined Kits let you quickly check out a collection of items (assets, licenses, etc) to a user. This can be helpful when your onboarding process is consistent across many users and all users receive the same items.',
-    'checkout'                          => 'Checkout Kit ',
-    'create_success'                    => 'Kit was successfully created.',
-    'create'                            => 'Create Predefined Kit',
-    'update'                            => 'Update Predefined Kit',
-    'delete_success'                    => 'Kit was successfully deleted.',
-    'update_success'                    => 'Kit was successfully updated.',
-    'none_models'                       => 'There are not enough available assets for :model to checkout. :qty are required. ',
-    'none_licenses'                     => 'There are not enough available seats for :license to checkout. :qty are required. ',
-    'none_consumables'                  => 'There are not enough available units of :consumable to checkout. :qty are required. ',
-    'none_accessory'                    => 'There are not enough available units of :accessory to checkout. :qty are required. ',
+return [
+    'send_password_link'	        => 'Send Password Reset Link',
+    'email_reset_password'			=> 'Email Password Reset',
+    'reset_password'			    => 'Reset Password',
+    'saml_login'                    => 'Login via SAML',
+    'login'                         => 'Login',
+    'login_prompt'                  => 'Please Login',
+    'forgot_password'               => 'I forgot my password',
+    'ldap_reset_password'           => 'Please click here to reset your LDAP password',
+    'remember_me'                   => 'Remember Me',
+    'username_help_top'                 => 'Enter your <strong>username</strong> to be emailed a password reset link.',
+    'username_help_bottom'          => 'Your username and email address <em>may</em> be the same, but may not be, depending on your configuration. If you cannot remember your username, contact your administrator. <br><br><strong>Usernames without an associated email address will not be emailed a password reset link.</strong> ',
+    ];
 
-);
