@@ -2,8 +2,10 @@
 
 return array(
 
-    'id'         => 'Id',
-    'name'       => 'Name',
-    'users'      => '# of Users',
-
-);
+    'id'                        => 'ID',
+    'name'                      => 'Department Name',
+    'manager'                   => 'Manager',
+    'location'                  => 'Location',
+    'create'                    => 'Create Department',
+    'update'                    => 'Update Department',
+    );
