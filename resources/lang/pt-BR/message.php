@@ -1,36 +1,18 @@
 <?php
-
 return array(
-
-    'does_not_exist' => 'Component does not exist.',
-
+    'does_not_exist' => 'Company does not exist.',
+    'assoc_users'    => 'This company is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this company and try again. ',
     'create' => array(
-        'error'   => 'Component was not created, please try again.',
-        'success' => 'Component created successfully.'
+        'error'   => 'Company was not created, please try again.',
+        'success' => 'Company created successfully.'
     ),
-
     'update' => array(
-        'error'   => 'Component was not updated, please try again',
-        'success' => 'Component updated successfully.'
+        'error'   => 'Company was not updated, please try again',
+        'success' => 'Company updated successfully.'
     ),
-
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this component?',
-        'error'   => 'There was an issue deleting the component. Please try again.',
-        'success' => 'The component was deleted successfully.'
-    ),
-
-     'checkout' => array(
-        'error'   		=> 'Component was not checked out, please try again',
-        'success' 		=> 'Component checked out successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
-    ),
-
-    'checkin' => array(
-        'error'   		=> 'Component was not checked in, please try again',
-        'success' 		=> 'Component checked in successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.'
+        'confirm' => 'Are you sure you wish to delete this company?',
+        'error'   => 'There was an issue deleting the company. Please try again.',
+        'success' => 'The Company was deleted successfully.'
     )
-
-
 );
