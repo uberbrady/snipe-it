@@ -2,44 +2,26 @@
 
 return array(
 
-    'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found'      => 'The username or password is incorrect.',
-    'account_not_activated'  => 'This user account is not activated.',
-    'account_suspended'      => 'This user account is suspended.',
-    'account_banned'         => 'This user account is banned.',
-    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
+    'does_not_exist' => 'Location does not exist.',
+    'assoc_users'	 => 'This location is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this location and try again. ',
+    'assoc_assets'	 => 'This location is currently associated with at least one asset and cannot be deleted. Please update your assets to no longer reference this location and try again. ',
+    'assoc_child_loc'	 => 'This location is currently the parent of at least one child location and cannot be deleted. Please update your locations to no longer reference this location and try again. ',
 
-    'two_factor' => array(
-        'already_enrolled'      => 'Your device is already enrolled.',
-        'success'               => 'You have successfully logged in.',
-        'code_required'         => 'Two-factor code is required.',
-        'invalid_code'          => 'Two-factor code is invalid.',
+
+    'create' => array(
+        'error'   => 'Location was not created, please try again.',
+        'success' => 'Location created successfully.'
     ),
 
-    'signin' => array(
-        'error'   => 'There was a problem while trying to log you in, please try again.',
-        'success' => 'You have successfully logged in.',
+    'update' => array(
+        'error'   => 'Location was not updated, please try again',
+        'success' => 'Location updated successfully.'
     ),
 
-    'logout' => array(
-        'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
-    ),
-
-    'signup' => array(
-        'error'   => 'There was a problem while trying to create your account, please try again.',
-        'success' => 'Account sucessfully created.',
-    ),
-
-    'forgot-password' => array(
-        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
-        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
-    ),
-
-    'forgot-password-confirm' => array(
-        'error'   => 'There was a problem while trying to reset your password, please try again.',
-        'success' => 'Your password has been successfully reset.',
-    ),
-
+    'delete' => array(
+        'confirm'   	=> 'Are you sure you wish to delete this location?',
+        'error'   => 'There was an issue deleting the location. Please try again.',
+        'success' => 'The location was deleted successfully.'
+    )
 
 );
