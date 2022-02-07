@@ -2,8 +2,9 @@
 
 return array(
 
-    'id'         => 'Id',
-    'name'       => 'Name',
-    'users'      => '# of Users',
+    'actions'	 	=> 'Åtgärder',
+    'action' 		=> 'Åtgärd',
+    'by'      		=> 'Av',
+    'item' 			=> 'Artikel',
 
 );
