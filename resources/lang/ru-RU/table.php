@@ -1,10 +1,17 @@
 <?php
 
 return array(
-	'eula_text'      			=> 'EULA',
-    'id'      					=> 'ID',
-    'parent'   					=> 'Parent',
-    'require_acceptance'      	=> 'Acceptance',
-    'title'      				=> 'Asset Category Name',
+
+    'assigned_to'   	=> 'Assigned To',
+    'checkout'   		=> 'In/Out',
+    'id'      			=> 'ID',
+    'license_email'   	=> 'License Email',
+    'license_name'   	=> 'Licensed To',
+    'purchase_date'   	=> 'Purchase Date',
+    'purchased'   		=> 'Purchased',
+    'seats'   			=> 'Seats',
+    'hardware'   		=> 'Hardware',
+    'serial'   			=> 'Serial',
+    'title'      		=> 'License',
 
 );
