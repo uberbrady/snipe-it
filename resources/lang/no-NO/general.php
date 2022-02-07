@@ -1,17 +1,20 @@
 <?php
 
 return array(
-    'about_kits_title'                  => 'About Predefined Kits',
-    'about_kits_text'                   => 'Predefined Kits let you quickly check out a collection of items (assets, licenses, etc) to a user. This can be helpful when your onboarding process is consistent across many users and all users receive the same items.',
-    'checkout'                          => 'Checkout Kit ',
-    'create_success'                    => 'Kit was successfully created.',
-    'create'                            => 'Create Predefined Kit',
-    'update'                            => 'Update Predefined Kit',
-    'delete_success'                    => 'Kit was successfully deleted.',
-    'update_success'                    => 'Kit was successfully updated.',
-    'none_models'                       => 'There are not enough available assets for :model to checkout. :qty are required. ',
-    'none_licenses'                     => 'There are not enough available seats for :license to checkout. :qty are required. ',
-    'none_consumables'                  => 'There are not enough available units of :consumable to checkout. :qty are required. ',
-    'none_accessory'                    => 'There are not enough available units of :accessory to checkout. :qty are required. ',
+    'accessory_category' 				=> 'Accessory Category',
+    'accessory_name'  					=> 'Accessory Name',
+    'checkout'  							=> 'Checkout Accessory',
+    'checkin'  							=> 'Checkin Accessory',
+    'create'  							=> 'Create Accessory',
+    'edit'  							=> 'Edit Accessory',
+    'eula_text'							=> 'Category EULA',
+    'eula_text_help'					=> 'This field allows you to customize your EULAs for specific types of assets. If you only have one EULA for all of your assets, you can check the box below to use the primary default.',
+    'require_acceptance'				=> 'Require users to confirm acceptance of assets in this category.',
+    'no_default_eula'					=> 'No primary default EULA found. Add one in Settings.',
+    'total'  							=> 'Total',
+    'remaining'  						=> 'Avail',
+    'update'  							=> 'Update Accessory',
+    'use_default_eula'					=> 'Use the <a href="#" data-toggle="modal" data-target="#eulaModal">primary default EULA</a> instead.',
+    'use_default_eula_disabled'			=> '<del>Use the primary default EULA instead.</del> No primary default EULA is set. Please add one in Settings.',
 
 );
