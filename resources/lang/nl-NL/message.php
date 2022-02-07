@@ -2,31 +2,36 @@
 
 return array(
 
-    'does_not_exist' => 'Status Label does not exist.',
-    'assoc_assets'	 => 'This Status Label is currently associated with at least one Asset and cannot be deleted. Please update your assets to no longer reference this status and try again. ',
-
+    'does_not_exist' => 'The accessory [:id] does not exist.',
+    'assoc_users'	 => 'This accessory currently has :count items checked out to users. Please check in the accessories and and try again. ',
 
     'create' => array(
-        'error'   => 'Status Label was not created, please try again.',
-        'success' => 'Status Label created successfully.'
+        'error'   => 'The accessory was not created, please try again.',
+        'success' => 'The accessory was successfully created.'
     ),
 
     'update' => array(
-        'error'   => 'Status Label was not updated, please try again',
-        'success' => 'Status Label updated successfully.'
+        'error'   => 'The accessory was not updated, please try again',
+        'success' => 'The accessory was updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this Status Label?',
-        'error'   => 'There was an issue deleting the Status Label. Please try again.',
-        'success' => 'The Status Label was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this accessory?',
+        'error'   => 'There was an issue deleting the accessory. Please try again.',
+        'success' => 'The accessory was deleted successfully.'
     ),
 
-    'help' => array(
-        'undeployable'   => 'These assets cannot be assigned to anyone.',
-        'deployable'   => 'These assets can be checked out. Once they are assigned, they will assume a meta status of <i class="fa fa-circle text-blue"></i> <strong>Deployed</strong>.',
-        'archived'   => 'These assets cannot be checked out, and will only show up in the Archived view. This is useful for retaining information about assets for budgeting/historic purposes but keeping them out of the day-to-day asset list.',
-        'pending'   => 'These assets can not yet be assigned to anyone, often used for items that are out for repair, but are expected to return to circulation.',
+     'checkout' => array(
+        'error'   		=> 'Accessory was not checked out, please try again',
+        'success' 		=> 'Accessory checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     ),
+
+    'checkin' => array(
+        'error'   		=> 'Accessory was not checked in, please try again',
+        'success' 		=> 'Accessory checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    )
+
 
 );
