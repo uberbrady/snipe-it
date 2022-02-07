@@ -1,13 +1,14 @@
 <?php
 
-return array(
-    'about_asset_depreciations'  			=> 'About Asset Depreciations',
-    'about_depreciations'  					=> 'You can set up asset depreciations to depreciate assets based on straight-line depreciation.',
-    'asset_depreciations'  					=> 'Asset Depreciations',
-    'create'  					            => 'Create Depreciation',
-    'depreciation_name'  					=> 'Depreciation Name',
-    'number_of_months'  					=> 'Number of Months',
-    'update'  					            => 'Update Depreciation',
-    'depreciation_min'                      => 'Minimum Value after Depreciation'
-
-);
+    return [
+        'asset_maintenances' => 'Asset Maintenances',
+        'edit'               => 'Edit Asset Maintenance',
+        'delete'             => 'Delete Asset Maintenance',
+        'view'               => 'View Asset Maintenance Details',
+        'repair'             => 'Repair',
+        'maintenance'        => 'Maintenance',
+        'upgrade'            => 'Upgrade',
+        'calibration'        => 'Calibration',
+        'software_support'   => 'Software Support',
+        'hardware_support'   => 'Hardware Support',
+    ];
