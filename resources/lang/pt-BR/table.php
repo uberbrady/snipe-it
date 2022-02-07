@@ -1,5 +1,10 @@
 <?php
 
 return array(
-    'title'      				=> 'Consumable Name',
+
+    'actions'	 	=> 'Ações',
+    'action' 		=> 'Ação',
+    'by'      		=> 'Por',
+    'item' 			=> 'Item',
+
 );
