@@ -2,56 +2,21 @@
 
 return array(
 
-    'field' => array(
-        'invalid'   => 'That field does not exist.',
-        'already_added'   => 'Field already added',
 
-        'create' => array(
-            'error'   => 'Field was not created, please try again.',
-            'success' => 'Field created successfully.',
-            'assoc_success' => 'Field successfully added to fieldset.'
-        ),
-
-        'update' => array(
-            'error'   => 'Field was not updated, please try again',
-            'success' => 'Field updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this field?',
-            'error'   => 'There was an issue deleting the field. Please try again.',
-            'success' => 'The field was deleted successfully.',
-            'in_use'   => 'Field is still in use.',
-        )
-
+    'update' => array(
+        'error'                 => 'An error has occurred while updating. ',
+        'success'               => 'Settings updated successfully.'
     ),
-
-    'fieldset' => array(
-
-        'does_not_exist' => 'Fieldset does not exist',
-
-        'create' => array(
-            'error'   => 'Fieldset was not created, please try again.',
-            'success' => 'Fieldset created successfully.'
-        ),
-
-        'update' => array(
-            'error'   => 'Fieldset was not updated, please try again',
-            'success' => 'Fieldset updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this fieldset?',
-            'error'   => 'There was an issue deleting the fieldset. Please try again.',
-            'success' => 'The fieldset was deleted successfully.',
-            'in_use'   => 'Fieldset is still in use.',
-        )
-
+    'backup' => array(
+        'delete_confirm'        => 'Are you sure you would like to delete this backup file? This action cannot be undone. ',
+        'file_deleted'          => 'The backup file was successfully deleted. ',
+        'generated'             => 'A new backup file was successfully created.',
+        'file_not_found'        => 'That backup file could not be found on the server.',
     ),
-
-
-
-
-
+    'purge' => array(
+        'error'     => 'An error has occurred while purging. ',
+        'validation_failed'     => 'Your purge confirmation is incorrect. Please type the word "DELETE" in the confirmation box.',
+        'success'               => 'Deleted records successfully purged.'
+    ),
 
 );
