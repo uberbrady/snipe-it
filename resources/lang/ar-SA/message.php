@@ -2,20 +2,35 @@
 
 return array(
 
-    'does_not_exist' => 'Department does not exist.',
-    'assoc_users'	 => 'This department is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this department and try again. ',
+    'does_not_exist' => 'Consumable does not exist.',
+
     'create' => array(
-        'error'   => 'Department was not created, please try again.',
-        'success' => 'Department created successfully.'
+        'error'   => 'Consumable was not created, please try again.',
+        'success' => 'Consumable created successfully.'
     ),
+
     'update' => array(
-        'error'   => 'Department was not updated, please try again',
-        'success' => 'Department updated successfully.'
+        'error'   => 'Consumable was not updated, please try again',
+        'success' => 'Consumable updated successfully.'
     ),
+
     'delete' => array(
-        'confirm'   	=> 'Are you sure you wish to delete this department?',
-        'error'   => 'There was an issue deleting the department. Please try again.',
-        'success' => 'The department was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this consumable?',
+        'error'   => 'There was an issue deleting the consumable. Please try again.',
+        'success' => 'The consumable was deleted successfully.'
+    ),
+
+     'checkout' => array(
+        'error'   		=> 'Consumable was not checked out, please try again',
+        'success' 		=> 'Consumable checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    ),
+
+    'checkin' => array(
+        'error'   		=> 'Consumable was not checked in, please try again',
+        'success' 		=> 'Consumable checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
+
 
 );
