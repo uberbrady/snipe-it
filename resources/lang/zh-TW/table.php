@@ -2,9 +2,10 @@
 
 return array(
 
-    'actions'	 	=> '操作',
-    'action' 		=> '操作',
-    'by'      		=> '經由',
-    'item' 			=> '項目',
-
-);
+    'id'                        => 'ID',
+    'name'                      => 'Department Name',
+    'manager'                   => 'Manager',
+    'location'                  => 'Location',
+    'create'                    => 'Create Department',
+    'update'                    => 'Update Department',
+    );
