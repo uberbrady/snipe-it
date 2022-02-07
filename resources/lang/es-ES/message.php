@@ -2,56 +2,44 @@
 
 return array(
 
-    'field' => array(
-        'invalid'   => 'That field does not exist.',
-        'already_added'   => 'Field already added',
+    'account_already_exists' => 'An account with the this email already exists.',
+    'account_not_found'      => 'The username or password is incorrect.',
+    'account_not_activated'  => 'This user account is not activated.',
+    'account_suspended'      => 'This user account is suspended.',
+    'account_banned'         => 'This user account is banned.',
+    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
 
-        'create' => array(
-            'error'   => 'Field was not created, please try again.',
-            'success' => 'Field created successfully.',
-            'assoc_success' => 'Field successfully added to fieldset.'
-        ),
-
-        'update' => array(
-            'error'   => 'Field was not updated, please try again',
-            'success' => 'Field updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this field?',
-            'error'   => 'There was an issue deleting the field. Please try again.',
-            'success' => 'The field was deleted successfully.',
-            'in_use'   => 'Field is still in use.',
-        )
-
+    'two_factor' => array(
+        'already_enrolled'      => 'Your device is already enrolled.',
+        'success'               => 'You have successfully logged in.',
+        'code_required'         => 'Two-factor code is required.',
+        'invalid_code'          => 'Two-factor code is invalid.',
     ),
 
-    'fieldset' => array(
-
-        'does_not_exist' => 'Fieldset does not exist',
-
-        'create' => array(
-            'error'   => 'Fieldset was not created, please try again.',
-            'success' => 'Fieldset created successfully.'
-        ),
-
-        'update' => array(
-            'error'   => 'Fieldset was not updated, please try again',
-            'success' => 'Fieldset updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this fieldset?',
-            'error'   => 'There was an issue deleting the fieldset. Please try again.',
-            'success' => 'The fieldset was deleted successfully.',
-            'in_use'   => 'Fieldset is still in use.',
-        )
-
+    'signin' => array(
+        'error'   => 'There was a problem while trying to log you in, please try again.',
+        'success' => 'You have successfully logged in.',
     ),
 
+    'logout' => array(
+        'error'   => 'There was a problem while trying to log you out, please try again.',
+        'success' => 'You have successfully logged out.',
+    ),
 
+    'signup' => array(
+        'error'   => 'There was a problem while trying to create your account, please try again.',
+        'success' => 'Account sucessfully created.',
+    ),
 
+    'forgot-password' => array(
+        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
+        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
+    ),
 
+    'forgot-password-confirm' => array(
+        'error'   => 'There was a problem while trying to reset your password, please try again.',
+        'success' => 'Your password has been successfully reset.',
+    ),
 
 
 );
