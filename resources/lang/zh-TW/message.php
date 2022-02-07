@@ -1,21 +1,21 @@
 <?php
 
-return array(
-
-    'does_not_exist' => 'Department does not exist.',
-    'assoc_users'	 => 'This department is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this department and try again. ',
-    'create' => array(
-        'error'   => 'Department was not created, please try again.',
-        'success' => 'Department created successfully.'
-    ),
-    'update' => array(
-        'error'   => 'Department was not updated, please try again',
-        'success' => 'Department updated successfully.'
-    ),
-    'delete' => array(
-        'confirm'   	=> 'Are you sure you wish to delete this department?',
-        'error'   => 'There was an issue deleting the department. Please try again.',
-        'success' => 'The department was deleted successfully.'
-    )
-
-);
+    return [
+        'not_found'                    => 'Asset Maintenance you were looking for was not found!',
+        'delete'                       => [
+            'confirm' => 'Are you sure you wish to delete this asset maintenance?',
+            'error'   => 'There was an issue deleting the asset maintenance. Please try again.',
+            'success' => 'The asset maintenance was deleted successfully.'
+        ],
+        'create'                       => [
+            'error'   => 'Asset Maintenance was not created, please try again.',
+            'success' => 'Asset Maintenance created successfully.'
+        ],
+        'edit'                       => [
+            'error'   => 'Asset Maintenance was not edited, please try again.',
+            'success' => 'Asset Maintenance edited successfully.'
+        ],
+        'asset_maintenance_incomplete' => 'Not Completed Yet',
+        'warranty'                     => 'Warranty',
+        'not_warranty'                 => 'Not Warranty',
+    ];
