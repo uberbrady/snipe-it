@@ -1,9 +1,10 @@
 <?php
 
 return array(
-
-    'id'         => 'Id',
-    'name'       => 'Name',
-    'users'      => '# of Users',
+	'eula_text'      			=> 'EULA',
+    'id'      					=> 'ID',
+    'parent'   					=> 'Parent',
+    'require_acceptance'      	=> 'Acceptance',
+    'title'      				=> 'Asset Category Name',
 
 );
