@@ -2,24 +2,35 @@
 
 return array(
 
-    'does_not_exist' => 'Category does not exist.',
-    'assoc_models'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
-    'assoc_items'	 => 'This category is currently associated with at least one :asset_type and cannot be deleted. Please update your :asset_type  to no longer reference this category and try again. ',
+    'does_not_exist' => 'Consumable does not exist.',
 
     'create' => array(
-        'error'   => 'Category was not created, please try again.',
-        'success' => 'Category created successfully.'
+        'error'   => 'Consumable was not created, please try again.',
+        'success' => 'Consumable created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Category was not updated, please try again',
-        'success' => 'Category updated successfully.'
+        'error'   => 'Consumable was not updated, please try again',
+        'success' => 'Consumable updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this category?',
-        'error'   => 'There was an issue deleting the category. Please try again.',
-        'success' => 'The category was deleted successfully.'
+        'confirm'   => 'Are you sure you wish to delete this consumable?',
+        'error'   => 'There was an issue deleting the consumable. Please try again.',
+        'success' => 'The consumable was deleted successfully.'
+    ),
+
+     'checkout' => array(
+        'error'   		=> 'Consumable was not checked out, please try again',
+        'success' 		=> 'Consumable checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
+    ),
+
+    'checkin' => array(
+        'error'   		=> 'Consumable was not checked in, please try again',
+        'success' 		=> 'Consumable checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
+
 
 );
