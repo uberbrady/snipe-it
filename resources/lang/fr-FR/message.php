@@ -2,24 +2,20 @@
 
 return array(
 
-    'does_not_exist' => 'Category does not exist.',
-    'assoc_models'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
-    'assoc_items'	 => 'This category is currently associated with at least one :asset_type and cannot be deleted. Please update your :asset_type  to no longer reference this category and try again. ',
-
+    'does_not_exist' => 'Department does not exist.',
+    'assoc_users'	 => 'This department is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this department and try again. ',
     'create' => array(
-        'error'   => 'Category was not created, please try again.',
-        'success' => 'Category created successfully.'
+        'error'   => 'Department was not created, please try again.',
+        'success' => 'Department created successfully.'
     ),
-
     'update' => array(
-        'error'   => 'Category was not updated, please try again',
-        'success' => 'Category updated successfully.'
+        'error'   => 'Department was not updated, please try again',
+        'success' => 'Department updated successfully.'
     ),
-
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this category?',
-        'error'   => 'There was an issue deleting the category. Please try again.',
-        'success' => 'The category was deleted successfully.'
+        'confirm'   	=> 'Are you sure you wish to delete this department?',
+        'error'   => 'There was an issue deleting the department. Please try again.',
+        'success' => 'The department was deleted successfully.'
     )
 
 );
