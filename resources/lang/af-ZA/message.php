@@ -1,31 +1,27 @@
 <?php
 
-return [
+return array(
 
-    'does_not_exist' => 'Status Label does not exist.',
-    'assoc_assets'	 => 'This Status Label is currently associated with at least one Asset and cannot be deleted. Please update your assets to no longer reference this status and try again. ',
+    'does_not_exist' => 'Supplier does not exist.',
 
-    'create' => [
-        'error'   => 'Status Label was not created, please try again.',
-        'success' => 'Status Label created successfully.',
-    ],
 
-    'update' => [
-        'error'   => 'Status Label was not updated, please try again',
-        'success' => 'Status Label updated successfully.',
-    ],
+    'create' => array(
+        'error'   => 'Supplier was not created, please try again.',
+        'success' => 'Supplier created successfully.'
+    ),
 
-    'delete' => [
-        'confirm'   => 'Are you sure you wish to delete this Status Label?',
-        'error'   => 'There was an issue deleting the Status Label. Please try again.',
-        'success' => 'The Status Label was deleted successfully.',
-    ],
+    'update' => array(
+        'error'   => 'Supplier was not updated, please try again',
+        'success' => 'Supplier updated successfully.'
+    ),
 
-    'help' => [
-        'undeployable'   => 'These assets cannot be assigned to anyone.',
-        'deployable'   => 'These assets can be checked out. Once they are assigned, they will assume a meta status of <i class="fas fa-circle text-blue"></i> <strong>Deployed</strong>.',
-        'archived'   => 'These assets cannot be checked out, and will only show up in the Archived view. This is useful for retaining information about assets for budgeting/historic purposes but keeping them out of the day-to-day asset list.',
-        'pending'   => 'These assets can not yet be assigned to anyone, often used for items that are out for repair, but are expected to return to circulation.',
-    ],
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this supplier?',
+        'error'   => 'There was an issue deleting the supplier. Please try again.',
+        'success' => 'Supplier was deleted successfully.',
+        'assoc_assets'	 => 'This supplier is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this supplier and try again. ',
+        'assoc_licenses'	 => 'This supplier is currently associated with :licenses_count licences(s) and cannot be deleted. Please update your licenses to no longer reference this supplier and try again. ',
+        'assoc_maintenances'	 => 'This supplier is currently associated with :asset_maintenances_count asset maintenances(s) and cannot be deleted. Please update your asset maintenances to no longer reference this supplier and try again. ',
+    )
 
-];
+);
