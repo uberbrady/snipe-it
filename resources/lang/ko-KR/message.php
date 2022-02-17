@@ -2,26 +2,41 @@
 
 return array(
 
-    'does_not_exist' => 'Supplier does not exist.',
+    'does_not_exist' => 'Model does not exist.',
+    'assoc_users'	 => 'This model is currently associated with one or more assets and cannot be deleted. Please delete the assets, and then try deleting again. ',
 
 
     'create' => array(
-        'error'   => 'Supplier was not created, please try again.',
-        'success' => 'Supplier created successfully.'
+        'error'   => 'Model was not created, please try again.',
+        'success' => 'Model created successfully.',
+        'duplicate_set' => 'An asset model with that name, manufacturer and model number already exists.',
     ),
 
     'update' => array(
-        'error'   => 'Supplier was not updated, please try again',
-        'success' => 'Supplier updated successfully.'
+        'error'   => 'Model was not updated, please try again',
+        'success' => 'Model updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this supplier?',
-        'error'   => 'There was an issue deleting the supplier. Please try again.',
-        'success' => 'Supplier was deleted successfully.',
-        'assoc_assets'	 => 'This supplier is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this supplier and try again. ',
-        'assoc_licenses'	 => 'This supplier is currently associated with :licenses_count licences(s) and cannot be deleted. Please update your licenses to no longer reference this supplier and try again. ',
-        'assoc_maintenances'	 => 'This supplier is currently associated with :asset_maintenances_count asset maintenances(s) and cannot be deleted. Please update your asset maintenances to no longer reference this supplier and try again. ',
-    )
+        'confirm'   => 'Are you sure you wish to delete this asset model?',
+        'error'   => 'There was an issue deleting the model. Please try again.',
+        'success' => 'The model was deleted successfully.'
+    ),
+
+    'restore' => array(
+        'error'   		=> 'Model was not restored, please try again',
+        'success' 		=> 'Model restored successfully.'
+    ),
+
+    'bulkedit' => array(
+        'error'   		=> 'No fields were changed, so nothing was updated.',
+        'success' 		=> 'Models updated.'
+    ),
+
+    'bulkdelete' => array(
+        'error'   		    => 'No models were selected, so nothing was deleted.',
+        'success' 		    => ':success_count model(s) deleted!',
+        'success_partial' 	=> ':success_count model(s) were deleted, however :fail_count were unable to be deleted because they still have assets associated with them.'
+    ),
 
 );
