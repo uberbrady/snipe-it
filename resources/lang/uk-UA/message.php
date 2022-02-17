@@ -2,41 +2,56 @@
 
 return array(
 
-    'does_not_exist' => 'Model does not exist.',
-    'assoc_users'	 => 'This model is currently associated with one or more assets and cannot be deleted. Please delete the assets, and then try deleting again. ',
+    'field' => array(
+        'invalid'   => 'That field does not exist.',
+        'already_added'   => 'Field already added',
 
+        'create' => array(
+            'error'   => 'Field was not created, please try again.',
+            'success' => 'Field created successfully.',
+            'assoc_success' => 'Field successfully added to fieldset.'
+        ),
 
-    'create' => array(
-        'error'   => 'Model was not created, please try again.',
-        'success' => 'Model created successfully.',
-        'duplicate_set' => 'An asset model with that name, manufacturer and model number already exists.',
+        'update' => array(
+            'error'   => 'Field was not updated, please try again',
+            'success' => 'Field updated successfully.'
+        ),
+
+        'delete' => array(
+            'confirm'   	=> 'Are you sure you wish to delete this field?',
+            'error'   => 'There was an issue deleting the field. Please try again.',
+            'success' => 'The field was deleted successfully.',
+            'in_use'   => 'Field is still in use.',
+        )
+
     ),
 
-    'update' => array(
-        'error'   => 'Model was not updated, please try again',
-        'success' => 'Model updated successfully.'
+    'fieldset' => array(
+
+        'does_not_exist' => 'Fieldset does not exist',
+
+        'create' => array(
+            'error'   => 'Fieldset was not created, please try again.',
+            'success' => 'Fieldset created successfully.'
+        ),
+
+        'update' => array(
+            'error'   => 'Fieldset was not updated, please try again',
+            'success' => 'Fieldset updated successfully.'
+        ),
+
+        'delete' => array(
+            'confirm'   	=> 'Are you sure you wish to delete this fieldset?',
+            'error'   => 'There was an issue deleting the fieldset. Please try again.',
+            'success' => 'The fieldset was deleted successfully.',
+            'in_use'   => 'Fieldset is still in use.',
+        )
+
     ),
 
-    'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this asset model?',
-        'error'   => 'There was an issue deleting the model. Please try again.',
-        'success' => 'The model was deleted successfully.'
-    ),
 
-    'restore' => array(
-        'error'   		=> 'Model was not restored, please try again',
-        'success' 		=> 'Model restored successfully.'
-    ),
 
-    'bulkedit' => array(
-        'error'   		=> 'No fields were changed, so nothing was updated.',
-        'success' 		=> 'Models updated.'
-    ),
 
-    'bulkdelete' => array(
-        'error'   		    => 'No models were selected, so nothing was deleted.',
-        'success' 		    => ':success_count model(s) deleted!',
-        'success_partial' 	=> ':success_count model(s) were deleted, however :fail_count were unable to be deleted because they still have assets associated with them.'
-    ),
+
 
 );
