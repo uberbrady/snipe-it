@@ -2,9 +2,8 @@
 
 return array(
 
-    'actions'	 	=> 'Actions',
-    'action' 		=> 'Action',
-    'by'      		=> 'By',
-    'item' 			=> 'Item',
+    'id'         => 'Id',
+    'name'       => 'Name',
+    'users'      => '# of Users',
 
 );
