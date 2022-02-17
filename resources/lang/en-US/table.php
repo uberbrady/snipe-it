@@ -1,17 +1,11 @@
 <?php
 
 return array(
+	'dl_csv'      				=> 'Download CSV',
+	'eula_text'      			=> 'EULA',
+    'id'      					=> 'ID',
+    'require_acceptance'      	=> 'Acceptance',
+    'title'      				=> 'Accessory Name',
 
-    'assigned_to'   	=> 'Assigned To',
-    'checkout'   		=> 'In/Out',
-    'id'      			=> 'ID',
-    'license_email'   	=> 'License Email',
-    'license_name'   	=> 'Licensed To',
-    'purchase_date'   	=> 'Purchase Date',
-    'purchased'   		=> 'Purchased',
-    'seats'   			=> 'Seats',
-    'hardware'   		=> 'Hardware',
-    'serial'   			=> 'Serial',
-    'title'      		=> 'License',
 
 );
