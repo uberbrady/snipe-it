@@ -1,28 +1,43 @@
 <?php
 
+return [
+    'about_assets_title'           => 'About Assets',
+    'about_assets_text'            => 'Assets are items tracked by serial number or asset tag.  They tend to be higher value items where identifying a specific item matters.',
+    'archived'  				=> 'Archived',
+    'asset'  					=> 'Asset',
+    'bulk_checkout'             => 'Checkout Assets',
+    'checkin'  					=> 'Checkin Asset',
+    'checkout'  				=> 'Checkout Asset',
+    'clone'  					=> 'Clone Asset',
+    'deployable'  				=> 'Deployable',
+    'deleted'  					=> 'This asset has been deleted.',
+    'edit'  					=> 'Edit Asset',
+    'model_deleted'  			=> 'This Assets model has been deleted. You must restore the model before you can restore the Asset.',
+    'requestable'               => 'Requestable',
+    'requested'				    => 'Requested',
+    'not_requestable'           => 'Not Requestable',
+    'requestable_status_warning' => 'Do not change  requestable status',
+    'restore'  					=> 'Restore Asset',
+    'pending'  					=> 'Pending',
+    'undeployable'  			=> 'Undeployable',
+    'view'  					=> 'View Asset',
+    'csv_error' => 'You have an error in your CSV file:',
+    'import_text' => '
+    <p>
+    Upload a CSV that contains asset history. The assets and users MUST already exist in the system, or they will be skipped. Matching assets for history import happens against the asset tag. We will try to find a matching user based on the user\'s name you provide, and the criteria you select below. If you do not select any criteria below, it will simply try to match on the username format you configured in the Admin &gt; General Settings.
+    </p>
 
-return array(
-    'activated_help_text' => 'This user can login',
-    'activated_disabled_help_text' => 'You cannot edit activation status for your own account.',
-    'assets_user'       => 'Assets assigned to :name',
-    'bulk_update_warn'	=> 'You are about to edit the properties of :user_count users. Please note that you cannot change your own user attributes using this form, and must make edits to your own user individually.',
-    'bulk_update_help'	=> 'This form allows you to update multiple users at once. Only fill in the fields you need to change. Any fields left blank will remain unchanged.',
-    'current_assets'    => 'Assets currently checked out to this user',
-    'clone'             => 'Clone User',
-    'contact_user'      => 'Contact :name',
-    'edit'              => 'Edit User',
-    'filetype_info'     => 'Allowed filetypes are png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, and rar.',
-    'history_user'      => 'History for :name',
-	'info'				=> 'Info',
-    'restore_user'		=> 'Click here to restore them.',
-    'last_login'        => 'Last Login',
-    'ldap_config_text'  => 'LDAP configuration settings can be found Admin > Settings. The (optional) selected location will be set for all imported users.',
-    'print_assigned'    => 'Print All Assigned',
-    'software_user'     => 'Software Checked out to :name',
-    'send_email_help'   => 'You must provide an email address for this user to send them credentials. Emailing credentials can only be done on user creation. Passwords are stored in a one-way hash and cannot be retrieved once saved.',
-    'view_user'         => 'View User :name',
-    'usercsv'           => 'CSV file',
-    'two_factor_admin_optin_help' => 'Your current admin settings allow selective enforcement of two-factor authentication.  ',
-    'two_factor_enrolled' => '2FA Device Enrolled ',
-    'two_factor_active'   => '2FA Active ',
-    );
+    <p>Fields included in the CSV must match the headers: <strong>Asset Tag, Name, Checkout Date, Checkin Date</strong>. Any additional fields will be ignored. </p>
+
+    <p>Checkin Date: blank or future checkin dates will checkout items to associated user.  Excluding the Checkin Date column will create a checkin date with todays date.</p>
+    ',
+    'csv_import_match_f-l' => 'Try to match users by firstname.lastname (jane.smith) format',
+    'csv_import_match_initial_last' => 'Try to match users by first initial last name (jsmith) format',
+    'csv_import_match_first' => 'Try to match users by first name (jane) format',
+    'csv_import_match_email' => 'Try to match users by email as username',
+    'csv_import_match_username' => 'Try to match users by username',
+    'error_messages' => 'Error messages:',
+    'success_messages' => 'Success messages:',
+    'alert_details' => 'Please see below for details.',
+    'custom_export' => 'Custom Export'
+];
