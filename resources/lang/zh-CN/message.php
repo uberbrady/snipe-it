@@ -2,56 +2,31 @@
 
 return array(
 
-    'field' => array(
-        'invalid'   => 'That field does not exist.',
-        'already_added'   => 'Field already added',
+    'does_not_exist' => 'Status Label does not exist.',
+    'assoc_assets'	 => 'This Status Label is currently associated with at least one Asset and cannot be deleted. Please update your assets to no longer reference this status and try again. ',
 
-        'create' => array(
-            'error'   => 'Field was not created, please try again.',
-            'success' => 'Field created successfully.',
-            'assoc_success' => 'Field successfully added to fieldset.'
-        ),
 
-        'update' => array(
-            'error'   => 'Field was not updated, please try again',
-            'success' => 'Field updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this field?',
-            'error'   => 'There was an issue deleting the field. Please try again.',
-            'success' => 'The field was deleted successfully.',
-            'in_use'   => 'Field is still in use.',
-        )
-
+    'create' => array(
+        'error'   => 'Status Label was not created, please try again.',
+        'success' => 'Status Label created successfully.'
     ),
 
-    'fieldset' => array(
-
-        'does_not_exist' => 'Fieldset does not exist',
-
-        'create' => array(
-            'error'   => 'Fieldset was not created, please try again.',
-            'success' => 'Fieldset created successfully.'
-        ),
-
-        'update' => array(
-            'error'   => 'Fieldset was not updated, please try again',
-            'success' => 'Fieldset updated successfully.'
-        ),
-
-        'delete' => array(
-            'confirm'   	=> 'Are you sure you wish to delete this fieldset?',
-            'error'   => 'There was an issue deleting the fieldset. Please try again.',
-            'success' => 'The fieldset was deleted successfully.',
-            'in_use'   => 'Fieldset is still in use.',
-        )
-
+    'update' => array(
+        'error'   => 'Status Label was not updated, please try again',
+        'success' => 'Status Label updated successfully.'
     ),
 
+    'delete' => array(
+        'confirm'   => 'Are you sure you wish to delete this Status Label?',
+        'error'   => 'There was an issue deleting the Status Label. Please try again.',
+        'success' => 'The Status Label was deleted successfully.'
+    ),
 
-
-
-
+    'help' => array(
+        'undeployable'   => 'These assets cannot be assigned to anyone.',
+        'deployable'   => 'These assets can be checked out. Once they are assigned, they will assume a meta status of <i class="fa fa-circle text-blue"></i> <strong>Deployed</strong>.',
+        'archived'   => 'These assets cannot be checked out, and will only show up in the Archived view. This is useful for retaining information about assets for budgeting/historic purposes but keeping them out of the day-to-day asset list.',
+        'pending'   => 'These assets can not yet be assigned to anyone, often used for items that are out for repair, but are expected to return to circulation.',
+    ),
 
 );
