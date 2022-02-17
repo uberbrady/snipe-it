@@ -1,16 +1,7 @@
 <?php
 
 return [
-    'about_asset_depreciations'  			=> 'About Asset Depreciations',
-    'about_depreciations'  					=> 'You can set up asset depreciations to depreciate assets based on straight-line depreciation.',
-    'asset_depreciations'  					=> 'Asset Depreciations',
-    'create'  					            => 'Create Depreciation',
-    'depreciation_name'  					=> 'Depreciation Name',
-    'depreciation_min'                      => 'Floor Value of Depreciation',
-    'number_of_months'  					=> 'Number of Months',
-    'update'  					            => 'Update Depreciation',
-    'depreciation_min'                      => 'Minimum Value after Depreciation',
-    'no_depreciations_warning'               => '<strong>Warning: </strong>
-                      You do not currently have any depreciations set up.
-                      Please set up at least one depreciation to view the depreciation report.',
+    'select_company' => 'Select Company',
+    'about_companies' => 'About Companies',
+    'about_companies_description' => '        You can use companies as a simple informative field, or you can use them to restrict asset visibility and availability to users with a specific company by enabling Full Company Support in your Admin Settings.',
 ];
