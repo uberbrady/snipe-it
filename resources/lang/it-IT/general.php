@@ -1,18 +1,16 @@
 <?php
 
-return array(
-    'about_models_title'     => 'About Asset Models',
-    'about_models_text'           => 'Asset Models are a way to group identical assets. "MBP 2013", "IPhone 6s", etc.',
-    'deleted'  					        => 'This model has been deleted.',
-    'bulk_delete'               => 'Bulk Delete Asset Models',
-    'bulk_delete_help'               => 'Use the checkboxes below to confirm the deletion of the selected asset models. Asset models that have assets associated with them cannot be deleted until the assets are associated with a different model.',
-    'bulk_delete_warn'          => 'You are about to delete :model_count asset models.',
-    'restore'                   => 'Restore Model',
-    'requestable'               => 'Users may request this model',
-    'show_mac_address'			      => 'Show MAC address field in assets in this model',
-    'view_deleted'              => 'View Deleted',
-    'view_models'               => 'View Models',
-    'fieldset'                  => 'Fieldset',
-    'no_custom_field'           => 'No custom fields',
-    'add_default_values'        => 'Add default values',
-);
+return [
+    'send_password_link'	        => 'Send Password Reset Link',
+    'email_reset_password'			=> 'Email Password Reset',
+    'reset_password'			    => 'Reset Password',
+    'saml_login'                    => 'Login via SAML',
+    'login'                         => 'Login',
+    'login_prompt'                  => 'Please Login',
+    'forgot_password'               => 'I forgot my password',
+    'ldap_reset_password'           => 'Please click here to reset your LDAP password',
+    'remember_me'                   => 'Remember Me',
+    'username_help_top'                 => 'Enter your <strong>username</strong> to be emailed a password reset link.',
+    'username_help_bottom'          => 'Your username and email address <em>may</em> be the same, but may not be, depending on your configuration. If you cannot remember your username, contact your administrator. <br><br><strong>Usernames without an associated email address will not be emailed a password reset link.</strong> ',
+    ];
+
