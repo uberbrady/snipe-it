@@ -2,82 +2,44 @@
 
 return array(
 
-    'undeployable' 		=> '<strong>Warning: </strong> This asset has been marked as currently undeployable.
-                        If this status has changed, please update the asset status.',
-    'does_not_exist' 	=> 'Asset does not exist.',
-    'does_not_exist_or_not_requestable' => 'Nice try. That asset does not exist or is not requestable.',
-    'assoc_users'	 	=> 'This asset is currently checked out to a user and cannot be deleted. Please check the asset in first, and then try deleting again. ',
+    'account_already_exists' => 'An account with the this email already exists.',
+    'account_not_found'      => 'The username or password is incorrect.',
+    'account_not_activated'  => 'This user account is not activated.',
+    'account_suspended'      => 'This user account is suspended.',
+    'account_banned'         => 'This user account is banned.',
+    'throttle'               => 'Too many failed login attempts. Please try again in :minutes minutes.',
 
-    'create' => array(
-        'error'   		=> 'Asset was not created, please try again. :(',
-        'success' 		=> 'Asset created successfully. :)'
+    'two_factor' => array(
+        'already_enrolled'      => 'Your device is already enrolled.',
+        'success'               => 'You have successfully logged in.',
+        'code_required'         => 'Two-factor code is required.',
+        'invalid_code'          => 'Two-factor code is invalid.',
     ),
 
-    'update' => array(
-        'error'   			=> 'Asset was not updated, please try again',
-        'success' 			=> 'Asset updated successfully.',
-        'nothing_updated'	=>  'No fields were selected, so nothing was updated.',
+    'signin' => array(
+        'error'   => 'There was a problem while trying to log you in, please try again.',
+        'success' => 'You have successfully logged in.',
     ),
 
-    'restore' => array(
-        'error'   		=> 'Asset was not restored, please try again',
-        'success' 		=> 'Asset restored successfully.'
+    'logout' => array(
+        'error'   => 'There was a problem while trying to log you out, please try again.',
+        'success' => 'You have successfully logged out.',
     ),
 
-    'audit' => array(
-        'error'   		=> 'Asset audit was unsuccessful. Please try again.',
-        'success' 		=> 'Asset audit successfully logged.'
+    'signup' => array(
+        'error'   => 'There was a problem while trying to create your account, please try again.',
+        'success' => 'Account sucessfully created.',
     ),
 
-
-    'deletefile' => array(
-        'error'   => 'File not deleted. Please try again.',
-        'success' => 'File successfully deleted.',
+    'forgot-password' => array(
+        'error'   => 'There was a problem while trying to get a reset password code, please try again.',
+        'success' => 'If that email address exists in our system, a password recovery email has been sent.',
     ),
 
-    'upload' => array(
-        'error'   => 'File(s) not uploaded. Please try again.',
-        'success' => 'File(s) successfully uploaded.',
-        'nofiles' => 'You did not select any files for upload, or the file you are trying to upload is too large',
-        'invalidfiles' => 'One or more of your files is too large or is a filetype that is not allowed. Allowed filetypes are png, gif, jpg, doc, docx, pdf, and txt.',
+    'forgot-password-confirm' => array(
+        'error'   => 'There was a problem while trying to reset your password, please try again.',
+        'success' => 'Your password has been successfully reset.',
     ),
 
-    'import' => array(
-        'error'                 => 'Some items did not import correctly.',
-        'errorDetail'           => 'The following Items were not imported because of errors.',
-        'success'               => "Your file has been imported",
-        'file_delete_success'   => "Your file has been been successfully deleted",
-        'file_delete_error'      => "The file was unable to be deleted",
-    ),
-
-
-    'delete' => array(
-        'confirm'   	=> 'Are you sure you wish to delete this asset?',
-        'error'   		=> 'There was an issue deleting the asset. Please try again.',
-        'nothing_updated'   => 'No assets were selected, so nothing was deleted.',
-        'success' 		=> 'The asset was deleted successfully.'
-    ),
-
-    'checkout' => array(
-        'error'   		=> 'Asset was not checked out, please try again',
-        'success' 		=> 'Asset checked out successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.',
-        'not_available' => 'That asset is not available for checkout!',
-        'no_assets_selected' => 'You must select at least one asset from the list'
-    ),
-
-    'checkin' => array(
-        'error'   		=> 'Asset was not checked in, please try again',
-        'success' 		=> 'Asset checked in successfully.',
-        'user_does_not_exist' => 'That user is invalid. Please try again.',
-        'already_checked_in'  => 'That asset is already checked in.',
-
-    ),
-
-    'requests' => array(
-        'error'   		=> 'Asset was not requested, please try again',
-        'success' 		=> 'Asset requested successfully.',
-        'canceled'      => 'Checkout request successfully canceled'
-    )
 
 );
