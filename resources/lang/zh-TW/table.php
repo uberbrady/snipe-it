@@ -1,10 +1,9 @@
 <?php
-
 return array(
-
-    'actions'	 	=> '操作',
-    'action' 		=> '操作',
-    'by'      		=> '經由',
-    'item' 			=> '項目',
-
+    'companies' => 'Companies',
+    'create'    => 'Create Company',
+    'title'     => 'Company',
+    'update'    => 'Update Company',
+    'name'      => 'Company Name',
+    'id'        => 'ID',
 );
