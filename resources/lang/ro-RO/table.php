@@ -1,9 +1,11 @@
 <?php
 
-return array(
+return [
 
-    'id'         => 'Id',
-    'name'       => 'Name',
-    'users'      => '# of Users',
+    'id'      => 'ID',
+    'months'   => 'Months',
+    'term'   => 'Term',
+    'title'      => 'Name ',
+    'depreciation_min' => 'Floor Value',
 
-);
+];
