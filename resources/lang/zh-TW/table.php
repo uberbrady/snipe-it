@@ -2,9 +2,16 @@
 
 return array(
 
-    'actions'	 	=> '操作',
-    'action' 		=> '操作',
-    'by'      		=> '經由',
-    'item' 			=> '項目',
-
+    'create'				=> 'Create Asset Model',
+    'created_at' 			=> 'Created at',
+    'eol'	 				=> 'EOL',
+    'modelnumber'   		=> 'Model No.',
+    'name'      			=> 'Asset Model Name',
+    'numassets' 			=> 'Assets',
+    'title'					=> 'Asset Models',
+    'update'				=> 'Update Asset Model',
+    'view'					=> 'View Asset Model',
+    'update'				=> 'Update Asset Model',
+    'clone'				=> 'Clone Model',
+    'edit'				=> 'Edit Model',
 );
