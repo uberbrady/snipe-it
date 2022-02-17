@@ -1,11 +1,9 @@
 <?php
-
 return array(
-
-    'id'                        => 'ID',
-    'name'                      => 'Department Name',
-    'manager'                   => 'Manager',
-    'location'                  => 'Location',
-    'create'                    => 'Create Department',
-    'update'                    => 'Update Department',
-    );
+    'companies' => 'Companies',
+    'create'    => 'Create Company',
+    'title'     => 'Company',
+    'update'    => 'Update Company',
+    'name'      => 'Company Name',
+    'id'        => 'ID',
+);
