@@ -1,11 +1,10 @@
 <?php
 
-return array(
-    'checkout'                          => 'Checkout Consumable to User',
-    'consumable_name'                   => 'Consumable Name',
-    'create'                            => 'Create Consumable',
-    'item_no'                           => 'Item No.',
-    'remaining' 			            => 'Remaining',
-    'total' 			                => 'Total',
-    'update'                            => 'Update Consumable',
-);
+return [
+    'info'   => 'Select the options you want for your asset report.',
+    'deleted_user' => 'Deleted user',
+    'send_reminder' => 'Send reminder',
+    'reminder_sent' => 'Reminder sent',
+    'acceptance_deleted' => 'Acceptance request deleted',
+    'acceptance_request' => 'Acceptance request'
+];
