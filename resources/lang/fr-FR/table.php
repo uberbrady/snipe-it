@@ -1,5 +1,9 @@
 <?php
 
 return array(
-    'title'      				=> 'Consumable Name',
+
+    'id'         => 'Id',
+    'name'       => 'Name',
+    'users'      => '# of Users',
+
 );
