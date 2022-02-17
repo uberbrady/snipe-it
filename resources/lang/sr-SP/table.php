@@ -1,9 +1,9 @@
 <?php
-
 return array(
-
-    'id'         => 'Id',
-    'name'       => 'Name',
-    'users'      => '# of Users',
-
+    'companies' => 'Companies',
+    'create'    => 'Create Company',
+    'title'     => 'Company',
+    'update'    => 'Update Company',
+    'name'      => 'Company Name',
+    'id'        => 'ID',
 );
