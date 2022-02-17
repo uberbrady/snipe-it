@@ -1,16 +1,19 @@
 <?php
 
 return array(
-    'about_manufacturers_title'    => 'About manufacturers',
-    'about_manufacturers_text'  => 'Manufacturers are the companies that create your assets. You can store important support contact information about them here, which will be displayed on your asset detail pages.',
-    'asset_manufacturers'	=> 'Asset Manufacturers',
-    'create'				=> 'Create Manufacturer',
-    'id'   					=> 'ID',
-    'name'      			=> 'Name',
-    'support_email'   		=> 'Support Email',
-    'support_phone'   		=> 'Support Phone',
-    'support_url'   		=> 'Support URL',
-    'update'				=> 'Update Manufacturer',
-    'url'   				=> 'URL',
-
+    'about'      	=> 'About Status Labels',
+    'archived'      	=> 'Archived',
+    'create'      	=> 'Create Status Label',
+    'color'      	=> 'Chart Color',
+    'default_label' => 'Default Label',
+    'default_label_help' => 'This is used to ensure your most commonly used status labels appear at the top of the select box when creating/editing assets.',
+    'deployable'      	=> 'Deployable',
+    'info'      	=> 'Status labels are used to describe the various states your assets could be in. They may be out for repair, lost/stolen, etc. You can create new status labels for deployable, pending and archived assets.',
+    'name'      	=> 'Status Name',
+    'pending'      	=> 'Pending',
+    'status_type'   => 'Status Type',
+    'show_in_nav'   => 'Show in side nav',
+    'title'      	=> 'Status Labels',
+    'undeployable'  => 'Undeployable',
+    'update'      	=> 'Update Status Label',
 );
