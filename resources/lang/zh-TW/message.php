@@ -1,27 +1,21 @@
 <?php
 
-return array(
-
-    'does_not_exist' => 'Supplier does not exist.',
-
-
-    'create' => array(
-        'error'   => 'Supplier was not created, please try again.',
-        'success' => 'Supplier created successfully.'
-    ),
-
-    'update' => array(
-        'error'   => 'Supplier was not updated, please try again',
-        'success' => 'Supplier updated successfully.'
-    ),
-
-    'delete' => array(
-        'confirm'   => 'Are you sure you wish to delete this supplier?',
-        'error'   => 'There was an issue deleting the supplier. Please try again.',
-        'success' => 'Supplier was deleted successfully.',
-        'assoc_assets'	 => 'This supplier is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this supplier and try again. ',
-        'assoc_licenses'	 => 'This supplier is currently associated with :licenses_count licences(s) and cannot be deleted. Please update your licenses to no longer reference this supplier and try again. ',
-        'assoc_maintenances'	 => 'This supplier is currently associated with :asset_maintenances_count asset maintenances(s) and cannot be deleted. Please update your asset maintenances to no longer reference this supplier and try again. ',
-    )
-
-);
+    return [
+        'not_found'                    => 'Asset Maintenance you were looking for was not found!',
+        'delete'                       => [
+            'confirm' => 'Are you sure you wish to delete this asset maintenance?',
+            'error'   => 'There was an issue deleting the asset maintenance. Please try again.',
+            'success' => 'The asset maintenance was deleted successfully.'
+        ],
+        'create'                       => [
+            'error'   => 'Asset Maintenance was not created, please try again.',
+            'success' => 'Asset Maintenance created successfully.'
+        ],
+        'edit'                       => [
+            'error'   => 'Asset Maintenance was not edited, please try again.',
+            'success' => 'Asset Maintenance edited successfully.'
+        ],
+        'asset_maintenance_incomplete' => 'Not Completed Yet',
+        'warranty'                     => 'Warranty',
+        'not_warranty'                 => 'Not Warranty',
+    ];
