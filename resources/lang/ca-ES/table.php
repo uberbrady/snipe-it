@@ -1,9 +1,8 @@
 <?php
-return array(
-    'companies' => 'Companies',
-    'create'    => 'Create Company',
-    'title'     => 'Company',
-    'update'    => 'Update Company',
-    'name'      => 'Company Name',
-    'id'        => 'ID',
-);
+
+    return [
+        'title'         => 'Asset Maintenance',
+        'asset_name'    => 'Asset Name',
+        'is_warranty'   => 'Warranty',
+        'dl_csv'        => 'Download CSV'
+    ];
