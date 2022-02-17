@@ -1,7 +1,14 @@
 <?php
 
-return [
-    'select_company' => 'Select Company',
-    'about_companies' => 'About Companies',
-    'about_companies_description' => '        You can use companies as a simple informative field, or you can use them to restrict asset visibility and availability to users with a specific company by enabling Full Company Support in your Admin Settings.',
-];
+    return [
+        'asset_maintenances' => 'Asset Maintenances',
+        'edit'               => 'Edit Asset Maintenance',
+        'delete'             => 'Delete Asset Maintenance',
+        'view'               => 'View Asset Maintenance Details',
+        'repair'             => 'Repair',
+        'maintenance'        => 'Maintenance',
+        'upgrade'            => 'Upgrade',
+        'calibration'        => 'Calibration',
+        'software_support'   => 'Software Support',
+        'hardware_support'   => 'Hardware Support',
+    ];
