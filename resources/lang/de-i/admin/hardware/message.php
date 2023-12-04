@@ -11,6 +11,7 @@ return [
     'create' => [
         'error'   		=> 'Asset wurde nicht erstellt. Bitte versuche es erneut. :(',
         'success' 		=> 'Asset wurde erfolgreich erstellt. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -51,6 +52,7 @@ return [
         'success'               => 'Deine Datei wurde importiert',
         'file_delete_success'   => 'Deine Datei wurde erfolgreich gelöscht',
         'file_delete_error'      => 'Die Datei konnte nicht gelöscht werden',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'Ein oder mehrere Attribute in der Kopfzeile enthalten fehlerhafte UTF-8 Zeichen',
         'content_row_has_malformed_characters' => 'Ein oder mehrere Attribute in der ersten Zeile des Inhalts enthalten fehlerhafte UTF-8-Zeichen',
     ],

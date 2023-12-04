@@ -10,6 +10,7 @@ return [
     'create' => [
         'error'   		=> 'Akten blev ikke oprettet, prøv igen. :(',
         'success' 		=> 'Aktivet blev oprettet med succes. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -50,6 +51,7 @@ return [
         'success'               => 'Din fil er blevet importeret',
         'file_delete_success'   => 'Din fil er blevet slettet korrekt',
         'file_delete_error'      => 'Filen kunne ikke slettes',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
     ],

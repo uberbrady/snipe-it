@@ -6,8 +6,9 @@ return array(
     'declined'                  => 'Ha declinado con éxito este equipo.',
     'bulk_manager_warn'	        => 'Sus usuarios han sido correctamente actualizados, de todos modos la entrada de administrador no fue guardada porque el administrador seleccionado también estaba en la lista de usuarios a ser editada, y los usuarios no pueden ser sus propior administradores. Vuelva a seleccionar los usuarios, excluyendo al administrador.',
     'user_exists'               => 'El Usuario ya existe!',
-    'user_not_found'            => 'User does not exist.',
+    'user_not_found'            => 'Usuario inexistente.',
     'user_login_required'       => 'El campo Usuario es obligatorio',
+    'user_has_no_assets_assigned' => 'No assets currently assigned to user.',
     'user_password_required'    => 'El password es obligatorio.',
     'insufficient_permissions'  => 'No tiene permiso.',
     'user_deleted_warning'      => 'Este usuario ha sido eliminado. Deberá restaurarlo para editarlo o asignarle nuevos Equipos.',
@@ -15,7 +16,7 @@ return array(
     'password_resets_sent'      => 'A los usuarios seleccionados que están activados y tienen una dirección de correo electrónico válida se les ha enviado un enlace de restablecimiento de contraseña.',
     'password_reset_sent'       => '¡Se ha enviado un enlace de restablecimiento de contraseña a :email!',
     'user_has_no_email'         => 'Este usuario no tiene una dirección de correo electrónico en su perfil.',
-    'user_has_no_assets_assigned'   => 'Este usuario no tiene ningún activo asignado',
+    'log_record_not_found'        => 'A matching log record for this user could not be found.',
 
 
     'success' => array(

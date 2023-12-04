@@ -2,13 +2,14 @@
 
 return array(
 
-    'does_not_exist' => 'License does not exist or you do not have permission to view it.',
+    'does_not_exist' => 'Лиценза не съществува или нямата права да го видите.',
     'user_does_not_exist' => 'Потребителят не съществува.',
     'asset_does_not_exist' 	=> 'Активът, който се опитвате да свържете с този лиценз не съществува.',
     'owner_doesnt_match_asset' => 'Активът, който се опитвате да свържете с този лиценз е притежание на друго лице, различно от това, което е определено в падащия списък.',
     'assoc_users'	 => 'Този лиценз понастоящем е изписан на потребител и не може да бъде изтрит. Моля, първо впишете лиценза и тогава опитайте отново да го изтриете. ',
     'select_asset_or_person' => 'Трябва да изберете актив или потребител, но не и двете.',
     'not_found' => 'Лиценът не е намерен',
+    'seats_available' => ':seat_count seats available',
 
 
     'create' => array(
@@ -41,7 +42,8 @@ return array(
 
     'checkout' => array(
         'error'   => 'Възникна проблем при изписването на лиценза. Моля, опитайте отново.',
-        'success' => 'Лицензът е изписан'
+        'success' => 'Лицензът е изписан',
+        'not_enough_seats' => 'Not enough license seats available for checkout',
     ),
 
     'checkin' => array(

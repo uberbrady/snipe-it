@@ -3,6 +3,7 @@
 return array(
 
     'does_not_exist' => 'Het accessoire [:id] bestaat niet.',
+    'not_found' => 'Dat accessoire werd niet gevonden.',
     'assoc_users'	 => 'Dit accessoire heeft op dit moment :count items uitgecheckt aan gebruikers. Check het accessoire in en probeer het opnieuw. ',
 
     'create' => array(
@@ -24,7 +25,7 @@ return array(
      'checkout' => array(
         'error'   		=> 'Het accessoire is niet uitgecheckt. Probeer het opnieuw.',
         'success' 		=> 'Het accessoire is uitgecheckt.',
-        'unavailable'   => 'Accessory is not available for checkout. Check quantity available',
+        'unavailable'   => 'Accessoire kan niet worden uitgegeven. Controleer de beschikbare hoeveelheid',
         'user_does_not_exist' => 'Deze gebruiker is ongeldig. Probeer het opnieuw.'
     ),
 

@@ -2,6 +2,7 @@
 
 return array(
 
+    'deleted' => 'Silinen tedarikçi',
     'does_not_exist' => 'Tedarikçi mevcut değil.',
 
 

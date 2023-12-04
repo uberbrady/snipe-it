@@ -64,16 +64,20 @@
     "rollbar/rollbar-laravel": "^7.0",
     "spatie/laravel-backup": "^8.0",
     "tecnickcom/tc-lib-barcode": "^1.15",
+    "tecnickcom/tcpdf": "^6.5",
     "unicodeveloper/laravel-password": "^1.0",
     "watson/validating": "^7.0"
+  },
+  "suggest": {
+    "ext-ldap": "*"
   },
   "require-dev": {
     "brianium/paratest": "^v6.4.4",
     "fakerphp/faker": "^1.16",
-    "laravel/dusk": "^6.25",
     "mockery/mockery": "^1.4",
     "nunomaduro/larastan": "^1.0",
     "nunomaduro/phpinsights": "^2.7",
+    "php-mock/php-mock-phpunit": "^2.8",
     "phpunit/php-token-stream": "^3.1",
     "phpunit/phpunit": "^9.0",
     "squizlabs/php_codesniffer": "^3.5",
@@ -100,7 +104,6 @@
   },
   "autoload-dev": {
     "classmap": [
-      "tests/DuskTestCase.php",
       "tests/TestCase.php"
     ],
     "psr-4": {

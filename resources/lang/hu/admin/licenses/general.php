@@ -18,7 +18,7 @@ return array(
     'software_licenses'  		=> 'Szoftverlicencek',
     'user'  					=> 'használó',
     'view'  					=> 'Licenc megtekintése',
-    'delete_disabled'           => 'This license cannot be deleted yet because some seats are still checked out.',
+    'delete_disabled'           => 'Ez a licensz nem törölhető még, mert vannak belőle kiadott példányok.',
     'bulk'                      =>
         [
             'checkin_all'           => [
@@ -26,6 +26,7 @@ return array(
                 'modal'             => 'This will action checkin one seat. | This action will checkin all :checkedout_seats_count seats for this license.',
                 'enabled_tooltip'   => 'Checkin ALL seats for this license from both users and assets',
                 'disabled_tooltip'  => 'This is disabled because there are no seats currently checked out',
+                'disabled_tooltip_reassignable'  => 'This is disabled because the License is not reassignable',
                 'success'           => 'License successfully checked in! | All licenses were successfully checked in!',
                 'log_msg'           => 'Checked in via bulk license checkout in license GUI',
             ],

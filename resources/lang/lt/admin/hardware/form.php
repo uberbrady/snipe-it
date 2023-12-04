@@ -10,6 +10,9 @@ return [
     'bulk_update'		=> 'Visa atnaujinama įranga',
     'bulk_update_help'	=> 'Ši forma leidžia jums atnaujinti kelias įrangas vienu metu. Prašome užpildykite laukelius, kuriuos reikia keisti. Visi laukeliai, kuriuos paliksite tuščius liks nepakeisti. ',
     'bulk_update_warn'	=> 'You are about to edit the properties of a single asset.|You are about to edit the properties of :asset_count assets.',
+    'bulk_update_with_custom_field' => 'Note the assets are :asset_model_count different types of models.',
+    'bulk_update_model_prefix' => 'On Models', 
+    'bulk_update_custom_field_unique' => 'This is a unique field and can not be bulk edited.',
     'checkedout_to'		=> 'Išduota',
     'checkout_date'		=> 'Išdavimo data',
     'checkin_date'		=> 'Priėmimo data',
@@ -45,10 +48,11 @@ return [
     'years'				=> 'metai',
     'asset_location' => 'Update Asset Location',
     'asset_location_update_default_current' => 'Update default location AND actual location',
-    'asset_location_update_default' => 'Update only default location',
+    'asset_location_update_default' => 'Atnaujinti tik standartinę lokaciją',
+    'asset_location_update_actual' => 'Atnaujinti tik aktualią lokaciją',
     'asset_not_deployable' => 'Ši įranga negali būti išduodama.',
     'asset_deployable' => 'Ši įranga gali būti išduodama.',
-    'processing_spinner' => 'Processing... (This might take a bit of time on large files)',
-    'optional_infos'  => 'Optional Information',
-    'order_details'   => 'Order Related Information'
+    'processing_spinner' => 'Apdorojama...(Dideliems failams gali šiek tiek užtrukti)',
+    'optional_infos'  => 'Papildoma informacija',
+    'order_details'   => 'Susijusi užsakymo informacija'
 ];

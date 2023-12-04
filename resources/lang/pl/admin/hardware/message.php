@@ -11,6 +11,7 @@ return [
     'create' => [
         'error'   		=> 'Nabytek nie został utworzony, proszę spróbować ponownie. :(',
         'success' 		=> 'Nowy nabytek został utworzony. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -51,6 +52,7 @@ return [
         'success'               => 'Twój plik został zaimportowany',
         'file_delete_success'   => 'Twój plik został poprawnie usunięty',
         'file_delete_error'      => 'Plik nie może zostać usunięty',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'Jeden lub więcej atrybutów w wierszu nagłówka zawiera nieprawidłowe znaki UTF-8',
         'content_row_has_malformed_characters' => 'Jeden lub więcej atrybutów w pierwszym rzędzie zawartości zawiera nieprawidłowe znaki UTF-8',
     ],

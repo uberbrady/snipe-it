@@ -11,6 +11,7 @@ return [
     'create' => [
         'error'   		=> 'L\'asset non è stato creato, riprova per favore. :(',
         'success' 		=> 'L\'asset è stato creato con successo. :)',
+        'success_linked' => 'Bene creato con tag :tag . <strong><a href=":link" style="color: white;">Clicca per vedere</a></strong>.',
     ],
 
     'update' => [
@@ -51,6 +52,7 @@ return [
         'success'               => 'Il file è stato importato con successo',
         'file_delete_success'   => 'Il file è stato cancellato con successo',
         'file_delete_error'      => 'Impossibile eliminare il file',
+        'file_missing' => 'File selezionato mancante',
         'header_row_has_malformed_characters' => 'Uno o più attributi nella riga d\'intestazione contengono caratteri UTF-8 malformati',
         'content_row_has_malformed_characters' => 'Uno o più attributi nella prima riga del contenuto contengono caratteri UTF-8 malformati',
     ],

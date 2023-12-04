@@ -2,8 +2,9 @@
 
 return array(
 
+    'deleted' => 'Modelo del activo eliminado',
     'does_not_exist' => 'Modelo inexistente.',
-    'no_association' => 'NINGUN MODELO ASOCIADO.',
+    'no_association' => '¡ADVERTENCIA! ¡El modelo de activo para este artículo no es válido o no se encuentra!',
     'no_association_fix' => 'Esto causará problemas raros y horribles. Edita este activo para asignarlo a un modelo.',
     'assoc_users'	 => 'Este modelo está asignado a uno o más equipos y no puede ser eliminado',
 

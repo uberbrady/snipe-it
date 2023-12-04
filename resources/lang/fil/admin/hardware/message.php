@@ -11,6 +11,7 @@ return [
     'create' => [
         'error'   		=> 'Ang asset ay hindi naisagawa, mangyaring subukang muli. :(',
         'success' 		=> 'Ang asset ay matagumpay na naisagawa. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -51,6 +52,7 @@ return [
         'success'               => 'Ang iyong file ay na-import na',
         'file_delete_success'   => 'Ang iyong file ay matagumpay nang nai-upload',
         'file_delete_error'      => 'Ang file ay hindi mai-delete',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
     ],

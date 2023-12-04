@@ -10,6 +10,7 @@ return [
     'create' => [
         'error'   		=> 'הנכס לא נוצר, נסה שוב. You',
         'success' 		=> 'הנכס נוצר בהצלחה. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -50,6 +51,7 @@ return [
         'success'               => 'הקובץ שלך יובא',
         'file_delete_success'   => 'הקובץ שלך נמחק בהצלחה',
         'file_delete_error'      => 'לא ניתן היה למחוק את הקובץ',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
     ],

@@ -215,6 +215,7 @@ class Importer extends Component
             'manufacturer' => trans('general.manufacturer'),
             'order_number' => trans('general.order_number'),
             'image' => trans('general.importer.image_filename'),
+            'asset_eol_date' => trans('admin/hardware/form.eol_date'),
             /**
              * Checkout fields:
              * Assets can be checked out to other assets, people, or locations, but we currently
@@ -274,6 +275,7 @@ class Importer extends Component
             'license_email' => trans('admin/licenses/form.to_email'),
             'license_name' => trans('admin/licenses/form.to_name'),
             'purchase_order' => trans('admin/licenses/form.purchase_order'),
+            'order_number' => trans('general.order_number'),
             'reassignable' => trans('admin/licenses/form.reassignable'),
             'seats' => trans('admin/licenses/form.seats'),
             'notes' => trans('general.notes'),
@@ -483,8 +485,17 @@ class Importer extends Component
 
     public function selectFile($id)
     {
+        $this->clearMessage();
 
         $this->activeFile = Import::find($id);
+
+        if (!$this->activeFile) {
+            $this->message = trans('admin/hardware/message.import.file_missing');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
         $this->field_map = null;
         foreach($this->activeFile->header_row as $element) {
             if(isset($this->activeFile->field_map[$element])) {
@@ -517,6 +528,12 @@ class Importer extends Component
                 }
             }
         }
+    }
+
+    public function clearMessage()
+    {
+        $this->message = null;
+        $this->message_type = null;
     }
 
     public function render()

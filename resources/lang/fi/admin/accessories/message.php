@@ -3,6 +3,7 @@
 return array(
 
     'does_not_exist' => 'Oheistarviketta [:id] ei ole.',
+    'not_found' => 'That accessory was not found.',
     'assoc_users'	 => 'Oheistarviketta on tällä hetkellä luovutettuna :count nimikettä käyttäjille. Tarkista oheistarvikkeiden tila ja yritä uudelleen. ',
 
     'create' => array(
@@ -24,7 +25,7 @@ return array(
      'checkout' => array(
         'error'   		=> 'Oheistarviketta ei luovutettu, yritä uudelleen',
         'success' 		=> 'Oheistarvike luovutettiin onnistuneesti.',
-        'unavailable'   => 'Accessory is not available for checkout. Check quantity available',
+        'unavailable'   => 'Oheistarvike ei ole lainattavissa. Tarkista saatavilla oleva määrä',
         'user_does_not_exist' => 'Käyttäjä on virheellinen. Yritä uudelleen.'
     ),
 

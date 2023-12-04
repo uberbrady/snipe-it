@@ -29,6 +29,7 @@ class CompaniesController extends Controller
             'name',
             'phone',
             'fax',
+            'email',
             'created_at',
             'updated_at',
             'users_count',
@@ -49,9 +50,13 @@ class CompaniesController extends Controller
             $companies->where('name', '=', $request->input('name'));
         }
 
+		if ($request->filled('email')) {
+            $companies->where('email', '=', $request->input('email'));
+        }
+
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $companies->count()) ? $companies->count() : abs($request->input('offset'));
+        $offset = ($request->input('offset') > $companies->count()) ? $companies->count() : app('api_offset_value');
         $limit = app('api_limit_value');
 
 
@@ -168,6 +173,7 @@ class CompaniesController extends Controller
         $companies = Company::select([
             'companies.id',
             'companies.name',
+            'companies.email',
             'companies.image',
         ]);
 

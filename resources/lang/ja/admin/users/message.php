@@ -6,8 +6,9 @@ return array(
     'declined'                  => 'この資産を却下しました。',
     'bulk_manager_warn'	        => 'あなたの利用者は正常に更新されました。しかしながら、あなたの管理者エントリーは保存されませんでした。あなたが選択した管理者が、編集対象の利用者一覧に選択されていたため更新されませんでした。および利用者は彼ら自身の管理者でない場合があります。再度、管理者を除いた上で、あなたの利用者を選択してください。',
     'user_exists'               => '利用者が既に存在しています!',
-    'user_not_found'            => 'User does not exist.',
+    'user_not_found'            => 'ユーザーが存在しません。',
     'user_login_required'       => 'ログインフィールドが必要です。',
+    'user_has_no_assets_assigned' => 'No assets currently assigned to user.',
     'user_password_required'    => 'パスワードが必要です。',
     'insufficient_permissions'  => '権限が不足しています。',
     'user_deleted_warning'      => '利用者が削除されました。これらを編集するにはユーザーを復旧するか、新しい資産を割り当てなければなりません。',
@@ -15,7 +16,7 @@ return array(
     'password_resets_sent'      => '有効なメールアドレスを持っている選択されたユーザーにパスワードリセットのリンクが送信されました。',
     'password_reset_sent'       => 'パスワードリセットのURLが:emailに送信されました。',
     'user_has_no_email'         => 'このユーザーのプロフィールにはメールアドレスがありません。',
-    'user_has_no_assets_assigned'   => 'このユーザーにはアセットが割り当てられていません',
+    'log_record_not_found'        => 'A matching log record for this user could not be found.',
 
 
     'success' => array(

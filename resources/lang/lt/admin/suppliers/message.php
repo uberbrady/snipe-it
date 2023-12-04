@@ -2,6 +2,7 @@
 
 return array(
 
+    'deleted' => 'Ištrintas tiekėjas',
     'does_not_exist' => 'Tokio tiekėjo nėra.',
 
 

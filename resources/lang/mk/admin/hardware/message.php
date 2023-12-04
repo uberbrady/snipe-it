@@ -10,6 +10,7 @@ return [
     'create' => [
         'error'   		=> 'Основното средство не е креирано, обидете се повторно. :(',
         'success' 		=> 'Основното средство е успешно креирано. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -50,6 +51,7 @@ return [
         'success'               => 'Вашата датотека е увезена',
         'file_delete_success'   => 'Вашата датотека е избришана',
         'file_delete_error'      => 'Датотеката не можеше да се избрише',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
     ],

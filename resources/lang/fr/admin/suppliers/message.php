@@ -2,6 +2,7 @@
 
 return array(
 
+    'deleted' => 'Fournisseur supprimé',
     'does_not_exist' => 'Le fournisseur n\'existe pas.',
 
 

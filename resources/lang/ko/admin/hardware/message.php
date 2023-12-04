@@ -11,6 +11,7 @@ return [
     'create' => [
         'error'   		=> '자산이 생성되지 않았습니다. 다시 시도해 주세요. :(',
         'success' 		=> '자산이 생성되었습니다. :)',
+        'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
     ],
 
     'update' => [
@@ -51,6 +52,7 @@ return [
         'success'               => '파일에서 읽어오기가 완료되었습니다',
         'file_delete_success'   => '파일 삭제가 완료되었습니다',
         'file_delete_error'      => '파일을 삭제할 수 없습니다',
+        'file_missing' => 'The file selected is missing',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
     ],
