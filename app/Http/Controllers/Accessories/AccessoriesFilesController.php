@@ -45,30 +45,7 @@ class AccessoriesFilesController extends Controller
 
                 foreach ($request->file('file') as $file) {
 
-                    $extension = $file->getClientOriginalExtension();
-                    $file_name = 'accessory-'.$accessory->id.'-'.str_random(8).'-'.str_slug(basename($file->getClientOriginalName(), '.'.$extension)).'.'.$extension;
-
-
-                    // Check for SVG and sanitize it
-                    if ($extension == 'svg') {
-                        \Log::debug('This is an SVG');
-                        \Log::debug($file_name);
-
-                        $sanitizer = new Sanitizer();
-                        $dirtySVG = file_get_contents($file->getRealPath());
-                        $cleanSVG = $sanitizer->sanitize($dirtySVG);
-
-                        try {
-                            Storage::put('private_uploads/accessories/'.$file_name, $cleanSVG);
-                        } catch (\Exception $e) {
-                            \Log::debug('Upload no workie :( ');
-                            \Log::debug($e);
-                        }
-
-                    } else {
-                        Storage::put('private_uploads/accessories/'.$file_name, file_get_contents($file));
-                    }
-
+                    $file_name = \App\Helpers\StorageHelper::sanitized_storer('private_uploads/accessories/', 'accessory-'.$accessory->id, $file);
                     //Log the upload to the log
                     $accessory->logUpload($file_name, e($request->input('notes')));
                 }
