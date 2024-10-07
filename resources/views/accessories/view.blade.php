@@ -139,6 +139,8 @@
                                                 <th class="col-sm-2" data-visible="true" data-field="target" data-formatter="polymorphicItemFormatter">{{ trans('general.target') }}</th>
                                                 <th class="col-sm-2" data-sortable="true" data-visible="true" data-field="note">{{ trans('general.notes') }}</th>
                                                 <th class="col-sm-2" data-visible="true" data-field="action_date" data-formatter="dateDisplayFormatter">{{ trans('general.date') }}</th>
+                                                <th class="col-sm-2" data-visible="true"
+                                                    data-field="quantity">{{ trans('general.quantity') }}</th>
                                                 @if  ($snipeSettings->require_accept_signature=='1')
                                                     <th class="col-md-3" data-field="signature_file" data-visible="false"  data-formatter="imageFormatter">{{ trans('general.signature') }}</th>
                                                 @endif
@@ -263,6 +265,18 @@
                 </div>
         @endcan
 
+            @can('update', \App\Models\Accessory::class)
+                <div class="text-center" style="padding-top:5px;">
+                    <a href="#" style="margin-right:5px;"
+                       class="btn btn-warning btn-sm btn-social btn-block hidden-print quantity-adjustor"
+                       data-toggle="modal"
+                       data-target="#adjust-quantity-modal">
+                        <x-icon type="plus-minus"/>
+                        AdJuSt QauNtItee! {{-- FIXME --}}
+                    </a>
+                </div>
+            @endcan
+
         @can('create', \App\Models\Accessory::class)
                 <div class="text-center" style="padding-top:5px;">
                     <a href="{{ route('clone/accessories', $accessory->id) }}" style="margin-right:5px; width:100%"  class="btn btn-info btn-block btn-sm btn-social hidden-print">
@@ -292,7 +306,8 @@
         @endcan
     </div>
 </div>
-
+    <x-adjust-quantity-modal :target="route('api.accessories.adjust',$accessory->id)"
+                             :quantity=" $accessory->numRemaining()"/> {{-- FIXME - what if the quantity changes? --}}
 
 
 @can('accessories.files', Accessory::class)

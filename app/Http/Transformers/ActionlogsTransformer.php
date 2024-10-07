@@ -202,6 +202,7 @@ class ActionlogsTransformer
             'user_agent'          => ($actionlog->user_agent) ??  null,
             'action_source'          => ($actionlog->action_source) ??  null,
             'action_date'   => ($actionlog->action_date) ? Helper::getFormattedDateObject($actionlog->action_date, 'datetime'): Helper::getFormattedDateObject($actionlog->created_at, 'datetime'),
+            'quantity' => $actionlog->quantity
         ];
 
 //        Log::info("Clean Meta is: ".print_r($clean_meta,true));

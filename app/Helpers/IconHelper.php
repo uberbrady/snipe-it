@@ -184,6 +184,8 @@ class IconHelper
                 return 'fa-regular fa-id-card';
             case 'department' :
                 return 'fa-solid fa-building-user';
+            case 'plus-minus' :
+                return 'fa-solid fa-plus-minus';
 
         }
     }

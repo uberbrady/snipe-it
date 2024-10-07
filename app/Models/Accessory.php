@@ -370,6 +370,8 @@ class Accessory extends SnipeModel
      */
     public function numRemaining()
     {
+        //TODO - we're going to want to cache this, but I just want to temp this up real quick
+        return $this->assetlog()->whereNotNull('quantity')->sum('quantity');
         $checkedout = $this->numCheckedOut();
         $total = $this->qty;
         $remaining = $total - $checkedout;

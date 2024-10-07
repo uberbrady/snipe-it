@@ -107,6 +107,12 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'throttle:api']], functi
             ]
         )->name('api.accessories.selectlist');
 
+        Route::post('{accessory}/adjust',
+            [
+                Api\AccessoriesController::class,
+                'adjust'
+            ]
+        )->name('api.accessories.adjust');
 
 
      }); // end accessories group

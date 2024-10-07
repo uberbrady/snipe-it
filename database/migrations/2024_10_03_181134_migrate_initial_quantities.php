@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //accessory,component,consumable,
+        //accessory,component,consumable, (And license, with some special-casing)
         foreach(self::$first_class_objects as $table_name => $class){
             DB::table($table_name)->orderBy('id')->chunk(100, function (Collection $collection) use ($class) {
                 foreach($collection as $item){
@@ -35,15 +35,25 @@ return new class extends Migration
                     } else {
                         $quantity = $item->qty;
                     }
-                    DB::table('action_logs')->insert([
+                    $event_time = new Carbon('January 1 1970');
+                    $action_log_id = DB::table('action_logs')->insertGetId([
                         'note' => self::$note_string,
-                        'action_type' => 'PICK A GOOD WORD HERE!!!!', //FIXME
+                        'created_at' => $event_time,
+                        'action_type' => 'adjust quantity',
                         'item_id' => $item->id,
                         'item_type' => $class,
                         'quantity' => $quantity,
-                        'action_date' => new Carbon('January 1 1970'), //Wait, should we do this *here*? FIXME (maybe the initial date?) 1/1/1970?
+                        'action_date' => $event_time, //Wait, should we do this *here*? FIXME (maybe the initial date?) 1/1/1970?
                     ]);
-                    //do something with the order_number? Add it.
+                    if ($item->order_number || $item->supplier_id || $item->purchase_date || $item->purchase_cost) {
+                        DB::table('order_items')->insert([
+                            'action_log_id' => $action_log_id,
+                            'order_number' => $item->order_number,
+                            'supplier_id' => $item->supplier_id,
+                            'purchase_date' => $item->purchase_date,
+                            'purchase_cost' => $item->purchase_cost,
+                        ]);
+                    }
                 }
             });
         }
@@ -60,5 +70,6 @@ return new class extends Migration
         foreach(self::$first_class_objects as $table_name => $class){
             DB::table('action_logs')->where(['note' => static::$note_string])->delete();
         }
+        DB::table('order_items')->truncate();
     }
 };
