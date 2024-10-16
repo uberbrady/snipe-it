@@ -93,6 +93,24 @@ trait Loggable
         return $log;
     }
 
+    // log Quantity adjustment?
+    public function logQuantity(int $qty, ?string $note = null, $action_date = null): int
+    {
+        $log = new Actionlog;
+        $log->item()->associate($this);
+        $log->quantity = $qty;
+        $log->note = $note;
+        $log->action_date = $action_date ?? date('Y-m-d H:i:s');
+
+        $success = $log->logaction('adjust quantity');
+        if ($success) {
+            return $log->id;
+        } else {
+            // TODO - should we 'throw' here?
+            return 0;
+        }
+    }
+
     /**
      * Helper method to determine the log item type
      */

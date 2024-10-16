@@ -1,4 +1,4 @@
-@props(['target','quantity'])
+@props(['target','quantity' => 0])
 <div class="modal fade" id="adjust-quantity-modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -10,10 +10,13 @@
             </div>
             <div class="modal-body">
                 <form id="adjust-quantity-form">
-                    <input type="radio" name="direction" value="increase"/>Increase Inventory {{-- FIXME --}}
-                    <input type="radio" name="direction" value="set"/>Set Inventory {{-- FIXME --}}
-                    <input type="radio" name="direction" value="decrease"/>Decrease Inventory {{-- FIXME --}}<br/>
-                    <input type="number" name="quantity" value="0"/>Amount {{-- FIXME --}} <br/>
+                    <input class="direction-radio" type="radio" name="direction" value="increase"/>Increase
+                    Inventory {{-- FIXME --}}
+                    <input class="direction-radio" type="radio" name="direction" value="set"/>Set
+                    Inventory {{-- FIXME --}}
+                    <input class="direction-radio" type="radio" name="direction" value="decrease"/>Decrease
+                    Inventory {{-- FIXME --}}<br/>
+                    <input class="direction-radio" type="number" name="quantity" value="0"/>Amount {{-- FIXME --}} <br/>
                     {{ trans('general.order_number') }}: <input type="text" name="order_number"/><br/>
                     {{trans('general.purchase_date')}}<input type="date" name="order_date"/><br/>
                     Notes:<br/> <textarea name="note"></textarea>
@@ -30,8 +33,8 @@
     </div>
     @section('moar_scripts')
     <script>
-        console.warn("Dollar is: "+$);
-        console.warn("And target is: "+"{{ $target }}");
+        {{--console.warn("Dollar is: "+$);--}}
+        {{--console.warn("And target is: "+"{{ $target }}");--}}
         $('#adjust-quantity-save').on('click',function (event) {
             // window.alert("HI THERE!");
             var form = document.forms['adjust-quantity-form'];
@@ -49,7 +52,10 @@
                 window.alert("You can't decrease quantity without a note explaining why")
                 return;
             }
-            headers =
+            if (form.direction.value == "decrease" && {{ $quantity }} - form.quantity.value < 0) {
+                window.alert("Cannot have negative quantity");
+                return;
+            }
 
             $.post({
                 url: "{{ $target }}",
@@ -57,11 +63,20 @@
                 headers: {
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
                 }
-            },function () {
-                console.error("SUCCESS!!!!")
-            }).done(function (error) {
-                console.error("BOO, fail :(")
-            })
+            }).done(function (thing) {
+                //can we 'flash' something here? I don't know.
+                //and hide the thing.
+                //and BLANK the values.
+                $('#adjust-quantity-modal').modal('hide');
+                form.note.value = '';
+                $('.direction-radio').prop('checked', false);
+                form.quantity.value = 0;
+                //FIXME - going to need to blank out more form fields.
+                form.order_number.value = '';
+            }).fail(function (error) {
+                console.error("FAILTOWN: ")
+                console.error(error)
+            });
         });
     </script>
     @endsection

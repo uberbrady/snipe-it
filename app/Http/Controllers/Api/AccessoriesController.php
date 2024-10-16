@@ -12,6 +12,7 @@ use App\Http\Transformers\AccessoriesTransformer;
 use App\Http\Transformers\SelectlistTransformer;
 use App\Models\Accessory;
 use App\Models\Company;
+use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -360,4 +361,50 @@ class AccessoriesController extends Controller
         return (new SelectlistTransformer)->transformSelectlist($accessories);
     }
 
+    /**
+     * Adjust the available inventory of accessories
+     * (May be moved into Trait, or its own controller?)
+     */
+    public function adjust(Request $request /* FIXME - do a form request? */, Accessory $accessory)
+    {
+        //FIXME - other ordering parameters aren't necessarily being taken into account here - purchase_cost,e tc?
+        \Log::error("Accessory in question is maybe ".$accessory?->id."?");
+        \Log::error(print_r($request->all(), true));
+        // DB::begin?
+        //FIXME - we need to figure out if we're doing an increment, decrement, or SET.
+        // FIXME - and if it's a SET, we need to do a TRANSACTION????
+        $quantity = $request->input('quantity');
+        switch ($request->input('direction')) {
+            case "increase":
+                //TODO - repetitious; blah blah.
+                $results = $accessory->logQuantity($quantity, $request->input('note'), $request->input('order_date'));
+                break;
+            case "decrease":
+                $results = $accessory->logQuantity(-$quantity, $request->input('note'), $request->input('order_date'));
+                break;
+            case "set":
+                // this needs to be run in a transaction so that if someone else is doing something that
+                // messes with quantities, the answer we get is still correct
+                $results = DB::transaction(function () use ($accessory, $quantity, $request) {
+                    $current_remaining = $accessory->numRemaining(); //FIXME - if this starts to get cached, make sure to get the LIVE count here
+                    if ($quantity != $current_remaining) {
+                        //quantity is higher or lower than current remaining - number will be POSITIVE
+                        //if the quantity being set to is *HIGHER* - which we want.
+                        // and it will be NEGATIVE if the quantity being set to is *LOWER* - which we also want
+                        return $accessory->logQuantity($quantity - $current_remaining, $request->input('note'), $request->input('order_date'));
+                    } else {
+                        //FIXME - quantity adjustment of zero - should we record it anyways?
+                        //(maybe so that someone can say "inventoried, yup!")
+                        \Log::warning("Not sure what to do with this - current quantity is $current_remaining and we're trying to set it to $quantity ...");
+                        return 0;
+                    }
+                });
+        }
+        //okay, *now* we have to make an OrderItem to correspond with the thing - *IF* we have an order number, I guess?
+        if ($request->input('order_number')) {
+            //FIXME - I think the purchase_date thing goes *here*, not up *there*. But, well, whatever.
+            OrderItem::create(['action_log_id' => $results, 'order_number' => $request->input('order_number')]);
+        }
+        return "Yay! YOur did it!";
+    }
 }

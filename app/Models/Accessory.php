@@ -353,6 +353,7 @@ class Accessory extends SnipeModel
      */
     public function numCheckedOut()
     {
+        //TODO - I don't know if this needs to change as well? The cached value is nice
         return $this->checkouts_count ?? $this->checkouts()->count();
     }
 

@@ -50,8 +50,8 @@ return new class extends Migration
                             'action_log_id' => $action_log_id,
                             'order_number' => $item->order_number,
                             'supplier_id' => $item->supplier_id,
-                            'purchase_date' => $item->purchase_date,
-                            'purchase_cost' => $item->purchase_cost,
+                            'purchase_date' => $item->purchase_date, //FIXME - this is coming in weird
+                            'purchase_cost' => $item->purchase_cost, //FIXME - this is coming in as a stirng?
                         ]);
                     }
                 }

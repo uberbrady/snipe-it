@@ -243,6 +243,11 @@ class Actionlog extends SnipeModel
         return $this->belongsTo(\App\Models\Location::class, 'location_id')->withTrashed();
     }
 
+    public function order_item()
+    {
+        return $this->hasOne(OrderItem::class, 'action_log_id');
+    }
+
 
     /**
      * Check if the file exists, and if it does, force a download
