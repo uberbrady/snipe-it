@@ -17,7 +17,7 @@ return new class extends Migration
             $table->bigInteger('action_log_id')->unique()->notNull();
             $table->string('order_number')->index()->nullable();
             $table->integer('supplier_id')->nullable();
-            $table->integer('purchase_date')->nullable();
+            $table->date('purchase_date')->nullable();
             $table->decimal('purchase_cost',20,2)->nullable();
         });
     }

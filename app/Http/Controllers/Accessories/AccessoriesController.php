@@ -67,14 +67,14 @@ class AccessoriesController extends Controller
         $accessory->location_id             = request('location_id');
         $accessory->min_amt                 = request('min_amt');
         $accessory->company_id              = Company::getIdForCurrentUser(request('company_id'));
-        $accessory->order_number            = request('order_number');
+        $accessory->order_number = request('order_number');//FIXME
         $accessory->manufacturer_id         = request('manufacturer_id');
         $accessory->model_number            = request('model_number');
-        $accessory->purchase_date           = request('purchase_date');
-        $accessory->purchase_cost           = request('purchase_cost');
-        $accessory->qty                     = request('qty');
+        $accessory->purchase_date = request('purchase_date'); //FIXME
+        $accessory->purchase_cost = request('purchase_cost');//FIXME
+        $accessory->qty = request('qty'); //FIXME - NOPE!
         $accessory->created_by              = auth()->id();
-        $accessory->supplier_id             = request('supplier_id');
+        $accessory->supplier_id = request('supplier_id'); //FIXME!
         $accessory->notes                   = request('notes');
 
         $accessory = $request->handleImages($accessory);

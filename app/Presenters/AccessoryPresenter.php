@@ -84,7 +84,7 @@ class AccessoryPresenter extends Presenter
                 'sortable' => true,
                 'title' => trans('admin/accessories/general.total'),
             ], [
-                'field' => 'remaining_qty',
+                'field' => 'remaining_qty', //FIXME? or, maybe not? Maybe that's in the transformer?
                 'searchable' => false,
                 'sortable' => false,
                 'visible' => false,

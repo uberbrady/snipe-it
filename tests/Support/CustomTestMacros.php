@@ -78,6 +78,7 @@ trait CustomTestMacros
         TestResponse::macro(
             'assertStatusMessageIs',
             function (string $message) {
+                //Assert::assertTrue(array_key_exists('status', $this), "Response does not have 'status' key at all");
                 Assert::assertEquals(
                     $message,
                     $this['status'],

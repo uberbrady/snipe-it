@@ -925,6 +925,13 @@
         return value
     }
 
+    function FARTZ(value) { //FIXME, obvz
+        if (value) {
+            return "$" + numberWithCommas(value); //FIXME - currency?
+        }
+        return value;
+    }
+
     $(function () {
         $('#bulkEdit').click(function () {
             var selectedIds = $('.snipe-table').bootstrapTable('getSelections');

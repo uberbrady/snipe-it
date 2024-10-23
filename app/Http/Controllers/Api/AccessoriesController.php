@@ -77,7 +77,7 @@ class AccessoriesController extends Controller
             $accessories->where('manufacturer_id', '=', $request->input('manufacturer_id'));
         }
 
-        if ($request->filled('supplier_id')) {
+        if ($request->filled('supplier_id')) { //FIXME
             $accessories->where('supplier_id', '=', $request->input('supplier_id'));
         }
 
@@ -139,8 +139,25 @@ class AccessoriesController extends Controller
     public function store(StoreAccessoryRequest $request)
     {
         $accessory = new Accessory;
-        $accessory->fill($request->all());
+        /*
+            public ?int $supplier_id = null;
+    public ?string $order_number = null;
+    public ?string $purchase_date = null;
+    public ?string $purchase_cost = null;
+    public ?int $qty = null;
+
+        */
+        $accessory->fill($request->except(['supplier_id', 'order_number', 'purchase_date', 'purchase_cost', 'qty']));
+
+        //pseudo-attributes for order info and quantity
+        $accessory->supplier_id = $request->supplier_id;
+        $accessory->order_number = $request->order_number;
+        $accessory->purchase_date = $request->purchase_date;
+        $accessory->purchase_cost = $request->purchase_cost;
+        $accessory->qty = $request->qty;
+
         $accessory = $request->handleImages($accessory);
+        \Log::error("Accessry dump:".print_r($accessory, true));
 
         if ($accessory->save()) {
             return response()->json(Helper::formatStandardApiResponse('success', $accessory, trans('admin/accessories/message.create.success')));
@@ -232,9 +249,26 @@ class AccessoriesController extends Controller
      */
     public function update(ImageUploadRequest $request, $id)
     {
+        //FIXME - what do I do with this?
         $this->authorize('update', Accessory::class);
         $accessory = Accessory::findOrFail($id);
-        $accessory->fill($request->all());
+        $accessory->fill($request->except(['supplier_id', 'order_number', 'purchase_date', 'purchase_cost', 'qty']));
+
+        $accessory->supplier_id = $request->supplier_id;
+        $accessory->order_number = $request->order_number;
+        $accessory->purchase_date = $request->purchase_date;
+        $accessory->purchase_cost = $request->purchase_cost;
+        // and here's the hard part.
+        DB::transaction(function () use ($accessory, $request) {
+            $legacy_count = $accessory->numRemaining() + $accessory->checkouts()->count();
+            $desired_count = $request->qty;
+            $accessory->qty = $desired_count - $legacy_count;
+            if ($accessory->qty < 0) {
+                // FIXME - do something here! Can't do that.
+            }
+            \Log::error("Calculated quantity IS: ".$accessory->qty);
+        });
+
         $accessory = $request->handleImages($accessory);
 
         if ($accessory->save()) {
@@ -367,44 +401,48 @@ class AccessoriesController extends Controller
      */
     public function adjust(Request $request /* FIXME - do a form request? */, Accessory $accessory)
     {
-        //FIXME - other ordering parameters aren't necessarily being taken into account here - purchase_cost,e tc?
         \Log::error("Accessory in question is maybe ".$accessory?->id."?");
         \Log::error(print_r($request->all(), true));
-        // DB::begin?
-        //FIXME - we need to figure out if we're doing an increment, decrement, or SET.
-        // FIXME - and if it's a SET, we need to do a TRANSACTION????
         $quantity = $request->input('quantity');
-        switch ($request->input('direction')) {
-            case "increase":
-                //TODO - repetitious; blah blah.
-                $results = $accessory->logQuantity($quantity, $request->input('note'), $request->input('order_date'));
-                break;
-            case "decrease":
-                $results = $accessory->logQuantity(-$quantity, $request->input('note'), $request->input('order_date'));
-                break;
-            case "set":
-                // this needs to be run in a transaction so that if someone else is doing something that
-                // messes with quantities, the answer we get is still correct
-                $results = DB::transaction(function () use ($accessory, $quantity, $request) {
-                    $current_remaining = $accessory->numRemaining(); //FIXME - if this starts to get cached, make sure to get the LIVE count here
-                    if ($quantity != $current_remaining) {
-                        //quantity is higher or lower than current remaining - number will be POSITIVE
-                        //if the quantity being set to is *HIGHER* - which we want.
-                        // and it will be NEGATIVE if the quantity being set to is *LOWER* - which we also want
-                        return $accessory->logQuantity($quantity - $current_remaining, $request->input('note'), $request->input('order_date'));
-                    } else {
-                        //FIXME - quantity adjustment of zero - should we record it anyways?
-                        //(maybe so that someone can say "inventoried, yup!")
-                        \Log::warning("Not sure what to do with this - current quantity is $current_remaining and we're trying to set it to $quantity ...");
-                        return 0;
-                    }
-                });
+        if ($request->input('direction') == "set") {
+            // this needs to be run in a transaction so that if someone else is doing something that
+            // messes with quantities, the answer we get is still correct
+            // since this is a *SET*, it's _still_ possible to _logically_ get into a deadlock here, where you've just done inventory,
+            // then someone takes a keyboard, they manage to submit *before* you do, then you hit your SET request - and kablooey.
+            // you just ghost-inventoried yourself up-by-one.
+            // So this logic is: whatever you are SET'ing this to, it is SACROSANCT. That value wins. You just set it, you must know
+            // what you're doing!
+            $results = DB::transaction(function () use ($accessory, $quantity, $request) {
+                $current_remaining = $accessory->numRemaining(); //FIXME - if this starts to get cached, make sure to get the LIVE count here
+                if ($quantity != $current_remaining) {
+                    //quantity is higher or lower than current remaining - number will be POSITIVE
+                    //if the quantity being set to is *HIGHER* - which we want.
+                    // and it will be NEGATIVE if the quantity being set to is *LOWER* - which we also want
+                    return $accessory->logQuantity($quantity - $current_remaining, $request->input('note'));
+                } else {
+                    //FIXME - quantity adjustment of zero - should we record it anyways?
+                    //(maybe so that someone can say "inventoried, yup!")
+                    \Log::warning("Not sure what to do with this - current quantity is $current_remaining and we're trying to set it to $quantity ...");
+                    return 0;
+                }
+            });
+        } else {
+            if ($request->input('direction') == "decrease") {
+                $quantity = -$quantity;
+            }
+            $results = $accessory->logQuantity(-$quantity, $request->input('note'));
         }
+
         //okay, *now* we have to make an OrderItem to correspond with the thing - *IF* we have an order number, I guess?
-        if ($request->input('order_number')) {
-            //FIXME - I think the purchase_date thing goes *here*, not up *there*. But, well, whatever.
-            OrderItem::create(['action_log_id' => $results, 'order_number' => $request->input('order_number')]);
+        if ($request->input('order_number') || $request->input('supplier_id') || $request->input('purchase_date') || $request->input('purchase_cost')) {
+            OrderItem::create([
+                'action_log_id' => $results,
+                'order_number'  => $request->input('order_number'),
+                'supplier_id'   => $request->input('supplier_id'),
+                'purchase_date' => $request->input('purchase_date'),
+                'purchase_cost' => $request->input('purchase_cost')
+            ]);
         }
-        return "Yay! YOur did it!";
+        return "Yay! YOur did it!"; // FIXME
     }
 }

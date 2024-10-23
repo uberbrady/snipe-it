@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\Accessory;
 use App\Models\Actionlog;
-use Illuminate\Support\Facades\Auth;
 
 class AccessoryObserver
 {
@@ -16,12 +15,20 @@ class AccessoryObserver
      */
     public function updated(Accessory $accessory)
     {
+        // FIXME - do the same kind of thing here?
+
         $logAction = new Actionlog();
         $logAction->item_type = Accessory::class;
         $logAction->item_id = $accessory->id;
         $logAction->created_at = date('Y-m-d H:i:s');
         $logAction->created_by = auth()->id();
-        $logAction->logaction('update');
+        $logAction->quantity = $accessory->qty;
+        $logAction->logaction('update', [
+            'order_number'  => $accessory->order_number,
+            'purchase_date' => $accessory->purchase_date,
+            'purchase_cost' => $accessory->purchase_cost,
+            'supplier_id'   => $accessory->supplier_id,
+        ]);
     }
 
     /**
@@ -41,7 +48,13 @@ class AccessoryObserver
         if($accessory->imported) {
             $logAction->setActionSource('importer');
         }
-        $logAction->logaction('create');
+        $logAction->quantity = $accessory->qty;
+        $logAction->logaction('create', [
+            'order_number'  => $accessory->order_number,
+            'purchase_date' => $accessory->purchase_date,
+            'purchase_cost' => $accessory->purchase_cost,
+            'supplier_id'   => $accessory->supplier_id,
+        ]);
     }
 
     /**

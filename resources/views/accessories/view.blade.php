@@ -137,13 +137,27 @@
                                                 <th class="col-sm-2" data-field="file" data-visible="false" data-formatter="fileUploadNameFormatter">{{ trans('general.file_name') }}</th>
                                                 <th class="col-sm-2" data-sortable="true"  data-visible="true" data-field="item" data-formatter="polymorphicItemFormatter">{{ trans('general.item') }}</th>
                                                 <th class="col-sm-2" data-visible="true" data-field="target" data-formatter="polymorphicItemFormatter">{{ trans('general.target') }}</th>
-                                                <th class="col-sm-2" data-sortable="true" data-visible="true" data-field="note">{{ trans('general.notes') }}</th>
+                                                <th class="col-sm-2" data-sortable="true" data-visible="true"
+                                                    data-field="note"
+                                                    data-formatter="notesFormatter">{{ trans('general.notes') }}</th>
                                                 <th class="col-sm-2" data-visible="true" data-field="action_date" data-formatter="dateDisplayFormatter">{{ trans('general.date') }}</th>
                                                 <th class="col-sm-2" data-visible="true"
                                                     data-field="quantity">{{ trans('general.quantity') }}</th>
                                                 @if  ($snipeSettings->require_accept_signature=='1')
                                                     <th class="col-md-3" data-field="signature_file" data-visible="false"  data-formatter="imageFormatter">{{ trans('general.signature') }}</th>
                                                 @endif
+                                                <th class="col-sm-2" data-visible="false" data-sortable="true"
+                                                    data-field="supplier">{{ trans('general.supplier') }}</th>
+                                                <th class="col-sm-2" data-visible="false" data-sortable="true"
+                                                    data-field="purchase_date"
+                                                        {{-- data-formatter="dateDisplayFormatter"  FIXME - why no workie? --}}>{{ trans('general.purchase_date') }}</th>
+                                                <th class="col-sm-2" data-visible="false" data-sortable="true"
+                                                    data-field="order_number">{{ trans('general.order_number') }}</th>
+                                                <th class="col-sm-2" data-visible="false" data-sortable="true"
+                                                    data-field="purchase_cost"
+                                                    data-formatter="FARTZ">{{ trans('general.purchase_cost') }}</th>
+                                                {{-- FIXME - how to right-align this? --}}
+
                                             </tr>
                                             </thead>
                                         </table>
@@ -272,7 +286,7 @@
                        data-toggle="modal"
                        data-target="#adjust-quantity-modal">
                         <x-icon type="plus-minus"/>
-                        AdJuSt QauNtItee! {{-- FIXME --}}
+                        {{ trans('general.adjust_quantity') }}
                     </a>
                 </div>
             @endcan
@@ -307,7 +321,7 @@
     </div>
 </div>
     <x-adjust-quantity-modal :target="route('api.accessories.adjust',$accessory->id)"
-                             :quantity=" $accessory->numRemaining()"/> {{-- FIXME - what if the quantity changes? --}}
+                             :quantity=" $accessory->numRemaining()"/>
 
 
 @can('accessories.files', Accessory::class)

@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Manufacturer;
 use App\Models\Supplier;
 use App\Models\User;
+use Database\Factories\AccessoryFactory;
 use Tests\Concerns\TestsFullMultipleCompaniesSupport;
 use Tests\Concerns\TestsPermissionsRequirement;
 use Tests\TestCase;
@@ -63,18 +64,20 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         [$manufacturerA, $manufacturerB] = Manufacturer::factory()->count(2)->create();
         [$supplierA, $supplierB] = Supplier::factory()->count(2)->create();
 
+        AccessoryFactory::$quantity = 5;
         $accessory = Accessory::factory()->create([
             'name' => 'A Name to Change',
-            'qty' => 5,
-            'order_number' => 'A12345',
-            'purchase_cost' => 99.99,
+            //'qty' => 5, //handled in the factory thing, above
+            //'order_number' => 'A12345', //FIXME
+            //'purchase_cost' => 99.99, //FIXME
             'model_number' => 'ABC098',
             'category_id' => $categoryA->id,
             'company_id' => $companyA->id,
             'location_id' => $locationA->id,
             'manufacturer_id' => $manufacturerA->id,
-            'supplier_id' => $supplierA->id,
+            //'supplier_id' => $supplierA->id, //FIXME
         ]);
+        \Log::error("Num remaining SO FAR - is ".$accessory->numRemaining()." (should be '5')");
 
         $this->actingAsForApi(User::factory()->editAccessories()->create())
             ->patchJson(route('api.accessories.update', $accessory), [
@@ -93,14 +96,14 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
 
         $accessory = $accessory->fresh();
         $this->assertEquals('A New Name', $accessory->name);
-        $this->assertEquals(10, $accessory->qty);
-        $this->assertEquals('B54321', $accessory->order_number);
-        $this->assertEquals(199.99, $accessory->purchase_cost);
+        $this->assertEquals(10, $accessory->numRemaining());
+        $this->assertEquals('B54321', $accessory->assetlog()->first()->order_item->order_number);
+        $this->assertEquals(199.99, $accessory->assetlog()->first()->order_item->purchase_cost);
         $this->assertEquals('XYZ123', $accessory->model_number);
         $this->assertEquals($categoryB->id, $accessory->category_id);
         $this->assertEquals($companyB->id, $accessory->company_id);
         $this->assertEquals($locationB->id, $accessory->location_id);
         $this->assertEquals($manufacturerB->id, $accessory->manufacturer_id);
-        $this->assertEquals($supplierB->id, $accessory->supplier_id);
+        $this->assertEquals($supplierB->id, $accessory->assetlog()->first()->order_item->supplier_id);
     }
 }

@@ -6,19 +6,25 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                             aria-hidden="true">&times;</span>
                 </button>
-                <h2 class="modal-title">AdJuSt Qwuanteetee {{-- FIXME --}}</h2>
+                <h2 class="modal-title">{{ trans('general.adjust_quantity') }}</h2>
             </div>
             <div class="modal-body">
                 <form id="adjust-quantity-form">
-                    <input class="direction-radio" type="radio" name="direction" value="increase"/>Increase
-                    Inventory {{-- FIXME --}}
-                    <input class="direction-radio" type="radio" name="direction" value="set"/>Set
-                    Inventory {{-- FIXME --}}
-                    <input class="direction-radio" type="radio" name="direction" value="decrease"/>Decrease
-                    Inventory {{-- FIXME --}}<br/>
-                    <input class="direction-radio" type="number" name="quantity" value="0"/>Amount {{-- FIXME --}} <br/>
+                    <input class="direction-radio" type="radio" name="direction"
+                           value="increase"/>{{ trans('general.increase_inventory') }}
+                    <input class="direction-radio" type="radio" name="direction"
+                           value="set"/>{{ trans('general.set_inventory') }}
+                    <input class="direction-radio" type="radio" name="direction"
+                           value="decrease"/>{{ trans('general.decrease_inventory') }}<br/>
+                    <input class="direction-radio" type="number" name="quantity"
+                           value="0"/>{{ trans('general.inventory_amount') }}<br/>
+                    <hr>
+                    @include('partials/forms/edit/supplier-select',['fieldname' => 'supplier_id','translated_name' => trans('general.supplier'),'hide_new' => true /* TODO - shoudl we allow new suppliers here? */])
+                    <br/><br/>
                     {{ trans('general.order_number') }}: <input type="text" name="order_number"/><br/>
-                    {{trans('general.purchase_date')}}<input type="date" name="order_date"/><br/>
+                    {{trans('general.purchase_date')}}<input type="date" name="purchase_date"/><br/>
+                    {{ trans('general.purchase_cost') }}<input type="number" name="purchase_cost" step="0.01"/><br/>
+
                     Notes:<br/> <textarea name="note"></textarea>
                 </form>
 
@@ -47,6 +53,7 @@
                 return;
             }
             //FIXME - what if the quantity shrank out from under you?!
+            // Well, then, we handle that on the server-side, dipshit.
             console.warn("Direciton: "+form.direction.value+"Form note: "+form.note.value)
             if((form.direction.value == "decrease" && !form.note.value) || (form.direction.value == "set" && form.quantity.value < {{ $quantity }} && !form.note.value)) {
                 window.alert("You can't decrease quantity without a note explaining why")
@@ -64,15 +71,17 @@
                     "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
                 }
             }).done(function (thing) {
-                //can we 'flash' something here? I don't know.
-                //and hide the thing.
-                //and BLANK the values.
+                //TODO: can we 'flash' something here? I don't know.
+                //TODO - maybe we set the _flash_ in the controller, and do a redirect *here*
+                //TODO - which can force the new value to show up, *AND* display the flash?
                 $('#adjust-quantity-modal').modal('hide');
                 form.note.value = '';
                 $('.direction-radio').prop('checked', false);
                 form.quantity.value = 0;
-                //FIXME - going to need to blank out more form fields.
                 form.order_number.value = '';
+                form.purchase_date.value = '';
+                form.purchase_cost.value = '';
+                $(form.supplier_id).select2('val', 0);
             }).fail(function (error) {
                 console.error("FAILTOWN: ")
                 console.error(error)

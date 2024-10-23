@@ -15,4 +15,9 @@ class OrderItem extends Model
     {
         return $this->belongsTo(ActionLog::class, 'action_log_id');
     }
+
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
 }

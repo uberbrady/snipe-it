@@ -58,7 +58,7 @@ class Accessory extends SnipeModel
     */
     public $rules = [
         'name'              => 'required|min:3|max:255',
-        'qty'               => 'required|integer|min:1',
+        // 'qty'               => 'required|integer|min:1', //FIXME - can I be deleting this?
         'category_id'       => 'required|integer|exists:categories,id',
         'company_id'        => 'integer|nullable',
         'min_amt'           => 'integer|min:0|nullable',
@@ -100,6 +100,12 @@ class Accessory extends SnipeModel
         'notes',
     ];
 
+    // order-related pseudo-properties?
+    public ?int $supplier_id = null;
+    public ?string $order_number = null;
+    public ?string $purchase_date = null;
+    public ?string $purchase_cost = null;
+    public ?int $qty = null;
 
 
     /**

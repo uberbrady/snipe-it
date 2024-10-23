@@ -3,7 +3,8 @@
 <div class="form-group {{ $errors->has('qty') ? ' has-error' : '' }}">
     <label for="qty" class="col-md-3 control-label">{{ trans('general.quantity') }}</label>
     <div class="col-md-7">
-       <div class="col-md-3" style="padding-left:0px">
+        <div class="col-md-3"
+             style="padding-left:0px"> {{-- FIXME - this needs to be required sometimes? Maybe a variable with a sensible default but overridable? --}}
            <input class="form-control" maxlength="5" type="text" name="qty" aria-label="qty" id="qty" value="{{ old('qty', $item->qty) }}" {!!  (Helper::checkIfRequired($item, 'qty')) ? ' required ' : '' !!}/>
        </div>
         <div class="col-md-12" style="padding-left:0px">

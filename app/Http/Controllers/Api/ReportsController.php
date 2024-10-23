@@ -20,7 +20,7 @@ class ReportsController extends Controller
     {
         $this->authorize('reports.view');
 
-        $actionlogs = Actionlog::with('item', 'user', 'adminuser', 'target', 'location');
+        $actionlogs = Actionlog::with('item', 'user', 'adminuser', 'target', 'location', 'order_item');
 
         if ($request->filled('search')) {
             $actionlogs = $actionlogs->TextSearch(e($request->input('search')));
@@ -63,6 +63,10 @@ class ReportsController extends Controller
             'item_type',
             'action_source',
             'action_date',
+            'order_item.order_number',
+            'order_item.purchase_date',
+            'order_item.supplier.name',
+            'order_number.purchase_cost'
         ];
 
 

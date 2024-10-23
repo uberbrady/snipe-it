@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\User;
 use App\Notifications\CheckoutAccessoryNotification;
 use Illuminate\Support\Facades\Mail;
+use Database\Factories\AccessoryFactory;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -41,6 +42,7 @@ class AccessoryCheckoutTest extends TestCase
     {
 
         $accessory = Accessory::factory()->withoutItemsRemaining()->create();
+        \Log::error("Accessory quantity remaining: ".$accessory->numRemaining());
         $response = $this->actingAs(User::factory()->viewAccessories()->checkoutAccessories()->create())
             ->from(route('accessories.checkout.show', $accessory))
             ->post(route('accessories.checkout.store', $accessory), [
@@ -80,7 +82,8 @@ class AccessoryCheckoutTest extends TestCase
 
     public function testAccessoryCanBeCheckedOutWithQuantity()
     {
-        $accessory = Accessory::factory()->create(['qty'=>5]);
+        AccessoryFactory::$quantity = 5;
+        $accessory = Accessory::factory()->create();
         $user = User::factory()->create();
 
         $this->actingAs(User::factory()->checkoutAccessories()->create())
@@ -106,7 +109,8 @@ class AccessoryCheckoutTest extends TestCase
 
     public function testAccessoryCanBeCheckedOutToLocationWithQuantity()
     {
-        $accessory = Accessory::factory()->create(['qty'=>5]);
+        AccessoryFactory::$quantity = 5;
+        $accessory = Accessory::factory()->create();
         $location = Location::factory()->create();
 
         $this->actingAs(User::factory()->checkoutAccessories()->create())
@@ -132,7 +136,8 @@ class AccessoryCheckoutTest extends TestCase
 
     public function testAccessoryCanBeCheckedOutToAssetWithQuantity()
     {
-        $accessory = Accessory::factory()->create(['qty'=>5]);
+        AccessoryFactory::$quantity = 5;
+        $accessory = Accessory::factory()->create();
         $asset = Asset::factory()->create();
 
         $this->actingAs(User::factory()->checkoutAccessories()->create())

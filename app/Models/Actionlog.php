@@ -38,7 +38,8 @@ class Actionlog extends SnipeModel
         'note',
         'target_id',
         'target_type',
-        'stored_eula'
+        'stored_eula',
+        'quantity'
     ];
 
     use Searchable;
@@ -274,7 +275,7 @@ class Actionlog extends SnipeModel
      * @since [v3.0]
      * @return bool
      */
-    public function logaction($actiontype)
+    public function logaction($actiontype, array $orderinfo = [])
     {
         $this->action_type = $actiontype;
         $this->remote_ip =  request()->ip();
@@ -282,6 +283,33 @@ class Actionlog extends SnipeModel
         $this->action_source = $this->determineActionSource();
 
         if ($this->save()) {
+            //we don't want to create an 'OrderItem' record if there is _literally_ no order-related information in the request
+            // so let's determine if the '$orderinfo' is "interesting" or not.
+            $is_interesting = false;
+            foreach ($orderinfo as $_key => $value) {
+                if (!is_null($value)) {
+                    $is_interesting = true;
+                }
+            }
+            if ($orderinfo && $is_interesting) {
+                $value_if_set = function ($key) use ($orderinfo) {
+                    if (array_key_exists($key, $orderinfo)) {
+                        return $orderinfo[$key];
+                    } else {
+                        return null;
+                    }
+                };
+
+                \Log::error("HEY! We have order METADATAAAAAAAA!");
+                OrderItem::create([
+                    'action_log_id' => $this->id,
+                    'order_number'  => $value_if_set('order_number'),
+                    'supplier_id'   => $value_if_set('supplier_id'),
+                    'purchase_date' => $value_if_set('purchase_date'),
+                    'purchase_cost' => $value_if_set('purchase_cost')
+                ]);
+
+            }
             return true;
         } else {
             return false;
