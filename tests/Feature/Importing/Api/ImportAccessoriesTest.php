@@ -80,15 +80,15 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($newAccessory->company->id, $activityLog->company_id);
 
         $this->assertEquals($row['itemName'], $newAccessory->name);
-        $this->assertEquals($row['quantity'], $newAccessory->qty);
-        $this->assertEquals($row['purchaseDate'], $newAccessory->purchase_date->toDateString());
-        $this->assertEquals($row['purchaseCost'], $newAccessory->purchase_cost);
-        $this->assertEquals($row['orderNumber'], $newAccessory->order_number);
+        $this->assertEquals($row['quantity'], $newAccessory->numRemaining());
+        $this->assertEquals($row['purchaseDate'], $activityLog->order_item->purchase_date->toDateString());
+        $this->assertEquals($row['purchaseCost'], $activityLog->order_item->purchase_cost);
+        $this->assertEquals($row['orderNumber'], $activityLog->order_item->order_number);
         $this->assertEquals($row['notes'], $newAccessory->notes);
         $this->assertEquals($row['category'], $newAccessory->category->name);
         $this->assertEquals('accessory', $newAccessory->category->category_type);
         $this->assertEquals($row['manufacturerName'], $newAccessory->manufacturer->name);
-        $this->assertEquals($row['supplierName'], $newAccessory->supplier->name);
+        $this->assertEquals($row['supplierName'], $activityLog->order_item->supplier?->name);
         $this->assertEquals($row['location'], $newAccessory->location->name);
         $this->assertEquals($row['companyName'], $newAccessory->company->name);
         $this->assertEquals($row['modelNumber'], $newAccessory->model_number);
@@ -123,9 +123,9 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
 
         $accessory = Accessory::query()
             ->where('name', $importFileBuilder->firstRow()['itemName'])
-            ->sole(['purchase_date']);
+            ->sole();
 
-        $this->assertEquals('2022-10-10', $accessory->purchase_date->toDateString());
+        $this->assertEquals('2022-10-10', $accessory->assetlog->first()->order_item->purchase_date->toDateString());
     }
 
     #[Test]
@@ -221,14 +221,21 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
 
         $newAccessories = Accessory::query()
             ->where('name', $importFileBuilder->pluck('itemName'))
-            ->get(['supplier_id']);
+            ->get();
 
-        $this->assertCount(1, $newAccessories->pluck('supplier_id')->unique()->all());
+        $suppliers = [];
+        foreach ($newAccessories as $newAccessory) {
+            $suppliers[] = $newAccessory->assetlog->first()->order_item->supplier_id;
+        }
+
+        $this->assertCount(1, $suppliers);
     }
 
     #[Test]
     public function whenColumnsAreMissingInImportFile(): void
     {
+        //FIXME - I think the _importer_ has different "default column names" than the Accessory model itself.
+        //This makes the sanitize method a little harder to work with :/
         $importFileBuilder = ImportFileBuilder::new()->forget(['minimumAmount', 'purchaseCost', 'purchaseDate']);
         $import = Import::factory()->accessory()->create(['file_path' => $importFileBuilder->saveToImportsDirectory()]);
 
@@ -260,7 +267,11 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
                     '' => [
                         'Accessory' => [
                             'name' => ['The name field is required.'],
-                            'qty' => ['The qty field must be at least 1.'],
+                            'qty' => ['The qty field must be at least 1.'], /*
+ FIXME - this is failing for some reason I don't get - even if I try to 'inject' the validation requirement, it still doesn't give the output that's expected.
+ It seems that if I make it required, it yells that its required (instead of "at least 1"). But if I make it *not* required, then it doesn't yell at all.
+ Also, various different incarnations of the test blow up more or rest of the rest of the tests.
+ */
                             'category_id' => ['The category id field is required.']
                         ]
                     ]
@@ -286,9 +297,23 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
             'location_id', 'model_number', 'updated_at'
         ];
 
+        \Log::error("ORIGINAL accessory logs are: ".print_r($accessory->assetlog->toArray(), true));
+        \Log::error("Updated Accessory LOGS are: ".print_r($updatedAccessory->assetlog->toArray(), true));
+        /*****************
+         * FIXME (obvs)
+         *
+         * So we have a few problems here. FIRST off, the accessory is being created with no quantity, it seems?
+         * We're also inadvertently 'refreshing' the accessory with the dump output.
+         * And when we 'upload' a file, it seems to bump the accessory quantity up by one (for no reason I can discern)
+         *
+         * So the output number is always off by exactly one.
+         * But I'm not even sure of the validty of the test, tbh.
+         *
+         * So that's a big problem here, with this particular test.
+         */
         $this->assertEquals($row['itemName'], $updatedAccessory->name);
         $this->assertEquals($row['companyName'], $updatedAccessory->company->name);
-        $this->assertEquals($row['quantity'], $updatedAccessory->qty);
+        $this->assertEquals($row['quantity'], $updatedAccessory->numRemaining()); //TODO - This test won't work if checkouts happen
         $this->assertEquals($row['purchaseDate'], $updatedAccessory->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $updatedAccessory->purchase_cost);
         $this->assertEquals($row['orderNumber'], $updatedAccessory->order_number);
@@ -408,10 +433,10 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
 
         $this->assertEquals($row['modelNumber'], $newAccessory->name);
         $this->assertEquals($row['itemName'], $newAccessory->model_number);
-        $this->assertEquals($row['quantity'], $newAccessory->qty);
-        $this->assertEquals($row['notes'], $newAccessory->purchase_date->toDateString());
-        $this->assertEquals($row['location'], $newAccessory->purchase_cost);
-        $this->assertEquals($row['companyName'], $newAccessory->order_number);
+        $this->assertEquals($row['quantity'], $newAccessory->numRemaining());
+        $this->assertEquals($row['notes'], $newAccessory->assetlog->first()->order_item->purchase_date->toDateString());
+        $this->assertEquals($row['location'], $newAccessory->assetlog->first()->order_item->purchase_cost);
+        $this->assertEquals($row['companyName'], $newAccessory->assetlog->first()->order_item->order_number);
         $this->assertEquals($row['purchaseDate'], $newAccessory->notes);
         $this->assertEquals($row['manufacturerName'], $newAccessory->category->name);
         $this->assertEquals($row['category'], $newAccessory->manufacturer->name);

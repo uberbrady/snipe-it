@@ -18,6 +18,35 @@ class AccessoryImporter extends ItemImporter
     }
 
     /**
+     * Custom 'sanitize' method that sets model attributes correctly FIXME - bad description
+     *
+     * @param $model
+     * @param $updating
+     * @return array
+     */
+    protected function sanitizeItemForStoring($model, $updating = false)
+    {
+        $magic_properties = [
+            null           => 'supplier_id', //There *IS* no 'importname' for supplier_id, so we use null which shouldn't match any key. hopefully.
+            'orderNumber'  => 'order_number',
+            'purchaseDate' => 'purchase_date',
+            'purchaseCost' => 'purchase_cost',
+            'quantity'     => 'qty'
+        ];
+        foreach ($magic_properties as $importName => $property) {
+            if (array_key_exists($importName, $this->item)) {
+                $this->item[$property] = $this->item[$importName]; //set "real" property name and fall-through
+                unset($this->item[$importName]);
+            }
+            if (array_key_exists($property, $this->item)) {
+                $model->{$property} = $this->item[$property];
+                unset($this->item[$property]);
+            }
+        }
+        return parent::sanitizeItemForStoring($model, $updating);
+    }
+
+    /**
      * Create an accessory if a duplicate does not exist
      *
      * @author Daniel Melzter
@@ -44,11 +73,20 @@ class AccessoryImporter extends ItemImporter
         $accessory = new Accessory();
         $this->item['model_number'] = $this->findCsvMatch($row, "model_number");
         $this->item['min_amt'] = $this->findCsvMatch($row, "min_amt");
-        $accessory->fill($this->sanitizeItemForStoring($accessory));
+        $accessory->fill($this->sanitizeItemForStoring($accessory)); //culprit.
 
         // This sets an attribute on the Loggable trait for the action log
         $accessory->setImported(true);
-        if ($accessory->save()) {
+        \Log::error("Okay, I'm definitely confused here. What's Accessory look like now? ".print_r($accessory->toArray(), true));
+        //if (!$this->updating && !$accessory->qty) {
+        //    $accessory->qty = 0;
+        //    $accessory->rules['qty'] = 'integer|min:1';
+        //    // WEIRD - FIXME - if this works, DOCUMENT IT. Please.
+        //}
+        //FIXME - note that it does *not* work.
+        // nope, not at all.
+        
+        if ($accessory->save()) { //cannot import accessories with zero quantity, so force a failure here
             $this->log('Accessory '.$this->item['name'].' was created');
 
             return;

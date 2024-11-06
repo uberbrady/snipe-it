@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('components', function (Blueprint $table) {
-            $table->integer('manufacturer_id')->after('purchase_cost')->nullable()->default(null);
-            $table->string('model_number')->after('purchase_cost')->nullable()->default(null);
+            $table->integer('manufacturer_id')->after('deprecated_purchase_cost')->nullable()->default(null);
+            $table->string('model_number')->after('deprecated_purchase_cost')->nullable()->default(null);
         });
     }
 

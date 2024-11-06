@@ -10,6 +10,7 @@ class OrderItem extends Model
     use HasFactory;
 
     protected $fillable = ['action_log_id', 'order_number', 'supplier_id', 'purchase_date', 'purchase_cost'];
+    protected $casts = ['purchase_date' => 'date'];
 
     public function actionlog()
     {

@@ -58,7 +58,7 @@ class Accessory extends SnipeModel
     */
     public $rules = [
         'name'              => 'required|min:3|max:255',
-        // 'qty'               => 'required|integer|min:1', //FIXME - can I be deleting this?
+        //'qty' => 'required|integer|min:1', //FIXME - can I be deleting this? is it *WEIRD* to have a validation rule on a non-field?!?!?! (answer:yes)
         'category_id'       => 'required|integer|exists:categories,id',
         'company_id'        => 'integer|nullable',
         'min_amt'           => 'integer|min:0|nullable',
@@ -105,7 +105,7 @@ class Accessory extends SnipeModel
     public ?string $order_number = null;
     public ?string $purchase_date = null;
     public ?string $purchase_cost = null;
-    public ?int $qty = null;
+    public $qty = null; //TODO - had this typed as `?int` but that seems to trip up the importer?
 
 
     /**

@@ -66,7 +66,7 @@ class AccessoriesImportFileBuilder extends FileBuilder
             'notes'            => $faker->sentence,
             'orderNumber'      => Str::random(),
             'purchaseDate'     => $faker->date(),
-            'purchaseCost'     => rand(1, 100),
+            'purchaseCost' => rand(1, 100), //huh, why does *this* trip things up?!
             'quantity'         => rand(1, 100),
             'supplierName'     => $faker->company,
         ];
