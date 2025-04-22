@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\ActionType;
 use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
+use Carbon\Carbon;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -19,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Laravel\Passport\HasApiTokens;
 use Watson\Validating\ValidatingTrait;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -944,6 +947,101 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
 
 
 
+
+    }
+
+    public function merge(User $bad_user, ?callable $status_callback = null, ?callable $error_callback = null)
+    {
+        if (!$status_callback) {
+            $status_callback = function ($msg) {
+                Log::debug("User Merge: " . $msg);
+            };
+        }
+        if (!$error_callback) {
+            $error_callback = function ($msg) {
+                Log::error("User Merge ERROR: " . $msg);
+            };
+        }
+        // Walk the list of assets
+        foreach ($bad_user->assets as $asset) {
+            $status_callback('Updating asset ' . $asset->asset_tag . ' ' . $asset->id . ' to user ' . $this->id);
+            $asset->assigned_to = $this->id;
+            if (!$asset->save()) {
+                $error_callback('Could not update assigned_to field on asset ' . $asset->asset_tag . ' ' . $asset->id . ' to user ' . $this->id);
+                $error_callback('Error saving: ' . $asset->getErrors());
+            }
+        }
+
+        // Walk the list of licenses
+        foreach ($bad_user->licenses as $license) {
+            $status_callback('Updating license ' . $license->name . ' ' . $license->id . ' to user ' . $this->id);
+            $bad_user->licenses()->updateExistingPivot($license->id, ['assigned_to' => $this->id]);
+        }
+
+        // Walk the list of consumables
+        foreach ($bad_user->consumables as $consumable) {
+            $status_callback('Updating consumable ' . $consumable->id . ' to user ' . $this->id);
+            $bad_user->consumables()->updateExistingPivot($consumable->id, ['assigned_to' => $this->id]);
+        }
+
+        // Walk the list of accessories
+        foreach ($bad_user->accessories as $accessory) {
+            $status_callback('Updating accessory ' . $accessory->id . ' to user ' . $this->id);
+            $bad_user->accessories()->updateExistingPivot($accessory->id, ['assigned_to' => $this->id]);
+        }
+
+        // Walk the list of logs
+        foreach ($bad_user->userlog as $log) {
+            $status_callback('Updating action log record ' . $log->id . ' to user ' . $this->id);
+            $log->target_id = $this->id;
+            $log->save();
+        }
+
+        // Update any manager IDs
+        $status_callback('Updating managed user records to user ' . $this->id);
+        User::where('manager_id', '=', $bad_user->id)->update(['manager_id' => $this->id]);
+
+        // Update location manager IDs
+        foreach ($bad_user->managedLocations as $managedLocation) {
+            $status_callback('Updating managed location record ' . $managedLocation->name . ' to manager ' . $this->id);
+            $managedLocation->manager_id = $this->id;
+            $managedLocation->save();
+        }
+
+        foreach ($bad_user->uploads as $upload) {
+            $status_callback('Updating upload log record ' . $upload->id . ' to user ' . $this->id);
+            $upload->item_id = $this->id;
+            $upload->save();
+        }
+
+        foreach ($bad_user->acceptances as $acceptance) {
+            $status_callback('Updating acceptance log record ' . $acceptance->id . ' to user ' . $this->id);
+            $acceptance->item_id = $this->id;
+            $acceptance->save();
+        }
+
+        // Mark the user as deleted
+        $status_callback('Marking the user as deleted');
+        $bad_user->delete();
+
+        // this was in the LogListener before
+        $to_from_array = [
+            'to_id' => $this->id,
+            'to_username' => $this->username,
+            'from_id' => $bad_user->id,
+            'from_username' => $bad_user->username,
+        ];
+
+        // Add a record to the users being merged FROM
+        Log::debug('Users merged: ' . $bad_user->id . ' (' . $bad_user->username . ') merged into ' . $this->id . ' (' . $this->username . ')');
+        $bad_user->setLogTarget($this);
+        $bad_user->setLogNote(trans('general.merged_log_this_user_from', $to_from_array));
+        $bad_user->logAndSaveIfNeeded(ActionType::Merged);
+
+        // Add a record to the users being merged TO
+        $this->setLogTarget($bad_user);
+        $this->setLogNote(trans('general.merged_log_this_user_into', $to_from_array));
+        $this->logAndSaveIfNeeded(ActionType::Merged);
 
     }
 }
