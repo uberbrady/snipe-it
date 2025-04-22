@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Account;
 
-use App\Events\CheckoutAccepted;
-use App\Events\CheckoutDeclined;
+use App\Enums\ActionType;
 use App\Events\ItemAccepted;
 use App\Events\ItemDeclined;
 use App\Http\Controllers\Controller;
@@ -12,6 +11,7 @@ use App\Models\Asset;
 use App\Models\CheckoutAcceptance;
 use App\Models\Company;
 use App\Models\Contracts\Acceptable;
+use App\Models\LicenseSeat;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\AssetModel;
@@ -245,7 +245,19 @@ class AcceptanceController extends Controller
             } catch (\Exception $e) {
                 Log::warning($e);
             }
-            event(new CheckoutAccepted($acceptance));
+            // Licenses are weird - the actual _log_ entry needs to be against the license, not the seat
+            // so we 'shift' $item from the licenseSeat to its actual License before we get the log entry
+            // fully assembled (and stored)
+            if ($item instanceof LicenseSeat) {
+                $item = $item->license;
+            }
+            $item->setLogTarget($acceptance->assignedTo);
+            $item->setLogNote($request->input('note'));
+            $item->setLogActionDate($data['accepted_date']);
+            $item->setLogFilename($item->getEula());
+            $item->setLogSignatureFilename($acceptance->signature_filename);
+            $item->logAndSaveIfNeeded(ActionType::Accepted);
+//            event(new CheckoutAccepted($acceptance));
 
             $return_msg = trans('admin/users/message.accepted');
 
@@ -333,7 +345,13 @@ class AcceptanceController extends Controller
 
             $acceptance->decline($sig_filename, $request->input('note'));
             $acceptance->notify(new AcceptanceAssetDeclinedNotification($data));
-            event(new CheckoutDeclined($acceptance));
+            // TODO - do we need to do the licenseSeat->license switch that we do in the other arm of the if/else?
+            $acceptance->checkoutable->setLogTarget($acceptance->assignedTo);
+            $acceptance->checkoutable->setLogNote($acceptance->note);
+            $acceptance->checkoutable->setLogActionDate($acceptance->declined_at);
+            $acceptance->checkoutable->setLogSignatureFilename($acceptance->signature_filename);
+            $acceptance->checkoutable->logAndSaveIfNeeded(ActionType::Declined);
+//            event(new CheckoutDeclined($acceptance));
             $return_msg = trans('admin/users/message.declined');
         }
 

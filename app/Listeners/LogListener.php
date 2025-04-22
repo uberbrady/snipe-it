@@ -9,8 +9,6 @@ use App\Events\AssetCheckedIn;
 use App\Events\AssetCheckedOut;
 use App\Events\CheckoutableCheckedIn;
 use App\Events\CheckoutableCheckedOut;
-use App\Events\CheckoutAccepted;
-use App\Events\CheckoutDeclined;
 use App\Events\ComponentCheckedIn;
 use App\Events\ComponentCheckedOut;
 use App\Events\ConsumableCheckedOut;
@@ -26,49 +24,6 @@ use Illuminate\Support\Facades\Log;
 
 class LogListener
 {
-    /**
-     * These onBlah methods are used by the subscribe() method further down in this file.
-     * This creates the entry in the action_logs table for the accept/decline action
-     */
-    public function onCheckoutAccepted(CheckoutAccepted $event)
-    {
-
-        Log::debug('event passed to the onCheckoutAccepted listener:');
-        $logaction = new Actionlog();
-        $logaction->item()->associate($event->acceptance->checkoutable);
-        $logaction->target()->associate($event->acceptance->assignedTo);
-        $logaction->accept_signature = $event->acceptance->signature_filename;
-        $logaction->filename = $event->acceptance->stored_eula_file;
-        $logaction->note = $event->acceptance->note;
-        $logaction->action_type = 'accepted';
-        $logaction->action_date = $event->acceptance->accepted_at;
-
-        // TODO: log the actual license seat that was checked out
-        if ($event->acceptance->checkoutable instanceof LicenseSeat) {
-            $logaction->item()->associate($event->acceptance->checkoutable->license);
-        }
-
-        $logaction->save();
-    }
-
-    public function onCheckoutDeclined(CheckoutDeclined $event)
-    {
-        $logaction = new Actionlog();
-        $logaction->item()->associate($event->acceptance->checkoutable);
-        $logaction->target()->associate($event->acceptance->assignedTo);
-        $logaction->accept_signature = $event->acceptance->signature_filename;
-        $logaction->note = $event->acceptance->note;
-        $logaction->action_type = 'declined';
-        $logaction->action_date = $event->acceptance->declined_at;
-
-        // TODO: log the actual license seat that was checked out
-        if ($event->acceptance->checkoutable instanceof LicenseSeat) {
-            $logaction->item()->associate($event->acceptance->checkoutable->license);
-        }
-
-        $logaction->save();
-    }
-
 
     public function onUserMerged(UserMerged $event)
     {
@@ -114,8 +69,8 @@ class LogListener
     public function subscribe($events)
     {
         $list = [
-            'CheckoutAccepted',
-            'CheckoutDeclined',
+//            'CheckoutAccepted',
+//            'CheckoutDeclined',
             'UserMerged',
             'NoteAdded',
         ];

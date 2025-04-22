@@ -27,6 +27,7 @@ trait Loggable
     private ?string $log_filename = null;
     private ?string $log_action_date = null;
     private ?int $log_quantity = null;
+    private ?string $log_signature_filename = null;
 
     //public static array $hide_changes = [];
 
@@ -148,6 +149,9 @@ trait Loggable
         if ($this->log_filename) {
             $logAction->filename = $this->log_filename;
         }
+        if ($this->log_signature_filename) {
+            $logAction->accept_signature = $this->log_signature_filename;
+        }
 
         $logAction->action_type = $this->log_action;
         $logAction->remote_ip = request()->ip();
@@ -235,6 +239,11 @@ trait Loggable
     public function setLogLocationOverride(?Location $location)
     {
         $this->log_location_override = $location;
+    }
+
+    public function setLogSignatureFilename(?string $filename)
+    {
+        $this->log_signature_filename = $filename;
     }
 
     // PUBLIC GETTERS WHEN NEEDED
