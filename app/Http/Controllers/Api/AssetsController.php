@@ -982,6 +982,7 @@ class AssetsController extends Controller
         $asset->last_checkin = now();
         $asset->assignedTo()->disassociate($asset);
         $asset->accepted = null;
+        $asset->increment('checkin_counter'); // TODO: if we go transactional, this should be in it
 
         if ($request->has('name')) {
             $asset->name = $request->input('name');
@@ -1028,7 +1029,7 @@ class AssetsController extends Controller
                 $acceptance->delete();
             });
 
-        if ($asset->save()) {
+        if ($asset->save()) { // FIXME - which type of ActionLog type is this?!
             event(new CheckoutableCheckedIn($asset, $target, auth()->user(), $request->input('note'), $checkin_at, $originalValues));
 
             return response()->json(Helper::formatStandardApiResponse('success', [
