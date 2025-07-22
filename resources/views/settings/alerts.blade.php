@@ -96,8 +96,28 @@
                                     <input type="email" name="admin_cc_email" value="{{ old('admin_cc_email', $setting->admin_cc_email) }}" class="form-control" placeholder="admin@yourcompany.com" maxlength="191">
                                     {!! $errors->first('admin_cc_email', '<span class="alert-msg" aria-hidden="true">:message</span><br>') !!}
                                     <p class="help-block">{{ trans('admin/settings/general.admin_cc_email_help') }}</p>
-
-
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-9 col-md-offset-3">
+                                    <label class="form-control">
+                                        <input
+                                            type="radio"
+                                            name="admin_cc_always"
+                                            value="1"
+                                            @checked($setting->admin_cc_always == 1)
+                                        >
+                                        {{ trans('admin/settings/general.admin_cc_always') }}
+                                    </label>
+                                    <label class="form-control">
+                                        <input
+                                            type="radio"
+                                            name="admin_cc_always"
+                                            value="0"
+                                            @checked($setting->admin_cc_always == 0)
+                                        >
+                                        {{ trans('admin/settings/general.admin_cc_when_acceptance_required') }}
+                                    </label>
                                 </div>
                             </div>
                         </fieldset>

@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Attenzione: </strong> Questo Bene è stato marcato come non distribuibile. Se lo stato del Bene è cambiato si prega di aggiornarlo.',
+    'undeployable' 		 => 'I seguenti Beni non possono essere consegnati e sono stati rimossi dall\'Assegnazione: :asset_tags',
     'does_not_exist' 	 => 'Questo Asset non esiste.',
     'does_not_exist_var' => 'Bene con tag :asset_tag non trovato.',
     'no_tag' 	         => 'Nessun tag del Bene è stato fornito.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Bene creato con tag :tag . <strong><a href=":link" style="color: white;">Clicca per vedere</a></strong>.',
         'multi_success_linked' => 'Il bene con tag :links è stato creato con successo.|:count beni sono stati creati con successo. :links.',
         'partial_failure' => 'Non è stato possibile creare un bene. Motivo: :failures|Non è stato possibile creare :count beni. Motivi: :failures',
+        'target_not_found' => [
+            'user' => 'L\'utente assegnato non è stato trovato.',
+            'asset' => 'Il Bene assegnato non è stato trovato.',
+            'location' => 'La Sede assegnata non è stata trovata.',
+        ],
     ],
 
     'update' => [

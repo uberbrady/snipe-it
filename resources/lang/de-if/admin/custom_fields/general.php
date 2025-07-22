@@ -5,7 +5,7 @@ return [
     'manage'                    => 'Verwalten',
     'field'		                => 'Feld',
     'about_fieldsets_title'		=> 'Über Feldsätze',
-    'about_fieldsets_text'		=> 'Feldsätze erlauben es, Gruppen aus benutzerdefinierten Feldern zu erstellen, die regelmäßig für spezifische Modelltypen wiederverwendet werden.',
+    'about_fieldsets_text'		=> 'Feldsätze sind Gruppen von benutzerdefinierten Feldern, die häufig für bestimmte Asset-Modelltypen wiederverwendet werden.',
     'custom_format'             => 'Benutzerdefiniertes Regex-Format...',
     'encrypt_field'      	        => 'Den Wert dieses Feldes in der Datenbank verschlüsseln',
     'encrypt_field_help'      => 'WARNUNG: Ein verschlüsseltes Feld kann nicht durchsucht werden.',
@@ -60,5 +60,11 @@ return [
     'display_checkin' => 'In Check-in-Formularen anzeigen',
     'display_checkout' => 'In Check-out-Formularen anzeigen',
     'display_audit' => 'In Audit-Formularen anzeigen',
-
+    'types' => [
+        'text' => 'Textfeld',
+        'listbox' => 'Listenfeld',
+        'textarea' => 'Textbereich (multi-Zeilen)',
+        'checkbox' => 'Auswahlfeld',
+        'radio' => 'Auswahlknöpfe',
+    ],
 ];

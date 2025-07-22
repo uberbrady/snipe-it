@@ -325,7 +325,8 @@
                                            <p class="help-block">{{ trans('admin/settings/general.require_checkinout_notes_help_text') }}</p>
                                    </div>
                                </div>
-                               <!-- /.form-group -->
+
+
                        </fieldset>
 
 
@@ -428,6 +429,24 @@
                                        </p>
                                    </div>
                                </div>
+
+                           <!-- Manager View -->
+                           <div class="form-group {{ $errors->has('manager_view_enabled') ? 'error' : '' }}">
+                               <div class="col-md-3">
+                                   <strong>{{ trans('admin/settings/general.manager_view') }}</strong>
+                               </div>
+                               <div class="col-md-8">
+                                   <label class="form-control">
+                                       <input type="checkbox" value="1" name="manager_view_enabled" {{ (old('manager_view_enabled', $setting->manager_view_enabled)) == '1' ? ' checked="checked"' : '' }} aria-label="manager_view_enabled">
+                                       {{ trans('admin/settings/general.manager_view_enabled_text') }}
+                                   </label>
+                                   <p class="help-block">
+                                       {{ trans('admin/settings/general.manager_view_enabled_help') }}
+                                   </p>
+                                   {!! $errors->first('manager_view_enabled', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
+                               </div>
+                           </div>
+                           <!-- /.form-group -->
 
                        </fieldset>
 

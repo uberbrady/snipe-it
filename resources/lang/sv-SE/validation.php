@@ -31,6 +31,7 @@ return [
         'numeric' => ':attribute-fältet måste vara mellan :min och :max.',
         'string' => ':attribute-fältet måste vara mellan :min och :max tecken.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'Attributfältet måste vara sant eller felaktigt.',
     'can' => ':attribute-fältet innehåller ett otillåtet värde.',
     'confirmed' => ':attribute-fältets bekräftelse matchar inte.',

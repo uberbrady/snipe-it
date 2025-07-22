@@ -41,7 +41,31 @@
                 </div>
               @endif
             </div>
+            @if ($component->requireAcceptance() || $component->getEula() || ($snipeSettings->webhook_endpoint!=''))
+              <div class="form-group notification-callout">
+                <div class="col-md-8 col-md-offset-3">
+                  <div class="callout callout-info">
 
+                    @if ($component->category->require_acceptance=='1')
+                      <i class="far fa-envelope"></i>
+                      {{ trans('admin/categories/general.required_acceptance') }}
+                      <br>
+                    @endif
+
+                    @if ($component->getEula())
+                      <i class="far fa-envelope"></i>
+                      {{ trans('admin/categories/general.required_eula') }}
+                      <br>
+                    @endif
+
+                    @if ($snipeSettings->webhook_endpoint!='')
+                      <i class="fab fa-slack"></i>
+                      {{ trans('general.webhook_msg_note') }}
+                    @endif
+                  </div>
+                </div>
+              </div>
+            @endif
 
             <!-- Note -->
             <div class="form-group{{ $errors->has('note') ? ' error' : '' }}">

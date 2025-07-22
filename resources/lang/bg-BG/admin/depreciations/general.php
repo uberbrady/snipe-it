@@ -14,7 +14,7 @@ return [
                       Нямате нагласена амортизация.
                       Моля настройте поне една амортизация за да видите справката.',
     'depreciation_method'                   => 'Справка за амортизации',
-    'linear_depreciation'                   => 'Linear (Default)',
-    'half_1'                                => 'Half-year convention, always applied',
-    'half_2'                                => 'Half-year convention, applied with condition',
+    'linear_depreciation'                   => 'Линеен (по подразбиране)',
+    'half_1'                                => 'Полугодишна, винаги се приложена',
+    'half_2'                                => 'Полугодишна, приложена с условие',
 ];

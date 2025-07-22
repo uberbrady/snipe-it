@@ -9,7 +9,6 @@
 {{-- Account page content --}}
 @section('content')
 
-
 @if ($acceptances = \App\Models\CheckoutAcceptance::forUser(Auth::user())->pending()->count())
   <div class="row">
     <div class="col-md-12">
@@ -22,6 +21,31 @@
           </a>
           </strong>
       </div>
+    </div>
+  </div>
+@endif
+
+{{-- Manager View Dropdown --}}
+@if (isset($settings) && $settings->manager_view_enabled && isset($subordinates) && $subordinates->count() > 1)
+  <div class="row hidden-print" style="margin-bottom: 15px;">
+    <div class="col-md-12">
+      <form method="GET" action="{{ route('view-assets') }}" class="pull-right" role="form">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="user_id" class="control-label" style="margin-right: 10px;">
+            {{ trans('general.view_user_assets') }}:
+          </label>
+          <select name="user_id" id="user_id" class="form-control select2" onchange="this.form.submit()" style="width: 250px; display: inline-block;">
+            @foreach ($subordinates as $subordinate)
+              <option value="{{ $subordinate->id }}" {{ (int)$selectedUserId === (int)$subordinate->id ? ' selected' : '' }}>
+                {{ $subordinate->present()->fullName() }}
+                @if ($subordinate->id == auth()->id())
+                  ({{ trans('general.me') }})
+                @endif
+              </option>
+            @endforeach
+          </select>
+        </div>
+      </form>
     </div>
   </div>
 @endif
@@ -83,6 +107,17 @@
               </span>
               <span class="hidden-xs hidden-sm">{{ trans('general.consumables') }}
                 {!! ($user->consumables->count() > 0 ) ? '<span class="badge badge-secondary">'.number_format($user->consumables->count()).'</span>' : '' !!}
+            </span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#eulas" data-toggle="tab">
+            <span class="hidden-lg hidden-md" aria-hidden="true">
+                <x-icon type="files" class="fa-2x" />
+              </span>
+              <span class="hidden-xs hidden-sm">{{ trans('general.eula') }}
+                {!! ($user->eulas->count() > 0 ) ? '<span class="badge badge-secondary">'.number_format($user->eulas->count()).'</span>' : '' !!}
             </span>
             </a>
           </li>
@@ -379,18 +414,14 @@
             <!-- checked out assets table -->
 
             <table
+                  data-cookie-id-table="userAssignedAssets"
                   data-toolbar="#userAssetToolbar"
-                  data-pagination="true"
                   data-id-table="userAssets"
-                  data-search="true"
                   data-side-pagination="client"
-                  data-show-columns="true"
-                  data-show-export="true"
                   data-show-footer="true"
                   data-sort-order="asc"
                   id="userAssets"
                   class="table table-striped snipe-table"
-                  data-show-fullscreen="true"
                   data-export-options='{
                   "fileName": "my-assets-{{ date('Y-m-d') }}",
                   "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
@@ -531,16 +562,11 @@
               <table
                       data-toolbar="#userLicensesToolbar"
                       data-cookie-id-table="userLicenses"
-                      data-pagination="true"
                       data-id-table="userLicenses"
-                      data-search="true"
                       data-side-pagination="client"
-                      data-show-columns="true"
-                      data-show-export="true"
                       data-show-refresh="false"
                       data-sort-order="asc"
                       id="userLicenses"
-                      data-show-fullscreen="true"
                       class="table table-striped snipe-table"
                       data-export-options='{
                     "fileName": "my-licenses-{{ date('Y-m-d') }}",
@@ -600,12 +626,7 @@
                       data-cookie-id-table="userAccessoryTable"
                       data-id-table="userAccessoryTable"
                       id="userAccessoryTable"
-                      data-search="true"
-                      data-pagination="true"
                       data-side-pagination="client"
-                      data-show-columns="true"
-                      data-show-fullscreen="true"
-                      data-show-export="true"
                       data-show-footer="true"
                       data-show-refresh="false"
                       data-sort-order="asc"
@@ -656,12 +677,7 @@
                       data-cookie-id-table="userConsumableTable"
                       data-id-table="userConsumableTable"
                       id="userConsumableTable"
-                      data-search="true"
-                      data-pagination="true"
                       data-side-pagination="client"
-                      data-show-columns="true"
-                      data-show-fullscreen="true"
-                      data-show-export="true"
                       data-show-footer="true"
                       data-show-refresh="false"
                       data-sort-order="asc"
@@ -702,7 +718,39 @@
                 </tbody>
               </table>
           </div><!-- /consumables-tab -->
+          <div class="tab-pane" id="eulas">
+            <table
+                    data-toolbar="#userEULAToolbar"
+                    data-cookie-id-table="userEULATable"
+                    data-id-table="userEULATable"
+                    id="userEULATable"
+                    data-side-pagination="client"
+                    data-show-footer="true"
+                    data-show-refresh="false"
+                    data-sort-order="asc"
+                    data-sort-name="name"
+                    class="table table-striped snipe-table table-hover"
+                    data-url="{{ route('api.self.eulas') }}"
+                    data-export-options='{
+                    "fileName": "export-eula-{{ str_slug($user->username) }}-{{ date('Y-m-d') }}",
+                    "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","delete","purchasecost", "icon"]
+                    }'>
 
+              <caption id="userEulaToolbar" class="tableCaption">
+                {{ trans('general.eula_long') }}
+              </caption>
+
+              <thead>
+              <tr>
+                <th data-visible="true" data-field="icon" style="width: 40px;" class="hidden-xs" data-formatter="iconFormatter">{{ trans('admin/hardware/table.icon') }}</th>
+                <th data-visible="true" data-field="item.name">{{ trans('general.item') }}</th>
+                <th data-visible="true" data-field="created_at" data-sortable="true" data-formatter="dateDisplayFormatter">{{ trans('general.accepted_date') }}</th>
+                <th data-field="note">{{ trans('general.notes') }}</th>
+                <th data-field="url" data-formatter="downloadFormatter">{{ trans('general.download') }}</th>
+              </tr>
+              </thead>
+            </table>
+          </div><!-- /eulas-tab -->
         </div><!-- /.tab-content -->
       </div><!-- nav-tabs-custom -->
     </div>

@@ -4,6 +4,7 @@ return array(
     'asset_categories' 					=> '资产分类',
     'category_name'  					=> '分类名称',
     'checkin_email'                     => '在签入/签出时发送邮件给用户。',
+    'email_to_initiator'                => '用户接受或拒绝结帐时发送电子邮件给你。',
     'checkin_email_notification'        => '在签入/签出时该用户会收到一封邮件。',
     'clone'                             => '克隆分类',
     'create'  							=> '创建分类',
@@ -21,5 +22,9 @@ return array(
     'use_default_eula'					=> '使用<a href="#" data-toggle="modal" data-target="#eulaModal">默认 EULA（最终用户许可协议）</a>进行替换。',
     'use_default_eula_disabled'			=> '<del>使用默认的 EULA 替换。</del>没设置默认EULA（最终用户许可协议），请在设置中增加一个。',
     'use_default_eula_column'			=> '使用默认的 EULA',
+    'import_require_acceptance'         => '需要接受',
+    'import_checkin_email'              => '发送签入邮件',
+    'import_eula_text'                  => 'EULA（最终用户许可协议）文本',
+    'import_category_type'              => '分类类型',
 
 );

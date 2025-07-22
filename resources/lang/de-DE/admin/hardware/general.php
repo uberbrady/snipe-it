@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Masseneinchecken',
     'checkin'  					=> 'Asset zurücknehmen',
     'checkout'  				=> 'Asset herausgeben',
+    'clear'                     => 'Zurücksetzen',
     'clone'  					=> 'Asset duplizieren',
     'deployable'  				=> 'Einsetzbar',
     'deleted'  					=> 'Dieses Asset wurde gelöscht.',

@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Checkin Asset',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Clear',
     'clone'  					=> 'ក្លូន ទ្រព្យសកម្ម',
     'deployable'  				=> 'អាចប្រើបាន',
     'deleted'  					=> 'ទ្រព្យសកម្មនេះត្រូវបានលុប។',

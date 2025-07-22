@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'சரிபார்ப்பு சொத்து',
     'checkout'  				=> 'சரிபார்ப்புச் சொத்து',
+    'clear'                     => 'Clear',
     'clone'  					=> 'குளோன் சொத்து',
     'deployable'  				=> 'அணியப்படுத்தக்',
     'deleted'  					=> 'This asset has been deleted.',

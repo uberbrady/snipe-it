@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Provjera imovine',
     'checkout'  				=> 'Asset Checkout',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Klonska imovina',
     'deployable'  				=> 'razmjestiti',
     'deleted'  					=> 'This asset has been deleted.',

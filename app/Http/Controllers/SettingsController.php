@@ -352,6 +352,7 @@ class SettingsController extends Controller
         $setting->dash_chart_type = $request->input('dash_chart_type');
         $setting->profile_edit = $request->input('profile_edit', 0);
         $setting->require_checkinout_notes = $request->input('require_checkinout_notes', 0);
+        $setting->manager_view_enabled = $request->input('manager_view_enabled', 0);
 
 
         if ($request->input('per_page') != '') {
@@ -650,6 +651,7 @@ class SettingsController extends Controller
 
         $setting->alert_email = $alert_email;
         $setting->admin_cc_email = $admin_cc_email;
+        $setting->admin_cc_always = $request->validated('admin_cc_always');
         $setting->alerts_enabled = $request->input('alerts_enabled', '0');
         $setting->alert_interval = $request->input('alert_interval');
         $setting->alert_threshold = $request->input('alert_threshold');
@@ -922,7 +924,7 @@ class SettingsController extends Controller
      * @since v5.0.0
      */
     public function postSamlSettings(SettingsSamlRequest $request) : RedirectResponse
-    {
+    {       
         if (is_null($setting = Setting::getSettings())) {
             return redirect()->to('admin')->with('error', trans('admin/settings/message.update.error'));
         }

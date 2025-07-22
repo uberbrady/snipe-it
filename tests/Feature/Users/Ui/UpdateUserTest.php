@@ -7,17 +7,26 @@ use App\Models\Company;
 use App\Models\User;
 use Error;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
 
 class UpdateUserTest extends TestCase
 {
+
+    public function testRequiresPermission()
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('users.edit', User::factory()->create()->id))
+            ->assertForbidden();
+    }
+
     public function testPageRenders()
     {
-        $this->actingAs(User::factory()->superuser()->create())
+        $this->actingAs(User::factory()->editUsers()->create())
             ->get(route('users.edit', User::factory()->create()->id))
             ->assertOk();
     }
 
-    public function testCannotViewEditPageForSoftDeletedUser()
+    public function testCanViewEditPageForSoftDeletedUser()
     {
         $user = User::factory()->trashed()->create();
 
@@ -28,7 +37,7 @@ class UpdateUserTest extends TestCase
 
     public function testUsersCanBeActivatedWithNumber()
     {
-        $admin = User::factory()->superuser()->create();
+        $admin = User::factory()->editUsers()->create();
         $user = User::factory()->create(['activated' => 0]);
 
         $this->actingAs($admin)
@@ -43,7 +52,7 @@ class UpdateUserTest extends TestCase
 
     public function testUsersCanBeActivatedWithBooleanTrue()
     {
-        $admin = User::factory()->superuser()->create();
+        $admin = User::factory()->editUsers()->create();
         $user = User::factory()->create(['activated' => false]);
 
         $this->actingAs($admin)
@@ -58,7 +67,7 @@ class UpdateUserTest extends TestCase
 
     public function testUsersCanBeDeactivatedWithNumber()
     {
-        $admin = User::factory()->superuser()->create();
+        $admin = User::factory()->editUsers()->create();
         $user = User::factory()->create(['activated' => true]);
 
         $this->actingAs($admin)
@@ -73,7 +82,7 @@ class UpdateUserTest extends TestCase
 
     public function testUsersCanBeDeactivatedWithBooleanFalse()
     {
-        $admin = User::factory()->superuser()->create();
+        $admin = User::factory()->editUsers()->create();
         $user = User::factory()->create(['activated' => true]);
 
         $this->actingAs($admin)
@@ -88,7 +97,7 @@ class UpdateUserTest extends TestCase
 
     public function testUsersUpdatingThemselvesDoNotDeactivateTheirAccount()
     {
-        $admin = User::factory()->superuser()->create(['activated' => true]);
+        $admin = User::factory()->editUsers()->create(['activated' => true]);
 
         $this->actingAs($admin)
             ->put(route('users.update', $admin), [
@@ -98,6 +107,87 @@ class UpdateUserTest extends TestCase
 
         $this->assertEquals(1, $admin->refresh()->activated);
     }
+
+    public function testEditingUsersCannotEditEscalationFieldsForAdmins()
+    {
+        $admin = User::factory()->editUsers()->create(['activated' => true]);
+        $hashed_original = Hash::make('!!094850394680980380kfejlskjfl');
+        $hashed_new = Hash::make('!ABCDEFGIJKL123!!!');
+        $user = User::factory()->admin()->create(['username' => 'brandnewuser', 'email'=> 'brandnewemail@example.org', 'password' => $hashed_original, 'activated' => true]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'username' => 'brandnewuser',
+            'email' => 'brandnewemail@example.org',
+            'activated' => 1,
+            'password' => $hashed_original,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('users.update', $user), [
+                'username' => 'testnewusername',
+                'email' => 'testnewemail@example.org',
+                'activated' => 0,
+                'password' => 'super-secret',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'activated' => $user->activated,
+            'password' => $hashed_original,
+        ]);
+
+        $this->assertEquals('brandnewuser', $user->refresh()->username);
+        $this->assertEquals('brandnewemail@example.org', $user->refresh()->email);
+        $this->assertEquals(1, $user->refresh()->activated);
+        $this->assertNotEquals(Hash::check('super-secret', $user->password), $user->refresh()->password);
+        $this->assertNotEquals('testnewusername', $user->refresh()->username);
+        $this->assertNotEquals('testnewemail@example.org', $user->refresh()->email);
+        $this->assertNotEquals(0, $user->refresh()->activated);
+        $this->assertNotEquals(Hash::check('super-secret', $user->password), $user->refresh()->password);
+    }
+
+    public function testAdminUsersCannotEditFieldsForSuperAdmins()
+    {
+        $admin = User::factory()->admin()->create(['activated' => true]);
+        $hashed_original = Hash::make('my-awesome-password');
+        $user = User::factory()->superuser()->create(['username' => 'brandnewuser', 'email'=> 'brandnewemail@example.org', 'password' => $hashed_original, 'activated' => true]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'username' => 'brandnewuser',
+            'email' => 'brandnewemail@example.org',
+            'activated' => 1,
+            'password' => $hashed_original,
+        ]);
+
+        $this->actingAs($admin)
+            ->put(route('users.update', $user), [
+                'username' => 'testnewusername',
+                'email' => 'testnewemail@example.org',
+                'activated' => 0,
+                'password' => 'super-secret-new-password',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'activated' => $user->activated,
+            'password' => $hashed_original,
+        ]);
+
+        $this->assertEquals('brandnewuser', $user->refresh()->username);
+        $this->assertEquals('brandnewemail@example.org', $user->refresh()->email);
+        $this->assertEquals(1, $user->refresh()->activated);
+        $this->assertTrue(Hash::check('my-awesome-password', $user->password), $user->refresh()->password);
+        $this->assertNotEquals('testnewusername', $user->refresh()->username);
+        $this->assertNotEquals('testnewemail@example.org', $user->refresh()->email);
+        $this->assertNotTrue(Hash::check('super-secret-new-password', $user->password), $user->refresh()->password);
+    }
+
 
     public function testMultiCompanyUserCannotBeMovedIfHasAssetInDifferentCompany()
     {
@@ -188,7 +278,7 @@ class UpdateUserTest extends TestCase
         $user->delete();
 
         $response = $this->actingAs(User::factory()->editUsers()->create())
-            ->put(route('users.update', $id), [
+            ->put(route('users.update', $user), [
                 'first_name' => 'test',
                 'username' => 'test',
                 'company_id' => $companyB->id,

@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Terima Harta',
     'checkout'  				=> 'Aset Checkout',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Pendua Harta',
     'deployable'  				=> 'Deployable',
     'deleted'  					=> 'Aset ini telah dipadamkan.',

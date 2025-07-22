@@ -887,7 +887,6 @@ label.form-control {
 }
 label.form-control--disabled {
   color: #959495;
-  pointer-events: none;
   cursor: not-allowed;
 }
 /** --------------------------------------- **/
@@ -1049,6 +1048,9 @@ input[type="radio"]:checked::before {
 /** this is needed to override ekko-lightboxes card view styles **/
 .bootstrap-table .fixed-table-container .table tbody tr .card-view {
   display: table-row !important;
+}
+.form-control-static {
+  padding-top: 0px;
 }
 td.text-right.text-padding-number-cell {
   padding-right: 30px !important;

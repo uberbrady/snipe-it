@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'دارایی checkin',
     'checkout'  				=> 'دارایی پرداخت',
+    'clear'                     => 'Clear',
     'clone'  					=> 'دارایی شگرف',
     'deployable'  				=> 'گسترش',
     'deleted'  					=> 'این دارایی حذف شده است.

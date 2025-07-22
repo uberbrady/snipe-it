@@ -31,6 +31,7 @@ return [
         'numeric' => 'O campo :attribute deve estar entre :min e :max.',
         'string' => 'O campo :attribute deve ter entre :min e :max caracteres.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'O campo :attribute deve ser verdadeiro ou falso.',
     'can' => 'O campo :attribute contém um valor não autorizado.',
     'confirmed' => 'A confirmação do campo :attribute não corresponde.',
@@ -196,7 +197,7 @@ return [
         'hashed_pass'      => 'Sua senha atual está incorreta',
         'dumbpwd'          => 'Essa senha é muito comum.',
         'statuslabel_type' => 'Você deve selecionar um tipo de etiqueta de situação válida',
-        'custom_field_not_found'          => 'This field does not seem to exist, please double check your custom field names.',
+        'custom_field_not_found'          => 'Este campo parece não existir, verifique novamente os nomes dos seus campos personalizados.',
         'custom_field_not_found_on_model' => 'This field seems to exist, but is not available on this Asset Model\'s fieldset.',
 
         // date_format validation with slightly less stupid messages. It duplicates a lot, but it gets the job done :(

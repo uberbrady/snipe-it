@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Eszköz visszavétele',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Eszköz klónozása',
     'deployable'  				=> 'Kiadható',
     'deleted'  					=> 'Az eszköz törölve lett.',

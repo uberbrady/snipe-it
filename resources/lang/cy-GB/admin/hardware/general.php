@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Nodi Asedau I Mewn',
     'checkout'  				=> 'Nodi Asedau Allan',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Dyblygu Ased',
     'deployable'  				=> 'Gellir ei ddefnyddio',
     'deleted'  					=> 'This asset has been deleted.',

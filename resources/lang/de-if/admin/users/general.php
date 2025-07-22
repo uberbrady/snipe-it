@@ -53,4 +53,5 @@ return [
     'next_save_user' => 'Weiter: Benutzer speichern',
     'all_assigned_list_generation' => 'Generiert am:',
     'email_user_creds_on_create' => 'Diesem Benutzer seine Zugangsdaten per E-Mail senden?',
+    'department_manager' => 'Abteilungsleiter',
 ];

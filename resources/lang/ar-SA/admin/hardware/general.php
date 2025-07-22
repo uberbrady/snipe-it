@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'ادخال الأصل',
     'checkout'  				=> 'اخراج الأصل',
+    'clear'                     => 'Clear',
     'clone'  					=> 'استنساخ الأصل',
     'deployable'  				=> 'قابل للتوزيع',
     'deleted'  					=> 'تم حذف هذا الأصل.',

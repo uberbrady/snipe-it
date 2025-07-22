@@ -17,7 +17,7 @@ return array(
     'last_login'  			=> 'Last Login',
     'last_name'  			=> 'Last Name',
     'location'  			=> 'Location',
-    'lock_passwords'		=> 'Login details cannot be changed on this installation.',
+    'lock_passwords'		=> 'Login details cannot be changed on the demo.',
     'manager' 				=> 'Manager',
     'managed_locations'     => 'Managed Locations',
     'managed_users'         => 'Managed Users',

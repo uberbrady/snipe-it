@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>ការព្រមាន៖ </strong> ទ្រព្យសកម្មនេះត្រូវបានសម្គាល់ថាមិនអាចប្រើប្រាស់បាននាពេលបច្ចុប្បន្ន។ ប្រសិនបើស្ថានភាពនេះត្រូវបានផ្លាស់ប្តូរ សូមធ្វើបច្ចុប្បន្នភាពស្ថានភាពទ្រព្យសម្បត្តិ។',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'ទ្រព្យសកម្មមិនមានទេ។',
     'does_not_exist_var' => 'ទ្រព្យសកម្មដែលមានស្លាក៖ asset_tag រកមិនឃើញទេ។',
     'no_tag' 	         => 'មិនមានស្លាកទ្រព្យសម្បត្តិត្រូវបានផ្តល់ឱ្យទេ។',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'ទ្រព្យសកម្មជាមួយស្លាក៖ ស្លាកត្រូវបានបង្កើតដោយជោគជ័យ។ <strong><a href=":link" style="color: white;">ចុចទីនេះដើម្បីមើល</a></strong>។',
         'multi_success_linked' => 'ទ្រព្យសកម្មជាមួយស្លាក៖ តំណត្រូវបានបង្កើតដោយជោគជ័យ។|: ទ្រព្យសម្បត្តិរាប់ត្រូវបានបង្កើតដោយជោគជ័យ។ ៖ តំណភ្ជាប់។',
         'partial_failure' => 'ទ្រព្យសកម្មមិនអាចបង្កើតបានទេ។ ហេតុផល៖ :failures|:រាប់ទ្រព្យសកម្មមិនអាចបង្កើតបានទេ។ មូលហេតុ៖៖ បរាជ័យ',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

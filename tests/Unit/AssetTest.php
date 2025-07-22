@@ -1,9 +1,11 @@
 <?php
 namespace Tests\Unit;
 
+use App\Http\Controllers\Assets\BulkAssetsController;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\Category;
+use App\Models\Statuslabel;
 use App\Models\User;
 use Carbon\Carbon;
 use Tests\TestCase;
@@ -237,5 +239,53 @@ class AssetTest extends TestCase
         $asset->forceSave();
 
         $this->assertFalse($asset->refresh()->getImageUrl());
+    }
+    public function testUndeployableStatusReturnsFalseifAssetIsDeployable()
+    {
+        $assets = Asset::factory()->count(3)->create();
+        $asset_ids = $assets->pluck('id')->toArray();
+
+        $bulk_assets = new BulkAssetsController();
+
+        $result = $bulk_assets->hasUndeployableStatus($asset_ids);
+
+        $this->assertFalse($result);
+    }
+    public function testUndeployableStatusReturnsTrueandTagsIfAssetIsUnDeployable()
+    {
+        $deployable = Asset::factory()->create();
+        $undeployableStatus = Statuslabel::factory()->create(['deployable' => 0]);
+        $undeployable = Asset::factory()->create(
+            [
+                'status_id' => $undeployableStatus->id
+            ]);
+
+        $bulk_assets = new BulkAssetsController();
+
+        $result = $bulk_assets->hasUndeployableStatus([$deployable->id, $undeployable->id]);
+
+        $this->assertIsArray($result);
+        $this->assertTrue($result['status']);
+        $this->assertEquals($undeployable->id, $result['tags'][0]['id']);
+        $this->assertEquals($undeployable->asset_tag, $result['tags'][0]['asset_tag']);
+    }
+
+    public function testUndeployableStatusCheckFiltersOutUndeployableIds()
+    {
+        $deployable = Asset::factory()->create();
+        $undeployableStatus = Statuslabel::factory()->create(['deployable' => 0]);
+        $undeployable = Asset::factory()->create(
+            [
+                'status_id' => $undeployableStatus->id
+            ]);
+
+        $bulk_assets = new BulkAssetsController();
+
+        $result = $bulk_assets->hasUndeployableStatus([$deployable->id, $undeployable->id]);
+
+        $undeployableIds = array_column($result['tags'], 'id');
+        $filtered = array_diff([$deployable->id, $undeployable->id], $undeployableIds);
+
+        $this->assertEquals([$deployable->id], array_values($filtered));
     }
 }

@@ -53,4 +53,5 @@ return [
     'next_save_user' => '次へ: ユーザの保存',
     'all_assigned_list_generation' => '生成日時：',
     'email_user_creds_on_create' => 'このユーザーの資格情報を電子メールで送信しますか？',
+    'department_manager' => 'Department Manager',
 ];

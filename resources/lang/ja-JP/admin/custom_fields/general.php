@@ -60,5 +60,11 @@ return [
     'display_checkin' => 'チェックインフォームに表示',
     'display_checkout' => 'チェックアウトフォームに表示',
     'display_audit' => '監査フォームに表示',
-
+    'types' => [
+        'text' => 'Text Box',
+        'listbox' => 'List Box',
+        'textarea' => 'Textarea (multi-line)',
+        'checkbox' => 'Checkbox',
+        'radio' => 'Radio Buttons',
+    ],
 ];

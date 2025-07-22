@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'רכוש',
     'checkout'  				=> 'רכוש Checkout',
+    'clear'                     => 'Clear',
     'clone'  					=> 'נכס משוכפל',
     'deployable'  				=> 'ניתן לפריסה',
     'deleted'  					=> 'הנכס הזה נמחק.',

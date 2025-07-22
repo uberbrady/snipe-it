@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Внимание: </strong> Этот актив в настоящее время помечен как не подлежащий установке. Если этот статус изменился, пожалуйста обновите статус актива.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Актив не существует.',
     'does_not_exist_var' => 'Актив с тегом :asset_tag не найден.',
     'no_tag' 	         => 'Тег актива не предоставлен.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Актив с тегом :tag успешно создан. <strong><a href=":link" style="color: white;">Нажмите для просмотра</a></strong>.',
         'multi_success_linked' => 'Актив с номером :links успешно создан.|:count активов успешно созданы. :links.',
         'partial_failure' => 'Актив не может быть создан. Причина: :failures|:count активов не могут быть созданы. Причины: :failures',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

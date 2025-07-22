@@ -202,6 +202,7 @@ class LicensePresenter extends Presenter
             'title' => trans('general.checkin').'/'.trans('general.checkout'),
             'visible' => true,
             'formatter' => 'licensesInOutFormatter',
+            'printIgnore' => true,
         ];
 
         $layout[] = [
@@ -211,6 +212,7 @@ class LicensePresenter extends Presenter
             'switchable' => false,
             'title' => trans('table.actions'),
             'formatter' => 'licensesActionsFormatter',
+            'printIgnore' => true,
         ];
 
         return json_encode($layout);

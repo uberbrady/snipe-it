@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Verifica activ',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Cloneaza activ',
     'deployable'  				=> 'Lansabil',
     'deleted'  					=> 'Acest activ a fost șters.',

@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Warnung: </strong> Dieses Asset wurde als derzeit nicht einsetzbar markiert. Wenn sich dieser Status geändert hat, aktualisiere bitte den Asset-Status.',
+    'undeployable' 		 => 'Die folgenden Assets sind nicht Einsetzbar und wurden aus der Herausgabe entfernt: :asset_tags',
     'does_not_exist' 	 => 'Asset existiert nicht.',
     'does_not_exist_var' => 'Asset mit Asset-Tag :asset_tag nicht gefunden.',
     'no_tag' 	         => 'Kein Asset-Tag angegeben.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Asset mit Tag :tag wurde erfolgreich erstellt. <strong><a href=":link" style="color: white;">Klicke hier, um</a></strong> anzuzeigen.',
         'multi_success_linked' => 'Asset mit Tag :links wurde erfolgreich erstellt.|:count Assets wurden erfolgreich erstellt. :links.',
         'partial_failure' => 'Ein Asset konnte nicht erstellt werden. Grund: :failures|:count Assets konnten nicht erstellt werden. Gründe: :failures',
+        'target_not_found' => [
+            'user' => 'Der zugeordnete Benutzer konnte nicht gefunden werden.',
+            'asset' => 'Das zugewiesene Asset konnte nicht gefunden werden.',
+            'location' => 'Der zugeordnete Standort konnte nicht gefunden werden.',
+        ],
     ],
 
     'update' => [

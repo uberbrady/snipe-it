@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Checkin Asset',
     'checkout'  				=> 'Ταμείο ελέγχου',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Κλώνος χρήστη',
     'deployable'  				=> 'Προς ανάπτυξη',
     'deleted'  					=> 'Αυτό το στοιχείο έχει διαγραφεί.',

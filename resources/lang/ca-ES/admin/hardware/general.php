@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Checkin Asset',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Clone Asset',
     'deployable'  				=> 'Deployable',
     'deleted'  					=> 'This asset has been deleted.',

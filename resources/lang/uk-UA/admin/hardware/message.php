@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Попередження: </strong> цей актив позначено як такий, що наразі неможливо розгорнути. Якщо цей статус змінився, оновіть статус активу.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Медіафайл не існує.',
     'does_not_exist_var' => 'Активу з тегом :asset_tag не знайдено.',
     'no_tag' 	         => 'Тег Активу не надано.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Активу з тегом :tag було успішно створено. <strong><a href=":link" style="color: white;">Натисніть тут, щоб переглянути</a></strong>.',
         'multi_success_linked' => 'Активу з тегом :links було успішно створено.|:count активів було успішно створено. :links.',
         'partial_failure' => 'Актив не може бути створений. Причина: :відмова створення |:count активів. Причина: :відмова',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

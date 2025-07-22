@@ -30,11 +30,7 @@
         <table
                 data-cookie-id-table="customFieldsetsTable"
                 data-id-table="customFieldsetsTable"
-                data-search="true"
                 data-side-pagination="client"
-                data-show-columns="true"
-                data-show-export="true"
-                data-show-refresh="true"
                 data-sort-order="asc"
                 data-sort-name="name"
                 id="customFieldsTable"
@@ -130,11 +126,7 @@
         <table
                 data-cookie-id-table="customFieldsTable"
                 data-id-table="customFieldsTable"
-                data-search="true"
                 data-side-pagination="client"
-                data-show-columns="true"
-                data-show-export="true"
-                data-show-refresh="true"
                 data-sort-order="asc"
                 data-sort-name="name"
                 id="customFieldsTable"

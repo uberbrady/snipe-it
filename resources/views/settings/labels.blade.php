@@ -68,18 +68,18 @@
 
                                 <div class="col-md-9 col-md-offset-3">
                                     <table
-                                        data-click-to-select="true"
+
                                         data-columns="{{ \App\Presenters\LabelPresenter::dataTableLayout() }}"
                                         data-cookie="true"
                                         data-cookie-id-table="label2TemplateTable"
                                         data-id-table="label2TemplateTable"
-                                        data-pagination="true"
-                                        data-search="true"
+
+
                                         data-select-item-name="label2_template"
                                         data-id-field="name"
-                                        data-show-columns="true"
-                                        data-show-fullscreen="true"
-                                        data-show-refresh="true"
+
+
+
                                         data-side-pagination="server"
                                         data-sort-name="name"
                                         data-sort-order="asc"
@@ -426,15 +426,13 @@
                                         <input class="form-control" aria-label="labels_width" name="labels_width" type="text" value="{{ old('labels_width', $setting->labels_width) }}" id="labels_width">
                                         <div class="input-group-addon">{{ trans('admin/settings/general.width_w') }}</div>
                                     </div>
+                                    {!! $errors->first('labels_width', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                 </div>
                                 <div class="col-md-3">
                                     <div class="input-group">
                                         <input class="form-control" aria-label="labels_height" name="labels_height" type="text" value="{{ old('labels_height', $setting->labels_height) }}">
                                         <div class="input-group-addon">{{ trans('admin/settings/general.height_h') }}</div>
                                     </div>
-                                </div>
-                                <div class="col-md-9 col-md-offset-3">
-                                    {!! $errors->first('labels_width', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                     {!! $errors->first('labels_height', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                 </div>
                             </div>
@@ -485,10 +483,6 @@
                                         <div class="input-group-addon">{{ trans('admin/settings/general.left') }}</div>
                                     </div>
 
-                                </div>
-                                <div class="col-md-9 col-md-offset-3">
-                                    {!! $errors->first('labels_width', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
-                                    {!! $errors->first('labels_height', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                 </div>
                             </div>
 

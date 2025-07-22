@@ -31,6 +31,7 @@ return [
         'numeric' => 'Polje :attribute mora biti između :min i :max.',
         'string' => 'Polje :attribute mora biti između :min i :max karaktera.',
     ],
+    'valid_regex' => 'Regularni izraz nije ispravan.',
     'boolean' => 'Polje :attribute mora biti tačno ili netačno.',
     'can' => 'Polje :attribute mora da sadrži neovlašćenu vrednost.',
     'confirmed' => 'Potvrda polja :attribute se ne poklapa.',

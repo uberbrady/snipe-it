@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Uwaga:</strong> Ten nabytek został oznaczony jako obecnie nie przypisany. Jeśli jego status uległ zmianie proszę zaktualizować status nabytku.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Nabytek/zasób nie istnieje.',
     'does_not_exist_var' => 'Nie znaleziono zasobu o tagu :asset_tag.',
     'no_tag' 	         => 'Nie podano tagu zasobu.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Zasób o tagu :tag został utworzony pomyślnie. <strong><a href=":link" style="color: white;">Kliknij tutaj, aby wyświetlić</a></strong>.',
         'multi_success_linked' => 'Zasób z tagiem :link został utworzony pomyślnie.|:count aktywów zostało utworzonych pomyślnie. :links.',
         'partial_failure' => 'Nie można utworzyć zasobu. Powód: :failures|:count aktywów nie mogły zostać utworzone. Powód: :failed',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

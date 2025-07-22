@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Hubi Hantida',
     'checkout'  				=> 'Hubi Hantida',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Hantida Clone',
     'deployable'  				=> 'La geyn karo',
     'deleted'  					=> 'Hantidan waa la tirtiray.',

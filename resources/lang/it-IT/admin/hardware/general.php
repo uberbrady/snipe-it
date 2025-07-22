@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Check-in massivo',
     'checkin'  					=> 'Restituzione Bene',
     'checkout'  				=> 'Assegnazione Bene',
+    'clear'                     => 'Pulisci',
     'clone'  					=> 'Copia Bene',
     'deployable'  				=> 'Assegnabile',
     'deleted'  					=> 'Questo bene è stato eliminato.',

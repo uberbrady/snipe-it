@@ -31,6 +31,7 @@ return [
         'numeric' => 'crwdns12356:0crwdne12356:0',
         'string' => 'crwdns12358:0crwdne12358:0',
     ],
+    'valid_regex' => 'crwdns13402:0crwdne13402:0',
     'boolean' => 'crwdns12360:0crwdne12360:0',
     'can' => 'crwdns12362:0crwdne12362:0',
     'confirmed' => 'crwdns12364:0crwdne12364:0',

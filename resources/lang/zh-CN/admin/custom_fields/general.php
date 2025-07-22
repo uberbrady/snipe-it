@@ -5,7 +5,7 @@ return [
     'manage'                    => '管理',
     'field'		                => '字段',
     'about_fieldsets_title'		=> '关于字段集',
-    'about_fieldsets_text'		=> '字段集允许你为常用的资产型号定义一组可重用的字段。',
+    'about_fieldsets_text'		=> '字段集允许你创建用于特定资产模型类型可复用的自定义字段组。',
     'custom_format'             => '自定义正则表达式格式...',
     'encrypt_field'      	        => '在数据库中加密此字段',
     'encrypt_field_help'      => '警告︰ 对字段的加密将导致该字段无法用于搜索',
@@ -60,5 +60,11 @@ return [
     'display_checkin' => '在归还表格中显示',
     'display_checkout' => '在签出表格中显示',
     'display_audit' => '在盘点表中显示',
-
+    'types' => [
+        'text' => '文本框',
+        'listbox' => '列表框',
+        'textarea' => '文本区（多行）',
+        'checkbox' => '复选框',
+        'radio' => '单选按钮',
+    ],
 ];

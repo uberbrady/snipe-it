@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>警告： </strong> 此资产已被标记为当前不可部署。如果此状态已经改变，请更新资产状态。',
+    'undeployable' 		 => '以下资源无法部署并且已经从签出中移除：:asset_tags',
     'does_not_exist' 	 => '资产不存在',
     'does_not_exist_var' => '找不到标签为 :asset_tag 的资产',
     'no_tag' 	         => '未提供资产标签。',
@@ -19,6 +19,11 @@ return [
         'success_linked' => '带有 :tag 标签的资产已成功创建。<strong><a href=":link" style="color: white;">点击此处查看</a></strong>。',
         'multi_success_linked' => '带有标签 :links 的资产已成功创建。| :count 个资产已成功创建。 :links。',
         'partial_failure' => '无法创建资产。原因：:failures|:count 个资产无法创建。原因：:failures',
+        'target_not_found' => [
+            'user' => '找不到被分配的用户。',
+            'asset' => '找不到被分配的资产。',
+            'location' => '找不到被分配的位置。',
+        ],
     ],
 
     'update' => [

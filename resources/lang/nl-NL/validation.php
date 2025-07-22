@@ -31,6 +31,7 @@ return [
         'numeric' => ':attribute veld moet tussen de :min en de :max liggen.',
         'string' => ':attribute veld moet tussen :min en :max karakters lang zijn.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => ':attribute moet waar of onwaar zijn.',
     'can' => ':attribute veld bevat een niet-geautoriseerde waarde.',
     'confirmed' => ':attribute veld bevestiging komt niet overeen.',

@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Varovanie: </strong> Tento majetok bol označný ako neodovzdateľný. Ak došlo k zmene, prosím upravte aktuálny stav majetku.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Majetok neexistuje.',
     'does_not_exist_var' => 'Majetok s označením :asset_tag nebol nájdený.',
     'no_tag' 	         => 'Nebolo zadané žiadne označenie majetku.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Majetok s označením :tag bol úspešne pridaný. <strong><a href=":link" style="color: white;">Kliknite sem pre zobrazenie</a></strong>.',
         'multi_success_linked' => 'Majetok s označením :links bol úspešne pridaný.|:count majetkov bolo úspešne pridaných :links.',
         'partial_failure' => 'Majetok sa nepodarilo pridať. Dôvod: :failuers|:count majetkov nebolo možné pridať. Dôvody: :failures',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

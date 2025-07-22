@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>警告: </strong> このアセットは現在デプロイ不可能としてマークされています。このステータスが変更された場合は、アセットのステータスを更新してください。',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => '資産が存在しません。',
     'does_not_exist_var' => 'タグ:asset_tag を持つアセットが見つかりません。',
     'no_tag' 	         => 'アセットタグが提供されていません。',
@@ -19,6 +19,11 @@ return [
         'success_linked' => ':tag を持つアセットは正常に作成されました。 <strong><a href=":link" style="color: white;"></a></strong> を表示するにはここをクリックしてください。',
         'multi_success_linked' => 'タグ:links のアセットが正常に作成されました。|:count アセットが正常に作成されました。',
         'partial_failure' => 'An asset was unable to be created. Reason: :failures|:count assets were unable to be created. Reasons: :failures',
+        'target_not_found' => [
+            'user' => '割り当てられたユーザーが見つかりません。',
+            'asset' => '割り当てられた資産が見つかりません。',
+            'location' => '割り当てられた場所が見つかりません。',
+        ],
     ],
 
     'update' => [

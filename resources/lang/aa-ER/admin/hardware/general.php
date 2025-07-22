@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'crwdns12904:0crwdne12904:0',
     'checkin'  					=> 'crwdns756:0crwdne756:0',
     'checkout'  				=> 'crwdns1905:0crwdne1905:0',
+    'clear'                     => 'crwdns13286:0crwdne13286:0',
     'clone'  					=> 'crwdns758:0crwdne758:0',
     'deployable'  				=> 'crwdns1169:0crwdne1169:0',
     'deleted'  					=> 'crwdns6079:0crwdne6079:0',

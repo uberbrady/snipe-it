@@ -31,6 +31,7 @@ return [
         'numeric' => 'វាល :attribute ត្រូវតែស្ថិតនៅចន្លោះ :min និង :max។',
         'string' => 'វាល :attribute ត្រូវតែស្ថិតនៅចន្លោះ :min និង :max តួអក្សរ។',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'វាល :attribute ត្រូវតែពិត ឬមិនពិត។',
     'can' => 'វាល :attribute មានតម្លៃដែលមិនមានការអនុញ្ញាត។',
     'confirmed' => 'ការបញ្ជាក់វាល :attribute មិនត្រូវគ្នាទេ។',

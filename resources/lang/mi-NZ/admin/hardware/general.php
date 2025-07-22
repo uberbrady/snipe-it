@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Tirohia te Ahua',
     'checkout'  				=> 'Whakaritehia te Ahua',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Te Tino Tae',
     'deployable'  				=> 'Kaore e taea',
     'deleted'  					=> 'This asset has been deleted.',

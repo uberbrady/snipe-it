@@ -115,6 +115,7 @@ class AssetsController extends Controller
             'byod',
             'asset_eol_date',
             'requestable',
+            'jobtitle',
         ];
 
         $filter = [];
@@ -395,6 +396,9 @@ class AssetsController extends Controller
                 break;
             case 'assigned_to':
                 $assets->OrderAssigned($order);
+                break;
+            case 'jobtitle':
+                $assets->OrderByJobTitle($order);
                 break;
             case 'created_by':
                 $assets->OrderByCreatedByName($order);

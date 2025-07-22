@@ -20,7 +20,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
     <link rel="apple-touch-startup-image"
           href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->logo)) :  config('app.url').'/img/snipe-logo-bug.png' }}">
     <link rel="shortcut icon" type="image/ico"
-          href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }} ">
+          href="{{ ($snipeSettings) && ($snipeSettings->favicon!='') ?  Storage::disk('public')->url(e($snipeSettings->favicon)) : config('app.url').'/favicon.ico' }}">
 
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -573,21 +573,21 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                                 {{ trans('general.deleted') }}
                                             </a>
                                         </li>
-                                        <li>
+                                        <li {!! (Request::is('maintenances') ? ' class="active"' : '') !!}>
                                             <a href="{{ route('maintenances.index') }}">
                                                 {{ trans('general.asset_maintenances') }}
                                             </a>
                                         </li>
                                     @endcan
                                     @can('admin')
-                                        <li id="import-history-sidenav-option">
+                                        <li id="import-history-sidenav-option" {!! (Request::is('hardware/history') ? ' class="active"' : '') !!}>
                                             <a href="{{ url('hardware/history') }}">
                                                 {{ trans('general.import-history') }}
                                             </a>
                                         </li>
                                     @endcan
                                     @can('audit', \App\Models\Asset::class)
-                                        <li id="bulk-audit-sidenav-option">
+                                        <li id="bulk-audit-sidenav-option" {!! (Request::is('hardware/bulkaudit') ? ' class="active"' : '') !!}>
                                             <a href="{{ route('assets.bulkaudit') }}">
                                                 {{ trans('general.bulkaudit') }}
                                             </a>
@@ -646,7 +646,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
                             </li>
                         @endcan
                         @can('import')
-                            <li id="import-sidenav-option"{!! (Request::is('import/*') ? ' class="active"' : '') !!}>
+                            <li id="import-sidenav-option"{!! (Request::is('import*') ? ' class="active"' : '') !!}>
                                 <a href="{{ route('imports.index') }}">
                                     <x-icon type="import" class="fa-fw" />
                                     <span>{{ trans('general.import') }}</span>
@@ -680,64 +680,64 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                     @endcan
 
                                     @can('view', \App\Models\AssetModel::class)
-                                        <li>
-                                            <a href="{{ route('models.index') }}" {{ (Request::is('/assetmodels') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('models') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('models.index') }}">
                                                 {{ trans('general.asset_models') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Category::class)
-                                        <li>
-                                            <a href="{{ route('categories.index') }}" {{ (Request::is('/categories') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('categories') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('categories.index') }}">
                                                 {{ trans('general.categories') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Manufacturer::class)
-                                        <li>
-                                            <a href="{{ route('manufacturers.index') }}" {{ (Request::is('/manufacturers') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('manufacturers') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('manufacturers.index') }}">
                                                 {{ trans('general.manufacturers') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Supplier::class)
-                                        <li>
-                                            <a href="{{ route('suppliers.index') }}" {{ (Request::is('/suppliers') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('suppliers') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('suppliers.index') }}">
                                                 {{ trans('general.suppliers') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Department::class)
-                                        <li>
-                                            <a href="{{ route('departments.index') }}" {{ (Request::is('/departments') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('departments') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('departments.index') }}">
                                                 {{ trans('general.departments') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Location::class)
-                                        <li>
-                                            <a href="{{ route('locations.index') }}" {{ (Request::is('/locations') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('locations') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('locations.index') }}">
                                                 {{ trans('general.locations') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Company::class)
-                                        <li>
-                                            <a href="{{ route('companies.index') }}" {{ (Request::is('/companies') ? ' class="active"' : '') }}>
+                                        <li {{!! (Request::is('companies') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('companies.index') }}">
                                                 {{ trans('general.companies') }}
                                             </a>
                                         </li>
                                     @endcan
 
                                     @can('view', \App\Models\Depreciation::class)
-                                        <li>
-                                            <a href="{{ route('depreciations.index') }}" {{ (Request::is('/depreciations') ? ' class="active"' : '') }}>
+                                        <li  {{!! (Request::is('depreciations') ? ' class="active"' : '') !!}}>
+                                            <a href="{{ route('depreciations.index') }}">
                                                 {{ trans('general.depreciation') }}
                                             </a>
                                         </li>
@@ -755,42 +755,42 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                 </a>
 
                                 <ul class="treeview-menu">
-                                    <li>
-                                        <a href="{{ route('reports.activity') }}" {{ (Request::is('reports/activity') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/activity') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ route('reports.activity') }}">
                                             {{ trans('general.activity_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/custom') }}" {{ (Request::is('reports/custom') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/custom') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/custom') }}">
                                             {{ trans('general.custom_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ route('reports.audit') }}" {{ (Request::is('reports.audit') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/audit') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ route('reports.audit') }}">
                                             {{ trans('general.audit_report') }}</a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/depreciation') }}" {{ (Request::is('reports/depreciation') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/depreciation') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/depreciation') }}">
                                             {{ trans('general.depreciation_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/licenses') }}" {{ (Request::is('reports/licenses') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/licenses') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/licenses') }}">
                                             {{ trans('general.license_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/asset_maintenances') }}" {{ (Request::is('reports/asset_maintenances') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/asset_maintenances') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/asset_maintenances') }}">
                                             {{ trans('general.asset_maintenance_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/unaccepted_assets') }}" {{ (Request::is('reports/unaccepted_assets') ? ' class="active"' : '') }}>
+                                    <li {{!! (Request::is('reports/unaccepted_assets') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/unaccepted_assets') }}">
                                             {{ trans('general.unaccepted_asset_report') }}
                                         </a>
                                     </li>
-                                    <li>
-                                        <a href="{{ url('reports/accessories') }}" {{ (Request::is('reports/accessories') ? ' class="active"' : '') }}>
+                                    <li  {{!! (Request::is('reports/accessories') ? ' class="active"' : '') !!}}>
+                                        <a href="{{ url('reports/accessories') }}">
                                             {{ trans('general.accessory_report') }}
                                         </a>
                                     </li>
@@ -852,9 +852,9 @@ dir="{{ Helper::determineLanguageDirection() }}">
                                             <li class="breadcrumb-item">
                                                 <a href="{{ $crumbs->url() }}">
                                                     @if ($loop->first)
-                                                        {!! Blade::render($crumbs->title()) !!}
+                                                        <x-icon type="home" />
                                                     @else
-                                                        {{ Blade::render($crumbs->title()) }}
+                                                        {{ $crumbs->title() }}
                                                     @endif
                                                 </a>
                                                 <x-icon type="angle-right" />
@@ -921,15 +921,14 @@ dir="{{ Helper::determineLanguageDirection() }}">
             <footer class="main-footer hidden-print" style="display:grid;flex-direction:column;">
 
                 <div class="1hidden-xs pull-left">
-                    <div class="pull-left" >
-                        <a target="_blank" href="https://snipeitapp.com" rel="noopener">Snipe-IT</a> is open source software, made with <x-icon type="heart" style="color: #a94442; font-size: 10px" />
-                            <span class="sr-only">love</span> by <a href="https://bsky.app/profile/snipeitapp.com" rel="noopener">@snipeitapp</a>.
+                    <div class="pull-left">
+                         {!! trans('general.footer_credit') !!}
                     </div>
                     <div class="pull-right">
                     @if ($snipeSettings->version_footer!='off')
                         @if (($snipeSettings->version_footer=='on') || (($snipeSettings->version_footer=='admin') && (Auth::user()->isSuperUser()=='1')))
-                            &nbsp; <strong>Version</strong> {{ config('version.app_version') }} -
-                            build {{ config('version.build_version') }} ({{ config('version.branch') }})
+                            &nbsp; <strong>{{ trans('general.version') }}</strong> {{ config('version.app_version') }} -
+                            {{ trans('general.build') }} {{ config('version.build_version') }} ({{ config('version.branch') }})
                         @endif
                     @endif
 
@@ -1028,6 +1027,68 @@ dir="{{ Helper::determineLanguageDirection() }}">
 
 
         <script nonce="{{ csrf_token() }}">
+
+            $.fn.datepicker.dates['{{ app()->getLocale() }}'] = {
+                days: [
+                    "{{ trans('datepicker.days.sunday') }}",
+                    "{{ trans('datepicker.days.monday') }}",
+                    "{{ trans('datepicker.days.tuesday') }}",
+                    "{{ trans('datepicker.days.wednesday') }}",
+                    "{{ trans('datepicker.days.thursday') }}",
+                    "{{ trans('datepicker.days.friday') }}",
+                    "{{ trans('datepicker.days.saturday') }}"
+                ],
+                daysShort: [
+                    "{{ trans('datepicker.short_days.sunday') }}",
+                    "{{ trans('datepicker.short_days.monday') }}",
+                    "{{ trans('datepicker.short_days.tuesday') }}",
+                    "{{ trans('datepicker.short_days.wednesday') }}",
+                    "{{ trans('datepicker.short_days.thursday') }}",
+                    "{{ trans('datepicker.short_days.friday') }}",
+                    "{{ trans('datepicker.short_days.saturday') }}"
+                ],
+                daysMin: [
+                    "{{ trans('datepicker.min_days.sunday') }}",
+                    "{{ trans('datepicker.min_days.monday') }}",
+                    "{{ trans('datepicker.min_days.tuesday') }}",
+                    "{{ trans('datepicker.min_days.wednesday') }}",
+                    "{{ trans('datepicker.min_days.thursday') }}",
+                    "{{ trans('datepicker.min_days.friday') }}",
+                    "{{ trans('datepicker.min_days.saturday') }}"
+                ],
+                months: [
+                    "{{ trans('datepicker.months.january') }}",
+                    "{{ trans('datepicker.months.february') }}",
+                    "{{ trans('datepicker.months.march') }}",
+                    "{{ trans('datepicker.months.april') }}",
+                    "{{ trans('datepicker.months.may') }}",
+                    "{{ trans('datepicker.months.june') }}",
+                    "{{ trans('datepicker.months.july') }}",
+                    "{{ trans('datepicker.months.august') }}",
+                    "{{ trans('datepicker.months.september') }}",
+                    "{{ trans('datepicker.months.october') }}",
+                    "{{ trans('datepicker.months.november') }}",
+                    "{{ trans('datepicker.months.december') }}",
+                ],
+                monthsShort:  [
+                    "{{ trans('datepicker.months_short.january') }}",
+                    "{{ trans('datepicker.months_short.february') }}",
+                    "{{ trans('datepicker.months_short.march') }}",
+                    "{{ trans('datepicker.months_short.april') }}",
+                    "{{ trans('datepicker.months_short.may') }}",
+                    "{{ trans('datepicker.months_short.june') }}",
+                    "{{ trans('datepicker.months_short.july') }}",
+                    "{{ trans('datepicker.months_short.august') }}",
+                    "{{ trans('datepicker.months_short.september') }}",
+                    "{{ trans('datepicker.months_short.october') }}",
+                    "{{ trans('datepicker.months_short.november') }}",
+                    "{{ trans('datepicker.months_short.december') }}",
+                ],
+                today: "{{ trans('datepicker.today') }}",
+                clear: "{{ trans('datepicker.clear') }}",
+                format: "yyyy-mm-dd",
+                weekStart: 0
+            };
 
             var clipboard = new ClipboardJS('.js-copy-link');
 

@@ -149,6 +149,7 @@
                   <x-icon type="bell" class="fa-4x"/>
                   <br><br>
                   <span class="name">{{ trans('admin/settings/general.notifications') }}</span>
+                  <span class="keywords" aria-hidden="true" style="display:none"> {{ trans('admin/settings/general.keywords.notifications') }}</span>
 
                 </a>
               </h5>

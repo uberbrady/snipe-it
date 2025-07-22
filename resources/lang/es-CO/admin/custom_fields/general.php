@@ -5,7 +5,7 @@ return [
     'manage'                    => 'Administrar',
     'field'		                => 'Campo',
     'about_fieldsets_title'		=> 'Acerca de los grupos de campos',
-    'about_fieldsets_text'		=> 'Fieldsets te permite crear grupos de campos personalizados que son frecuentemente reutilizados para modelos específicos de equipos.',
+    'about_fieldsets_text'		=> 'Los grupos de campos le permiten agrupar campos personalizados que se reutilizan frecuentemente para determinados modelos de activos.',
     'custom_format'             => 'Expresión regular personalizada...',
     'encrypt_field'      	        => 'Cifrar el valor de este campo en la base de datos',
     'encrypt_field_help'      => 'ADVERTENCIA: Cifrar un campo hace que no se pueda buscar.',
@@ -60,5 +60,11 @@ return [
     'display_checkin' => 'Display in checkin forms',
     'display_checkout' => 'Display in checkout forms',
     'display_audit' => 'Display in audit forms',
-
+    'types' => [
+        'text' => 'Text Box',
+        'listbox' => 'List Box',
+        'textarea' => 'Textarea (multi-line)',
+        'checkbox' => 'Checkbox',
+        'radio' => 'Radio Buttons',
+    ],
 ];

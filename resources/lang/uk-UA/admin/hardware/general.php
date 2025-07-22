@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Масово видати',
     'checkin'  					=> 'Прийняти актив',
     'checkout'  				=> 'Видати актив',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Клонувати актив',
     'deployable'  				=> 'Розгортання',
     'deleted'  					=> 'Цей медіафайл видалений.',

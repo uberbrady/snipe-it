@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Grupno razduživanje',
     'checkin'  					=> 'Checkin Asset',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Obriši',
     'clone'  					=> 'Kloniraj imovinu',
     'deployable'  				=> 'Može se razmestiti',
     'deleted'  					=> 'Imovina je obrisana.',

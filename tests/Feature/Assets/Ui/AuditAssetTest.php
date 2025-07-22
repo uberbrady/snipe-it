@@ -36,6 +36,7 @@ class AuditAssetTest extends TestCase
             ->assertRedirect(route('hardware.index'));
         $this->followRedirects($response)->assertSee('success');
 
+        $this->assertHasTheseActionLogs($asset, ['create', 'audit']);
     }
 
     public function testAssetAuditPostIsRedirectedToAssetPageIfRedirectSelectionIsAsset()
@@ -51,6 +52,7 @@ class AuditAssetTest extends TestCase
             ->assertStatus(302)
             ->assertRedirect(route('hardware.show', $asset));
         $this->followRedirects($response)->assertSee('success');
+        $this->assertHasTheseActionLogs($asset, ['create', 'audit']); // WAT.
     }
 
     public function testAssetAuditPostIsRedirectedToAuditDuePageIfRedirectSelectionIsList()
@@ -66,6 +68,7 @@ class AuditAssetTest extends TestCase
             ->assertStatus(302)
             ->assertRedirect(route('assets.audit.due'));
         $this->followRedirects($response)->assertSee('success');
+        $this->assertHasTheseActionLogs($asset, ['create', 'audit']);
     }
 
 }

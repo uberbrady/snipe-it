@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Aviso: </strong> Este artigo foi assinalado como "não implementável". Se este estado mudou, por favor atualize o estado do artigo.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Artigo não existente.',
     'does_not_exist_var' => 'Ativo com a tag :asset_tag não encontrado.',
     'no_tag' 	         => 'No asset tag provided.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'O ativo com a tag :tag foi criado com sucesso. <strong><a href=":link" style="color: white;">clique aqui para ver</a></strong>.',
         'multi_success_linked' => 'Asset with tag :links was created successfully.|:count assets were created succesfully. :links.',
         'partial_failure' => 'An asset was unable to be created. Reason: :failures|:count assets were unable to be created. Reasons: :failures',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Checka in tillgång',
     'checkout'  				=> 'Checka ut tillgång',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Kopiera tillgång',
     'deployable'  				=> 'Tillgänglig',
     'deleted'  					=> 'Denna tillgång har tagits bort.',

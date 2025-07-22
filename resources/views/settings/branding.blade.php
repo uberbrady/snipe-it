@@ -235,7 +235,7 @@
                                 <div class="col-md-3">
                                     <label for="header_color">{{ trans('admin/settings/general.header_color') }}</label>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-5 col-xs-5 col-sm-3 col-md-4 col-lg-3 col-xl-3">
                                     <div class="input-group header-color">
                                         <input class="form-control" placeholder="#FF0000" aria-label="header_color" name="header_color" type="text" id="header_color" value="{{ old('header_color', ($setting->header_color ?? '#3c8dbc')) }}">
                                         <div class="input-group-addon">
@@ -252,7 +252,7 @@
                                     <label for="skin">{{ trans('general.skin') }}</label>
                                 </div>
                                 <div class="col-md-9">
-                                    {!! Form::skin('skin', old('skin', $setting->skin), 'select2') !!}
+                                    <x-input.skin name="skin" :selected="old('skin', $setting->skin)" />
                                     {!! $errors->first('skin', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                 </div>
                             </div>

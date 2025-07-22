@@ -31,6 +31,7 @@ return [
         'numeric' => 'Pole :attribute musí obsahovať hodnotu medzi :min a :max.',
         'string' => 'Pole :attribute musí obsahovať hodnotu medzi :min a :max znamkmi.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'Pole :attribút musí obsahovať hodnoty pravda alebo nepravda.',
     'can' => 'Pole :attribute obsahuje nepovolenú hodnotu.',
     'confirmed' => 'Pole :attribute nesedí s overením.',

@@ -2,8 +2,8 @@
     "/js/build/app.js": "/js/build/app.js?id=19253af36b58ed3fb6770c7bb944f079",
     "/css/dist/skins/skin-black-dark.css": "/css/dist/skins/skin-black-dark.css?id=78bfb1c7b5782df4fb0ac7e36f80f847",
     "/css/dist/skins/_all-skins.css": "/css/dist/skins/_all-skins.css?id=503d0b09e157a22f555e3670d1ec9bb5",
-    "/css/build/overrides.css": "/css/build/overrides.css?id=2bfc7b71d951c5ac026dbc034f7373b1",
-    "/css/build/app.css": "/css/build/app.css?id=4b4c2f1225d59efa7a22b76f7bbe39d8",
+    "/css/build/overrides.css": "/css/build/overrides.css?id=a2147e7a0e0117ab3d20cce276e362e5",
+    "/css/build/app.css": "/css/build/app.css?id=80d437dcee5ae27fc5e68f85beea4b09",
     "/css/build/AdminLTE.css": "/css/build/AdminLTE.css?id=4ea0068716c1bb2434d87a16d51b98c9",
     "/css/dist/skins/skin-yellow.css": "/css/dist/skins/skin-yellow.css?id=7b315b9612b8fde8f9c5b0ddb6bba690",
     "/css/dist/skins/skin-yellow-dark.css": "/css/dist/skins/skin-yellow-dark.css?id=f6b2e7fa795596ac4754500c9c30eacc",
@@ -19,7 +19,7 @@
     "/css/dist/skins/skin-blue.css": "/css/dist/skins/skin-blue.css?id=a82b065847bf3cd5d713c04ee8dc86c6",
     "/css/dist/skins/skin-blue-dark.css": "/css/dist/skins/skin-blue-dark.css?id=7aacfabbafd138c5af6420609f97820d",
     "/css/dist/skins/skin-black.css": "/css/dist/skins/skin-black.css?id=76482123f6c70e866d6b971ba91de7bb",
-    "/css/dist/all.css": "/css/dist/all.css?id=12e96a25d0dc3ee39e9d3ce97044fbbf",
+    "/css/dist/all.css": "/css/dist/all.css?id=c357227b5654c50afb9797141ac32dff",
     "/css/dist/signature-pad.css": "/css/dist/signature-pad.css?id=6a89d3cd901305e66ced1cf5f13147f7",
     "/css/dist/signature-pad.min.css": "/css/dist/signature-pad.min.css?id=6a89d3cd901305e66ced1cf5f13147f7",
     "/js/select2/i18n/af.js": "/js/select2/i18n/af.js?id=4f6fcd73488ce79fae1b7a90aceaecde",
@@ -110,6 +110,6 @@
     "/css/dist/skins/skin-yellow.min.css": "/css/dist/skins/skin-yellow.min.css?id=7b315b9612b8fde8f9c5b0ddb6bba690",
     "/css/dist/bootstrap-table.css": "/css/dist/bootstrap-table.css?id=54d676a6ea8677dd48f6c4b3041292cf",
     "/js/build/vendor.js": "/js/build/vendor.js?id=89dffa552c6e3abe3a2aac6c9c7b466b",
-    "/js/dist/bootstrap-table.js": "/js/dist/bootstrap-table.js?id=783d3a8076337744f0176d60e1041ea4",
+    "/js/dist/bootstrap-table.js": "/js/dist/bootstrap-table.js?id=60097b6b56d80cbc76257d4ecf6f57b4",
     "/js/dist/all.js": "/js/dist/all.js?id=8c6d7286f667eeb62a0a28a09851a6c3"
 }

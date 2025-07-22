@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> '資産をチェックイン',
     'checkout'  				=> '資産をチェックアウト',
+    'clear'                     => 'Clear',
     'clone'  					=> '資産を複製',
     'deployable'  				=> '配備可能',
     'deleted'  					=> 'この資産は削除されました。',

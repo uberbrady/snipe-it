@@ -31,6 +31,7 @@ return [
         'numeric' => ':attribute laukas turi būti nuo :min iki :max.',
         'string' => ':attribute lauke turi būti nuo :min iki :max simbolių.',
     ],
+    'valid_regex' => 'Paieškos reiškinys yra neteisingas.',
     'boolean' => ':attribute lauke turi būti „Taip“ arba „Ne“.',
     'can' => ':attribute lauke yra neleistina reikšmė.',
     'confirmed' => ':attribute lauko patvirtinimas nesutampa.',
@@ -172,7 +173,7 @@ return [
     'url' => ':attribute lauke turi būti galiojantis URL adresas.',
     'ulid' => ':attribute lauke turi būti galiojantis ULID identifikatorius.',
     'uuid' => ':attribute lauke turi būti galiojantis UUID identifikatorius.',
-    'fmcs_location' => 'Full multiple company support and location scoping is enabled in the Admin Settings, and the selected location and selected company are not compatible.',
+    'fmcs_location' => 'Administratoriaus nustatymuose yra įjungtas pilnas kelių įmonių palaikymas ir vietos susiejimas, o pasirinkta vieta ir pasirinkta įmonė yra nesuderinamos.',
 
 
     /*

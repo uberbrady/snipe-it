@@ -38,7 +38,7 @@ return [
     'notes'				=> '备注',
     'order'				=> '订单号',
     'qr'				=> '二维码',
-    'requestable'		=> '用户可能申请了该资产',
+    'requestable'		=> '用户可以申请该资产',
     'redirect_to_all'   => '返回到所有 :type',
     'redirect_to_type'   => '跳转到 :type',
     'redirect_to_checked_out_to'   => '跳转到已签出者',

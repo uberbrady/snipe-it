@@ -5,7 +5,8 @@ return [
     'manage'                    => 'مدیریت',
     'field'		                => 'فیلد',
     'about_fieldsets_title'		=> 'درباره ی تنظیمات فیلد',
-    'about_fieldsets_text'		=> 'تنظیمات فیلد به شما امکان این را می دهد که گروه های فیلدهای سفارشی ایجاد کنید که مرتبا برای انواع مدل های دارایی خاص مورد استفاده ی مجدد قرار می گیرند.',
+    'about_fieldsets_text'		=> 'مجموعه‌های فیلد به شما امکان می‌دهند گروه‌هایی از فیلدهای سفارشی ایجاد کنید که اغلب برای انواع مدل دارایی خاص دوباره استفاده می‌شوند.
+',
     'custom_format'             => 'فرمت Regex سفارشی...
 ',
     'encrypt_field'      	        => 'مقدار این فیلد را در پایگاه داده رمزگذاری کنید',
@@ -72,5 +73,11 @@ return [
     'display_checkin' => 'Display in checkin forms',
     'display_checkout' => 'Display in checkout forms',
     'display_audit' => 'Display in audit forms',
-
+    'types' => [
+        'text' => 'Text Box',
+        'listbox' => 'List Box',
+        'textarea' => 'Textarea (multi-line)',
+        'checkbox' => 'Checkbox',
+        'radio' => 'Radio Buttons',
+    ],
 ];

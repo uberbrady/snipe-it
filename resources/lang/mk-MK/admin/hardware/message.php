@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Warning: </strong> Ова средство е обележано како моментално нераспоредливо. Ако овој статус е променет, ажурирајте го статусот на средството.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Основното средство не постои.',
     'does_not_exist_var' => 'Средство со ознака :asset_tag не е пронајдено.',
     'no_tag' 	         => 'Не е обезбедена ознака за средството.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Средство со ознака :tag беше создадено успешно. <strong><a href=":link" style="color: white;">Кликнете овде за да видите</a></strong>.',
         'multi_success_linked' => 'Asset with tag :links was created successfully.|:count assets were created succesfully. :links.',
         'partial_failure' => 'An asset was unable to be created. Reason: :failures|:count assets were unable to be created. Reasons: :failures',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

@@ -35,10 +35,14 @@ class Importer extends Component
     public $accessories_fields;
     public $assets_fields;
     public $users_fields;
+    public $assetmodels_fields;
+    public $suppliers_fields;
     public $licenses_fields;
     public $locations_fields;
     public $consumables_fields;
     public $components_fields;
+    public $manufacturers_fields;
+    public $categories_fields;
     public $aliases_fields;
 
     protected $rules = [
@@ -85,9 +89,6 @@ class Importer extends Component
             case 'component':
                 $results = $this->components_fields;
                 break;
-            case 'consumable':
-                $results = $this->consumables_fields;
-                break;
             case 'license':
                 $results = $this->licenses_fields;
                 break;
@@ -97,8 +98,14 @@ class Importer extends Component
             case 'location':
                 $results = $this->locations_fields;
                 break;
-            case 'user':
-                $results = $this->users_fields;
+            case 'supplier':
+                $results = $this->suppliers_fields;
+                break;
+            case 'manufacturer':
+                $results = $this->manufacturers_fields;
+                break;
+            case 'category':
+                $results = $this->categories_fields;
                 break;
             default:
                 $results = [];
@@ -128,7 +135,7 @@ class Importer extends Component
                     //yes, this key *is* valid. Continue on to the next field.
                     continue;
                 } else {
-                    //no, this key is *INVALID* for this import type. Better set it to null
+                    //no, this key is *INVALID* for this import type. Better set it to null,
                     // and we'll hope that the $aliases_fields or something else picks it up.
                     $this->field_map[$i] = null; // fingers crossed! But it's not likely, tbh.
                 } // TODO - strictly speaking, this isn't necessary here I don't think.
@@ -149,7 +156,7 @@ class Importer extends Component
                         // in "Accessories"!)
                         if (array_key_exists($key, $this->columnOptions[$type])) {
                             $this->field_map[$i] = $key;
-                            continue 3; // bust out of both of these loops; as well as the surrounding one - e.g. move on to the next header
+                            continue 3; // bust out of both of these loops and the surrounding one - e.g. move on to the next header
                         }
                     }
                 }
@@ -171,6 +178,9 @@ class Importer extends Component
             'license'       =>    trans('general.licenses'),
             'location'      =>   trans('general.locations'),
             'user'          =>       trans('general.users'),
+            'supplier'      =>       trans('general.suppliers'),
+            'manufacturer'  =>       trans('general.manufacturers'),
+            'category'      =>       trans('general.categories'),
         ];
 
         /**
@@ -193,6 +203,7 @@ class Importer extends Component
         ];
 
         $this->assets_fields = [
+            'id' => trans('general.id'),
             'asset_eol_date' => trans('admin/hardware/form.eol_date'),
             'asset_model' => trans('general.model_name'),
             'asset_notes' => trans('general.item_notes', ['item' => trans('admin/hardware/general.asset')]),
@@ -319,6 +330,8 @@ class Importer extends Component
             'location' => trans('general.location'),
             'manager_first_name' => trans('general.importer.manager_first_name'),
             'manager_last_name' => trans('general.importer.manager_last_name'),
+            'manager_employee_num' => trans('general.importer.manager_employee_num'),
+            'manager_username' => trans('general.importer.manager_username'),
             'notes' => trans('general.notes'),
             'phone_number' => trans('admin/users/table.phone'),
             'remote' => trans('admin/users/general.remote'),
@@ -332,6 +345,7 @@ class Importer extends Component
 
         $this->locations_fields = [
             'id' => trans('general.id'),
+            'name' => trans('general.name'),
             'address' => trans('general.address'),
             'address2' => trans('general.importer.address2'),
             'city' => trans('general.city'),
@@ -340,12 +354,51 @@ class Importer extends Component
             'ldap_ou' => trans('admin/locations/table.ldap_ou'),
             'manager' => trans('general.importer.manager_full_name'),
             'manager_username' => trans('general.importer.manager_username'),
-            'name' => trans('general.item_name_var', ['item' => trans('general.location')]),
             'notes' => trans('general.notes'),
             'parent_location' => trans('admin/locations/table.parent'),
             'state' => trans('general.state'),
             'zip' => trans('general.zip'),
         ];
+
+        $this->suppliers_fields = [
+            'id' => trans('general.id'),
+            'name' => trans('general.name'),
+            'address' => trans('general.address'),
+            'address2' => trans('general.importer.address2'),
+            'city' => trans('general.city'),
+            'notes' => trans('general.notes'),
+            'state' => trans('general.state'),
+            'zip' => trans('general.zip'),
+            'phone' => trans('general.phone'),
+            'fax' => trans('general.fax'),
+            'url' => trans('general.url'),
+            'contact' => trans('general.contact'),
+            'email' => trans('general.email'),
+        ];
+
+        $this->manufacturers_fields = [
+            'id' => trans('general.id'),
+            'name' => trans('general.name'),
+            'notes' => trans('general.notes'),
+            'support_phone' =>  trans('admin/manufacturers/table.support_phone'),
+            'support_url' =>  trans('admin/manufacturers/table.support_url'),
+            'support_email' =>  trans('admin/manufacturers/table.support_email'),
+            'warranty_lookup_url' =>  trans('admin/manufacturers/table.warranty_lookup_url'),
+            'url' =>  trans('general.url'),
+        ];
+
+        $this->categories_fields = [
+            'id' => trans('general.id'),
+            'name' => trans('general.name'),
+            'notes' => trans('general.notes'),
+            'category_type' => trans('admin/categories/general.import_category_type'),
+            'eula_text' => trans('admin/categories/general.import_eula_text'),
+            'use_default_eula' => trans('admin/categories/general.use_default_eula_column'),
+            'require_acceptance' => trans('admin/categories/general.import_require_acceptance'),
+            'checkin_email' => trans('admin/categories/general.import_checkin_email'),
+        ];
+
+
 
         $this->assetmodels_fields  = [
             'category' => trans('general.category'),
@@ -371,6 +424,8 @@ class Importer extends Component
                     'consumable name',
                     'component name',
                     'name',
+                    'supplier name',
+                    'location name',
                 ],
             'item_no' => [
                 'item number',

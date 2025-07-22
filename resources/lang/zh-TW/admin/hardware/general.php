@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> '資產繳回',
     'checkout'  				=> '借出資產',
+    'clear'                     => 'Clear',
     'clone'  					=> '複製資產',
     'deployable'  				=> '可部署',
     'deleted'  					=> '此資產已被刪除.',

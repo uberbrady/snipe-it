@@ -5,7 +5,7 @@ return [
     'manage'                    => 'إدارة',
     'field'		                => 'حقل',
     'about_fieldsets_title'		=> 'حول مجموعة الحقول',
-    'about_fieldsets_text'		=> '(مجموعات الحقول) تسمح لك بإنشاء مجموعات من الحقول اللتي يمكن إعادة إستخدامها مع موديل محدد.',
+    'about_fieldsets_text'		=> 'مجموعات الحقول تسمح لك بإنشاء مجموعات من الحقول المخصصة التي يعاد استخدامها في كثير من الأحيان لأنواع معينة من نماذج الأصول.',
     'custom_format'             => 'تنسيق Regex المخصص...',
     'encrypt_field'      	        => 'تشفير قيمة هذا الحقل في قاعدة البيانات',
     'encrypt_field_help'      => 'تحذير: تشفير الحقل يجعله غير قابل للبحث.',
@@ -60,5 +60,11 @@ return [
     'display_checkin' => 'Display in checkin forms',
     'display_checkout' => 'Display in checkout forms',
     'display_audit' => 'Display in audit forms',
-
+    'types' => [
+        'text' => 'Text Box',
+        'listbox' => 'List Box',
+        'textarea' => 'Textarea (multi-line)',
+        'checkbox' => 'Checkbox',
+        'radio' => 'Radio Buttons',
+    ],
 ];

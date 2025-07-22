@@ -12,10 +12,12 @@ use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class StoreAssetTest extends TestCase
 {
+
     public function testRequiresPermissionToCreateAsset()
     {
         $this->actingAsForApi(User::factory()->create())
@@ -81,6 +83,8 @@ class StoreAssetTest extends TestCase
         $this->assertTrue($asset->assetstatus->is($status));
         $this->assertTrue($asset->supplier->is($supplier));
         $this->assertEquals(10, $asset->warranty_months);
+
+        $this->assertHasTheseActionLogs($asset, ['create', 'checkout']);
     }
 
     public function testSetsLastAuditDateToMidnightOfProvidedDate()
@@ -179,6 +183,8 @@ class StoreAssetTest extends TestCase
         $asset = Asset::find($response->json()['payload']['id']);
         $this->assertEquals($user->id, $asset->assigned_to);
         $this->assertEquals('Asset created successfully. :)', $response->json('messages'));
+
+        $this->assertHasTheseActionLogs($asset, ['create'/*, 'checkout'*/]); // TODO - this _should_ be the two actions
     }
 
 
@@ -570,6 +576,65 @@ class StoreAssetTest extends TestCase
         $this->assertTrue($asset->adminuser->is($user));
         $this->assertTrue($asset->checkedOutToUser());
         $this->assertTrue($asset->assignedTo->is($userAssigned));
+        $this->assertHasTheseActionLogs($asset, ['create', 'checkout']);
+    }
+
+    public static function checkoutTargets()
+    {
+        yield 'Users' => [
+            function () {
+                return [
+                    'key' => 'assigned_user',
+                    'value' => [
+                        User::factory()->create()->id,
+                        User::factory()->create()->id,
+                    ],
+                ];
+            },
+        ];
+
+        yield 'Locations' => [
+            function () {
+                return [
+                    'key' => 'assigned_location',
+                    'value' => [
+                        Location::factory()->create()->id,
+                        Location::factory()->create()->id,
+                    ],
+                ];
+            },
+        ];
+
+        yield 'Assets' => [
+            function () {
+                return [
+                    'key' => 'assigned_asset',
+                    'value' => [
+                        Asset::factory()->create()->id,
+                        Asset::factory()->create()->id,
+                    ],
+                ];
+            },
+        ];
+    }
+
+    /** @link https://app.shortcut.com/grokability/story/29181 */
+    #[DataProvider('checkoutTargets')]
+    public function testAssignedFieldValidationCannotBeArray($data)
+    {
+        ['key' => $key, 'value' => $value] = $data();
+
+        $this->actingAsForApi(User::factory()->createAssets()->create())
+            ->postJson(route('api.assets.store'), [
+                'asset_tag' => '123456',
+                'model_id' => AssetModel::factory()->create()->id,
+                'status_id' => Statuslabel::factory()->readyToDeploy()->create()->id,
+                $key => $value,
+            ])
+            ->assertStatusMessageIs('error')
+            ->assertJson(function (AssertableJson $json) use ($key) {
+                $json->has("messages.{$key}")->etc();
+            });
     }
 
     public function testAnAssetCanBeCheckedOutToLocationOnStore()
@@ -596,6 +661,7 @@ class StoreAssetTest extends TestCase
         $this->assertTrue($asset->adminuser->is($user));
         $this->assertTrue($asset->checkedOutToLocation());
         $this->assertTrue($asset->location->is($location));
+        $this->assertHasTheseActionLogs($asset, ['create', 'checkout']);
     }
 
     public function testAnAssetCanBeCheckedOutToAssetOnStore()
@@ -623,6 +689,7 @@ class StoreAssetTest extends TestCase
         $this->assertTrue($apiAsset->checkedOutToAsset());
         // I think this makes sense, but open to a sanity check
         $this->assertTrue($asset->assignedAssets()->find($response['payload']['id'])->is($apiAsset));
+        $this->assertHasTheseActionLogs($asset, ['create'/*, 'checkout'*/]); // TODO - should be the two events
     }
 
     /**

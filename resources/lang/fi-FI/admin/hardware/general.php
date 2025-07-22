@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Palauta laite',
     'checkout'  				=> 'Luovuta laite',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Monista laite',
     'deployable'  				=> 'Käyttöönotettavissa',
     'deleted'  					=> 'Tämä laite on poistettu.',

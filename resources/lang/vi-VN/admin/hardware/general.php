@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Checkin tài sản',
     'checkout'  				=> 'Tài sản thanh toán',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Nhân đôi tài sản',
     'deployable'  				=> 'Cho phép cấp phát',
     'deleted'  					=> 'Tài sản này đã bị xóa.',

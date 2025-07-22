@@ -31,6 +31,7 @@ return [
         'numeric' => 'Полето :attribute мора да биде помеѓу :min и :max.',
         'string' => 'Полето :attribute мора да биде помеѓу :min и :max карактери.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'Полето :attribute мора да биде точно или грешно.',
     'can' => 'Полето :attribute содржи неавторизирана вредност.',
     'confirmed' => 'Полето :attribute потврдата не соодветствува.',

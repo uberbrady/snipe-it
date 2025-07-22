@@ -31,6 +31,7 @@ return [
         'numeric' => 'Поле :attribute має бути в межах від :min до :max.',
         'string' => 'Поле :attribute має містити від :min до :max символів.',
     ],
+    'valid_regex' => 'The regular expression is invalid.',
     'boolean' => 'Поле :attribute повинне містити логічний тип.',
     'can' => 'Поле :attribute містить недозволене значення.',
     'confirmed' => 'Поле підтвердження :attribute не збігається.',

@@ -23,7 +23,7 @@ return array(
 
     'logout' => array(
         'error'   => 'There was a problem while trying to log you out, please try again.',
-        'success' => 'You have successfully logged out.',
+        'success' => 'Uspješno ste odjavljeni.',
     ),
 
     'signup' => array(

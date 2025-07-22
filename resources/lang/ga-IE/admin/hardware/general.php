@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Sócmhainn Checkin',
     'checkout'  				=> 'Seiceáil Seiceáil',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Sócmhainn Clón',
     'deployable'  				=> 'Infheidhmithe',
     'deleted'  					=> 'This asset has been deleted.',

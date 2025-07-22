@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Skila eign',
     'checkout'  				=> 'Ráðstafa eign',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Klóna eign',
     'deployable'  				=> 'Nothæfar',
     'deleted'  					=> 'Þessari eign hefur verið eytt',

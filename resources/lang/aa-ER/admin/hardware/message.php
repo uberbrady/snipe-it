@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => 'crwdns12562:0crwdne12562:0',
+    'undeployable' 		 => 'crwdns13406:0crwdne13406:0',
     'does_not_exist' 	 => 'crwdns740:0crwdne740:0',
     'does_not_exist_var' => 'crwdns12188:0crwdne12188:0',
     'no_tag' 	         => 'crwdns12190:0crwdne12190:0',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'crwdns11882:0crwdne11882:0',
         'multi_success_linked' => 'crwdns12776:0crwdne12776:0',
         'partial_failure' => 'crwdns12778:0crwdne12778:0',
+        'target_not_found' => [
+            'user' => 'crwdns13292:0crwdne13292:0',
+            'asset' => 'crwdns13294:0crwdne13294:0',
+            'location' => 'crwdns13296:0crwdne13296:0',
+        ],
     ],
 
     'update' => [

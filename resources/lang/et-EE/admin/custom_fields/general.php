@@ -5,7 +5,7 @@ return [
     'manage'                    => 'Manage',
     'field'		                => 'Väli',
     'about_fieldsets_title'		=> 'Andmeväljade kohta',
-    'about_fieldsets_text'		=> 'Valdkonnad lubavad teil luua kohandatud väljade rühmad, mida kasutatakse sageli teatud varade mudelitüüpide jaoks.',
+    'about_fieldsets_text'		=> 'Fieldsets allow you to create groups of custom fields that are frequently re-used for specific asset model types.',
     'custom_format'             => 'Custom Regex format...',
     'encrypt_field'      	        => 'Krüpti selle valdkonna väärtus andmebaasis',
     'encrypt_field_help'      => 'HOIATUS: põllu krüptimine muudab selle otsingumatuks.',
@@ -60,5 +60,11 @@ return [
     'display_checkin' => 'Display in checkin forms',
     'display_checkout' => 'Display in checkout forms',
     'display_audit' => 'Display in audit forms',
-
+    'types' => [
+        'text' => 'Text Box',
+        'listbox' => 'List Box',
+        'textarea' => 'Textarea (multi-line)',
+        'checkbox' => 'Checkbox',
+        'radio' => 'Radio Buttons',
+    ],
 ];

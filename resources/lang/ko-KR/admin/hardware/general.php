@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> '반입 자산',
     'checkout'  				=> '반출 자산',
+    'clear'                     => 'Clear',
     'clone'  					=> '자산 복제',
     'deployable'  				=> '사용가능',
     'deleted'  					=> '자산이 삭제되었습니다.',

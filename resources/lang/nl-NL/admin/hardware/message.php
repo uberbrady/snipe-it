@@ -2,7 +2,7 @@
 
 return [
 
-    'undeployable' 		 => '<strong>Waarschuwing: </strong> Dit bestand is gemarkeerd als niet-uitgeefbaar. Als deze status is veranderd, update dan de asset status.',
+    'undeployable' 		 => 'The following assets cannot be deployed and have been removed from checkout: :asset_tags',
     'does_not_exist' 	 => 'Dit asset bestaat niet.',
     'does_not_exist_var' => 'Asset met tag :asset_tag niet gevonden.',
     'no_tag' 	         => 'Geen asset tag opgegeven.',
@@ -19,6 +19,11 @@ return [
         'success_linked' => 'Asset met tag :tag is succesvol gemaakt. <strong><a href=":link" style="color: white;">Klik hier om te bekijken</a></strong>.',
         'multi_success_linked' => 'Asset with tag :links was created successfully.|:count assets were created succesfully. :links.',
         'partial_failure' => 'An asset was unable to be created. Reason: :failures|:count assets were unable to be created. Reasons: :failures',
+        'target_not_found' => [
+            'user' => 'The assigned user could not be found.',
+            'asset' => 'The assigned asset could not be found.',
+            'location' => 'The assigned location could not be found.',
+        ],
     ],
 
     'update' => [

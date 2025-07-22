@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Reģistrēšanās aktīvs',
     'checkout'  				=> 'Checkout Asset',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Clone Asset',
     'deployable'  				=> 'Izvietojams',
     'deleted'  					=> 'Šis pamatlīdzeklis ir izdzēsts.',

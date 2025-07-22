@@ -31,6 +31,7 @@ return [
         'numeric' => 'Il campo :attribute deve essere tra :min e :max.',
         'string' => 'Il campo :attribute deve essere lungo tra :min e :max caratteri.',
     ],
+    'valid_regex' => 'L\'espressione regolare non è valida.',
     'boolean' => 'Il campo: attributo deve essere vero o falso.',
     'can' => 'Il campo :attribute contiene un valore non autorizzato.',
     'confirmed' => 'La conferma del campo :attribute non corrisponde.',
@@ -172,7 +173,7 @@ return [
     'url' => 'Il campo :attribute deve essere un URL valido.',
     'ulid' => 'Il campo :attribute deve essere un ULID valido.',
     'uuid' => 'Il campo :attribute deve essere un UUID valido.',
-    'fmcs_location' => 'Full multiple company support and location scoping is enabled in the Admin Settings, and the selected location and selected company are not compatible.',
+    'fmcs_location' => 'Nelle Impostazioni Admin è abilitato il supporto completo multi aziendale con restrizione per le Sedi, e la Sede selezionata non è compatibile con l\'Azienda scelta.',
 
 
     /*

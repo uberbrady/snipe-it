@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Prevziať majetok',
     'checkout'  				=> 'Odovzdať majetok',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Duplikovať majetok',
     'deployable'  				=> 'Odovzdateľný',
     'deleted'  					=> 'Tento majetok bol zmazaný.',

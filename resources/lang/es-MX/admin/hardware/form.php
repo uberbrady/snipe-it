@@ -56,7 +56,7 @@ return [
     'asset_location_update_actual' => 'Actualizar sólo la ubicación actual',
     'asset_not_deployable' => 'Ese estado de activos es no utilizable. Este activo no puede ser asignado.',
     'asset_not_deployable_checkin' => 'Ese estado del activo no es utilizable. El uso de esta etiqueta de estado ingresará el activo.',
-    'asset_deployable' => 'This asset can be checked out.',
+    'asset_deployable' => 'Este activo puede ser revisado.',
     'processing_spinner' => 'Procesando... (Esto puede tomar un poco de tiempo en archivos grandes)',
     'processing' => 'Procesando... ',
     'optional_infos'  => 'Información opcional',

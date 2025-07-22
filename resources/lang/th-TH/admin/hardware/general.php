@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'เช็คอินสินทรัพย์',
     'checkout'  				=> 'ตรวจสอบสินทรัพย์',
+    'clear'                     => 'Clear',
     'clone'  					=> 'คัดลอกแบบสินทรัพย์',
     'deployable'  				=> 'สามารถใช้งานได้',
     'deleted'  					=> 'สินทรัพย์นี้ถูกลบไปแล้ว',

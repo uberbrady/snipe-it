@@ -9,6 +9,7 @@ return [
     'bulk_checkin'              => 'Bulk Checkin',
     'checkin'  					=> 'Раздолжи основно средство',
     'checkout'  				=> 'Задолжи основно средство',
+    'clear'                     => 'Clear',
     'clone'  					=> 'Клонирај основно средство',
     'deployable'  				=> 'Распоредливи',
     'deleted'  					=> 'Ова основно средство е избришано.',

@@ -14,7 +14,7 @@ return array(
     */
 
     'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
+    'password' => 'Vneseno geslo je napačno.',
     'throttle' => 'Too many login attempts. Please try again in :minutes minute(s).',
 
 );

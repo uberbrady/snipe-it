@@ -31,6 +31,7 @@ return [
         'numeric' => 'Das Feld :attribute muss zwischen :min und :max liegen.',
         'string' => 'Das Feld :attribute muss zwischen :min und :max Zeichen lang sein.',
     ],
+    'valid_regex' => 'Der reguläre Ausdruck ist ungültig.',
     'boolean' => 'Das Feld :attribute muss wahr oder falsch sein.',
     'can' => 'Das Feld :attribute enthält einen nicht autorisierten Wert.',
     'confirmed' => 'Die Bestätigung für das Feld :attribute stimmt nicht überein.',
