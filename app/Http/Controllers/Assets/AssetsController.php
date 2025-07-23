@@ -973,13 +973,13 @@ class AssetsController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $asset->setLogFile($request->handleFile('private_uploads/audits/', 'audit-' . $asset->id, $request->file('image')));
+            $asset->setLogFilename($request->handleFile('private_uploads/audits/', 'audit-' . $asset->id, $request->file('image')));
         }
         $asset->setLogNote($request->input('note'));
-        $asset->location_id = $request->input('location_id');
+        $asset->location_id = $request->input('location_id'); //TODO - should this be in the log override?
         $asset->setLogAction(ActionType::Audit);
         if ($asset->save()) {
-            return redirect()->to(Helper::getRedirectOption($request, $asset->id, 'Assets'))->with('success', trans('admin/hardware/message.audit.success'));
+            return Helper::getRedirectOption($request, $asset->id, 'Assets');
         }
 
         return redirect()->back()->withInput()->withErrors($asset->getErrors());

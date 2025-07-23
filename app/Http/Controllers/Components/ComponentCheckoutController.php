@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Components;
 
+use App\Enums\ActionType;
 use App\Events\CheckoutableCheckedOut;
 use App\Events\ComponentCheckedOut;
 use App\Helpers\Helper;
@@ -103,7 +104,7 @@ class ComponentCheckoutController extends Controller
         }
 
         // Update the component data
-        $component->asset_id = $request->input('asset_id');
+//        $component->asset_id = $request->input('asset_id'); // FIXME - delete this
         $component->assets()->attach($component->id, [
             'component_id' => $component->id,
             'created_by' => auth()->user()->id,
@@ -112,6 +113,8 @@ class ComponentCheckoutController extends Controller
             'asset_id' => $request->input('asset_id'),
             'note' => $request->input('note'),
         ]);
+        $component->setLogTarget($asset);
+        $component->saveWithLogAction(ActionType::Checkout);
 
         event(new CheckoutableCheckedOut($component, $asset, auth()->user(), $request->input('note')));
 

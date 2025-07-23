@@ -100,7 +100,8 @@ trait Loggable
             $results = $model->createLogEntry(); //TODO - if we do commits up there, we should do them here too?
         });
         static::restored(function ($model) {
-            $model->createLogEntry(); //TODO - this is getting duplicative.
+            // TODO - is this already handled, are we double-logging?
+            //$model->createLogEntry(); //TODO - this is getting duplicative.
         });
 
     }
@@ -216,6 +217,13 @@ trait Loggable
     public function getLogQuantity()
     {
         return $this->log_quantity;
+    }
+
+    // Shorthand method for saving with an action-type
+    public function saveWithLogAction(ActionType $logAction): bool
+    {
+        $this->setLogAction($logAction);
+        return $this->save();
     }
 
     /**

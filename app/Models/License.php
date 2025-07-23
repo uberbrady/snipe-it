@@ -192,9 +192,12 @@ class License extends Depreciable
             $seatsAvailableForDelete->delete();
 
             // Log Deletion of seats.
-            $license->setLogNote("deleted {$change} seats");
-            $license->setLogAction(ActionType::DeleteSeats);
-            $license->save();
+            // need to make sure we're not re-repeating the changes that may have already happened,
+            // so we get a 'fresh' copy of the license to operate on
+            $fresh_license = $license->fresh();
+            $fresh_license->setLogNote("deleted {$change} seats");
+            $fresh_license->setLogAction(ActionType::DeleteSeats);
+            $fresh_license->save();
 
             return true;
         }
@@ -224,9 +227,12 @@ class License extends Depreciable
         // On initial create, we shouldn't log the addition of seats.
         if ($license->id) {
             //Log the addition of license to the log.
-            $license->setLogNote("added {$change} seats");
-            $license->setLogAction(ActionType::AddSeats);
-            $license->save();
+            $cleanlicense = $license->fresh(); //we have to do this to avoid repeating the change that already happened
+            // this is a *brand new change* that just shows the increase in license seats
+            \Log::error("THIS IS THE MAIN WAY WE ADD SEATS YEAH? CHANGE IS $change");
+            $cleanlicense->setLogNote("added {$change} seats");
+            $cleanlicense->setLogAction(ActionType::AddSeats);
+            $cleanlicense->save();
         }
 
         return true;

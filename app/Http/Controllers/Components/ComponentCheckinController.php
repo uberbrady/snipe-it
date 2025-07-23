@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Components;
 
+use App\Enums\ActionType;
 use App\Events\CheckoutableCheckedIn;
 use App\Events\ComponentCheckedIn;
 use App\Helpers\Helper;
@@ -68,7 +69,7 @@ class ComponentCheckinController extends Controller
 
             $this->authorize('checkin', $component);
 
-            $max_to_checkin = $component_assets->assigned_qty;
+            $max_to_checkin = $component_assets->assigned_qty; // FIXME
             $validator = Validator::make($request->all(), [
                 'checkin_qty' => "required|numeric|between:1,$max_to_checkin",
             ]);
@@ -95,6 +96,8 @@ class ComponentCheckinController extends Controller
             }
 
             $asset = Asset::find($component_assets->asset_id);
+            $component->setLogTarget($asset);
+            $component->saveWithLogAction(ActionType::CheckinFrom);
 
             event(new CheckoutableCheckedIn($component, $asset, auth()->user(), $request->input('note'), Carbon::now()));
 

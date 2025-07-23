@@ -1033,7 +1033,8 @@ class AssetsController extends Controller
                 $acceptance->delete();
             });
 
-        if ($asset->save()) { // FIXME - which type of ActionLog type is this?!
+        $asset->setLogAction(ActionType::CheckinFrom);
+        if ($asset->save()) {
             event(new CheckoutableCheckedIn($asset, $target, auth()->user(), $request->input('note'), $checkin_at, $originalValues));
 
             return response()->json(Helper::formatStandardApiResponse('success', [
