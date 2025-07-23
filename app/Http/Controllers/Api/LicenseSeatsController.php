@@ -143,14 +143,14 @@ class LicenseSeatsController extends Controller
             return response()->json(Helper::formatStandardApiResponse('error', null, 'Target not found'));
         }
 
-        $licenseSeat->setLogTarget($target);
-        $licenseSeat->setLogNote($request->input('notes'));
+        $license->setLogTarget($target);
+        $license->setLogNote($request->input('notes'));
         if ($is_checkin) {
-            $licenseSeat->setLogAction(ActionType::CheckinFrom);
+            $license->setLogAction(ActionType::CheckinFrom);
         } else {
-            $licenseSeat->setLogAction(ActionType::Checkout);
+            $license->setLogAction(ActionType::Checkout);
         }
-        if ($licenseSeat->save()) {
+        if ($licenseSeat->save() && $license->save()) {
 
             return response()->json(Helper::formatStandardApiResponse('success', $licenseSeat, trans('admin/licenses/message.update.success')));
         }

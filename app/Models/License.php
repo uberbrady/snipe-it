@@ -133,6 +133,7 @@ class License extends Depreciable
         static::created(
             function ($license) {
                 $newSeatCount = $license->getAttributes()['seats'];
+                \Log::error("CREATED callback for licenses has fired. " . $newSeatCount);
 
                 return static::adjustSeatCount($license, 0, $newSeatCount);
             }
@@ -141,6 +142,7 @@ class License extends Depreciable
         static::updating(
             function ($license) {
                 $newSeatCount = $license->getAttributes()['seats'];
+                \Log::error("UPDATING callback $newSeatCount");
                 //$oldSeatCount = isset($license->getOriginal()['seats']) ? $license->getOriginal()['seats'] : 0;
                 /*
                 That previous method *did* mostly work, but if you ever managed to get your $license->seats value out of whack

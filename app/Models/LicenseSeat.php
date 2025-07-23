@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Traits\Acceptable;
-use App\Models\Traits\Loggable;
 use App\Notifications\CheckinLicenseNotification;
 use App\Notifications\CheckoutLicenseNotification;
 use App\Presenters\Presentable;
@@ -14,7 +13,6 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
 {
     use CompanyableChildTrait;
     use HasFactory;
-    use Loggable;
     use SoftDeletes;
 
     protected $presenter = \App\Presenters\LicenseSeatPresenter::class;
