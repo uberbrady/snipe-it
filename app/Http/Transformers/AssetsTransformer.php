@@ -80,7 +80,6 @@ class AssetsTransformer
             'qr' => ($setting->qr_code=='1') ? config('app.url').'/uploads/barcodes/qr-'.str_slug($asset->asset_tag).'-'.str_slug($asset->id).'.png' : null,
             'alt_barcode' => ($setting->alt_barcode_enabled=='1') ? config('app.url').'/uploads/barcodes/'.str_slug($setting->alt_barcode).'-'.str_slug($asset->asset_tag).'.png' : null,
             'assigned_to' => $this->transformAssignedTo($asset),
-            'jobtitle' => $asset->assigned ? e($asset->assigned->jobtitle) : null,
             'warranty_months' =>  ($asset->warranty_months > 0) ? e($asset->warranty_months.' '.trans('admin/hardware/form.months')) : null,
             'warranty_expires' => ($asset->warranty_months > 0) ? Helper::getFormattedDateObject($asset->warranty_expires, 'date') : null,
             'created_by' => ($asset->adminuser) ? [
@@ -204,6 +203,7 @@ class AssetsTransformer
                     'last_name'=> ($asset->assigned->last_name) ? e($asset->assigned->last_name) : null,
                     'email'=> ($asset->assigned->email) ? e($asset->assigned->email) : null,
                     'employee_number' =>  ($asset->assigned->employee_num) ? e($asset->assigned->employee_num) : null,
+                    'jobtitle' => $asset->assigned->jobtitle ? e($asset->assigned->jobtitle) : null,
                     'type' => 'user',
                 ] : null;
         }

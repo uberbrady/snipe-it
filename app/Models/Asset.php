@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Watson\Validating\ValidatingTrait;
 
@@ -489,12 +491,34 @@ class Asset extends Depreciable
     {
         // Check to see if any of the custom fields were included on the form and if they have any values
         if (($this->model) && ($this->model->fieldset) && ($this->model->fieldset->fields)) {
+
             foreach ($this->model->fieldset->fields as $field) {
+
                 if (($field->{$checkin_checkout} == 1) && (request()->has($field->db_column))) {
-                    $this->{$field->db_column} = request()->get($field->db_column);
+
+                    if ($field->field_encrypted == '1') {
+
+                        if (Gate::allows('assets.view.encrypted_custom_fields')) {
+                            if (is_array(request()->input($field->db_column))) {
+                                $this->{$field->db_column} = Crypt::encrypt(implode(', ', request()->input($field->db_column)));
+                            } else {
+                                $this->{$field->db_column} = Crypt::encrypt(request()->get($field->db_column));
+                            }
+                        }
+
+                    } else {
+
+                        if (is_array(request()->input($field->db_column))) {
+                            $this->{$field->db_column} = implode(', ', request()->input($field->db_column));
+                        } else {
+                            $this->{$field->db_column} = request()->input($field->db_column);
+                        }
+
+                    }
                 }
             }
         }
+
     }
 
 

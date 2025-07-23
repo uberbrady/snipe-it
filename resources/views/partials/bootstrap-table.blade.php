@@ -869,6 +869,12 @@
         }
     }
 
+    function jobtitleFormatter(value, row) {
+        if ((row) && (row.assigned_to) && ((row.assigned_to.jobtitle))) {
+            return '<a href="{{ config('app.url') }}/users/' + row.assigned_to.id + '">' + row.assigned_to.jobtitle + '</a>';
+        }
+    }
+
     function orderNumberObjFilterFormatter(value, row) {
         if (value) {
             return '<a href="{{ config('app.url') }}/hardware/?order_number=' + row.order_number + '">' + row.order_number + '</a>';

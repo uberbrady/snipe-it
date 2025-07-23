@@ -72,6 +72,8 @@ class Actionlog extends SnipeModel
         'assets'      => ['asset_tag','name', 'serial', 'order_number', 'notes', 'purchase_date'],
         'assets.model'              => ['name', 'model_number', 'eol', 'notes'],
         'assets.model.category'     => ['name', 'notes'],
+        'assets.location'           => ['name'],
+        'assets.defaultLoc'         => ['name'],
         'assets.model.manufacturer' => ['name', 'notes'],
         'licenses'    => ['name', 'serial', 'notes', 'order_number', 'license_email', 'license_name', 'purchase_order', 'purchase_date'],
         'licenses.category'     => ['name', 'notes'],

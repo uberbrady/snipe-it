@@ -115,6 +115,7 @@ class AssetPresenter extends Presenter
                 'sortable' => true,
                 'title' => trans('admin/users/table.title'),
                 'visible' => false,
+                'formatter' => 'jobtitleFormatter',
             ], [
                 'field' => 'location',
                 'searchable' => true,

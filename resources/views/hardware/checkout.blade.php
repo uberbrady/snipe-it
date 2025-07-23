@@ -32,7 +32,7 @@
                                     {{ trans('general.company') }}
                                 </label>
                                 <div class="col-md-8">
-                                    <p class="form-control-static">
+                                    <p class="form-control-static" style="padding-top: 7px;">
                                         {{ $asset->company->name }}
                                     </p>
                                 </div>
@@ -45,7 +45,7 @@
                                 {{ trans('admin/hardware/form.model') }}
                             </label>
                             <div class="col-md-8">
-                                <p class="form-control-static">
+                                <p class="form-control-static" style="padding-top: 7px;">
                                     @if (($asset->model) && ($asset->model->name))
                                         {{ $asset->model->name }}
                                     @else
