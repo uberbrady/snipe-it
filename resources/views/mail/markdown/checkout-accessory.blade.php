@@ -1,5 +1,5 @@
 @component('mail::message')
-# {{ trans('mail.hello') }} {{ $target->present()->fullName() }},
+# {{ trans('mail.hello') }}{{ $target->assignedto?->present()->fullName() ? ' ' . $target->assignedto->present()->fullName() . ',' : ',' }}
 
 {{ trans('mail.new_item_checked') }}
 

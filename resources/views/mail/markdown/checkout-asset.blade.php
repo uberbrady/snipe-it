@@ -1,7 +1,10 @@
 @component('mail::message')
-# {{ trans('mail.hello') }} {{ $target->present()->fullName() }},
+    @php
+    $target->assignedto =  null;
+    @endphp
+# {{ trans('mail.hello') }}{{ $target->assignedto?->present()->fullName() ? ' ' . $target->assignedto->present()->fullName() . ',' : ',' }}
 
-{{ $introduction_line }}
+    {{ $introduction_line }}
 
 @if (($snipeSettings->show_images_in_email =='1') && $item->getImageUrl())
 <center><img src="{{ $item->getImageUrl() }}" alt="Asset" style="max-width: 570px;"></center>

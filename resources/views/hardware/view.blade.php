@@ -1370,20 +1370,11 @@
                         <div class="col-md-12">
                             <table
                                     class="table table-striped snipe-table"
-                                    id="asseAuditHistory"
-
-                                    data-id-table="asseAuditHistory"
-
-
-
-
+                                    id="assetAuditHistory"
+                                    data-id-table="assetAuditHistory"
                                     data-side-pagination="server"
-
-
-
                                     data-sort-order="desc"
                                     data-sort-name="created_at"
-
                                     data-export-options='{
                          "fileName": "export-asset-{{  $asset->id }}-audits",
                          "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
