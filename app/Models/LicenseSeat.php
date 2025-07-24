@@ -13,7 +13,6 @@ class LicenseSeat extends SnipeModel implements ICompanyableChild
 {
     use CompanyableChildTrait;
     use HasFactory;
-    use Loggable;
     use SoftDeletes;
 
     protected $presenter = \App\Presenters\LicenseSeatPresenter::class;

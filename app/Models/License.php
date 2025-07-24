@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use App\Helpers\Helper;
+use App\Models\Traits\Loggable;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Watson\Validating\ValidatingTrait;
+use App\Enums\ActionType;
 
 class License extends Depreciable
 {
@@ -191,13 +192,11 @@ class License extends Depreciable
             $seatsAvailableForDelete->delete();
 
             // Log Deletion of seats.
-            $logAction = new Actionlog;
-            $logAction->item_type = self::class;
-            $logAction->item_id = $license->id;
-            $logAction->created_by = auth()->id() ?: 1; // We don't have an id while running the importer from CLI.
-            $logAction->note = "deleted {$change} seats";
-            $logAction->target_id = null;
-            $logAction->logaction('delete seats');
+            // need to make sure we're not re-repeating the changes that may have already happened,
+            // so we get a 'fresh' copy of the license to operate on
+            $fresh_license = $license->fresh();
+            $fresh_license->setLogNote("deleted {$change} seats");
+            $fresh_license->saveWithActionType(ActionType::DeleteSeats);
 
             return true;
         }
@@ -227,13 +226,11 @@ class License extends Depreciable
         // On initial create, we shouldn't log the addition of seats.
         if ($license->id) {
             //Log the addition of license to the log.
-            $logAction = new Actionlog();
-            $logAction->item_type = self::class;
-            $logAction->item_id = $license->id;
-            $logAction->created_by = auth()->id() ?: 1; // Importer.
-            $logAction->note = "added {$change} seats";
-            $logAction->target_id = null;
-            $logAction->logaction('add seats');
+            $cleanlicense = $license->fresh(); //we have to do this to avoid repeating the change that already happened
+            // this is a *brand new change* that just shows the increase in license seats
+            \Log::error("THIS IS THE MAIN WAY WE ADD SEATS YEAH? CHANGE IS $change");
+            $cleanlicense->setLogNote("added {$change} seats");
+            $cleanlicense->saveWithActionType(ActionType::AddSeats);
         }
 
         return true;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Assets;
 
+use App\Enums\ActionType;
 use App\Events\CheckoutableCheckedIn;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
@@ -135,6 +136,7 @@ class AssetCheckinController extends Controller
             $seat->update(['assigned_to' => null]);
         });
 
+        $asset->increment('checkin_counter'); // TODO: if we go transactional, this should be in that.
         // Get all pending Acceptances for this asset and delete them
         $acceptances = CheckoutAcceptance::pending()->whereHasMorph('checkoutable',
             [Asset::class],
@@ -150,7 +152,7 @@ class AssetCheckinController extends Controller
         // Add any custom fields that should be included in the checkout
         $asset->customFieldsForCheckinCheckout('display_checkin');
 
-        if ($asset->save()) {
+        if ($asset->saveWithActionType(ActionType::CheckinFrom)) {
 
             event(new CheckoutableCheckedIn($asset, $target, auth()->user(), $request->input('note'), $checkin_at, $originalValues));
             return Helper::getRedirectOption($request, $asset->id, 'Assets')

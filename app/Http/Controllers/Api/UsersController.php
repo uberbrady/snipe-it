@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\ActionType;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveUserRequest;
@@ -725,17 +726,7 @@ class UsersController extends Controller
                 $this->authorize('update', $user);
                 $user->two_factor_secret = null;
                 $user->two_factor_enrolled = 0;
-                $user->saveQuietly();
-
-                // Log the reset
-                $logaction = new Actionlog();
-                $logaction->target_type = User::class;
-                $logaction->target_id = $user->id;
-                $logaction->item_type = User::class;
-                $logaction->item_id = $user->id;
-                $logaction->created_at = date('Y-m-d H:i:s');
-                $logaction->created_by = auth()->id();
-                $logaction->logaction('2FA reset');
+                $user->saveWithActionType(ActionType::TwoFactorReset);
 
                 return response()->json(['message' => trans('admin/settings/general.two_factor_reset_success')], 200);
             } catch (\Exception $e) {
@@ -798,13 +789,6 @@ class UsersController extends Controller
             }
 
             if ($user->restore()) {
-
-                $logaction = new Actionlog();
-                $logaction->item_type = User::class;
-                $logaction->item_id = $user->id;
-                $logaction->created_at = date('Y-m-d H:i:s');
-                $logaction->created_by = auth()->id();
-                $logaction->logaction('restore');
 
                 return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/users/message.success.restored')), 200);
             }

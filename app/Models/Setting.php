@@ -77,6 +77,14 @@ class Setting extends Model
         'manager_view_enabled' => 'boolean',
     ];
 
+    public static function boot()
+    {
+        self::saved(function ($model) {
+            Cache::forget(Setting::SETUP_CHECK_KEY);
+        });
+        parent::boot();
+    }
+
     /**
      * Get the app settings.
      *  Cache is expired on Setting model saved in EventServiceProvider.

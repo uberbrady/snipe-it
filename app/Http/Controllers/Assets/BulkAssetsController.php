@@ -712,7 +712,7 @@ class BulkAssetsController extends Controller
         } else {
             foreach ($assetIds as $key => $assetId) {
                 $asset = Asset::withTrashed()->find($assetId);
-                $asset->restore();
+                $asset->restore(); // this should be *everything* we need?
             } 
             return redirect()->route('hardware.index')->with('success', trans('admin/hardware/message.restore.success'));
         }

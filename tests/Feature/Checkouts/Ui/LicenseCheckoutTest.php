@@ -46,6 +46,7 @@ class LicenseCheckoutTest extends TestCase
     {
         $admin = User::factory()->superuser()->create();
         $licenseSeat = LicenseSeat::factory()->create();
+        $this->assertHasTheseActionLogs($licenseSeat->license, ['add seats', 'create']);
 
         $this->actingAs($admin)
             ->post(route('licenses.checkout', $licenseSeat->license), [
@@ -54,6 +55,7 @@ class LicenseCheckoutTest extends TestCase
                 'asset_id' => null,
                 'notes' => 'oh hi there',
             ]);
+//        $this->assertHasTheseActionLogs($licenseSeat->license, ['add seats', 'create']);
 
         $this->assertDatabaseHas('action_logs', [
             'action_type' => 'checkout',

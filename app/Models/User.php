@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Models\Traits\HasUploads;
 use App\Presenters\Presentable;
@@ -38,6 +39,9 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     use Notifiable;
     use Presentable;
     use Searchable;
+    use Loggable;
+
+    // that 'use Loggable' thing is NEW!
 
     protected $hidden = [
         'password',
