@@ -7,7 +7,6 @@ use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
-use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use App\Presenters\UserPresenter;
 use Illuminate\Auth\Authenticatable;
