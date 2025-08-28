@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Enums\ActionType;
 
 /**
  * This class controls all API actions related to notes for
@@ -78,15 +79,12 @@ class NotesController extends Controller
         }
 
         // Create the note
-        $logaction = new ActionLog();
-        $logaction->item_type = get_class($asset);
-        $logaction->created_by = Auth::id();
-        $logaction->item_id = $asset->id;
-        $logaction->note = $request->input('note', '');
+        $note = $request->input('note', '');
+        $asset->setLogNote($note);
 
-        if ($logaction->logaction('note added')) {
+        if ($asset->saveWithActionType(ActionType::NoteAdded)) {
             // Return a success response
-            return response()->json(Helper::formatStandardApiResponse('success', ['note' => $logaction->note, 'item_id' => $asset->id], trans('general.note_added')));
+            return response()->json(Helper::formatStandardApiResponse('success', ['note' => $note, 'item_id' => $asset->id], trans('general.note_added')));
         }
 
         // Return an error response if something went wrong
