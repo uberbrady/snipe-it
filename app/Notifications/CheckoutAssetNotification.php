@@ -93,8 +93,8 @@ class CheckoutAssetNotification extends Notification
         $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
 
         $fields = [
-            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
-            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
+            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
+            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
         ];
 
         if ($item->location) {
@@ -135,7 +135,7 @@ class CheckoutAssetNotification extends Notification
                 ->addStartGroupToSection('activityText')
                 ->fact(trans('mail.assigned_to'), $target->present()->name)
                 ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityText')
-                ->fact(trans('mail.Asset_Checkout_Notification') . " by ", $admin->present()->fullName())
+                ->fact(trans('mail.Asset_Checkout_Notification') . " by ", $admin->display_name)
                 ->fact(trans('mail.notes'), $note ?: '');
         }
 
@@ -143,7 +143,7 @@ class CheckoutAssetNotification extends Notification
         $details = [
             trans('mail.assigned_to') => $target->present()->name,
             trans('mail.asset') => htmlspecialchars_decode($item->present()->name),
-            trans('mail.Asset_Checkout_Notification'). ' by' => $admin->present()->fullName(),
+            trans('mail.Asset_Checkout_Notification'). ' by' => $admin->display_name,
             trans('mail.notes') => $note ?: '',
         ];
        return  array($message, $details);

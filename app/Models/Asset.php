@@ -175,7 +175,7 @@ class Asset extends Depreciable
         'location_id'       => ['nullable', 'exists:locations,id', 'fmcs_location'],
         'rtd_location_id'   => ['nullable', 'exists:locations,id', 'fmcs_location'],
         'purchase_date'     => ['nullable', 'date', 'date_format:Y-m-d'],
-        'serial'            => ['nullable', 'unique_undeleted:assets,serial'],
+        'serial'            => ['nullable', 'string', 'unique_undeleted:assets,serial'],
         'purchase_cost'     => ['nullable', 'numeric', 'gte:0', 'max:9999999999999'],
         'supplier_id'       => ['nullable', 'exists:suppliers,id'],
         'asset_eol_date'    => ['nullable', 'date'],
@@ -269,6 +269,17 @@ class Asset extends Depreciable
         'model.manufacturer' => ['name'],
     ];
 
+    protected static function booted(): void
+    {
+        static::forceDeleted(function (Asset $asset) {
+            $asset->requests()->forceDelete();
+        });
+
+        static::softDeleted(function (Asset $asset) {
+            $asset->requests()->delete();
+        });
+    }
+
     // To properly set the expected checkin as Y-m-d
     public function setExpectedCheckinAttribute($value)
     {
@@ -289,7 +300,11 @@ class Asset extends Depreciable
 
             foreach ($this->model->fieldset->fields as $field) {
 
-                if ($field->format == 'BOOLEAN') {
+                // this just casts booleans that may come through as strings to an actual boolean type
+                // adding !$field->field_encrypted because when the encrypted value comes through it
+                // screws things up for the encrypted validation rules (and the encrypted string
+                // is not a valid boolean type)
+                if ($field->format == 'BOOLEAN' && !$field->field_encrypted) {
                     $this->{$field->db_column} = filter_var($this->{$field->db_column}, FILTER_VALIDATE_BOOLEAN);
                 }
             }
@@ -824,9 +839,9 @@ class Asset extends Depreciable
      * @since  1.0
      * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
-    public function assetmaintenances()
+    public function maintenances()
     {
-        return $this->hasMany(\App\Models\AssetMaintenance::class, 'asset_id')
+        return $this->hasMany(\App\Models\Maintenance::class, 'asset_id')
             ->orderBy('created_at', 'desc');
     }
 

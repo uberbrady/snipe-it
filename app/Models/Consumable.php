@@ -253,11 +253,16 @@ class Consumable extends SnipeModel
      */
     public function getImageUrl()
     {
+        // If there is a consumable image, use that
         if ($this->image) {
             return Storage::disk('public')->url(app('consumables_upload_path').$this->image);
-        }
-        return false;
 
+        // Otherwise check for a category image
+        }   elseif (($this->category) && ($this->category->image)) {
+            return Storage::disk('public')->url(app('categories_upload_path').e($this->category->image));
+        }
+
+        return false;
     }
 
     /**

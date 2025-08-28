@@ -78,8 +78,8 @@ class CheckoutLicenseSeatNotification extends Notification
         $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
 
         $fields = [
-            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
-            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
+            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
+            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
         ];
 
         if ($item->location) {
@@ -115,17 +115,17 @@ class CheckoutLicenseSeatNotification extends Notification
                 ->title(trans('mail.License_Checkout_Notification'))
                 ->addStartGroupToSection('activityText')
                 ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityTitle')
-                ->fact(trans('mail.License_Checkout_Notification')." by ", $admin->present()->fullName())
-                ->fact(trans('mail.assigned_to'), $target->present()->fullName())
+                ->fact(trans('mail.License_Checkout_Notification')." by ", $admin->display_name)
+                ->fact(trans('mail.assigned_to'), $target->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->availCount()->count())
                 ->fact(trans('mail.notes'), $note ?: '');
         }
 
         $message = trans('mail.License_Checkout_Notification');
         $details = [
-            trans('mail.assigned_to') => $target->present()->fullName(),
+            trans('mail.assigned_to') => $target->display_name,
             trans('mail.license_for') => htmlspecialchars_decode($item->present()->name),
-            trans('mail.License_Checkout_Notification').' by' => $admin->present()->fullName(),
+            trans('mail.License_Checkout_Notification').' by' => $admin->display_name,
             trans('admin/consumables/general.remaining') => $item->availCount()->count(),
             trans('mail.notes') => $note ?: '',
         ];

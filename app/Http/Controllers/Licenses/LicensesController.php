@@ -102,7 +102,11 @@ class LicensesController extends Controller
         $license->created_by           = auth()->id();
         $license->min_amt           = $request->input('min_amt');
 
-        session()->put(['redirect_option' => $request->get('redirect_option')]);
+        if($request->get('redirect_option') === 'back'){
+            session()->put(['redirect_option' => 'index']);
+        } else {
+            session()->put(['redirect_option' => $request->get('redirect_option')]);
+        }
 
         if ($license->save()) {
             return Helper::getRedirectOption($request, $license->id, 'Licenses')
@@ -304,13 +308,16 @@ class LicensesController extends Controller
         $response = new StreamedResponse(function () {
             // Open output stream
             $handle = fopen('php://output', 'w');
-            $licenses= License::with('company',
+            $licenses = License::with('company',
                           'manufacturer',
                           'category',
                           'supplier',
                           'adminuser',
-                          'assignedusers')
-                          ->orderBy('created_at', 'DESC');
+                          'assignedusers');
+            if (request()->filled('category_id')) {
+                $licenses = $licenses->where('category_id', request()->input('category_id'));
+            }
+            $licenses = $licenses->orderBy('created_at', 'DESC');
             Company::scopeCompanyables($licenses)
                 ->chunk(500, function ($licenses) use ($handle) {
                     $headers = [
@@ -357,7 +364,7 @@ class LicensesController extends Controller
                             $license->order_number,
                             $license->free_seat_count,
                             $license->seats,
-                            ($license->adminuser ? $license->adminuser->present()->fullName() : trans('admin/reports/general.deleted_user')),
+                            ($license->adminuser ? $license->adminuser->display_name : trans('admin/reports/general.deleted_user')),
                             $license->depreciation ? $license->depreciation->name: '',
                             $license->updated_at,
                             $license->deleted_at,

@@ -1197,19 +1197,30 @@ class Helper
             'webp'   => 'far fa-image',
             'avif'   => 'far fa-image',
             'svg' => 'fas fa-vector-square',
+
             // word
             'doc'   => 'far fa-file-word',
             'docx'   => 'far fa-file-word',
+
             // Excel
             'xls'   => 'far fa-file-excel',
             'xlsx'   => 'far fa-file-excel',
+            'ods'   => 'far fa-file-excel',
+
+            // Presentation
+            'ppt'   => 'far fa-file-powerpoint',
+            'odp'   => 'far fa-file-powerpoint',
+
             // archive
             'zip'   => 'fas fa-file-archive',
             'rar'   => 'fas fa-file-archive',
+
             //Text
+            'odt'   => 'far fa-file-alt',
             'txt'   => 'far fa-file-alt',
             'rtf'   => 'far fa-file-alt',
             'xml'   => 'fas fa-code',
+
             // Misc
             'pdf'   => 'far fa-file-pdf',
             'lic'   => 'far fa-save',
@@ -1543,11 +1554,6 @@ class Helper
 
        // return to previous page
         if ($redirect_option === 'back') {
-            if ($backUrl === route('home')) {
-                return redirect()->to($backUrl)
-                ->with('warning', trans('general.page_error'));
-             }
-
             return redirect()->to($backUrl);
         }
 

@@ -68,7 +68,7 @@ class AssetModelsTransformer
             'notes' => Helper::parseEscapedMarkedownInline($assetmodel->notes),
             'created_by' => ($assetmodel->adminuser) ? [
                 'id' => (int) $assetmodel->adminuser->id,
-                'name'=> e($assetmodel->adminuser->present()->fullName()),
+                'name'=> e($assetmodel->adminuser->display_name),
             ] : null,
             'created_at' => Helper::getFormattedDateObject($assetmodel->created_at, 'datetime'),
             'updated_at' => Helper::getFormattedDateObject($assetmodel->updated_at, 'datetime'),

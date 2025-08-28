@@ -100,8 +100,8 @@ class CheckoutAccessoryNotification extends Notification
         $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
 
         $fields = [
-            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
-            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
+            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
+            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
         ];
 
         if ($item->location) {
@@ -140,7 +140,7 @@ class CheckoutAccessoryNotification extends Notification
                 ->fact(trans('mail.assigned_to'), $target->present()->name)
                 ->fact(trans('general.qty'), $this->checkout_qty)
                 ->fact(trans('mail.checkedout_from'), $item->location->name ? $item->location->name : '')
-                ->fact(trans('mail.Accessory_Checkout_Notification') . " by ", $admin->present()->fullName())
+                ->fact(trans('mail.Accessory_Checkout_Notification') . " by ", $admin->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->numRemaining())
                 ->fact(trans('mail.notes'), $note ?: '');
         }
@@ -151,7 +151,7 @@ class CheckoutAccessoryNotification extends Notification
             trans('mail.accessory_name') => htmlspecialchars_decode($item->present()->name),
             trans('general.qty') => $this->checkout_qty,
             trans('mail.checkedout_from') => $item->location->name ? $item->location->name : '',
-            trans('mail.Accessory_Checkout_Notification'). ' by' => $admin->present()->fullName(),
+            trans('mail.Accessory_Checkout_Notification'). ' by' => $admin->display_name,
             trans('admin/consumables/general.remaining')=> $item->numRemaining(),
             trans('mail.notes') => $note ?: '',
         ];

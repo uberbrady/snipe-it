@@ -68,12 +68,14 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'first_name',
         'jobtitle',
         'last_name',
+        'display_name',
         'ldap_import',
         'locale',
         'location_id',
         'manager_id',
         'password',
         'phone',
+        'mobile',
         'notes',
         'state',
         'username',
@@ -106,6 +108,8 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
 
     protected $rules = [
         'first_name'              => 'required|string|min:1|max:191',
+        'last_name'               => 'nullable|string|max:191',
+        'display_name'            => 'nullable|string|max:191',
         'username'                => 'required|string|min:1|unique_undeleted|max:191',
         'email'                   => 'email|nullable|max:191',
         'password'                => 'required|min:8',
@@ -116,9 +120,9 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'start_date'              => 'nullable|date_format:Y-m-d',
         'end_date'                => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
         'autoassign_licenses'     => 'boolean',
-        'address'                 => 'max:191|nullable',
-        'city'                    => 'max:191|nullable',
-        'state'                   => 'min:2|max:191|nullable',
+        'address'                 => 'nullable|string|max:191',
+        'city'                    => 'nullable|string|max:191',
+        'state'                   => 'nullable|string|max:191',
         'country'                 => 'min:2|max:191|nullable',
         'zip'                     => 'max:10|nullable',
         'vip'                     => 'boolean',
@@ -135,12 +139,14 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'address',
         'city',
         'country',
+        'display_name',
         'email',
         'employee_num',
         'first_name',
         'jobtitle',
         'last_name',
         'locale',
+        'mobile',
         'notes',
         'phone',
         'state',
@@ -159,7 +165,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         'department' => ['name'],
         'groups'     => ['name'],
         'company'    => ['name'],
-        'manager'    => ['first_name', 'last_name', 'username'],
+        'manager'    => ['first_name', 'last_name', 'username', 'display_name'],
     ];
 
 
@@ -187,8 +193,31 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         );
     }
 
+    protected static function booted(): void
+    {
+        static::forceDeleted(function (User $user) {
+            CheckoutRequest::where(['user_id' => $user->id])->forceDelete();
+        });
 
-    public function isAvatarExternal()
+        static::softDeleted(function (User $user) {
+            CheckoutRequest::where(['user_id' => $user->id])->delete();
+        });
+    }
+
+    /**
+     * This overrides the SnipeModel displayName accessor to return the full name if display_name is not set
+     * @see SnipeModel::displayName()
+     * @return Attribute
+     */
+
+    protected function displayName(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value) => $value ?? $this->getFullNameAttribute(),
+        );
+    }
+
+    public function isAvatarExternal() : bool
     {
         // Check if it's a google avatar or some external avatar
         if (Str::startsWith($this->avatar, ['http://', 'https://'])) {
@@ -402,9 +431,9 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      * @since  [v4.0]
      * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
-    public function assetmaintenances()
+    public function maintenances()
     {
-        return $this->hasMany(\App\Models\AssetMaintenance::class, 'user_id')->withTrashed();
+        return $this->hasMany(\App\Models\Maintenance::class, 'user_id')->withTrashed();
     }
 
     /**
@@ -850,6 +879,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     {
         return $query->where('first_name', 'LIKE', '%' . $search . '%')
             ->orWhere('last_name', 'LIKE', '%' . $search . '%')
+            ->orWhere('display_name', 'LIKE', '%' . $search . '%')
             ->orWhereMultipleColumns(
                 [
                 'users.first_name',
@@ -894,6 +924,49 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             }
         );
     }
+
+    /**
+     * Return only admins and superusers
+     *
+     * @param  \Illuminate\Database\Query\Builder $query Query builder instance
+     */
+    public function scopeOnlySuperAdmins($query)
+    {
+
+        return $query->where('users.permissions', 'LIKE', '%"superuser":"1"%')
+            ->orWhere('users.permissions', 'LIKE', '%"superuser":1%')
+            ->orWhereHas(
+                'groups', function ($query) {
+                    $query->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
+                        ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%');
+                    }
+            );
+
+    }
+
+    /**
+     * Return only admins and superusers
+     *
+     * @param  \Illuminate\Database\Query\Builder $query Query builder instance
+     */
+    public function scopeOnlyAdminsAndSuperAdmins($query)
+    {
+
+        return $query->where('users.permissions', 'LIKE', '%"superuser":"1"%')
+            ->orWhere('users.permissions', 'LIKE', '%"superuser":1%')
+            ->orWhere('users.permissions', 'LIKE', '%"admin":1%')
+            ->orWhere('users.permissions', 'LIKE', '%"admin":"1"%')
+            ->orWhereHas(
+                'groups', function ($query) {
+                $query->where('permission_groups.permissions', 'LIKE', '%"superuser":"1"%')
+                    ->orWhere('permission_groups.permissions', 'LIKE', '%"superuser":1%')
+                    ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":1%')
+                    ->orWhere('permission_groups.permissions', 'LIKE', '%"admin":"1"%');
+            }
+            );
+
+    }
+
 
 
     /**
@@ -968,7 +1041,6 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
 
 
 
-
     /**
      * Get the preferred locale for the user.
      *
@@ -1007,7 +1079,6 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     public function scopeUserLocation($query, $location, $search)
     {
 
-
         return $query->where('location_id', '=', $location)
             ->where('users.first_name', 'LIKE', '%' . $search . '%')
             ->orWhere('users.email', 'LIKE', '%' . $search . '%')
@@ -1018,10 +1089,8 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             ->orWhere('users.jobtitle', 'LIKE', '%' . $search . '%')
             ->orWhere('users.employee_num', 'LIKE', '%' . $search . '%')
             ->orWhere('users.username', 'LIKE', '%' . $search . '%')
+            ->orWhere('users.display_name', 'LIKE', '%' . $search . '%')
             ->orwhereRaw('CONCAT(users.first_name," ",users.last_name) LIKE \''.$search.'%\'');
-
-
-
 
     }
 

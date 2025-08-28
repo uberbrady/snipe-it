@@ -19,12 +19,6 @@
             padding-right: 10px;
         }
 
-        #eula_div {
-            width: 100%;
-            height: auto;
-            overflow: auto;
-        }
-
         .m-signature-pad--body {
             border-style: solid;
             border-color: grey;
@@ -42,17 +36,20 @@
         <div class="row">
             <div class="col-sm-12 col-sm-offset-1 col-md-10 col-md-offset-1">
                 <div class="panel box box-default">
+                    <div class="box-header with-border">
+                        <h2 class="box-title">
+                            {{$acceptance->checkoutable->present()->name()}}
+                            {{ (($acceptance->checkoutable) && ($acceptance->checkoutable->serial)) ? ' - '.trans('general.serial_number').': '.$acceptance->checkoutable->serial : '' }}
+                        </h2>
+                    </div>
                     <div class="box-body">
-                        <div class="col-md-12" style="padding-top: 20px;">
                         @if ($acceptance->checkoutable->getEula())
-                            <div id="eula_div" style="padding-bottom: 20px">
-                                {!!  $acceptance->checkoutable->getEula() !!}
+                            <div class="col-md-12" style="padding-top: 15px; padding-bottom: 15px;">
+                                <div style="background-color: rgba(211,211,211,0.25); padding: 10px; border: lightgrey 1px solid;">
+                                    {!!  $acceptance->checkoutable->getEula() !!}
+                                </div>
                             </div>
                         @endif
-                        </div>
-                        <div class="col-md-12">
-                        <h3>{{$acceptance->checkoutable->present()->name()}}</h3>
-                        </div>
                         <div class="col-md-12">
                             <label class="form-control">
                                 <input type="radio" name="asset_acceptance" id="accepted" value="accepted">
@@ -66,12 +63,10 @@
                         </div>
                         <div class="col-md-12">
                             <br>
-                            <div class="col-md-12" style="display:block;">
                                 <label id="note_label" for="note" style="text-align:center;" >{{trans('admin/settings/general.acceptance_note')}}</label>
-                            </div>
-                            <div class="col-md-12">
-                                <textarea id="note" name="note" rows="4" value="note" class="form-control" style="width:100%"></textarea>
-                            </div>
+                                <br>
+                                <textarea id="note" name="note" rows="4" class="form-control" style="width:100%">{{ old('note') }}</textarea>
+
                         </div>
 
                         @if ($snipeSettings->require_accept_signature=='1')
@@ -161,7 +156,7 @@
         
         $('[name="asset_acceptance"]').on('change', function() {
 
-            if ($(this).is(':checked') && $(this).attr('id') == 'declined') {
+            if ($(this).is(':checked') && $(this).attr('id') === 'declined') {
                 $("#showEmailBox").hide();
                 $("#showSubmit").show();
                 $("#submit-button").removeClass("btn-success").addClass("btn-danger").show();
@@ -169,7 +164,7 @@
                 $("#buttonText").text('{{ trans('general.i_decline_item') }}');
                 $("#note").prop('required', true);
 
-            } else if ($(this).is(':checked') && $(this).attr('id') == 'accepted') {
+            } else if ($(this).is(':checked') && $(this).attr('id') === 'accepted') {
                 $("#showEmailBox").show();
                 $("#showSubmit").show();
                 $("#submit-button").removeClass("btn-danger").addClass("btn-success").show();

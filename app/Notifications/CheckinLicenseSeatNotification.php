@@ -77,8 +77,8 @@ class CheckinLicenseSeatNotification extends Notification
 
         if ($admin) {
             $fields = [
-                trans('general.from')  => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
-                trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
+                trans('general.from')  => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
+                trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
             ];
 
             if ($item->location) {
@@ -91,7 +91,7 @@ class CheckinLicenseSeatNotification extends Notification
 
         } else {
             $fields = [
-                'To' => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
+                'To' => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
                 'By' => 'CLI tool',
             ];
         }
@@ -120,17 +120,17 @@ class CheckinLicenseSeatNotification extends Notification
                 ->title(trans('mail.License_Checkin_Notification'))
                 ->addStartGroupToSection('activityText')
                 ->fact(htmlspecialchars_decode($item->present()->name), '', 'header')
-                ->fact(trans('mail.License_Checkin_Notification')." by ", $admin->present()->fullName() ?: 'CLI tool')
-                ->fact(trans('mail.checkedin_from'), $target->present()->fullName())
+                ->fact(trans('mail.License_Checkin_Notification')." by ", $admin->display_name ?: 'CLI tool')
+                ->fact(trans('mail.checkedin_from'), $target->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->availCount()->count())
                 ->fact(trans('mail.notes'), $note ?: '');
         }
 
         $message = trans('mail.License_Checkin_Notification');
         $details = [
-            trans('mail.checkedin_from')=> $target->present()->fullName(),
+            trans('mail.checkedin_from')=> $target->display_name,
             trans('mail.license_for') => htmlspecialchars_decode($item->present()->name),
-            trans('mail.License_Checkin_Notification')." by " => $admin->present()->fullName() ?: 'CLI tool',
+            trans('mail.License_Checkin_Notification')." by " => $admin->display_name ?: 'CLI tool',
             trans('admin/consumables/general.remaining') => $item->availCount()->count(),
             trans('mail.notes') => $note ?: '',
         ];
@@ -155,7 +155,7 @@ class CheckinLicenseSeatNotification extends Notification
                         Section::create(
                             KeyValue::create(
                                 trans('mail.checkedin_from') ?: '',
-                                $target->present()->fullName() ?:  '',
+                                $target->display_name ?:  '',
                                 trans('admin/consumables/general.remaining').': '.$item->availCount()->count(),
                             )
                                 ->onClick(route('licenses.show', $item->id))

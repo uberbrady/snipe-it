@@ -51,7 +51,7 @@ class ComponentsTransformer
             'notes' => ($component->notes) ? Helper::parseEscapedMarkedownInline($component->notes) : null,
             'created_by' => ($component->adminuser) ? [
                 'id' => (int) $component->adminuser->id,
-                'name'=> e($component->adminuser->present()->fullName()),
+                'name'=> e($component->adminuser->display_name),
             ] : null,
             'created_at' => Helper::getFormattedDateObject($component->created_at, 'datetime'),
             'updated_at' => Helper::getFormattedDateObject($component->updated_at, 'datetime'),
