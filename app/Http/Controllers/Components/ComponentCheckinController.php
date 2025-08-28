@@ -69,7 +69,7 @@ class ComponentCheckinController extends Controller
 
             $this->authorize('checkin', $component);
 
-            $max_to_checkin = $component_assets->assigned_qty; // FIXME
+            $max_to_checkin = $component_assets->assigned_qty;
             $validator = Validator::make($request->all(), [
                 'checkin_qty' => "required|numeric|between:1,$max_to_checkin",
             ]);
@@ -97,6 +97,7 @@ class ComponentCheckinController extends Controller
 
             $asset = Asset::find($component_assets->asset_id);
             $component->setLogTarget($asset);
+            $component->setLogQuantity($request->input('checkin_qty'));
             $component->saveWithActionType(ActionType::CheckinFrom);
 
             event(new CheckoutableCheckedIn($component, $asset, auth()->user(), $request->input('note'), Carbon::now()));
