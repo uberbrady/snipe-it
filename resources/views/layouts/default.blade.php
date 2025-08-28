@@ -985,6 +985,13 @@ dir="{{ Helper::determineLanguageDirection() }}">
                         @endif
                     @endif
 
+                    @if (isset($user) && ($user->isSuperUser()) && (app()->environment('local')))
+                       <a href="{{ url('telescope') }}" class="btn btn-default btn-xs" rel="noopener">Open Telescope</a>
+                    @endif
+
+
+
+
                     @if ($snipeSettings->support_footer!='off')
                         @if (($snipeSettings->support_footer=='on') || (($snipeSettings->support_footer=='admin') && (Auth::user()->isSuperUser()=='1')))
                             <a target="_blank" class="btn btn-default btn-xs"

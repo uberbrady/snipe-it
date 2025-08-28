@@ -1,6 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Traits;
+
+use App\Models\CompanyableScope;
+use App\Models\Setting;
 
 trait CompanyableTrait
 {

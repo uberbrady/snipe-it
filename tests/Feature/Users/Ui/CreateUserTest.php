@@ -27,6 +27,8 @@ class CreateUserTest extends TestCase
 
     public function testCanCreateUser()
     {
+        Notification::fake();
+
         $response = $this->actingAs(User::factory()->createUsers()->viewUsers()->create())
             ->from(route('users.index'))
             ->post(route('users.store'), [
@@ -35,8 +37,8 @@ class CreateUserTest extends TestCase
                 'username' => 'testuser',
                 'password' => 'testpassword1235!!',
                 'password_confirmation' => 'testpassword1235!!',
-                'send_welcome' => '1',
                 'activated' => '1',
+                'email' => 'foo@example.org',
                 'notes' => 'Test Note',
             ])
             ->assertSessionHasNoErrors()
@@ -48,10 +50,11 @@ class CreateUserTest extends TestCase
             'last_name' => 'Test Last Name',
             'username' => 'testuser',
             'activated' => '1',
+            'email' => 'foo@example.org',
             'notes' => 'Test Note',
 
         ]);
-
+        Notification::assertNothingSent();
         $this->followRedirects($response)->assertSee('Success');
 
     }

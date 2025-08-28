@@ -62,6 +62,8 @@ class CreateUserTest extends TestCase
 
     public function testCanCreateUser()
     {
+        Notification::fake();
+
         $this->actingAsForApi(User::factory()->createUsers()->create())
             ->postJson(route('api.users.store'), [
                 'first_name' => 'Test First Name',
@@ -69,8 +71,8 @@ class CreateUserTest extends TestCase
                 'username' => 'testuser',
                 'password' => 'testpassword1235!!',
                 'password_confirmation' => 'testpassword1235!!',
-                'send_welcome' => '1',
                 'activated' => '1',
+                'email' => 'foo@example.org',
                 'notes' => 'Test Note',
             ])
             ->assertStatusMessageIs('success')
@@ -81,9 +83,12 @@ class CreateUserTest extends TestCase
             'last_name' => 'Test Last Name',
             'username' => 'testuser',
             'activated' => '1',
+            'email' => 'foo@example.org',
             'notes' => 'Test Note',
 
         ]);
+
+        Notification::assertNothingSent();
     }
 
     public function testCanCreateAndNotifyUser()

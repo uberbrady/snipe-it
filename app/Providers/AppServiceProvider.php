@@ -61,6 +61,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+
+        if ($this->app->environment('local')) {
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            $this->app->register(TelescopeServiceProvider::class);
+        }
+
         // Only load rollbar if there is a rollbar key and the app is in production
         if (($this->app->environment('production')) && (config('logging.channels.rollbar.access_token'))) {
             $this->app->register(\Rollbar\Laravel\RollbarServiceProvider::class);

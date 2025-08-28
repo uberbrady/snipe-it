@@ -84,6 +84,7 @@
   },
   "require-dev": {
     "larastan/larastan": "^2.9",
+    "laravel/telescope": "^5.11",
     "mockery/mockery": "^1.4",
     "nunomaduro/phpinsights": "^2.11",
     "php-mock/php-mock-phpunit": "^2.10",
@@ -95,7 +96,8 @@
   "extra": {
     "laravel": {
       "dont-discover": [
-        "rollbar/rollbar-laravel"
+        "rollbar/rollbar-laravel",
+        "laravel/telescope"
       ]
     }
   },
