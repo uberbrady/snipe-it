@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Watson\Validating\ValidatingTrait;
 use App\Models\Traits\HasUploads;
+use App\Models\Traits\Loggable;
 
 /**
  * Model for Asset Maintenances.

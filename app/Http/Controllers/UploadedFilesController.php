@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ActionType;
 use App\Helpers\StorageHelper;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
@@ -54,7 +55,9 @@ class UploadedFilesController extends Controller
             foreach ($request->file('file') as $file) {
                 $file_name = $request->handleFile(self::$map_storage_path[$object_type], self::$map_file_prefix[$object_type].'-'.$object->id, $file);
                 $files[] = $file_name;
-                $object->logUpload($file_name, $request->get('notes'));
+                $object->setLogNote($request->get('notes'));
+                $object->setLogFilename($file_name);
+                $object->saveWithActionType(ActionType::Uploaded);
             }
 
             $files = Actionlog::select('action_logs.*')->where('action_type', '=', 'uploaded')
