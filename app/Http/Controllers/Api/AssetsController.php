@@ -1164,8 +1164,7 @@ class AssetsController extends Controller
             // this 'new' audit system logs the changes via log_meta
             $asset->setLogNote(request('note'));
             $asset->setLogLocationOverride(request('location_id'));
-            $asset->setLogAction(ActionType::Audit);
-            if ($asset->save()) {
+            if ($asset->saveWithActionType(ActionType::Audit)) {
                 return response()->json(Helper::formatStandardApiResponse('success', $payload, trans('admin/hardware/message.audit.success')));
             }
 

@@ -327,8 +327,7 @@ class AccessoriesController extends Controller
 
         $accessory->setLogTarget(User::find($accessory_checkout->assigned_to));
         $accessory->setLogNote($request->input('note'));
-        $accessory->setLogAction(ActionType::CheckinFrom);
-        $accessory->save();
+        $accessory->saveWithActionType(ActionType::CheckinFrom);
 
         // Was the accessory updated?
         if ($accessory_checkout->delete()) {

@@ -452,8 +452,7 @@ class Asset extends Depreciable
         if ($checkout_at && strpos($checkout_at, date('Y-m-d')) === false) {
             $this->setLogActionDate(date('Y-m-d H:i:s'));
         }
-        $this->setLogAction(ActionType::Checkout);
-        if ($this->save()) {
+        if ($this->saveWithActionType(ActionType::Checkout)) {
             // FIXME - we aren't doing any of this logic; should we?
             if (is_int($admin)) {
                 $checkedOutBy = User::findOrFail($admin);

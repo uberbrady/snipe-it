@@ -379,7 +379,6 @@ class UsersController extends Controller
                 return redirect()->back()->with('error', trans('general.not_deleted', ['item_type' => trans('general.user')]));
             }
 
-            $user->setLogAction(ActionType::Restore);
             if ($user->restore()) {
                 // Redirect them to the deleted page if there are more, otherwise the section index
                 $deleted_users = User::onlyTrashed()->count();
