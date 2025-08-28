@@ -271,7 +271,7 @@ class AcceptanceController extends Controller
             $item->setLogActionDate($data['accepted_date']);
             $item->setLogFilename($item->getEula());
             $item->setLogSignatureFilename($acceptance->signature_filename);
-            $item->logAndSaveIfNeeded(ActionType::Accepted);
+            $item->saveWithActionType(ActionType::Accepted);
 //            event(new CheckoutAccepted($acceptance));
 
             $return_msg = trans('admin/users/message.accepted');
@@ -365,7 +365,7 @@ class AcceptanceController extends Controller
             $acceptance->checkoutable->setLogNote($acceptance->note);
             $acceptance->checkoutable->setLogActionDate($acceptance->declined_at);
             $acceptance->checkoutable->setLogSignatureFilename($acceptance->signature_filename);
-            $acceptance->checkoutable->logAndSaveIfNeeded(ActionType::Declined);
+            $acceptance->checkoutable->saveWithActionType(ActionType::Declined);
 //            event(new CheckoutDeclined($acceptance));
             $return_msg = trans('admin/users/message.declined');
         }
