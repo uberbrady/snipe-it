@@ -1253,12 +1253,12 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         Log::debug('Users merged: ' . $bad_user->id . ' (' . $bad_user->username . ') merged into ' . $this->id . ' (' . $this->username . ')');
         $bad_user->setLogTarget($this);
         $bad_user->setLogNote(trans('general.merged_log_this_user_from', $to_from_array));
-        $bad_user->logAndSaveIfNeeded(ActionType::Merged);
+        $bad_user->saveWithActionType(ActionType::Merged);
 
         // Add a record to the users being merged TO
         $this->setLogTarget($bad_user);
         $this->setLogNote(trans('general.merged_log_this_user_into', $to_from_array));
-        $this->logAndSaveIfNeeded(ActionType::Merged);
+        $this->saveWithActionType(ActionType::Merged);
 
     }
 }
