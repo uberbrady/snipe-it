@@ -2,9 +2,9 @@
 return array(
     'companies' => 'Podjetja',
     'create'    => 'Ustvari podjetje',
-    'email'     => 'Company Email',
+    'email'     => 'E-naslov podjetja',
     'title'     => 'Podjetje',
-    'phone'     => 'Company Phone',
+    'phone'     => 'Telefon podjetja',
     'update'    => 'Posodobi podjetje',
     'name'      => 'Naziv podjetja',
     'id'        => 'ID',

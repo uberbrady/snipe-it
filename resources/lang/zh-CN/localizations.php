@@ -4,7 +4,7 @@ return [
 
     'select_language' => '选择一种语言',
     'languages' => [
-        'en-US'=> '中文',
+        'en-US'=> '英语（美国）',
         'en-GB'=> '英语（英国）',
         'am-ET' => 'Amharic',
         'af-ZA'=> '南非荷兰语',
@@ -40,8 +40,8 @@ return [
         'ms-MY'=> '马来文',
         'mi-NZ'=> 'Maori',
         'mn-MN'=> '蒙古语',
-        //'no-NO'=> 'Norwegian',
         'nb-NO'=> '挪威语 （博克马尔语）',
+        'om-ET' => '奥罗莫语(埃塞俄比亚)',
         //'nn-NO'=> 'Norwegian Nynorsk',
         'fa-IR'=> '波斯文',
         'pl-PL'=> '波兰语',
@@ -68,7 +68,7 @@ return [
         'zu-ZA'=> 'Zulu',
     ],
 
-    'select_country' => '选择国家',
+    'select_country' => '选择一个国家或地区',
     
     'countries' => [
         'AC'=>'阿森松岛',
@@ -135,6 +135,7 @@ return [
         'EC'=>'Ecuador',
         'EE'=>'爱沙尼亚',
         'EG'=>'埃及',
+        'GB-ENG'=>'英格兰',
         'ER'=>'厄立特里亚',
         'ES'=>'西班牙',
         'ET'=>'Ethiopia',
@@ -233,6 +234,7 @@ return [
         'NG'=>'Nigeria',
         'NI'=>'Nicaragua',
         'NL'=>'荷兰',
+        'GB-NIR' => '北爱尔兰',
         'NO'=>'挪威',
         'NP'=>'尼泊尔',
         'NR'=>'Nauru',
@@ -260,7 +262,7 @@ return [
         'RU'=>'俄罗斯联邦',
         'RW'=>'Rwanda',
         'SA'=>'沙特阿拉伯',
-        'UK'=>'Scotland',
+        'GB-SCT'=>'Scotland',
         'SB'=>'所罗门群岛',
         'SC'=>'Seychelles',
         'SS'=>'南苏丹',
@@ -312,6 +314,7 @@ return [
         'VI'=>'维尔京群岛(美国)',
         'VN'=>'Viet Nam',
         'VU'=>'Vanuatu',
+        'GB-WLS' =>'威尔士',
         'WF'=>'瓦利斯群岛和富图纳群岛',
         'WS'=>'Samoa',
         'YE'=>'也门',

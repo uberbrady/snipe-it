@@ -13,6 +13,7 @@ use App\Http\Transformers\SelectlistTransformer;
 use App\Models\Accessory;
 use App\Models\Company;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -56,15 +57,16 @@ class AccessoriesController extends Controller
             ];
 
 
-        $accessories = Accessory::select('accessories.*')->with('category', 'company', 'manufacturer', 'checkouts', 'location', 'supplier')
-                                ->withCount('checkouts as checkouts_count');
+        $accessories = Accessory::select('accessories.*')
+            ->with('category', 'company', 'manufacturer', 'checkouts', 'location', 'supplier', 'adminuser')
+            ->withCount('checkouts as checkouts_count');
 
         if ($request->filled('search')) {
             $accessories = $accessories->TextSearch($request->input('search'));
         }
 
         if ($request->filled('company_id')) {
-            $accessories->where('company_id', '=', $request->input('company_id'));
+            $accessories->where('accessories.company_id', '=', $request->input('company_id'));
         }
 
         if ($request->filled('category_id')) {
@@ -110,7 +112,10 @@ class AccessoriesController extends Controller
                 break;    
             case 'supplier':
                 $accessories = $accessories->OrderSupplier($order);
-                break;       
+                break;
+            case 'created_by':
+                $accessories = $accessories->OrderByCreatedByName($order);
+                break;
             default:
                 $accessories = $accessories->orderBy($column_sort, $order);
                 break;
@@ -133,7 +138,6 @@ class AccessoriesController extends Controller
      */
     public function store(StoreAccessoryRequest $request)
     {
-        $this->authorize('create', Accessory::class);
         $accessory = new Accessory;
         $accessory->fill($request->all());
         $accessory = $request->handleImages($accessory);
@@ -181,42 +185,33 @@ class AccessoriesController extends Controller
 
 
     /**
-     * Display the specified resource.
+     * Get the list of checkouts for a specific accessory
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]
      * @since [v4.0]
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return  | array
      */
-    public function checkedout($id, Request $request)
+    public function checkedout(Request $request, $id)
     {
         $this->authorize('view', Accessory::class);
 
         $accessory = Accessory::with('lastCheckout')->findOrFail($id);
-        if (! Company::isCurrentUserHasAccess($accessory)) {
-            return ['total' => 0, 'rows' => []];
-        }
-
         $offset = request('offset', 0);
         $limit = request('limit', 50);
 
-        $accessory_checkouts = $accessory->checkouts;
-        $total = $accessory_checkouts->count();
+        // Total count of all checkouts for this asset
+        $accessory_checkouts = $accessory->checkouts();
 
-        if ($total < $offset) {
-            $offset = 0;
-        }
-
-        $accessory_checkouts = $accessory->checkouts()->skip($offset)->take($limit)->get();
-
+        // Check for search text in the request
         if ($request->filled('search')) {
-            
-            $accessory_checkouts = $accessory->checkouts()->TextSearch($request->input('search'))
-                                         ->get();
-            $total = $accessory_checkouts->count();
+            $accessory_checkouts = $accessory_checkouts->TextSearch($request->input('search'));
         }
 
-        return (new AccessoriesTransformer)->transformCheckedoutAccessory($accessory, $accessory_checkouts, $total);
+        $total = $accessory_checkouts->count();
+        $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
+
+        return (new AccessoriesTransformer)->transformCheckedoutAccessory($accessory_checkouts, $total);
     }
 
 
@@ -227,7 +222,7 @@ class AccessoriesController extends Controller
      * @since [v4.0]
      * @param  \App\Http\Requests\ImageUploadRequest $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(ImageUploadRequest $request, $id)
     {
@@ -249,16 +244,16 @@ class AccessoriesController extends Controller
      * @author [A. Gianotto] [<snipe@snipe.net>]
      * @since [v4.0]
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy($id)
     {
         $this->authorize('delete', Accessory::class);
-        $accessory = Accessory::findOrFail($id);
+        $accessory = Accessory::withCount('checkouts as checkouts_count')->findOrFail($id);
         $this->authorize($accessory);
 
-        if ($accessory->hasUsers() > 0) {
-            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/accessories/message.assoc_users', ['count'=> $accessory->hasUsers()])));
+        if ($accessory->checkouts_count > 0) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/accessories/general.delete_disabled')));
         }
 
         $accessory->delete();
@@ -284,44 +279,57 @@ class AccessoriesController extends Controller
         $accessory->checkout_qty = $request->input('checkout_qty', 1);
 
         for ($i = 0; $i < $accessory->checkout_qty; $i++) {
-            AccessoryCheckout::create([
+
+            $accessory_checkout = new AccessoryCheckout([
                 'accessory_id' => $accessory->id,
                 'created_at' => Carbon::now(),
-                'user_id' => Auth::id(),
                 'assigned_to' => $target->id,
                 'assigned_type' => $target::class,
                 'note' => $request->input('note'),
             ]);
+
+
+            $accessory_checkout->created_by = auth()->id();
+            $accessory_checkout->save();
+
+            $payload = [
+                'accessory_id' => $accessory->id,
+                'assigned_to' => $target->id,
+                'assigned_type' => $target::class,
+                'note' => $request->input('note'),
+                'created_by' => auth()->id(),
+                'pivot' => $accessory_checkout->id,
+            ];
         }
 
         // Set this value to be able to pass the qty through to the event
         event(new CheckoutableCheckedOut($accessory, $target, auth()->user(), $request->input('note')));
 
-        return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/accessories/message.checkout.success')));
+        return response()->json(Helper::formatStandardApiResponse('success', $payload, trans('admin/accessories/message.checkout.success')));
 
     }
 
     /**
      * Check in the item so that it can be checked out again to someone else
      *
-     * @uses Accessory::checkin_email() to determine if an email can and should be sent
-     * @author [A. Gianotto] [<snipe@snipe.net>]
      * @param Request $request
      * @param int $accessoryUserId
      * @param string $backto
-     * @return \Illuminate\Http\RedirectResponse
+     * @return JsonResponse
+     * @uses Accessory::checkin_email() to determine if an email can and should be sent
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      * @internal param int $accessoryId
      */
     public function checkin(Request $request, $accessoryUserId = null)
     {
         if (is_null($accessory_checkout = AccessoryCheckout::find($accessoryUserId))) {
-            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/accessories/message.does_not_exist')));
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/accessories/message.does_not_exist', ['id' => $accessoryUserId])));
         }
 
         $accessory = Accessory::find($accessory_checkout->accessory_id);
         $this->authorize('checkin', $accessory);
 
-        $logaction = $accessory->logCheckin(User::find($accessory_checkout->assigned_to), $request->input('note'));
+        $accessory->logCheckin(User::find($accessory_checkout->assigned_to), $request->input('note'));
 
         // Was the accessory updated?
         if ($accessory_checkout->delete()) {
@@ -329,15 +337,14 @@ class AccessoriesController extends Controller
                 $user = User::find($accessory_checkout->assigned_to);
             }
 
-            $data['log_id'] = $logaction->id;
-            $data['first_name'] = $user->first_name;
-            $data['last_name'] = $user->last_name;
-            $data['item_name'] = $accessory->name;
-            $data['checkin_date'] = $logaction->created_at;
-            $data['item_tag'] = '';
-            $data['note'] = $logaction->note;
+            $payload = [
+                'accessory_id' => $accessory->id,
+                'note' => $request->input('note'),
+                'created_by' => auth()->id(),
+                'pivot' => $accessory_checkout->id,
+            ];
 
-            return response()->json(Helper::formatStandardApiResponse('success', null,  trans('admin/accessories/message.checkin.success')));
+            return response()->json(Helper::formatStandardApiResponse('success', $payload,  trans('admin/accessories/message.checkin.success')));
         }
 
         return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/accessories/message.checkin.error')));

@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Str;
 use NotificationChannels\GoogleChat\Card;
 use NotificationChannels\GoogleChat\GoogleChatChannel;
 use NotificationChannels\GoogleChat\GoogleChatMessage;
@@ -99,16 +100,24 @@ class CheckoutAccessoryNotification extends Notification
         $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
 
         $fields = [
-            'To' => '<'.$target->present()->viewUrl().'|'.$target->present()->fullName().'>',
-            'By' => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
+            trans('general.to') => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
+            trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
         ];
+
+        if ($item->location) {
+            $fields[trans('general.location')] = $item->location->name;
+        }
+
+        if ($item->company) {
+            $fields[trans('general.company')] = $item->company->name;
+        }
 
         return (new SlackMessage)
             ->content(':arrow_up: :keyboard: Accessory Checked Out')
             ->from($botname)
             ->to($channel)
             ->attachment(function ($attachment) use ($item, $note, $admin, $fields) {
-                $attachment->title(htmlspecialchars_decode($this->checkout_qty.' x '.$item->present()->name), $item->present()->viewUrl())
+                $attachment->title(htmlspecialchars_decode($this->checkout_qty.' x '.$item->display_name), $item->present()->viewUrl())
                     ->fields($fields)
                     ->content($note);
             });
@@ -120,20 +129,33 @@ class CheckoutAccessoryNotification extends Notification
         $item = $this->item;
         $note = $this->note;
 
+        if(!Str::contains(Setting::getSettings()->webhook_endpoint, 'workflows')) {
             return MicrosoftTeamsMessage::create()
                 ->to($this->settings->webhook_endpoint)
                 ->type('success')
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('mail.Accessory_Checkout_Notification'))
                 ->addStartGroupToSection('activityText')
-                ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityTitle')
-                ->fact(trans('mail.assigned_to'), $target->present()->name)
+                ->fact(htmlspecialchars_decode($item->display_name), '', 'activityTitle')
+                ->fact(trans('mail.assigned_to'), $target->display_name)
                 ->fact(trans('general.qty'), $this->checkout_qty)
                 ->fact(trans('mail.checkedout_from'), $item->location->name ? $item->location->name : '')
-                ->fact(trans('mail.Accessory_Checkout_Notification') . " by ", $admin->present()->fullName())
+                ->fact(trans('mail.Accessory_Checkout_Notification') . " by ", $admin->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->numRemaining())
                 ->fact(trans('mail.notes'), $note ?: '');
+        }
 
+        $message = trans('mail.Accessory_Checkout_Notification');
+        $details = [
+            trans('mail.assigned_to') => $target->present()->name,
+            trans('mail.accessory_name') => htmlspecialchars_decode($item->display_name),
+            trans('general.qty') => $this->checkout_qty,
+            trans('mail.checkedout_from') => $item->location->name ? $item->location->name : '',
+            trans('mail.Accessory_Checkout_Notification'). ' by' => $admin->display_name,
+            trans('admin/consumables/general.remaining')=> $item->numRemaining(),
+            trans('mail.notes') => $note ?: '',
+        ];
+        return  array($message, $details);
     }
     public function toGoogleChat()
     {
@@ -147,7 +169,7 @@ class CheckoutAccessoryNotification extends Notification
                 Card::create()
                     ->header(
                         '<strong>'.trans('mail.Accessory_Checkout_Notification').'</strong>' ?: '',
-                        htmlspecialchars_decode($item->present()->name) ?: '',
+                        htmlspecialchars_decode($item->display_name) ?: '',
                     )
                     ->section(
                         Section::create(

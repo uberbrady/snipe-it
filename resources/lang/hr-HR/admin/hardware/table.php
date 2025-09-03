@@ -25,9 +25,8 @@ return [
     'image'		    => 'Slika uređaja',
     'days_without_acceptance' => 'Dani bez prihvaćanja',
     'monthly_depreciation' => 'Mjesečna amortizacija',
-    'assigned_to'    => 'Dodijeljena',
     'requesting_user' => 'Requesting User',
-    'requested_date' => 'Requested Date',
+    'requested_date' => 'Datum zahtjeva',
     'changed'       => 'Promijenjeno',
     'icon' => 'Icon',
 ];

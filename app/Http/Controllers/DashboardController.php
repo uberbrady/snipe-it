@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Http\RedirectResponse;
 use \Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Session;
 
 
 /**
@@ -39,11 +40,13 @@ class DashboardController extends Controller
 
             if ((! file_exists(storage_path().'/oauth-private.key')) || (! file_exists(storage_path().'/oauth-public.key'))) {
                 Artisan::call('migrate', ['--force' => true]);
-                \Artisan::call('passport:install');
+                Artisan::call('passport:install', ['--no-interaction' => true]);
             }
 
             return view('dashboard')->with('asset_stats', $asset_stats)->with('counts', $counts);
         } else {
+            Session::reflash();
+
             // Redirect to the profile page
             return redirect()->intended('account/view-assets');
         }

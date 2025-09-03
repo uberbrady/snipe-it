@@ -207,7 +207,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Require SAML Login
+    |  Require SAML Login
     |--------------------------------------------------------------------------
     |
     | Disable the ability to login via form login, and disables the 'nosaml'
@@ -219,6 +219,23 @@ return [
     */
 
     'require_saml' => env('REQUIRE_SAML', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    |  SAML KEYS
+    |--------------------------------------------------------------------------
+    |
+    | This is the size of the keys used by openssl_pkey_new for SAML authentication.
+    | The default is 2048 bits, but this can be changed to 3072 or 4096 bits
+    | for higher security. Note that this will increase the time it takes to
+    | generate the keys, so it is not recommended to set this to a very high value
+    | unless you have a specific need for it.
+    |
+    | The European Commission now requires at least 3072-bit keys for new SAML certificates
+    | @link https://github.com/grokability/snipe-it/issues/17386
+    */
+
+    'saml_key_size' => env('SAML_KEY_SIZE', 2048),
 
 
     /*
@@ -242,7 +259,7 @@ return [
     |
     */
 
-    'min_php' => '8.1.2',
+    'min_php' => '8.2.0',
 
 
     /*
@@ -280,7 +297,6 @@ return [
         Illuminate\Redis\RedisServiceProvider::class,
         Illuminate\Auth\Passwords\PasswordResetServiceProvider::class,
         Illuminate\Session\SessionServiceProvider::class,
-//        Illuminate\Translation\TranslationServiceProvider::class, //replaced on next line
         App\Providers\SnipeTranslationServiceProvider::class, //we REPLACE the default Laravel translator with our own
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
@@ -317,6 +333,7 @@ return [
         App\Providers\LivewireServiceProvider::class,
         App\Providers\MacroServiceProvider::class,
         App\Providers\SamlServiceProvider::class,
+        App\Providers\BreadcrumbsServiceProvider::class,
 
     ],
 
@@ -373,7 +390,7 @@ return [
         'Image'     => Intervention\Image\ImageServiceProvider::class,
         'Carbon' => Carbon\Carbon::class,
         'Helper' => App\Helpers\Helper::class,
-        // makes it much easier to use 'Helper::blah' in blades (which is where we usually use this)
+        'StorageHelper' => App\Helpers\StorageHelper::class,
         'Icon' => App\Helpers\IconHelper::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
 

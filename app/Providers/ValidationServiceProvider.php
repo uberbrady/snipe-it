@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\CustomField;
 use App\Models\Department;
+use App\Models\Location;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -31,6 +32,7 @@ class ValidationServiceProvider extends ServiceProvider
         Validator::extend('email_array', function ($attribute, $value, $parameters, $validator) {
             $value = str_replace(' ', '', $value);
             $array = explode(',', $value);
+            $email_to_validate = [];
 
             foreach ($array as $email) { //loop over values
                 $email_to_validate['alert_email'][] = $email;
@@ -38,7 +40,7 @@ class ValidationServiceProvider extends ServiceProvider
 
             $rules = ['alert_email.*'=>'email'];
             $messages = [
-                'alert_email.*'=>trans('validation.email_array'),
+                'alert_email.*' => trans('validation.custom.email_array'),
             ];
 
             $validator = Validator::make($email_to_validate, $rules, $messages);
@@ -351,6 +353,20 @@ class ValidationServiceProvider extends ServiceProvider
             $options = $field->formatFieldValuesAsArray();
 
             return in_array($value, $options);
+        });
+
+        // Validates that the company of the validated object matches the company of the location in case of scoped locations
+        Validator::extend('fmcs_location', function ($attribute, $value, $parameters, $validator){
+            $settings = Setting::getSettings();
+            if ($settings->full_multiple_companies_support == '1' && $settings->scope_locations_fmcs == '1') {
+                $company_id = array_get($validator->getData(), 'company_id');
+                $location = Location::find($value);
+
+                if (($location) && ($company_id != $location->company_id)) {
+                    return false;
+                }
+            }
+            return true;
         });
     }
 

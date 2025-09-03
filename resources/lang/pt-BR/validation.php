@@ -13,57 +13,58 @@ return [
     |
     */
 
-    'accepted' => 'The :attribute field must be accepted.',
-    'accepted_if' => 'The :attribute field must be accepted when :other is :value.',
-    'active_url' => 'The :attribute field must be a valid URL.',
-    'after' => 'The :attribute field must be a date after :date.',
-    'after_or_equal' => 'The :attribute field must be a date after or equal to :date.',
-    'alpha' => 'The :attribute field must only contain letters.',
-    'alpha_dash' => 'The :attribute field must only contain letters, numbers, dashes, and underscores.',
+    'accepted' => 'O campo :attribute deve ser aceito.',
+    'accepted_if' => 'O campo :attribute deve ser aceito quando :other for :value.',
+    'active_url' => 'O campo :attribute deve ser uma URL válida.',
+    'after' => 'O campo :attribute deve ser uma data posterior a :date.',
+    'after_or_equal' => 'O campo :attribute deve ser uma data posterior ou igual a :date.',
+    'alpha' => 'O campo :attribute deve conter apenas letras.',
+    'alpha_dash' => 'O campo :attribute deve conter apenas letras, números, traços e sublinhados.',
     'alpha_num' => 'O campo :attribute deve conter apenas letras e números.',
-    'array' => 'The :attribute field must be an array.',
-    'ascii' => 'The :attribute field must only contain single-byte alphanumeric characters and symbols.',
+    'array' => 'O campo :attribute deve ser um vetor.',
+    'ascii' => 'O campo :attribute deve conter apenas caracteres e símbolos alfanuméricos de um único byte.',
     'before' => 'O campo :attribute deve ser uma data anterior a :date.',
     'before_or_equal' => 'O campo :attribute deve ser uma data anterior ou igual a :date.',
     'between' => [
         'array' => 'O campo :attribute deve ter entre :min e :max itens.',
         'file' => 'O campo :attribute deve ter entre :min e :max kilobytes.',
-        'numeric' => 'The :attribute field must be between :min and :max.',
-        'string' => 'The :attribute field must be between :min and :max characters.',
+        'numeric' => 'O campo :attribute deve estar entre :min e :max.',
+        'string' => 'O campo :attribute deve ter entre :min e :max caracteres.',
     ],
+    'valid_regex' => 'A expressão regular é inválida.',
     'boolean' => 'O campo :attribute deve ser verdadeiro ou falso.',
-    'can' => 'The :attribute field contains an unauthorized value.',
-    'confirmed' => 'The :attribute field confirmation does not match.',
-    'contains' => 'The :attribute field is missing a required value.',
-    'current_password' => 'The password is incorrect.',
-    'date' => 'The :attribute field must be a valid date.',
-    'date_equals' => 'The :attribute field must be a date equal to :date.',
-    'date_format' => 'The :attribute field must match the format :format.',
+    'can' => 'O campo :attribute contém um valor não autorizado.',
+    'confirmed' => 'A confirmação do campo :attribute não corresponde.',
+    'contains' => 'O campo "atributo" não contém um valor obrigatório.',
+    'current_password' => 'A senha esta incorreta.',
+    'date' => 'O campo :attribute deve ser uma data válida.',
+    'date_equals' => 'O campo :attribute deve ser uma data igual a :date.',
+    'date_format' => 'O campo :attribute deve ser igual ao formato :format.',
     'decimal' => 'The :attribute field must have :decimal decimal places.',
-    'declined' => 'The :attribute field must be declined.',
-    'declined_if' => 'The :attribute field must be declined when :other is :value.',
-    'different' => 'The :attribute field and :other must be different.',
-    'digits' => 'The :attribute field must be :digits digits.',
-    'digits_between' => 'The :attribute field must be between :min and :max digits.',
-    'dimensions' => 'The :attribute field has invalid image dimensions.',
+    'declined' => 'O campo :attribute deve ser recusado.',
+    'declined_if' => 'O campo :attribute deve ser recusado quando :other é :value.',
+    'different' => 'O campo :attribute e :other devem ser diferentes.',
+    'digits' => 'O :attribute deve ter :digits dígitos.',
+    'digits_between' => 'O campo :attribute deve ter entre :min e :max dígitos.',
+    'dimensions' => 'O campo :attribute tem dimensões de imagem inválidas.',
     'distinct' => 'O :attribute tem um valor duplicado.',
-    'doesnt_end_with' => 'The :attribute field must not end with one of the following: :values.',
-    'doesnt_start_with' => 'The :attribute field must not start with one of the following: :values.',
-    'email' => 'The :attribute field must be a valid email address.',
-    'ends_with' => 'The :attribute field must end with one of the following: :values.',
+    'doesnt_end_with' => 'O campo :attribute não deve terminar com um dos seguintes: :values.',
+    'doesnt_start_with' => 'O campo :attribute não deve começar com um dos seguintes: :values.',
+    'email' => 'O campo :attribute deve ser um email válido.',
+    'ends_with' => 'O campo :attribute deve terminar com um dos seguintes: :values.',
     'enum' => 'O :attribute selecionado é inválido.',
     'exists' => 'O :attribute selecionado é inválido.',
-    'extensions' => 'The :attribute field must have one of the following extensions: :values.',
+    'extensions' => 'O campo :attribute deve ter uma das seguintes extensões: :values.',
     'file' => 'O campo :attribute deve ser um arquivo.',
     'filled' => 'O :attribute deve ter um valor.',
     'gt' => [
-        'array' => 'The :attribute field must have more than :value items.',
-        'file' => 'The :attribute field must be greater than :value kilobytes.',
-        'numeric' => 'The :attribute field must be greater than :value.',
-        'string' => 'The :attribute field must be greater than :value characters.',
+        'array' => 'O :attribute não pode ter mais que :max items.',
+        'file' => 'O campo :attribute deve ser maior que :value kilobytes.',
+        'numeric' => 'O :attribute deve ser maior que :value.',
+        'string' => 'O campo :attribute deve ser maior que :value caracteres.',
     ],
     'gte' => [
-        'array' => 'The :attribute field must have :value items or more.',
+        'array' => 'O campo :attribute deve ter :value items ou mais.',
         'file' => 'The :attribute field must be greater than or equal to :value kilobytes.',
         'numeric' => 'The :attribute field must be greater than or equal to :value.',
         'string' => 'The :attribute field must be greater than or equal to :value characters.',
@@ -125,7 +126,7 @@ return [
         'symbols' => 'The :attribute field must contain at least one symbol.',
         'uncompromised' => 'The given :attribute has appeared in a data leak. Please choose a different :attribute.',
     ],
-    'percent'       => 'The depreciation minimum must be between 0 and 100 when depreciation type is percentage.',
+    'percent'       => 'A depreciação mínima deve estar entre 0 e 100 quando o tipo de depreciação for percentual.',
 
     'present' => 'O campo:attribute deve estar presente.',
     'present_if' => 'The :attribute field must be present when :other is :value.',
@@ -169,9 +170,11 @@ return [
     'unique' => 'O :attribute já foi tomado.',
     'uploaded' => 'O :attribute falhou no upload.',
     'uppercase' => 'The :attribute field must be uppercase.',
-    'url' => 'The :attribute field must be a valid URL.',
+    'url' => 'O campo :attribute deve ser uma URL válida.',
     'ulid' => 'The :attribute field must be a valid ULID.',
     'uuid' => 'The :attribute field must be a valid UUID.',
+    'fmcs_location' => 'Full multiple company support and location scoping is enabled in the Admin Settings, and the selected location and selected company are not compatible.',
+
 
     /*
     |--------------------------------------------------------------------------
@@ -184,17 +187,21 @@ return [
     |
     */
 
+    'email_array'      => 'Um ou mais e-mails sõ invalidos.',
+    'checkboxes'           => ':attribute contém opções inválidas.',
+    'radio_buttons'        => ':attribute é inválido.',
+    
     'custom' => [
         'alpha_space' => 'O campo :attribute contém um caractere que não é permitido.',
-        'email_array'      => 'Um ou mais e-mails sõ invalidos.',
+
         'hashed_pass'      => 'Sua senha atual está incorreta',
         'dumbpwd'          => 'Essa senha é muito comum.',
-        'statuslabel_type' => 'Você deve selecionar um tipo de etiqueta de status válido',
-        'custom_field_not_found'          => 'This field does not seem to exist, please double check your custom field names.',
+        'statuslabel_type' => 'Você deve selecionar um tipo de etiqueta de situação válida',
+        'custom_field_not_found'          => 'Este campo parece não existir, verifique novamente os nomes dos seus campos personalizados.',
         'custom_field_not_found_on_model' => 'This field seems to exist, but is not available on this Asset Model\'s fieldset.',
 
         // date_format validation with slightly less stupid messages. It duplicates a lot, but it gets the job done :(
-        // We use this because the default error message for date_format is reflects php Y-m-d, which non-PHP
+        // We use this because the default error message for date_format reflects php Y-m-d, which non-PHP
         // people won't know how to format.
         'purchase_date.date_format'     => 'O :attribute deve ser uma data válida em formato DD-MM-YYYY',
         'last_audit_date.date_format'   =>  'O :attribute deve ser uma data válida em formato DD-MM-YYYY hh:mm:ss',
@@ -203,9 +210,14 @@ return [
         'expected_checkin.date_format'  =>  'O :attribute deve ser uma data válida em formato DD-MM-YYYY',
         'start_date.date_format'        =>  'O :attribute deve ser uma data válida em formato DD-MM-YYYY',
         'end_date.date_format'          =>  'O :attribute deve ser uma data válida em formato DD-MM-YYYY',
-        'checkboxes'           => ':attribute contém opções inválidas.',
-        'radio_buttons'        => ':attribute é inválido.',
         'invalid_value_in_field' => 'Valor inválido incluído neste campo',
+
+        'ldap_username_field' => [
+            'not_in' =>         '<code>sAMAccountName</code> (mixed case) will likely not work. You should use <code>samaccountname</code> (lowercase) instead.'
+        ],
+        'ldap_auth_filter_query' => ['not_in' => '<code>uid=samaccountname</code> is probably not a valid auth filter. You probably want <code>uid=</code> '],
+        'ldap_filter' => ['regex' => 'This value should probably not be wrapped in parentheses.'],
+
         ],
     /*
     |--------------------------------------------------------------------------
@@ -229,7 +241,7 @@ return [
 
     'generic' => [
         'invalid_value_in_field' => 'Valor inválido incluído neste campo',
-        'required' => 'This field is required',
+        'required' => 'Este campo é obrigatório',
         'email' => 'Please enter a valid email address',
     ],
 

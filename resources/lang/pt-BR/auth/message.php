@@ -6,16 +6,14 @@ return array(
     'account_not_found'      => 'O nome do usuário ou a senha estão incorretos.',
     'account_not_activated'  => 'Esta conta de usuário não está ativada.',
     'account_suspended'      => 'Esta conta de usuário está suspensa.',
-    'account_banned'         => 'Esta conta de usuário está banida.',
-    'throttle'               => 'Muitas tentativas com falha de login. Por favor, tente novamente em :minutes minutos.',
 
     'two_factor' => array(
         'already_enrolled'      => 'Seu dispositivo já está inscrito.',
         'success'               => 'Você logou na sua conta com sucesso.',
         'code_required'         => 'O código de dois fatores é obrigatório.',
         'invalid_code'          => 'O código de dois fatores é inválido.',
-        'enter_two_factor_code' => 'Please enter your two-factor authentication code.',
-        'please_enroll'         => 'Please enroll a device in two-factor authentication.',
+        'enter_two_factor_code' => 'Por favor, digite seu código de autenticação de dois fatores.',
+        'please_enroll'         => 'Por favor, registre um dispositivo na autenticação de dois fatores.',
     ),
 
     'signin' => array(

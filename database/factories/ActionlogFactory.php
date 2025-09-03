@@ -29,7 +29,7 @@ class ActionlogFactory extends Factory
         return [
             'item_id' => Asset::factory(),
             'item_type' => Asset::class,
-            'user_id' => User::factory()->superuser(),
+            'created_by' => User::factory()->superuser(),
             'action_type' => 'uploaded',
         ];
     }
@@ -84,6 +84,28 @@ class ActionlogFactory extends Factory
         });
     }
 
+    /**
+     * This sets up an ActionLog representing a manually added note tied to an Asset,
+     * with an optional User as the creator. If no User is provided, one is generated.
+     *
+     * @param User|null $user Optional user to associate as the creator of the note.
+     * @return \Illuminate\Database\Eloquent\Factories\Factory<ActionLog>
+     */
+    public function assetNote(?User $user=null)
+    {
+        return $this
+            ->state(function () use ($user) {
+                return [
+                    'action_type' => 'note added',
+                    'item_type' => Asset::class,
+                    'target_type' => 'asset',
+                    'note' => 'Factory-generated manual note',
+                    'created_by' => $user?->id ?? User::factory(),
+                ];
+            })
+            ->for($user ?? User::factory(), 'user');
+    }
+
     public function licenseCheckoutToUser()
     {
         return $this->state(function () {
@@ -92,7 +114,7 @@ class ActionlogFactory extends Factory
 
             $licenseSeat->update([
                 'assigned_to' => $target->id,
-                'user_id' => 1, // not ideal but works
+                'created_by' => 1, // not ideal but works
             ]);
 
             return [

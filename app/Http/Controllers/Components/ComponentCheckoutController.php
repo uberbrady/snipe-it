@@ -106,7 +106,7 @@ class ComponentCheckoutController extends Controller
         $component->asset_id = $request->input('asset_id');
         $component->assets()->attach($component->id, [
             'component_id' => $component->id,
-            'user_id' => auth()->user()->id,
+            'created_by' => auth()->user()->id,
             'created_at' => date('Y-m-d H:i:s'),
             'assigned_qty' => $request->input('assigned_qty'),
             'asset_id' => $request->input('asset_id'),
@@ -120,6 +120,7 @@ class ComponentCheckoutController extends Controller
 
         session()->put(['redirect_option' => $request->get('redirect_option'), 'checkout_to_type' => $request->get('checkout_to_type')]);
 
-        return redirect()->to(Helper::getRedirectOption($request, $component->id, 'Components'))->with('success', trans('admin/components/message.checkout.success'));
+        return Helper::getRedirectOption($request, $component->id, 'Components')
+            ->with('success', trans('admin/components/message.checkout.success'));
     }
 }

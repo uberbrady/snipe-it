@@ -28,11 +28,12 @@ class AssetModelFactory extends Factory
     public function definition()
     {
         return [
-            'user_id' => User::factory()->superuser(),
+            'created_by' => User::factory()->superuser(),
             'name' => $this->faker->catchPhrase(),
             'category_id' => Category::factory(),
             'model_number' => $this->faker->creditCardNumber(),
             'notes' => 'Created by demo seeder',
+            'require_serial' => 0,
 
         ];
     }
@@ -445,6 +446,15 @@ class AssetModelFactory extends Factory
         return $this->state(function () use ($fields) {
             return [
                 'fieldset_id' => CustomFieldset::factory()->hasMultipleCustomFields($fields),
+            ];
+        });
+    }
+
+    public function doesNotRequireAcceptance()
+    {
+        return $this->state(function () {
+            return [
+                'category_id' => Category::factory()->doesNotRequireAcceptance(),
             ];
         });
     }

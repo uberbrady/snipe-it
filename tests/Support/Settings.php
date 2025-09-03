@@ -21,12 +21,57 @@ class Settings
 
     public function enableAlertEmail(string $email = 'notifications@afcrichmond.com'): Settings
     {
-        return $this->update(['alert_email' => $email]);
+        return $this->update([
+            'alert_email' => $email,
+            'alerts_enabled' => 1,
+        ]);
     }
-
+    public function setAlertInterval(int $days): Settings
+    {
+        return $this->update([
+            'alert_threshold' => $days,
+        ]);
+    }
+    public function setAuditWarningDays(int $days): Settings
+    {
+        return $this->update([
+            'audit_warning_days' => $days,
+        ]);
+    }
     public function disableAlertEmail(): Settings
     {
-        return $this->update(['alert_email' => null]);
+        return $this->update([
+            'alert_email' => null,
+            'alerts_enabled' => 0,
+        ]);
+    }
+
+    public function enableAdminCC(string $email = 'cc@example.co'): Settings
+    {
+        return $this->update([
+            'admin_cc_email' => $email,
+        ]);
+    }
+
+    public function disableAdminCC(): Settings
+    {
+        return $this->update([
+            'admin_cc_email' => null,
+        ]);
+    }
+
+    public function enableAdminCCAlways(): Settings
+    {
+        return $this->update([
+            'admin_cc_always' => 1,
+        ]);
+    }
+
+    public function disableAdminCCAlways(): Settings
+    {
+        return $this->update([
+            'admin_cc_always' => 0,
+        ]);
     }
 
     public function enableMultipleFullCompanySupport(): Settings
@@ -120,6 +165,10 @@ class Settings
             'ldap_pword' => "badly_encrypted_password!",
             'ldap_basedn' => 'CN=Users,DC=ad,DC=example,Dc=com'
         ]);
+    }
+    public function setEula($text = 'Default EULA text')
+    {
+        return $this->update(['default_eula_text' => $text]);
     }
 
     /**

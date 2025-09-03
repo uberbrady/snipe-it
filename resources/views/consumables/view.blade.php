@@ -41,7 +41,7 @@
                 <x-icon type="users" class="fa-2x" />
                 </span>
                     <span class="hidden-xs hidden-sm">{{ trans('general.assigned') }}
-                      {!! ($consumable->users_consumables > 0 ) ? '<badge class="badge badge-secondary">'.number_format($consumable->users_consumables).'</badge>' : '' !!}
+                      {!! ($consumable->users_consumables > 0 ) ? '<span class="badge badge-secondary">'.number_format($consumable->users_consumables).'</span>' : '' !!}
                     </span>
                   </a>
             </li>
@@ -54,7 +54,7 @@
                   <i class="far fa-file fa-2x" aria-hidden="true"></i>
                 </span>
                 <span class="hidden-xs hidden-sm">{{ trans('general.file_uploads') }}
-                    {!! ($consumable->uploads->count() > 0 ) ? '<badge class="badge badge-secondary">'.number_format($consumable->uploads->count()).'</badge>' : '' !!}
+                    {!! ($consumable->uploads->count() > 0 ) ? '<span class="badge badge-secondary">'.number_format($consumable->uploads->count()).'</span>' : '' !!}
                   </span>
                 </a>
               </li>
@@ -83,13 +83,13 @@
         <div class="tab-content">
           <div class="tab-pane active" id="details">
             <div class="row">
-
+              <div class="info-stack-container">
               <!-- Start button column -->
-              <div class="col-md-3 col-xs-12 col-sm-push-9">
+              <div class="col-md-3 col-xs-12 col-sm-push-9 info-stack">
 
                 @if ($consumable->image!='')
                   <div class="col-md-12 text-center" style="padding-bottom: 20px;">
-                    <a href="{{ Storage::disk('public')->url('consumables/'.e($consumable->image)) }}" data-toggle="lightbox">
+                    <a href="{{ Storage::disk('public')->url('consumables/'.e($consumable->image)) }}" data-toggle="lightbox" data-type="image">
                       <img src="{{ Storage::disk('public')->url('consumables/'.e($consumable->image)) }}" class="img-responsive img-thumbnail" alt="{{ $consumable->name }}"></a>
                   </div>
                 @endif
@@ -139,7 +139,7 @@
                   @can('delete', $consumable)
                     <div class="col-md-12" style="padding-top: 10px; padding-bottom: 20px">
                       @if ($consumable->deleted_at=='')
-                        <button class="btn btn-sm btn-block btn-danger btn-social hidden-print delete-asset" data-toggle="modal" data-title="{{ trans('general.delete') }}" data-content="{{ trans('general.sure_to_delete_var', ['item' => $consumable->name]) }}" data-target="#dataConfirmModal">
+                        <button class="btn btn-sm btn-block btn-danger btn-social hidden-print delete-asset" data-icon="fa fa-trash" data-toggle="modal" data-title="{{ trans('general.delete') }}" data-content="{{ trans('general.sure_to_delete_var', ['item' => $consumable->name]) }}" data-target="#dataConfirmModal" onClick="return false;">
                           <x-icon type="delete" />
                           {{ trans('general.delete') }}
                         </button>
@@ -151,7 +151,7 @@
 
               <!-- End button column -->
 
-              <div class="col-md-9 col-xs-12 col-sm-pull-3">
+              <div class="col-md-9 col-xs-12 col-sm-pull-3 info-stack">
 
                 <div class="row-new-striped" style="margin: 0px;">
 
@@ -189,6 +189,17 @@
                     </div>
                   @endif
 
+                  <!-- total -->
+                  @if ($consumable->qty)
+                    <div class="row">
+                      <div class="col-md-3">
+                        {{ trans('admin/components/general.total') }}
+                      </div>
+                      <div class="col-md-9">
+                        {{ $consumable->qty }}
+                      </div>
+                    </div>
+                  @endif
 
                   <!-- remaining -->
                   @if ($consumable->numRemaining())
@@ -292,8 +303,10 @@
                       </div>
                       <div class="col-md-9">
 
-                        <span class="js-copy">{{ $consumable->item_no  }}</span>
-                        <i class="fa-regular fa-clipboard js-copy-link" data-clipboard-target=".js-copy" aria-hidden="true" data-tooltip="true" data-placement="top" title="{{ trans('general.copy_to_clipboard') }}">
+                        <span class="js-copy-item_no">{{ $consumable->item_no  }}</span>
+                        <i class="fa-regular fa-clipboard js-copy-link" data-clipboard-target=".js-copy-item_no"
+                           aria-hidden="true" data-tooltip="true" data-placement="top"
+                           title="{{ trans('general.copy_to_clipboard') }}">
                           <span class="sr-only">{{ trans('general.copy_to_clipboard') }}</span>
                         </i>
 
@@ -308,8 +321,10 @@
                       </div>
                       <div class="col-md-9">
 
-                        <span class="js-copy">{{ $consumable->model_number  }}</span>
-                        <i class="fa-regular fa-clipboard js-copy-link" data-clipboard-target=".js-copy" aria-hidden="true" data-tooltip="true" data-placement="top" title="{{ trans('general.copy_to_clipboard') }}">
+                        <span class="js-copy-model_no">{{ $consumable->model_number  }}</span>
+                        <i class="fa-regular fa-clipboard js-copy-link" data-clipboard-target=".js-copy-model_no"
+                           aria-hidden="true" data-tooltip="true" data-placement="top"
+                           title="{{ trans('general.copy_to_clipboard') }}">
                           <span class="sr-only">{{ trans('general.copy_to_clipboard') }}</span>
                         </i>
 
@@ -325,6 +340,22 @@
                       </div>
                       <div class="col-md-9">
                         {{ \App\Helpers\Helper::getFormattedDateObject($consumable->purchase_date, 'datetime', false) }}
+                      </div>
+                    </div>
+                  @endif
+
+                  @if ($consumable->adminuser)
+                    <!-- created at -->
+                    <div class="row">
+                      <div class="col-md-3">
+                        {{ trans('general.created_by') }}
+                      </div>
+                      <div class="col-md-9">
+                        @if ($consumable->adminuser->deleted_at == '')
+                          <a href="{{ route('users.show', ['user' => $consumable->adminuser]) }}">{{ $consumable->adminuser->present()->fullName }}</a>
+                        @else
+                          <del>{{ $consumable->adminuser->present()->fullName }}</del>
+                        @endif
                       </div>
                     </div>
                   @endif
@@ -353,24 +384,6 @@
                     </div>
                   @endif
 
-                  @if ($consumable->admin)
-                    <!-- created at -->
-                    <div class="row">
-                      <div class="col-md-3">
-                        {{ trans('general.created_by') }}
-                      </div>
-                      <div class="col-md-9">
-
-                          @if ($consumable->admin->deleted_at == '')
-                            <a href="{{ route('users.show', ['user' => $consumable->admin]) }}">{{ $consumable->admin->present()->fullName }}</a>
-                          @else
-                            <del>{{ $consumable->admin->present()->fullName }}</del>
-                          @endif
-
-                      </div>
-                    </div>
-                  @endif
-
                   @if ($consumable->notes)
                     <!-- empty -->
                     <div class="row">
@@ -386,6 +399,7 @@
                   @endif
                 </div> <!--/end striped container-->
               </div> <!-- end col-md-9 -->
+              </div><!-- end info-stack-container -->
             </div> <!--/.row-->
           </div><!-- /.tab-pane -->
 
@@ -393,14 +407,10 @@
 
             <table
                     data-cookie-id-table="consumablesCheckedoutTable"
-                    data-pagination="true"
                     data-id-table="consumablesCheckedoutTable"
                     data-search="false"
                     data-side-pagination="server"
-                    data-show-columns="true"
-                    data-show-export="true"
                     data-show-footer="true"
-                    data-show-refresh="true"
                     data-sort-order="asc"
                     data-sort-name="name"
                     id="consumablesCheckedoutTable"
@@ -413,12 +423,12 @@
               <thead>
               <tr>
                 <th data-searchable="false" data-sortable="false" data-field="avatar" data-formatter="imageFormatter">{{ trans('general.image') }}</th>
-                <th data-searchable="false" data-sortable="false" data-field="name" formatter="usersLinkFormatter">{{ trans('general.user') }}</th>
+                <th data-searchable="false" data-sortable="false" data-field="user" data-formatter="usersLinkObjFormatter">{{ trans('general.user') }}</th>
                 <th data-searchable="false" data-sortable="false" data-field="created_at" data-formatter="dateDisplayFormatter">
                   {{ trans('general.date') }}
                 </th>
                 <th data-searchable="false" data-sortable="false" data-field="note">{{ trans('general.notes') }}</th>
-                <th data-searchable="false" data-sortable="false" data-field="admin">{{ trans('general.admin') }}</th>
+                <th data-searchable="false" data-sortable="false" data-field="created_by" data-formatter="usersLinkObjFormatter">{{ trans('general.created_by') }}</th>
               </tr>
               </thead>
             </table>
@@ -427,146 +437,34 @@
 
 
           <div class="tab-pane" id="files">
+
             <div class="row">
-
-              <div class="col-md-12 col-sm-12">
-                <div class="table-responsive">
-
-                    <table
-                            data-cookie-id-table="consumableUploadsTable"
-                            data-id-table="consumableUploadsTable"
-                            id="consumableUploadsTable"
-                            data-search="true"
-                            data-pagination="true"
-                            data-side-pagination="client"
-                            data-show-columns="true"
-                            data-show-export="true"
-                            data-show-footer="true"
-                            data-toolbar="#upload-toolbar"
-                            data-show-refresh="true"
-                            data-sort-order="asc"
-                            data-sort-name="name"
-                            class="table table-striped snipe-table"
-                            data-export-options='{
-                    "fileName": "export-consumables-uploads-{{ str_slug($consumable->name) }}-{{ date('Y-m-d') }}",
-                    "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","delete","download","icon"]
-                    }'>
-                      <thead>
-                      <tr>
-                        <th data-visible="true" data-field="icon" data-sortable="true">{{trans('general.file_type')}}</th>
-                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="image">{{ trans('general.image') }}</th>
-                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="filename" data-sortable="true">{{ trans('general.file_name') }}</th>
-                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="filesize">{{ trans('general.filesize') }}</th>
-                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="notes" data-sortable="true">{{ trans('general.notes') }}</th>
-                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="download">{{ trans('general.download') }}</th>
-                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="created_at" data-sortable="true">{{ trans('general.created_at') }}</th>
-                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="actions">{{ trans('table.actions') }}</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      @if ($consumable->uploads->count() > 0)
-                        @foreach ($consumable->uploads as $file)
-                          <tr>
-                            <td>
-                              <i class="{{ Helper::filetype_icon($file->filename) }} icon-med" aria-hidden="true"></i>
-                              <span class="sr-only">{{ Helper::filetype_icon($file->filename) }}</span>
-
-                            </td>
-                            <td>
-                              @if ($file->filename)
-                                @if ( Helper::checkUploadIsImage($file->get_src('consumables')))
-                                  <a href="{{ route('show.consumablefile', ['consumableId' => $consumable->id, 'fileId' => $file->id, 'download' => 'false']) }}" data-toggle="lightbox" data-type="image"><img src="{{ route('show.consumablefile', ['consumableId' => $consumable->id, 'fileId' => $file->id]) }}" class="img-thumbnail" style="max-width: 50px;"></a>
-                                @endif
-                              @endif
-                            </td>
-                            <td>
-                              {{ $file->filename }}
-                            </td>
-                            <td data-value="{{ (Storage::exists('private_uploads/consumables/'.$file->filename) ? Storage::size('private_uploads/consumables/'.$file->filename) : '') }}">
-                              {{ @Helper::formatFilesizeUnits(Storage::exists('private_uploads/consumables/'.$file->filename) ? Storage::size('private_uploads/consumables/'.$file->filename) : '') }}
-                            </td>
-
-                            <td>
-                              @if ($file->note)
-                                {!! nl2br(Helper::parseEscapedMarkedownInline($file->note)) !!}
-                              @endif
-                            </td>
-                            <td>
-                              @if ($file->filename)
-                                <a href="{{ route('show.consumablefile', [$consumable->id, $file->id]) }}" class="btn btn-sm btn-default">
-                                  <i class="fas fa-download" aria-hidden="true"></i>
-                                  <span class="sr-only">{{ trans('general.download') }}</span>
-                                </a>
-
-                                <a href="{{ route('show.consumablefile', [$consumable->id, $file->id, 'inline' => 'true']) }}" class="btn btn-sm btn-default" target="_blank">
-                                  <x-icon type="external-link" />
-                                </a>
-                              @endif
-                            </td>
-                            <td>{{ $file->created_at }}</td>
-                            <td>
-                              <a class="btn delete-asset btn-danger btn-sm" href="{{ route('delete/consumablefile', [$consumable->id, $file->id]) }}" data-content="{{ trans('general.delete_confirm', ['item' => $file->filename]) }}" data-title="{{ trans('general.delete') }}">
-                                <i class="fas fa-trash icon-white" aria-hidden="true"></i>
-                                <span class="sr-only">{{ trans('general.delete') }}</span>
-                              </a>
-
-                            </td>
-                          </tr>
-                        @endforeach
-                      @else
-                        <tr>
-                          <td colspan="8">{{ trans('general.no_results') }}</td>
-                        </tr>
-                      @endif
-                      </tbody>
-                    </table>
-                </div>
+              <div class="col-md-12">
+                <x-filestable object_type="consumables" :object="$consumable" />
               </div>
-            </div> <!--/ROW-->
+            </div>
+
           </div><!--/FILES-->
 
           <div class="tab-pane" id="history">
             <div class="table-responsive">
 
               <table
+                      data-columns="{{ \App\Presenters\HistoryPresenter::dataTableLayout() }}"
                       class="table table-striped snipe-table"
                       id="consumableHistory"
-                      data-pagination="true"
                       data-id-table="consumableHistory"
-                      data-search="true"
                       data-side-pagination="server"
-                      data-show-columns="true"
-                      data-show-fullscreen="true"
-                      data-show-refresh="true"
                       data-sort-order="desc"
                       data-sort-name="created_at"
-                      data-show-export="true"
                       data-export-options='{
                          "fileName": "export-consumable-{{  $consumable->id }}-history",
                          "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
                        }'
 
                       data-url="{{ route('api.activity.index', ['item_id' => $consumable->id, 'item_type' => 'consumable']) }}"
-                      data-cookie-id-table="assetHistory"
+                      data-cookie-id-table="consumableHistory"
                       data-cookie="true">
-                <thead>
-                <tr>
-                  <th data-visible="true" data-field="icon" style="width: 40px;" class="hidden-xs" data-formatter="iconFormatter">{{ trans('admin/hardware/table.icon') }}</th>
-                  <th data-visible="true" data-field="action_date" data-sortable="true" data-formatter="dateDisplayFormatter">{{ trans('general.date') }}</th>
-                  <th data-visible="true" data-field="admin" data-formatter="usersLinkObjFormatter">{{ trans('general.admin') }}</th>
-                  <th data-visible="true" data-field="action_type">{{ trans('general.action') }}</th>
-                  <th class="col-sm-2" data-field="file" data-visible="false" data-formatter="fileUploadNameFormatter">{{ trans('general.file_name') }}</th>
-                  <th data-visible="true" data-field="item" data-formatter="polymorphicItemFormatter">{{ trans('general.item') }}</th>
-                  <th data-visible="true" data-field="target" data-formatter="polymorphicItemFormatter">{{ trans('general.target') }}</th>
-                  <th data-field="note">{{ trans('general.notes') }}</th>
-                  <th data-field="signature_file" data-visible="false"  data-formatter="imageFormatter">{{ trans('general.signature') }}</th>
-                  <th data-visible="false" data-field="file" data-visible="false"  data-formatter="fileUploadFormatter">{{ trans('general.download') }}</th>
-                  <th data-field="log_meta" data-visible="true" data-formatter="changeLogFormatter">{{ trans('admin/hardware/table.changed')}}</th>
-                  <th data-field="remote_ip" data-visible="false" data-sortable="true">{{ trans('admin/settings/general.login_ip') }}</th>
-                  <th data-field="user_agent" data-visible="false" data-sortable="true">{{ trans('admin/settings/general.login_user_agent') }}</th>
-                  <th data-field="action_source" data-visible="false" data-sortable="true">{{ trans('general.action_source') }}</th>
-                </tr>
-                </thead>
               </table>
             </div>
           </div><!-- /.tab-pane -->
@@ -583,18 +481,6 @@
 @stop
 
 @section('moar_scripts')
-
-        <script>
-
-          $('#dataConfirmModal').on('show.bs.modal', function (event) {
-            var content = $(event.relatedTarget).data('content');
-            var title = $(event.relatedTarget).data('title');
-            $(this).find(".modal-body").text(content);
-            $(this).find(".modal-header").text(title);
-          });
-
-        </script>
-
 
   @include ('partials.bootstrap-table', ['simple_view' => true])
 @endsection

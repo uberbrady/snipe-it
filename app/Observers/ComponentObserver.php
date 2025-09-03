@@ -20,7 +20,11 @@ class ComponentObserver
         $logAction->item_type = Component::class;
         $logAction->item_id = $component->id;
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->user_id = Auth::id();
+        $logAction->action_date = date('Y-m-d H:i:s');
+        $logAction->created_by = auth()->id();
+        if($component->imported) {
+            $logAction->setActionSource('importer');
+        }
         $logAction->logaction('update');
     }
 
@@ -37,7 +41,8 @@ class ComponentObserver
         $logAction->item_type = Component::class;
         $logAction->item_id = $component->id;
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->user_id = Auth::id();
+        $logAction->action_date = date('Y-m-d H:i:s');
+        $logAction->created_by = auth()->id();
         if($component->imported) {
             $logAction->setActionSource('importer');
         }
@@ -56,7 +61,8 @@ class ComponentObserver
         $logAction->item_type = Component::class;
         $logAction->item_id = $component->id;
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->user_id = Auth::id();
+        $logAction->action_date = date('Y-m-d H:i:s');
+        $logAction->created_by = auth()->id();
         $logAction->logaction('delete');
     }
 }

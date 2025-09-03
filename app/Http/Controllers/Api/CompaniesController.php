@@ -38,11 +38,15 @@ class CompaniesController extends Controller
             'accessories_count',
             'consumables_count',
             'components_count',
+            'notes',
         ];
 
         $companies = Company::withCount(['assets as assets_count'  => function ($query) {
             $query->AssetsForShow();
-        }])->withCount('licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'users as users_count');
+        }])
+            ->with('adminuser')
+            ->withCount('licenses as licenses_count', 'accessories as accessories_count', 'consumables as consumables_count', 'components as components_count', 'users as users_count');
+
 
         if ($request->filled('search')) {
             $companies->TextSearch($request->input('search'));
@@ -56,17 +60,29 @@ class CompaniesController extends Controller
             $companies->where('email', '=', $request->input('email'));
         }
 
+        if ($request->filled('created_by')) {
+            $companies->where('created_by', '=', $request->input('created_by'));
+        }
+
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $offset = ($request->input('offset') > $companies->count()) ? $companies->count() : app('api_offset_value');
         $limit = app('api_limit_value');
-
-
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
-        $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
-        $companies->orderBy($sort, $order);
+        $sort_override =  $request->input('sort');
+        $column_sort = in_array($sort_override, $allowed_columns) ? $sort_override : 'created_at';
+
+        switch ($sort_override) {
+            case 'created_by':
+                $companies = $companies->OrderByCreatedBy($order);
+                break;
+            default:
+                $companies = $companies->orderBy($column_sort, $order);
+                break;
+        }
 
         $total = $companies->count();
+
         $companies = $companies->skip($offset)->take($limit)->get();
         return (new CompaniesTransformer)->transformCompanies($companies, $total);
 
@@ -106,6 +122,7 @@ class CompaniesController extends Controller
     {
         $this->authorize('view', Company::class);
         $company = Company::findOrFail($id);
+        $this->authorize('view', $company);
         return (new CompaniesTransformer)->transformCompany($company);
 
     }
@@ -123,6 +140,7 @@ class CompaniesController extends Controller
     {
         $this->authorize('update', Company::class);
         $company = Company::findOrFail($id);
+        $this->authorize('update', $company);
         $company->fill($request->all());
         $company = $request->handleImages($company);
 
@@ -174,6 +192,7 @@ class CompaniesController extends Controller
             'companies.email',
             'companies.image',
         ]);
+
 
         if ($request->filled('search')) {
             $companies = $companies->where('companies.name', 'LIKE', '%'.$request->get('search').'%');

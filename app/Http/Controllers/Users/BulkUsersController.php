@@ -13,7 +13,9 @@ use App\Models\Group;
 use App\Models\LicenseSeat;
 use App\Models\ConsumableAssignment;
 use App\Models\Consumable;
+use App\Models\Setting;
 use App\Models\User;
+use App\Notifications\CurrentInventory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -35,7 +37,7 @@ class BulkUsersController extends Controller
      */
     public function edit(Request $request)
     {
-        $this->authorize('update', User::class);
+        $this->authorize('view', User::class);
 
         // Make sure there were users selected
         if (($request->filled('ids')) && (count($request->input('ids')) > 0)) {
@@ -47,16 +49,40 @@ class BulkUsersController extends Controller
 
             // bulk edit, display the bulk edit form
             if ($request->input('bulk_actions') == 'edit') {
+                $this->authorize('update', User::class);
                 return view('users/bulk-edit', compact('users'))
                     ->with('groups', Group::pluck('name', 'id'));
 
+            // bulk send assigned inventory
+            } elseif ($request->input('bulk_actions') == 'send_assigned') {
+                    $this->authorize('update', User::class);
+
+                $users_without_email = 0;
+                foreach ($users as $user) {
+                    if (empty($user->email)) {
+                        $users_without_email++;
+                    } else {
+                        $user->notify((new CurrentInventory($user)));
+                    }
+                }
+
+                if ($users_without_email == 0) {
+                    return redirect()->back()->with('success', trans_choice('admin/users/general.users_notified', $users->count()));
+                } else {
+                    return redirect()->back()->with('warning', trans_choice('admin/users/general.users_notified_warning', $users->count(), ['no_email' => $users_without_email]));
+                }
+
+
+
+
             // bulk delete, display the bulk delete confirmation form
             } elseif ($request->input('bulk_actions') == 'delete') {
+                $this->authorize('delete', User::class);
                 return view('users/confirm-bulk-delete')->with('users', $users)->with('statuslabel_list', Helper::statusLabelList());
 
             // merge, confirm they have at least 2 users selected and display the merge screen
             } elseif ($request->input('bulk_actions') == 'merge') {
-
+                $this->authorize('delete', User::class);
                 if (($request->filled('ids')) && (count($request->input('ids')) > 1)) {
                     return view('users/confirm-merge')->with('users', $users);
                 // Not enough users selected, send them back
@@ -67,7 +93,7 @@ class BulkUsersController extends Controller
             // bulk password reset, just do the thing
             } elseif ($request->input('bulk_actions') == 'bulkpasswordreset') {
                 foreach ($users as $user) {
-                    if (($user->activated == '1') && ($user->email != '')) {
+                    if (($user->activated == '1') && ($user->email != '') && ($user->ldap_import != '1')) {
                         $credentials = ['email' => $user->email];
                         Password::sendResetLink($credentials/* , function (Message $message) {
                         $message->subject($this->getEmailSubject()); // TODO - I'm not sure if we still need this, but this second parameter is no longer accepted in later Laravel versions.
@@ -76,6 +102,33 @@ class BulkUsersController extends Controller
                 }
                 return redirect()->back()->with('success', trans('admin/users/message.password_resets_sent'));
 
+            } elseif ($request->input('bulk_actions') == 'print') {
+                $users = User::query()
+                    ->with([
+                        'assets.assetlog',
+                        'assets.assignedAssets.assetlog',
+                        'assets.assignedAssets.defaultLoc',
+                        'assets.assignedAssets.location',
+                        'assets.assignedAssets.model.category',
+                        'assets.defaultLoc',
+                        'assets.location',
+                        'assets.model.category',
+                        'accessories.assetlog',
+                        'accessories.category',
+                        'accessories.manufacturer',
+                        'consumables.assetlog',
+                        'consumables.category',
+                        'consumables.manufacturer',
+                        'licenses.category',
+                    ])
+                    ->withTrashed()
+                    ->findMany($request->input('ids'));
+
+                $users->each(fn($user) => $this->authorize('view', $user));
+
+                return view('users.print')
+                    ->with('users', $users)
+                    ->with('settings', Setting::getSettings());
             }
         }
 
@@ -101,7 +154,7 @@ class BulkUsersController extends Controller
         $user_raw_array = $request->input('ids');
 
         // Remove the user from any updates.
-        $user_raw_array = array_diff($user_raw_array, [Auth::id()]);
+        $user_raw_array = array_diff($user_raw_array, [auth()->id()]);
         $manager_conflict = false;
         $users = User::whereIn('id', $user_raw_array)->where('id', '!=', auth()->id())->get();
 
@@ -118,6 +171,7 @@ class BulkUsersController extends Controller
             ->conditionallyAddItem('activated')
             ->conditionallyAddItem('start_date')
             ->conditionallyAddItem('end_date')
+            ->conditionallyAddItem('city')
             ->conditionallyAddItem('autoassign_licenses');
 
 
@@ -156,12 +210,16 @@ class BulkUsersController extends Controller
             $this->update_array['end_date'] = null;
         }
 
+        if ($request->input('null_locale')=='1') {
+            $this->update_array['locale'] = null;
+        }
+
         if (! $manager_conflict) {
             $this->conditionallyAddItem('manager_id');
         }
         // Save the updated info
         User::whereIn('id', $user_raw_array)
-            ->where('id', '!=', Auth::id())->update($this->update_array);
+            ->where('id', '!=', auth()->id())->update($this->update_array);
 
         if (array_key_exists('location_id', $this->update_array)){
             Asset::where('assigned_type', User::class)
@@ -223,7 +281,7 @@ class BulkUsersController extends Controller
 
         $user_raw_array = request('ids');
 
-        if (($key = array_search(Auth::id(), $user_raw_array)) !== false) {
+        if (($key = array_search(auth()->id(), $user_raw_array)) !== false) {
             unset($user_raw_array[$key]);
         }
 
@@ -240,7 +298,6 @@ class BulkUsersController extends Controller
         $this->logItemCheckinAndDelete($assets, Asset::class);
         $this->logAccessoriesCheckin($accessoryUserRows);
         $this->logItemCheckinAndDelete($licenses, License::class);
-        $this->logConsumablesCheckin($consumableUserRows);
 
         Asset::whereIn('id', $assets->pluck('id'))->update([
             'status_id'     => e(request('status_id')),
@@ -288,7 +345,7 @@ class BulkUsersController extends Controller
             $logAction->item_type = $itemType;
             $logAction->target_id = $item->assigned_to;
             $logAction->target_type = User::class;
-            $logAction->user_id = Auth::id();
+            $logAction->created_by = auth()->id();
             $logAction->note = 'Bulk checkin items';
             $logAction->logaction('checkin from');
         }
@@ -302,21 +359,7 @@ class BulkUsersController extends Controller
             $logAction->item_type = Accessory::class;
             $logAction->target_id = $accessoryUserRow->assigned_to;
             $logAction->target_type = User::class;
-            $logAction->user_id = Auth::id();
-            $logAction->note = 'Bulk checkin items';
-            $logAction->logaction('checkin from');
-        }
-    }
-
-    private function logConsumablesCheckin(Collection $consumableUserRows): void
-    {
-        foreach ($consumableUserRows as $consumableUserRow) {
-            $logAction = new Actionlog();
-            $logAction->item_id = $consumableUserRow->consumable_id;
-            $logAction->item_type = Consumable::class;
-            $logAction->target_id = $consumableUserRow->assigned_to;
-            $logAction->target_type = User::class;
-            $logAction->user_id = Auth::id();
+            $logAction->created_by = auth()->id();
             $logAction->note = 'Bulk checkin items';
             $logAction->logaction('checkin from');
         }

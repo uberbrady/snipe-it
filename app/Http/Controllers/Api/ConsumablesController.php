@@ -40,7 +40,7 @@ class ConsumablesController extends Controller
         }
 
         if ($request->filled('company_id')) {
-            $consumables->where('company_id', '=', $request->input('company_id'));
+            $consumables->where('consumables.company_id', '=', $request->input('company_id'));
         }
 
         if ($request->filled('category_id')) {
@@ -86,8 +86,14 @@ class ConsumablesController extends Controller
             case 'company':
                 $consumables = $consumables->OrderCompany($order);
                 break;
+            case 'remaining':
+                $consumables = $consumables->OrderRemaining($order);
+                break;
             case 'supplier':
                 $consumables = $consumables->OrderSupplier($order);
+                break;
+            case 'created_by':
+                $consumables = $consumables->OrderByCreatedBy($order);
                 break;
             default:
                 // This array is what determines which fields should be allowed to be sorted on ON the table itself.
@@ -207,7 +213,7 @@ class ConsumablesController extends Controller
         $consumable = Consumable::with(['consumableAssignments'=> function ($query) {
             $query->orderBy($query->getModel()->getTable().'.created_at', 'DESC');
         },
-        'consumableAssignments.admin'=> function ($query) {
+        'consumableAssignments.adminuser'=> function ($query) {
         },
         'consumableAssignments.user'=> function ($query) {
         },
@@ -222,10 +228,16 @@ class ConsumablesController extends Controller
         foreach ($consumable->consumableAssignments as $consumable_assignment) {
             $rows[] = [
                 'avatar' => ($consumable_assignment->user) ? e($consumable_assignment->user->present()->gravatar) : '',
-                'name' => ($consumable_assignment->user) ? $consumable_assignment->user->present()->nameUrl() : 'Deleted User',
+                'user' => ($consumable_assignment->user) ? [
+                    'id' => (int) $consumable_assignment->user->id,
+                    'name'=> e($consumable_assignment->user->display_name),
+                ] : null,
                 'created_at' => Helper::getFormattedDateObject($consumable_assignment->created_at, 'datetime'),
                 'note' => ($consumable_assignment->note) ? e($consumable_assignment->note) : null,
-                'admin' => ($consumable_assignment->admin) ? $consumable_assignment->admin->present()->nameUrl() : null,
+                'created_by' => ($consumable_assignment->adminuser) ? [
+                    'id' => (int) $consumable_assignment->adminuser->id,
+                    'name'=> e($consumable_assignment->adminuser->display_name),
+                ] : null,
             ];
         }
 
@@ -251,6 +263,8 @@ class ConsumablesController extends Controller
 
         $this->authorize('checkout', $consumable);
 
+        $consumable->checkout_qty = $request->input('checkout_qty', 1);
+
         // Make sure there is at least one available to checkout
         if ($consumable->numRemaining() <= 0) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/consumables/message.checkout.unavailable')));
@@ -260,6 +274,12 @@ class ConsumablesController extends Controller
         if (!$consumable->category){
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.invalid_item_category_single', ['type' => trans('general.consumable')])));
         }
+
+        // Make sure there is at least one available to checkout
+        if ($consumable->numRemaining() <= 0 || $consumable->checkout_qty > $consumable->numRemaining()) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/consumables/message.checkout.unavailable', ['requested' => $consumable->checkout_qty, 'remaining' => $consumable->numRemaining() ])));
+        }
+
 
 
         // Check if the user exists - @TODO:  this should probably be handled via validation, not here??
@@ -271,14 +291,17 @@ class ConsumablesController extends Controller
         // Update the consumable data
         $consumable->assigned_to = $request->input('assigned_to');
 
-        $consumable->users()->attach($consumable->id,
+        for ($i = 0; $i < $consumable->checkout_qty; $i++) {
+            $consumable->users()->attach($consumable->id,
                 [
                     'consumable_id' => $consumable->id,
-                    'user_id' => $user->id,
+                    'created_by' => $user->id,
                     'assigned_to' => $request->input('assigned_to'),
                     'note' => $request->input('note'),
                 ]
             );
+        }
+
 
         event(new CheckoutableCheckedOut($consumable, $user, auth()->user(), $request->input('note')));
 

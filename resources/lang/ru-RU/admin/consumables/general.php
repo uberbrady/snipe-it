@@ -1,12 +1,12 @@
 <?php
 
 return array(
-    'checkout'                          => 'Выдать расходники пользователю',
+    'checkout'                          => 'Выдать расходный материал пользователю',
     'consumable_name'                   => 'Название расходного материала',
     'create'                            => 'Создать расходный материал',
-    'item_no'                           => 'Пункт №.',
+    'item_no'                           => 'Артикул',
     'remaining' 			            => 'Осталось',
     'total' 			                => 'Всего',
     'update'                            => 'Обновить расходный материал',
-    'inventory_warning'                 => 'The inventory of this consumable is below the minimum amount of :min_count',
+    'inventory_warning'                 => 'Количество расходных материалов меньше минимального количества :min_count',
 );

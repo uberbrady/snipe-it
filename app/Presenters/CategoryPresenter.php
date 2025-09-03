@@ -78,18 +78,33 @@ class CategoryPresenter extends Presenter
                 'visible' => true,
                 "formatter" => 'trueFalseFormatter',
             ], [
-                'field' => 'created_at',
+                'field' => 'notes',
                 'searchable' => true,
                 'sortable' => true,
                 'visible' => false,
+                'title' => trans('general.notes'),
+            ], [
+                'field' => 'created_by',
+                'searchable' => false,
+                'sortable' => true,
+                'title' => trans('general.created_by'),
+                'visible' => false,
+                'formatter' => 'usersLinkObjFormatter',
+            ], [
+                'field' => 'created_at',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
                 'title' => trans('general.created_at'),
+                'visible' => false,
                 'formatter' => 'dateDisplayFormatter',
             ], [
                 'field' => 'updated_at',
                 'searchable' => true,
                 'sortable' => true,
-                'visible' => false,
+                'switchable' => true,
                 'title' => trans('general.updated_at'),
+                'visible' => false,
                 'formatter' => 'dateDisplayFormatter',
             ], [
                 'field' => 'actions',
@@ -97,7 +112,8 @@ class CategoryPresenter extends Presenter
                 'sortable' => false,
                 'switchable' => false,
                 'title' => trans('table.actions'),
-		'formatter' => 'categoriesActionsFormatter',
+		        'formatter' => 'categoriesActionsFormatter',
+                'printIgnore' => true,
             ],
         ];
 

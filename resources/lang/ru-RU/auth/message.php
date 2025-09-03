@@ -6,16 +6,14 @@ return array(
     'account_not_found'      => 'Неверный Логин или Пароль.',
     'account_not_activated'  => 'Эта учетная запись не активирована.',
     'account_suspended'      => 'Эта учетная запись приостановлена.',
-    'account_banned'         => 'Эта учетная запись заблокирована.',
-    'throttle'               => 'Слишком много неудачных попыток входа. Пожалуйста, попробуйте через :minutes минут.',
 
     'two_factor' => array(
         'already_enrolled'      => 'Ваше устройство уже зарегистрировано.',
         'success'               => 'Вы успешно вошли.',
         'code_required'         => 'Требуется Двух-Факторный код подтверждения.',
         'invalid_code'          => 'Недействительный Двух-Факторный код подтверждения.',
-        'enter_two_factor_code' => 'Please enter your two-factor authentication code.',
-        'please_enroll'         => 'Please enroll a device in two-factor authentication.',
+        'enter_two_factor_code' => 'Пожалуйста, введите код двухфакторной аутентификации.',
+        'please_enroll'         => 'Пожалуйста, зарегистрируйте устройство для двухфакторной аутентификации.',
     ),
 
     'signin' => array(

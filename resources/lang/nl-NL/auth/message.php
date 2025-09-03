@@ -6,16 +6,14 @@ return array(
     'account_not_found'      => 'De gebruikersnaam of het wachtwoord is niet juist.',
     'account_not_activated'  => 'Deze gebruikersaccount is niet actief.',
     'account_suspended'      => 'Deze gebruikersaccount is vergrendeld.',
-    'account_banned'         => 'Deze gebruikersaccount is geband.',
-    'throttle'               => 'Te veel mislukte inlog pogingen. Probeer het over :minuten opnieuw.',
 
     'two_factor' => array(
         'already_enrolled'      => 'Je apparaat is al uitgeleverd.',
         'success'               => 'U bent succesvol ingelogd.',
         'code_required'         => 'Tweestapsverificatie code is vereist.',
         'invalid_code'          => 'Tweestapsverificatie code is ongeldig.',
-        'enter_two_factor_code' => 'Please enter your two-factor authentication code.',
-        'please_enroll'         => 'Please enroll a device in two-factor authentication.',
+        'enter_two_factor_code' => 'Voer je tweestaps verificatiecode in.',
+        'please_enroll'         => 'Registreer een apparaat voor twee-factor-authenticatie.',
     ),
 
     'signin' => array(

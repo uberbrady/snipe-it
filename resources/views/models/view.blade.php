@@ -31,7 +31,18 @@
 
 
 <div class="row">
+
+    @if ($model->deleted_at!='')
+        <div class="col-md-12">
+            <div class="callout callout-warning">
+                <x-icon type="warning" />
+                {{ trans('admin/models/general.deleted') }}
+            </div>
+        </div>
+    @endif
+
     <div class="col-md-9">
+
         <div class="nav-tabs-custom">
 
             <ul class="nav nav-tabs">
@@ -43,20 +54,20 @@
                         </span>
                         <span class="hidden-xs hidden-sm">
                             {{ trans('general.assets') }}
-                            {!! ($model->assets()->AssetsForShow()->count() > 0 ) ? '<badge class="badge badge-secondary">'.number_format($model->assets()->AssetsForShow()->count()).'</badge>' : '' !!}
+                            {!! ($model->assets()->AssetsForShow()->count() > 0 ) ? '<span class="badge badge-secondary">'.number_format($model->assets()->AssetsForShow()->count()).'</span>' : '' !!}
                         </span>
                     </a>
                 </li>
 
                 <li>
-                    <a href="#uploads" data-toggle="tab">
+                    <a href="#files" data-toggle="tab">
 
                         <span class="hidden-lg hidden-md">
                           <i class="fas fa-barcode fa-2x"></i>
                         </span>
                         <span class="hidden-xs hidden-sm">
                             {{ trans('general.files') }}
-                            {!! ($model->uploads->count() > 0 ) ? '<badge class="badge badge-secondary">'.number_format($model->uploads->count()).'</badge>' : '' !!}
+                            {!! ($model->uploads->count() > 0 ) ? '<span class="badge badge-secondary">'.number_format($model->uploads->count()).'</span>' : '' !!}
                           </span>
                     </a>
                 </li>
@@ -77,18 +88,11 @@
                     <table
                             data-columns="{{ \App\Presenters\AssetPresenter::dataTableLayout() }}"
                             data-cookie-id-table="assetListingTable"
-                            data-pagination="true"
                             data-id-table="assetListingTable"
-                            data-search="true"
                             data-side-pagination="server"
-                            data-show-columns="true"
-                            data-show-fullscreen="true"
                             data-toolbar="#assetsBulkEditToolbar"
                             data-bulk-button-id="#bulkAssetEditButton"
                             data-bulk-form-id="#assetsBulkForm"
-                            data-click-to-select="true"
-                            data-show-export="true"
-                            data-show-refresh="true"
                             data-sort-order="asc"
                             id="assetListingTable"
                             data-url="{{ route('api.assets.index',['model_id'=> $model->id]) }}"
@@ -98,108 +102,15 @@
                 "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
                 }'>
                     </table>
-                    {{ Form::close() }}
                 </div> <!-- /.tab-pane assets -->
 
 
-                <div class="tab-pane fade" id="uploads">
+                <div class="tab-pane fade" id="files">
 
                     <div class="row">
                         <div class="col-md-12">
 
-                            @if ($model->uploads->count() > 0)
-                                <table
-                                        class="table table-striped snipe-table"
-                                        id="modelFileHistory"
-                                        data-pagination="true"
-                                        data-id-table="modelFileHistory"
-                                        data-search="true"
-                                        data-side-pagination="client"
-                                        data-sortable="true"
-                                        data-show-columns="true"
-                                        data-show-fullscreen="true"
-                                        data-show-refresh="true"
-                                        data-sort-order="desc"
-                                        data-sort-name="created_at"
-                                        data-show-export="true"
-                                        data-export-options='{
-                         "fileName": "export-asset-{{ $model->id }}-files",
-                         "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
-                       }'
-                                        data-cookie-id-table="assetFileHistory">
-                                    <thead>
-                                    <tr>
-                                        <th data-visible="true" data-field="icon" data-sortable="true">{{trans('general.file_type')}}</th>
-                                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="image">{{ trans('general.image') }}</th>
-                                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="filename" data-sortable="true">{{ trans('general.file_name') }}</th>
-                                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="filesize">{{ trans('general.filesize') }}</th>
-                                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="notes" data-sortable="true">{{ trans('general.notes') }}</th>
-                                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="download">{{ trans('general.download') }}</th>
-                                        <th class="col-md-2" data-searchable="true" data-visible="true" data-field="created_at" data-sortable="true">{{ trans('general.created_at') }}</th>
-                                        <th class="col-md-1" data-searchable="true" data-visible="true" data-field="actions">{{ trans('table.actions') }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-
-                                    @foreach ($model->uploads as $file)
-                                        <tr>
-                                            <td><i class="{{ Helper::filetype_icon($file->filename) }} icon-med" aria-hidden="true"></i></td>
-                                            <td>
-                                                @if ((Storage::exists('private_uploads/assetmodels/'.$file->filename)) && ( Helper::checkUploadIsImage($file->get_src('assetmodels'))))
-                                                    <a href="{{ route('show/modelfile', ['modelID' => $model->id, 'fileId' => $file->id]) }}" data-toggle="lightbox" data-type="image" data-title="{{ $file->filename }}">
-                                                        <img src="{{ route('show/modelfile', ['modelID' => $model->id, 'fileId' =>$file->id]) }}" style="max-width: 50px;">
-                                                    </a>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if (Storage::exists('private_uploads/assetmodels/'.$file->filename))
-                                                    {{ $file->filename }}
-                                                @else
-                                                    <del>{{ $file->filename }}</del>
-                                                @endif
-                                            </td>
-                                            <td data-value="{{ (Storage::exists('private_uploads/assetmodels/'.$file->filename)) ? Storage::size('private_uploads/assetmodels/'.$file->filename) : '' }}">
-                                                {{ (Storage::exists('private_uploads/assetmodels/'.$file->filename)) ? Helper::formatFilesizeUnits(Storage::size('private_uploads/assetmodels/'.$file->filename)) : '' }}
-                                            </td>
-                                            <td>
-                                                @if ($file->note)
-                                                    {{ $file->note }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if (($file->filename) && (Storage::exists('private_uploads/assetmodels/'.$file->filename)))
-                                                    <a href="{{ route('show/modelfile', [$model->id, $file->id]) }}" class="btn btn-sm btn-default">
-                                                        <i class="fas fa-download" aria-hidden="true"></i>
-                                                    </a>
-
-                                                    <a href="{{ route('show/modelfile', [$model->id, $file->id, 'inline'=>'true']) }}" class="btn btn-sm btn-default" target="_blank">
-                                                        <x-icon type="external-link" />
-                                                    </a>
-
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($file->created_at)
-                                                    {{ Helper::getFormattedDateObject($file->created_at, 'datetime', false) }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @can('update', \App\Models\AssetModel::class)
-                                                    <a class="btn delete-asset btn-sm btn-danger btn-sm" href="{{ route('delete/assetfile', [$model->id, $file->id]) }}" data-tooltip="true" data-title="Delete" data-content="{{ trans('general.delete_confirm', ['item' => $file->filename]) }}"><i class="fas fa-trash icon-white" aria-hidden="true"></i></a>
-                                                @endcan
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
-                                </table>
-
-                            @else
-
-                                <div class="alert alert-info alert-block">
-                                    <i class="fas fa-info-circle"></i>
-                                    {{ trans('general.no_results') }}
-                                </div>
-                            @endif
+                            <x-filestable object_type="models" :object="$model" />
 
                         </div> <!-- /.col-md-12 -->
                     </div> <!-- /.row -->
@@ -231,26 +142,33 @@
 
                 <ul class="list-unstyled" style="line-height: 25px;">
                     @if ($model->category)
-                        <li>{{ trans('general.category') }}:
+                        <li>
+                            <strong>{{ trans('general.category') }}</strong>:
                             <a href="{{ route('categories.show', $model->category->id) }}">{{ $model->category->name }}</a>
                         </li>
                     @endif
+                    @if ($model->deleted_at)
+                        <li>
+                            <strong>
+                                <span class="text-danger">
+                                {{ trans('general.deleted') }}:
+                                {{ Helper::getFormattedDateObject($model->deleted_at, 'datetime', false) }}
+                                </span>
+                            </strong>
 
-                    @if ($model->created_at)
-                        <li>{{ trans('general.created_at') }}:
-                            {{ Helper::getFormattedDateObject($model->created_at, 'datetime', false) }}
                         </li>
                     @endif
 
                     @if ($model->min_amt)
-                        <li>{{ trans('general.min_amt') }}:
+                        <li>
+                            <strong>{{ trans('general.min_amt') }}</strong>:
                            {{$model->min_amt }}
                         </li>
                     @endif
 
                     @if ($model->manufacturer)
                         <li>
-                            {{ trans('general.manufacturer') }}:
+                            <strong>{{ trans('general.manufacturer') }}</strong>:
                             @can('view', \App\Models\Manufacturer::class)
                                 <a href="{{ route('manufacturers.show', $model->manufacturer->id) }}">
                                     {{ $model->manufacturer->name }}
@@ -288,51 +206,61 @@
                     @endif
                     @if ($model->model_number)
                         <li>
-                            {{ trans('general.model_no') }}:
+                            <strong>{{ trans('general.model_no') }}</strong>:
                             {{ $model->model_number }}
                         </li>
                     @endif
 
                     @if ($model->depreciation)
                         <li>
-                            {{ trans('general.depreciation') }}:
+                            <strong>{{ trans('general.depreciation') }}</strong>:
                             {{ $model->depreciation->name }} ({{ $model->depreciation->months.' '.trans('general.months')}})
                         </li>
                     @endif
 
                     @if ($model->eol)
-                        <li>{{ trans('general.eol') }}:
+                        <li>
+                            <strong>{{ trans('general.eol') }}</strong>:
                             {{ $model->eol .' '. trans('general.months') }}
                         </li>
                     @endif
 
                     @if ($model->fieldset)
-                        <li>{{ trans('admin/models/general.fieldset') }}:
+                        <li>
+                            <strong>{{ trans('admin/models/general.fieldset') }}</strong>:
                             <a href="{{ route('fieldsets.show', $model->fieldset->id) }}">{{ $model->fieldset->name }}</a>
                         </li>
                     @endif
 
                     @if ($model->notes)
                         <li>
-                            {{ trans('general.notes') }}:
+                            <strong>{{ trans('general.notes') }}</strong>:
                             {!! nl2br(Helper::parseEscapedMarkedownInline($model->notes)) !!}
                         </li>
                     @endif
 
-                </ul>
+                        @if ($model->created_at)
+                            <li>
+                                <strong>{{ trans('general.created_at') }}</strong>:
+                                {{ Helper::getFormattedDateObject($model->created_at, 'datetime', false) }}
+                            </li>
+                        @endif
 
-                @if ($model->note)
-                    Notes:
-                    <p>
-                        {!! $model->present()->note() !!}
-                    </p>
-                @endif
-            </div>
+                        @if ($model->adminuser)
+                            <li>
+                                <strong>{{ trans('general.created_by') }}</strong>:
+                                {{ $model->adminuser->display_name }}
+                            </li>
+                        @endif
+
+
+                </ul>
+                </div>
         </div>
         </div>
             @can('update', \App\Models\AssetModel::class)
             <div class="col-md-12" style="padding-bottom: 5px;">
-                <a href="{{ route('models.edit', $model->id) }}" style="width: 100%;" class="btn btn-sm btn-warning btn-social hidden-print">
+                <a href="{{ ($model->deleted_at=='') ? route('models.edit', $model->id) : '#' }}" style="width: 100%;" class="btn btn-sm btn-warning btn-social hidden-print{{ ($model->deleted_at!='') ? ' disabled' : '' }}">
                     <x-icon type="edit" />
                     {{ trans('admin/models/table.edit') }}
                 </a>
@@ -365,7 +293,7 @@
                             {{ trans('general.delete') }}
                         </button>
                     @else
-                        <button class="btn btn-block btn-sm btn-danger btn-social delete-asset" data-toggle="modal" title="{{ trans('general.delete_what', ['item'=> trans('general.asset_model')]) }}" data-content="{{ trans('general.sure_to_delete_var', ['item' => $model->name]) }}" data-target="#dataConfirmModal" data-tooltip="true"  data-placement="top" data-title="{{ trans('general.delete_what', ['item'=> trans('general.asset_model')]) }}">
+                        <button class="btn btn-block btn-sm btn-danger btn-social delete-asset" data-toggle="modal" title="{{ trans('general.delete_what', ['item'=> trans('general.asset_model')]) }}" data-content="{{ trans('general.sure_to_delete_var', ['item' => $model->name]) }}" data-target="#dataConfirmModal" data-tooltip="true" data-icon="fa fa-trash" data-placement="top" data-title="{{ trans('general.delete_what', ['item'=> trans('general.asset_model')]) }}" onClick="return false;">
                             <x-icon type="delete" />
                             {{ trans('general.delete') }}
                         </button>
@@ -382,15 +310,6 @@
 @stop
 
 @section('moar_scripts')
-
-        <script>
-            $('#dataConfirmModal').on('show.bs.modal', function (event) {
-                var content = $(event.relatedTarget).data('content');
-                var title = $(event.relatedTarget).data('title');
-                $(this).find(".modal-body").text(content);
-                $(this).find(".modal-header").text(title);
-            });
-        </script>
 
     @include ('partials.bootstrap-table', ['exportFile' => 'manufacturer' . $model->name . '-export', 'search' => false])
 

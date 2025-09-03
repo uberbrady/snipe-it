@@ -5,11 +5,11 @@ return array(
     'accepted'                  => 'Bạn đã xác nhận tài sản này thành công.',
     'declined'                  => 'Bạn đã từ chối tài sản này thành công.',
     'bulk_manager_warn'	        => 'Người dùng của bạn đã được cập nhật thành công, tuy nhiên mục nhập của người quản lý của bạn không được lưu bởi vì người quản lý bạn đã chọn cũng nằm trong danh sách người dùng cần chỉnh sửa, và người dùng không phải là người quản lý của họ. Vui lòng chọn người dùng của bạn một lần nữa, ngoại trừ người quản lý.',
-    'user_exists'               => 'Người dùng thật sự tồn tại!',
-    'user_not_found'            => 'Người dùng không tồn tại.',
-    'user_login_required'       => 'Trường đăng nhập thì bắt buộc',
+    'user_exists'               => 'Người dùng đã tồn tại!',
+    'user_not_found'            => 'User does not exist or you do not have permission view them.',
+    'user_login_required'       => 'Trường đăng nhập là bắt buộc',
     'user_has_no_assets_assigned' => 'Hiện không có tài sản nào được gán cho người dùng.',
-    'user_password_required'    => 'Mật khẩu thì bắt buộc.',
+    'user_password_required'    => 'Mật khẩu là bắt buộc.',
     'insufficient_permissions'  => 'Không có đủ quyền.',
     'user_deleted_warning'      => 'Người dùng này đã bị xóa. Bạn sẽ phải phục hồi người dùng này để chỉnh sửa nó hoặc khởi gán nó đến tài sản mới.',
     'ldap_not_configured'        => 'Tích hợp LDAP thì chưa được cấu hình cho cài đặt này.',
@@ -53,6 +53,7 @@ return array(
         'ldap_could_not_search' => 'Không thể tìm thấy máy chủ LDAP. Xin vui lòng kiểm tra cấu hình cài đặt máy chủ LDAP của bạn ở trong tập tin cấu hình LDAP. <br>Lỗi từ máy chủ LDAP:',
         'ldap_could_not_get_entries' => 'Không thể lấy các mục từ máy chủ LDAP. Xin vui lòng kiểm tra lại cấu hình máy chủ LDAP của bạn ở trong tập tin cấu hình LDAP. <br>Lỗi từ máy chủ LDAP:',
         'password_ldap' => 'Mật khẩu cho tài khoản này được quản lý bởi LDAP / Active Directory. Vui lòng liên hệ với bộ phận CNTT của bạn để thay đổi mật khẩu.',
+        'multi_company_items_assigned' => 'This user has items assigned that belong to a different company. Please check them in or edit their company.'
     ),
 
     'deletefile' => array(

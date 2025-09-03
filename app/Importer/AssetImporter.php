@@ -16,10 +16,22 @@ class AssetImporter extends ItemImporter
     {
         parent::__construct($filename);
 
-        $this->defaultStatusLabelId = Statuslabel::first()->id;
-        
+        $this->defaultStatusLabelId = Statuslabel::first()?->id;
+
         if (!is_null(Statuslabel::deployable()->first())) {
-            $this->defaultStatusLabelId = Statuslabel::deployable()->first()->id;
+            $this->defaultStatusLabelId = Statuslabel::deployable()->first()?->id;
+        }
+
+        if (is_null($this->defaultStatusLabelId)) {
+            $defaultLabel = Statuslabel::create([
+                'name' => 'Default Status',
+                'deployable' => 0,
+                'pending' => 1,
+                'archived' => 0,
+                'notes' => 'Default status label created by AssetImporter',
+            ]);
+
+            $this->defaultStatusLabelId = $defaultLabel->id;
         }
     }
 
@@ -68,7 +80,16 @@ class AssetImporter extends ItemImporter
             $asset_tag = Asset::autoincrement_asset();
         }
 
-        $asset = Asset::where(['asset_tag'=> (string) $asset_tag])->first();
+
+
+        if ($this->findCsvMatch($row, 'id')!='') {
+            // Override asset if an ID was given
+            \Log::debug('Finding asset by ID: '.$this->findCsvMatch($row, 'id'));
+            $asset = Asset::find($this->findCsvMatch($row, 'id'));
+        } else {
+            $asset = Asset::where(['asset_tag'=> (string) $asset_tag])->first();
+        }
+        
         if ($asset) {
             if (! $this->updating) {
                 $exists_error = trans('general.import_asset_tag_exists', ['asset_tag' => $asset_tag]);
@@ -177,7 +198,7 @@ class AssetImporter extends ItemImporter
             $this->log('Asset '.$this->item['name'].' with serial number '.$this->item['serial'].' was created');
 
             // If we have a target to checkout to, lets do so.
-            //-- user_id is a property of the abstract class Importer, which this class inherits from and it's set by
+            //-- created_by is a property of the abstract class Importer, which this class inherits from and it's set by
             //-- the class that needs to use it (command importer or GUI importer inside the project).
             if (isset($target) && ($target !== false)) {
                 if (!is_null($asset->assigned_to)){
@@ -186,7 +207,7 @@ class AssetImporter extends ItemImporter
                     }
                 }
 
-                $asset->fresh()->checkOut($target, $this->user_id, $checkout_date, null, 'Checkout from CSV Importer',  $asset->name);
+                $asset->fresh()->checkOut($target, $this->created_by, $checkout_date, null, 'Checkout from CSV Importer',  $asset->name);
             }
 
             return;

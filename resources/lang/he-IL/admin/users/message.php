@@ -6,7 +6,7 @@ return array(
     'declined'                  => 'דחיית את הנכס הזה בהצלחה.',
     'bulk_manager_warn'	        => 'המשתמשים שלך עודכנו בהצלחה, אך רשומת המנהל שלך לא נשמרה מפני שהמנהל שבחרת נבחר גם ברשימת המשתמשים כדי לערוך, והמשתמשים לא יכולים להיות המנהל שלהם. בחר שוב את המשתמשים שלך, למעט המנהל.',
     'user_exists'               => 'משתמש כבר קיים!',
-    'user_not_found'            => 'משתמש לא קיים.',
+    'user_not_found'            => 'User does not exist or you do not have permission view them.',
     'user_login_required'       => 'יש להזין את שדה הכניסה',
     'user_has_no_assets_assigned' => 'No assets currently assigned to user.',
     'user_password_required'    => 'נדרשת הסיסמה.',
@@ -46,13 +46,14 @@ return array(
         'import'    => 'היתה בעיה בייבוא ​​משתמשים. בבקשה נסה שוב.',
         'asset_already_accepted' => 'הנכס כבר התקבל.',
         'accept_or_decline' => 'עליך לקבל או לדחות את הנכס.',
-        'cannot_delete_yourself' => 'We would feel really bad if you deleted yourself, please reconsider.',
+        'cannot_delete_yourself' => 'אנחנו נרגיש רע מאוד אם תמחק את עצמך, בבקשה שקול זאת מחדש.',
         'incorrect_user_accepted' => 'הנכס שניסית לקבל לא נבדק לך.',
         'ldap_could_not_connect' => 'לא ניתן להתחבר לשרת LDAP. בדוק את תצורת שרת LDAP בקובץ תצורת LDAP. <br> שגיאה משרת LDAP:',
         'ldap_could_not_bind' => 'לא ניתן היה להתחבר לשרת LDAP. בדוק את תצורת שרת LDAP בקובץ תצורת LDAP. <br> שגיאה משרת LDAP:',
         'ldap_could_not_search' => 'לא ניתן לחפש בשרת LDAP. בדוק את תצורת שרת LDAP בקובץ תצורת LDAP. <br> שגיאה משרת LDAP:',
         'ldap_could_not_get_entries' => 'לא ניתן לקבל רשומות משרת LDAP. בדוק את תצורת שרת LDAP בקובץ תצורת LDAP. <br> שגיאה משרת LDAP:',
         'password_ldap' => 'הסיסמה עבור חשבון זה מנוהלת על ידי LDAP / Active Directory. צור קשר עם מחלקת ה- IT כדי לשנות את הסיסמה שלך.',
+        'multi_company_items_assigned' => 'This user has items assigned that belong to a different company. Please check them in or edit their company.'
     ),
 
     'deletefile' => array(
@@ -68,7 +69,7 @@ return array(
     ),
 
     'inventorynotification' => array(
-        'error'   => 'This user has no email set.',
-        'success' => 'The user has been notified about their current inventory.'
+        'error'   => 'דוא"ל אינו מוגדר עבור משתמש זה.',
+        'success' => 'המשתמש עודכן בדבר הפריטים הרשומים עליו.'
     )
 );
