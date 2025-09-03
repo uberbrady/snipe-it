@@ -229,7 +229,6 @@ class License extends Depreciable
             //Log the addition of license to the log.
             $cleanlicense = $license->fresh(); //we have to do this to avoid repeating the change that already happened
             // this is a *brand new change* that just shows the increase in license seats
-            \Log::error("THIS IS THE MAIN WAY WE ADD SEATS YEAH? CHANGE IS $change");
             $cleanlicense->setLogNote("added {$change} seats");
             $cleanlicense->saveWithActionType(ActionType::AddSeats);
         }

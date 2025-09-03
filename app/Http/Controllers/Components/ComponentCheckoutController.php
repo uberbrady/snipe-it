@@ -104,7 +104,6 @@ class ComponentCheckoutController extends Controller
         }
 
         // Update the component data
-//        $component->asset_id = $request->input('asset_id'); // FIXME - delete this
         $component->assets()->attach($component->id, [
             'component_id' => $component->id,
             'created_by' => auth()->user()->id,

@@ -435,9 +435,8 @@ class Asset extends Depreciable
         $this->setLogNote($note);
 
         // TODO - what to do with this? It's weird. I guess leave it?
-        // it's weird that it's only used in this checkOut() method, and will probably have to be reproduced
+        // it's weird that it's only used in this checkOut() method, and may have to be reproduced
         // in other checkout contexts
-        // nah, that's a FIXME - much as I don't want it to be.
         if ($location != null) {
             $this->location_id = $location;
         } else {
@@ -454,7 +453,7 @@ class Asset extends Depreciable
             $this->setLogActionDate(date('Y-m-d H:i:s'));
         }
         if ($this->saveWithActionType(ActionType::Checkout)) {
-            // FIXME - we aren't doing any of this logic; should we?
+            // TODO - we aren't doing any of this logic; should we?
             if (is_int($admin)) {
                 $checkedOutBy = User::findOrFail($admin);
             } elseif ($admin && get_class($admin) === \App\Models\User::class) {

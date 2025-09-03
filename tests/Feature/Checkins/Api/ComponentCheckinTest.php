@@ -82,7 +82,7 @@ class ComponentCheckinTest extends TestCase implements TestsFullMultipleCompanie
             ->assertStatusMessageIs('success');
 
         $this->assertEquals(1, $component->fresh()->assets->first()->pivot->assigned_qty);
-        $this->assertHasTheseActionLogs($component, ['create', 'checkin from']); //FIXME?
+        $this->assertHasTheseActionLogs($component, ['create', 'checkin from']);
 
 
         Event::assertDispatched(function (CheckoutableCheckedIn $event) use ($user, $component) {

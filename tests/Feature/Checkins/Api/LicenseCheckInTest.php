@@ -15,14 +15,10 @@ class LicenseCheckInTest extends TestCase {
 
         $license = License::factory()->create();
         $oldUser = User::factory()->create();
-        Log::error("Right after create");
-        Log::error(print_r($license->assetlog()->pluck('action_type', 'note')->toArray(), true));
         $licenseSeat = LicenseSeat::factory()->for($license)->create([
             'assigned_to' => $oldUser->id,
             'notes'       => 'Previously checked out',
         ]);
-        Log::error("After making the seat, it's:");
-        Log::error(print_r($license->assetlog()->pluck('action_type', 'note')->toArray(), true));
 
         $payload = [
             'assigned_to' => null,
@@ -33,8 +29,6 @@ class LicenseCheckInTest extends TestCase {
         $response = $this->patchJson(
             route('api.licenses.seats.update', [$license->id, $licenseSeat->id]),
             $payload);
-        Log::error("after updating the seat:");
-        Log::error(print_r($license->assetlog()->pluck('action_type', 'note')->toArray(), true));
 
         $response->assertStatus(200)
             ->assertJsonFragment([
