@@ -6,10 +6,6 @@
     @parent
 @stop
 
-@section('header_right')
-    <a href="{{ route('departments.create') }}" class="btn btn-primary pull-right">
-        {{ trans('general.create') }}</a>
-@stop
 {{-- Page content --}}
 @section('content')
     <div class="row">
@@ -18,16 +14,11 @@
                 <div class="box-body">
                         <table
                                 data-cookie-id-table="departmentsTable"
-                                data-pagination="true"
                                 data-id-table="departmentsTable"
-                                data-search="true"
                                 data-side-pagination="server"
-                                data-show-columns="true"
-                                data-show-fullscreen="true"
-                                data-show-export="true"
-                                data-show-refresh="true"
                                 data-sort-order="asc"
                                 id="departmentsTable"
+                                data-buttons="departmentButtons"
                                 class="table table-striped snipe-table"
                                 data-url="{{ route('api.departments.index') }}"
                                 data-export-options='{
@@ -43,6 +34,7 @@
                                 <th data-sortable="true" data-formatter="usersLinkObjFormatter" data-field="manager" data-searchable="false">{{ trans('admin/departments/table.manager') }}</th>
                                 <th data-sortable="true" data-field="users_count" data-searchable="false">{{ trans('general.users') }}</th>
                                 <th data-sortable="true" data-formatter="locationsLinkObjFormatter" data-field="location" data-searchable="false">{{ trans('admin/departments/table.location') }}</th>
+                                <th data-sortable="true" data-field="notes" data-searchable="true">{{ trans('general.notes') }}</th>
                                 <th data-sortable="false" data-formatter="departmentsActionsFormatter" data-field="actions" data-searchable="false">{{ trans('table.actions') }}</th>
 
                             </tr>

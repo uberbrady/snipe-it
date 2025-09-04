@@ -79,6 +79,9 @@ class CustomField extends Model
         'auto_add_to_fieldsets',
         'show_in_listview',
         'show_in_email',
+        'display_checkout',
+        'display_checkin',
+        'display_audit',
         'show_in_requestable_list',
     ];
 
@@ -112,57 +115,64 @@ class CustomField extends Model
     public static function boot()
     {
         parent::boot();
-        self::created(function ($custom_field) {
-            // Column already exists on the assets table - nothing to do here.
-            // This *shouldn't* happen in the wild.
-            if (Schema::hasColumn($custom_field->getTableName(), $custom_field->db_column)) {
-                return false;
-            }
+        self::created(
+            function ($custom_field) {
 
-            // Update the column name in the assets table
-            Schema::table($custom_field->getTableName(), function ($table) use ($custom_field) {
-                $table->text($custom_field->convertUnicodeDbSlug())->nullable();
-            });
-
-            // Update the db_column property in the custom fields table
-            $custom_field->db_column = $custom_field->convertUnicodeDbSlug();
-            $custom_field->save();
-        });
-
-        self::updating(function ($custom_field) {
-
-            // Column already exists on the assets table - nothing to do here.
-            if ($custom_field->isDirty('name')) {
-                if (Schema::hasColumn($custom_field->getTableName(), $custom_field->convertUnicodeDbSlug())) {
-                    return true;
+                // Column already exists on the assets table - nothing to do here.
+                // This *shouldn't* happen in the wild.
+                if (Schema::hasColumn(self::$table_name, $custom_field->db_column)) {
+                    return false;
                 }
 
-                // This is just a dumb thing we have to include because Laraval/Doctrine doesn't
-                // play well with enums or a table that EVER had enums. :(
-                $platform = Schema::getConnection()->getDoctrineSchemaManager()->getDatabasePlatform();
-                $platform->registerDoctrineTypeMapping('enum', 'string');
+                // Update the column name in the assets table
+                Schema::table(
+                    self::$table_name, function ($table) use ($custom_field) {
+                    $table->text($custom_field->convertUnicodeDbSlug())->nullable();
+                }
+                );
 
-                // Rename the field if the name has changed
-                Schema::table($custom_field->getTableName(), function ($table) use ($custom_field) {
-                    $table->renameColumn($custom_field->convertUnicodeDbSlug($custom_field->getOriginal('name')), $custom_field->convertUnicodeDbSlug());
-                });
-
-                // Save the updated column name to the custom fields table
+                // Update the db_column property in the custom fields table
                 $custom_field->db_column = $custom_field->convertUnicodeDbSlug();
                 $custom_field->save();
+            }
+        );
+
+        self::updating(
+            function ($custom_field) {
+
+                // Column already exists on the assets table - nothing to do here.
+                if ($custom_field->isDirty('name')) {
+                    if (Schema::hasColumn(self::$table_name, $custom_field->convertUnicodeDbSlug())) {
+                        return true;
+                    }
+
+                    // Rename the field if the name has changed
+                    Schema::table(
+                        self::$table_name, function ($table) use ($custom_field) {
+                        $table->renameColumn($custom_field->convertUnicodeDbSlug($custom_field->getOriginal('name')), $custom_field->convertUnicodeDbSlug());
+                    }
+                    );
+
+                    // Save the updated column name to the custom fields table
+                    $custom_field->db_column = $custom_field->convertUnicodeDbSlug();
+                    $custom_field->save();
+
+                }
 
                 return true;
             }
-
-            return true;
-        });
+        );
 
         // Drop the assets column if we've deleted it from custom fields
-        self::deleting(function ($custom_field) {
-            return Schema::table($custom_field->getTableName(), function ($table) use ($custom_field) {
-                $table->dropColumn($custom_field->db_column);
-            });
-        });
+        self::deleting(
+            function ($custom_field) {
+                return Schema::table(
+                    self::$table_name, function ($table) use ($custom_field) {
+                    $table->dropColumn($custom_field->db_column);
+                }
+                );
+            }
+        );
     }
 
     public function getTableName()
@@ -175,26 +185,63 @@ class CustomField extends Model
     /**
      * Establishes the customfield -> fieldset relationship
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.0]
      * @return \Illuminate\Database\Eloquent\Relations\Relation
+     *@since  [v3.0]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function fieldset()
     {
         return $this->belongsToMany(\App\Models\CustomFieldset::class);
     }
-   
+
+    public function displayFieldInCheckinForm()
+    {
+        if ($this->display_checkin == '1') {
+            return true;
+        }
+        return false;
+    }
+
+    public function displayFieldInCheckoutForm()
+    {
+        if ($this->display_checkout == '1') {
+            return true;
+        }
+        return false;
+    }
+
+    public function displayFieldInAuditForm()
+    {
+        if ($this->display_audit == '1') {
+            return true;
+        }
+        return false;
+    }
+
+    public function displayFieldInCurrentForm($form_type = null)
+    {
+        switch ($form_type) {
+            case 'audit':
+                return $this->displayFieldInAuditForm();
+            case 'checkin':
+                return $this->displayFieldInCheckinForm();
+            case 'checkout':
+                return $this->displayFieldInCheckoutForm();
+        }
+    }
+
+
     public function assetModels()
     {
-       return $this->fieldset()->with('models')->get()->pluck('models')->flatten()->unique('id'); 
+        return $this->fieldset()->with('models')->get()->pluck('models')->flatten()->unique('id');
     }
 
     /**
      * Establishes the customfield -> admin user relationship
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.0]
      * @return \Illuminate\Database\Eloquent\Relations\Relation
+     *@since  [v3.0]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function user()
     {
@@ -224,10 +271,10 @@ class CustomField extends Model
     /**
      * Checks the format of the attribute
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param $value string
-     * @since [v3.0]
+     * @param  $value string
      * @return bool
+     * @since  [v3.0]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function check_format($value)
     {
@@ -237,9 +284,9 @@ class CustomField extends Model
     /**
      * Gets the DB column name.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.0]
      * @return string
+     *@since  [v3.0]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function db_column_name()
     {
@@ -253,9 +300,9 @@ class CustomField extends Model
      * validator strings in the database but still return the
      * user-friendly text in the dropdowns, and in the custom fields display.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.4]
      * @return string
+     *@since  [v3.4]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function getFormatAttribute($value)
     {
@@ -271,9 +318,9 @@ class CustomField extends Model
     /**
      * Format a value string as an array for select boxes and checkboxes.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.4]
      * @return array
+     *@since  [v3.4]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function setFormatAttribute($value)
     {
@@ -287,14 +334,14 @@ class CustomField extends Model
     /**
      * Format a value string as an array for select boxes and checkboxes.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.4]
      * @return array
+     *@since  [v3.4]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function formatFieldValuesAsArray()
     {
         $result = [];
-        $arr = preg_split('/\\r\\n|\\r|\\n/', $this->field_values);
+        $arr = preg_split('/\\r\\n|\\r|\\n/', $this->field_values ?? '');
 
         if (($this->element != 'checkbox') && ($this->element != 'radio')) {
             $result[''] = 'Select '.strtolower($this->format);
@@ -317,9 +364,9 @@ class CustomField extends Model
     /**
      * Check whether the field is encrypted
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.4]
      * @return bool
+     *@since  [v3.4]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function isFieldDecryptable($string)
     {
@@ -334,9 +381,9 @@ class CustomField extends Model
      * Convert non-UTF-8 or weirdly encoded text into something that
      * won't break the database.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.4]
      * @return string
+     *@since  [v3.4]
+     * @author [A. Gianotto] [<snipe@snipe.net>]
      */
     public function convertUnicodeDbSlug($original = null)
     {
@@ -344,7 +391,7 @@ class CustomField extends Model
         $id = $this->id ? $this->id : 'xx';
 
         if (! function_exists('transliterator_transliterate')) {
-            $long_slug = '_snipeit_'.str_slug(mb_convert_encoding(trim($name),"UTF-8"), '_');
+            $long_slug = '_snipeit_' . str_slug(mb_convert_encoding(trim($name), "UTF-8"), '_');
         } else {
             $long_slug = '_snipeit_'.Utf8Slugger::slugify($name, '_');
         }
@@ -354,10 +401,11 @@ class CustomField extends Model
 
     /**
      * Get validation rules for custom fields to use with Validator
-     * @author [V. Cordes] [<volker@fdatek.de>]
-     * @param int $id
-     * @since [v4.1.10]
+     *
+     * @param  int $id
      * @return array
+     *@since  [v4.1.10]
+     * @author [V. Cordes] [<volker@fdatek.de>]
      */
     public function validationRules($regex_format = null)
     {
@@ -370,7 +418,8 @@ class CustomField extends Model
 
     /**
      * Check to see if there is a custom regex format type
-     * @see https://github.com/snipe/snipe-it/issues/5896
+     *
+     * @see https://github.com/grokability/snipe-it/issues/5896
      *
      * @author Wes Hulette <jwhulette@gmail.com>
      *

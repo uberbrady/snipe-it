@@ -33,6 +33,7 @@ class AssetModelFactory extends Factory
             'category_id' => Category::factory(),
             'model_number' => $this->faker->creditCardNumber(),
             'notes' => 'Created by demo seeder',
+            'require_serial' => 0,
 
         ];
     }
@@ -456,5 +457,14 @@ class AssetModelFactory extends Factory
                 'name' => 'Complicated fieldset'
             ];
         })->for(CustomFieldSet::factory()->complicated(), 'fieldset');
+    }
+
+    public function doesNotRequireAcceptance()
+    {
+        return $this->state(function () {
+            return [
+                'category_id' => Category::factory()->doesNotRequireAcceptance(),
+            ];
+        });
     }
 }

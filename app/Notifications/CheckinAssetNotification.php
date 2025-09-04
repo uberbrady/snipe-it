@@ -78,17 +78,26 @@ class CheckinAssetNotification extends Notification
         $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
 
         $fields = [
-            trans('general.administrator') => '<'.$admin->present()->viewUrl().'|'.$admin->present()->fullName().'>',
-            trans('general.status') => $item->assetstatus->name,
+            trans('general.administrator') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
+            trans('general.status') => $item->assetstatus?->name,
             trans('general.location') => ($item->location) ? $item->location->name : '',
         ];
 
+        if ($item->location) {
+            $fields[trans('general.location')] = $item->location->name;
+        }
+
+        if ($item->company) {
+            $fields[trans('general.company')] = $item->company->name;
+        }
+
+
         return (new SlackMessage)
-            ->content(':arrow_down: :computer: '.trans('mail.Asset_Checkin_Notification'))
+            ->content(':arrow_down: :computer: '.trans('mail.Asset_Checkin_Notification', ['tag' => '']))
             ->from($botname)
             ->to($channel)
             ->attachment(function ($attachment) use ($item, $note, $admin, $fields) {
-                $attachment->title(htmlspecialchars_decode($item->present()->name), $item->present()->viewUrl())
+                $attachment->title(htmlspecialchars_decode($item->display_name), $item->present()->viewUrl())
                     ->fields($fields)
                     ->content($note);
             });
@@ -103,22 +112,22 @@ class CheckinAssetNotification extends Notification
             return MicrosoftTeamsMessage::create()
                 ->to($this->settings->webhook_endpoint)
                 ->type('success')
-                ->title(trans('mail.Asset_Checkin_Notification'))
+                ->title(trans('mail.Asset_Checkin_Notification', ['tag' => '']))
                 ->addStartGroupToSection('activityText')
-                ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityText')
-                ->fact(trans('mail.checked_into'), $item->location->name ? $item->location->name : '')
-                ->fact(trans('mail.Asset_Checkin_Notification') . " by ", $admin->present()->fullName())
-                ->fact(trans('admin/hardware/form.status'), $item->assetstatus->name)
+                ->fact(htmlspecialchars_decode($item->display_name), '', 'activityText')
+                ->fact(trans('mail.checked_into'), ($item->location) ? $item->location->name : '')
+                ->fact(trans('general.administrator'), $admin->display_name)
+                ->fact(trans('admin/hardware/form.status'), $item->assetstatus?->name)
                 ->fact(trans('mail.notes'), $note ?: '');
         }
 
 
-        $message = trans('mail.Asset_Checkin_Notification');
+        $message = trans('mail.Asset_Checkin_Notification', ['tag' => '']);
         $details = [
-            trans('mail.asset') => htmlspecialchars_decode($item->present()->name),
-            trans('mail.checked_into') => $item->location->name ? $item->location->name : '',
-            trans('mail.Asset_Checkin_Notification')." by " => $admin->present()->fullName(),
-            trans('admin/hardware/form.status') => $item->assetstatus->name,
+            trans('mail.asset') => htmlspecialchars_decode($item->display_name),
+            trans('mail.checked_into') => ($item->location) ? $item->location->name : '',
+            trans('general.administrator') => $admin->display_name,
+            trans('admin/hardware/form.status') => $item->assetstatus?->name,
             trans('mail.notes') => $note ?: '',
         ];
 
@@ -135,15 +144,15 @@ class CheckinAssetNotification extends Notification
             ->card(
                 Card::create()
                     ->header(
-                        '<strong>'.trans('mail.Asset_Checkin_Notification').'</strong>' ?: '',
-                        htmlspecialchars_decode($item->present()->name) ?: '',
+                        '<strong>'.trans('mail.Asset_Checkin_Notification', ['tag' =>'']).'</strong>' ?: '',
+                        htmlspecialchars_decode($item->display_name) ?: '',
                     )
                     ->section(
                         Section::create(
                             KeyValue::create(
                                 trans('mail.checked_into') ?: '',
-                                $item->location->name ? $item->location->name : '',
-                                trans('admin/hardware/form.status').": ".$item->assetstatus->name,
+                                ($item->location) ? $item->location->name : '',
+                                trans('admin/hardware/form.status').": ".$item->assetstatus?->name,
                             )
                                 ->onClick(route('hardware.show', $item->id))
                         )

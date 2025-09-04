@@ -30,6 +30,8 @@ class UserPresenter extends Presenter
             [
                 'field' => 'checkbox',
                 'checkbox' => true,
+                'titleTooltip' => trans('general.select_all_none'),
+                'printIgnore' => true,
             ],
             [
                 'field' => 'id',
@@ -84,6 +86,14 @@ class UserPresenter extends Presenter
                 'formatter' => 'usersLinkFormatter',
             ],
             [
+                'field' => 'display_name',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => false,
+                'title' => trans('admin/users/table.display_name'),
+                'visible' => true,
+            ],
+            [
                 'field' => 'jobtitle',
                 'searchable' => true,
                 'sortable' => true,
@@ -127,6 +137,15 @@ class UserPresenter extends Presenter
                 'title' => trans('admin/users/table.phone'),
                 'visible' => true,
                 'formatter'    => 'phoneFormatter',
+            ],
+            [
+                'field' => 'mobile',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/users/table.mobile'),
+                'visible' => false,
+                'formatter'    => 'mobileFormatter',
             ],
             [
                 'field' => 'website',
@@ -184,8 +203,9 @@ class UserPresenter extends Presenter
                 'switchable' => false,
                 'title' => trans('admin/users/table.username'),
                 'visible' => true,
-                'formatter' => 'usersLinkFormatter',
+                'formatter' => 'usernameRoleLinkFormatter',
             ],
+
             [
                 'field' => 'employee_num',
                 'searchable' => true,
@@ -210,6 +230,15 @@ class UserPresenter extends Presenter
                 'title' => trans('general.department'),
                 'visible' => true,
                 'formatter' => 'departmentsLinkObjFormatter',
+            ],
+            [
+                'field' => 'department_manager',
+                'searchable' => true,
+                'sortable' => true,
+                'switchable' => true,
+                'title' => trans('admin/users/general.department_manager'),
+                'visible' => true,
+                'formatter' => 'usersLinkObjFormatter',
             ],
             [
                 'field' => 'location',
@@ -411,6 +440,7 @@ class UserPresenter extends Presenter
                 'title' => trans('table.actions'),
                 'visible' => true,
                 'formatter' => 'usersActionsFormatter',
+                'printIgnore' => true,
             ],
         ];
 
@@ -456,20 +486,25 @@ class UserPresenter extends Presenter
      *
      * @return string
      */
-    public function fullName()
-    {
-        return html_entity_decode($this->first_name.' '.$this->last_name, ENT_QUOTES | ENT_XML1, 'UTF-8');
-    }
+//    public function fullName()
+//    {
+//        if ($this->display_name) {
+//            return 'kjdfh'.html_entity_decode($this->display_name, ENT_QUOTES | ENT_XML1, 'UTF-8');
+//        }
+//        return 'roieuoe'.html_entity_decode($this->first_name.' '.$this->last_name, ENT_QUOTES | ENT_XML1, 'UTF-8');
+//    }
 
-    /**
-     * Standard accessor.
-     * @TODO Remove presenter::fullName() entirely?
-     * @return string
-     */
-    public function name()
-    {
-        return $this->fullName();
-    }
+//    /**
+//     * Standard accessor.
+//     * @TODO Remove presenter::fullName() entirely?
+//     * @return string
+//     */
+//    public function name()
+//    {
+//        return $this->fullName();
+//    }
+
+
 
     /**
      * Returns the user Gravatar image url.
@@ -483,7 +518,7 @@ class UserPresenter extends Presenter
         if ($this->avatar) {
 
             // Check if it's a google avatar or some external avatar
-            if (Str::startsWith($this->avatar, ['http://', 'https://'])) {
+            if ($this->isAvatarExternal()) {
                 return $this->avatar;
             }
 

@@ -27,13 +27,35 @@ $item->defaultValue($field)
       <label for="{{ $field->db_column_name() }}" class="col-md-3 control-label">{{ $field->name }} </label>
       <div class="col-md-7 col-sm-12">
 
+          <fieldset name="custom-fields" class="bottom-padded">
+              <legend class="highlight">
+                  {{ trans('admin/custom_fields/general.custom_fields') }}
+              </legend>
+
+              @foreach($model->fieldset->fields as $field)
+                  @if (!isset($show_custom_fields_type) || ($field->displayFieldInCurrentForm($show_custom_fields_type)))
+
+                      <div class="form-group{{ $errors->has($field->db_column_name()) ? ' has-error' : '' }}">
+
+
+                          <label for="{{ $field->db_column_name() }}" class="col-md-3 control-label">
+                              {{ $field->name }}
+
+                          </label>
+
+                          <div class="col-md-7 col-sm-12">
 
           @if ($field->element!='text')
 
               @if ($field->element=='listbox')
                   <!-- Listbox -->
-                   {{ Form::select($field->db_column_name(), $field->formatFieldValuesAsArray(),
-                  old($field->db_column_name(),(isset($item) ? Helper::gracefulDecrypt($field, $item->{$field->db_column_name()}) : $field->defaultValue($model->id))), ['class' => 'format select2 form-control',  ($field->pivot->required=='1' ? ' required' : '') ]) }}
+                                      <x-input.select
+                                              :name="$field->db_column_name()"
+                                              :options="$field->formatFieldValuesAsArray()"
+                                              :selected="old($field->db_column_name(), (isset($item) ? Helper::gracefulDecrypt($field, $item->{$field->db_column_name()}) : $field->defaultValue($model->id)))"
+                                              :required="$field->pivot->required == '1'"
+                                              class="format form-control"
+                                      />
 
               @elseif ($field->element=='textarea')
                   <!-- Textarea -->
@@ -113,16 +135,12 @@ $item->defaultValue($field)
         </div>
         @endif
 
-
     </div>
+                  @endif
   @endforeach
+          </fieldset>
+      </div>
 @endif
 
 
-<script nonce="{{ csrf_token() }}">
-    // We have to re-call the tooltip since this is pulled in after the DOM has loaded
-    $('[data-tooltip="true"]').tooltip({
-        container: 'body',
-        animation: true,
-    });
-</script>
+

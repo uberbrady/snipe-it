@@ -20167,6 +20167,7 @@ hr {
 }
 
 
+/*# sourceMappingURL=AdminLTE.css.map*/
 /*!
  * Datepicker for Bootstrap v1.10.0 (https://github.com/uxsolutions/bootstrap-datepicker)
  *
@@ -21008,7 +21009,7 @@ hr {
 @charset "UTF-8";
 /**
  * @author zhixin wen <wenzhixin2010@gmail.com>
- * version: 1.23.5
+ * version: 1.24.2
  * https://github.com/wenzhixin/bootstrap-table/
  */
 /* stylelint-disable annotation-no-unknown, max-line-length */
@@ -21641,11 +21642,18 @@ a.accordion-header {
   padding: 0px;
   /* adjust based on your layout */
 }
-.skin-blue .main-header .navbar .dropdown-menu li a {
-  color: #333;
-}
 a.logo.no-hover a:hover {
   background-color: transparent;
+}
+.index-block {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.index-block:hover {
+  overflow: visible;
+  white-space: normal;
+  height: auto;
 }
 input:required,
 select:required,
@@ -22362,7 +22370,7 @@ h4 {
  Instead, we use CSS to add the icon into the table header, which leaves the column selector
  "title" text as-is and hides the icon.
 
- See https://github.com/snipe/snipe-it/issues/7989
+ See https://github.com/grokability/snipe-it/issues/7989
  */
 th.css-accessory > .th-inner,
 th.css-accessory-alt > .th-inner,
@@ -22397,7 +22405,6 @@ th.css-house-laptop > .th-inner::before,
 th.css-house-user > .th-inner::before,
 th.css-license > .th-inner::before,
 th.css-location > .th-inner::before,
-th.css-padlock > .th-inner::before,
 th.css-users > .th-inner::before,
 th.css-currency > .th-inner::before,
 th.css-history > .th-inner::before {
@@ -22454,7 +22461,8 @@ th.css-component > .th-inner::before {
 th.css-padlock > .th-inner::before {
   content: "\f023";
   font-family: "Font Awesome 5 Free";
-  font-weight: 900;
+  font-weight: 800;
+  padding-right: 3px;
 }
 th.css-house-user > .th-inner::before {
   content: "\e1b0";
@@ -22510,7 +22518,8 @@ th.css-history > .th-inner::before {
   padding: 6px 12px;
   height: 34px;
 }
-.form-group.has-error label {
+.form-group.has-error label,
+.form-group.has-error .help-block {
   color: #a94442;
 }
 .select2-container--default .select2-selection--multiple {
@@ -22590,7 +22599,6 @@ label.form-control {
 }
 label.form-control--disabled {
   color: #959495;
-  pointer-events: none;
   cursor: not-allowed;
 }
 /** --------------------------------------- **/
@@ -22753,8 +22761,77 @@ input[type="radio"]:checked::before {
 .bootstrap-table .fixed-table-container .table tbody tr .card-view {
   display: table-row !important;
 }
+.form-control-static {
+  padding-top: 0px;
+}
+td.text-right.text-padding-number-cell {
+  padding-right: 30px !important;
+  white-space: nowrap;
+}
+th.text-right.text-padding-number-footer-cell {
+  padding-right: 20px !important;
+  white-space: nowrap;
+}
+code.single-line {
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  max-width: 400px;
+}
+p.monospace,
+span.monospace {
+  font-family: monospace, monospace;
+}
+legend.highlight {
+  background: repeating-linear-gradient(45deg, #222d32, #222d32 10px, #444 10px, #444 11px);
+  color: #fff;
+  font-size: 18px;
+  padding: 6px 6px 6px 10px;
+}
+legend.highlight a {
+  color: #fff;
+  cursor: pointer;
+}
+fieldset.bottom-padded {
+  padding-bottom: 20px;
+}
+caption.tableCaption {
+  font-size: 18px;
+  padding-left: 8px;
+}
+.sidebar-toggle.btn {
+  border-radius: 3px;
+  box-shadow: none;
+  border-top: 0px solid transparent;
+  border-bottom: 0px solid transparent;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-left: -47px;
+  margin-top: 2px;
+}
+.popover.help-popover,
+.popover.help-popover .popover-content,
+.popover.help-popover .popover-body,
+.popover.help-popover .popover-title,
+.popover.help-popover .popover-header {
+  color: #000;
+}
+.visually-hidden {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: preserve;
+  display: inline-block;
+}
 
 
+/*# sourceMappingURL=app.css.map*/
 .select2-container {
   box-sizing: border-box;
   display: inline-block;
@@ -23897,7 +23974,7 @@ h4 {
  Instead, we use CSS to add the icon into the table header, which leaves the column selector
  "title" text as-is and hides the icon.
 
- See https://github.com/snipe/snipe-it/issues/7989
+ See https://github.com/grokability/snipe-it/issues/7989
  */
 th.css-accessory > .th-inner,
 th.css-accessory-alt > .th-inner,
@@ -23932,7 +24009,6 @@ th.css-house-laptop > .th-inner::before,
 th.css-house-user > .th-inner::before,
 th.css-license > .th-inner::before,
 th.css-location > .th-inner::before,
-th.css-padlock > .th-inner::before,
 th.css-users > .th-inner::before,
 th.css-currency > .th-inner::before,
 th.css-history > .th-inner::before {
@@ -23989,7 +24065,8 @@ th.css-component > .th-inner::before {
 th.css-padlock > .th-inner::before {
   content: "\f023";
   font-family: "Font Awesome 5 Free";
-  font-weight: 900;
+  font-weight: 800;
+  padding-right: 3px;
 }
 th.css-house-user > .th-inner::before {
   content: "\e1b0";
@@ -24045,7 +24122,8 @@ th.css-history > .th-inner::before {
   padding: 6px 12px;
   height: 34px;
 }
-.form-group.has-error label {
+.form-group.has-error label,
+.form-group.has-error .help-block {
   color: #a94442;
 }
 .select2-container--default .select2-selection--multiple {
@@ -24125,7 +24203,6 @@ label.form-control {
 }
 label.form-control--disabled {
   color: #959495;
-  pointer-events: none;
   cursor: not-allowed;
 }
 /** --------------------------------------- **/
@@ -24288,4 +24365,74 @@ input[type="radio"]:checked::before {
 .bootstrap-table .fixed-table-container .table tbody tr .card-view {
   display: table-row !important;
 }
+.form-control-static {
+  padding-top: 0px;
+}
+td.text-right.text-padding-number-cell {
+  padding-right: 30px !important;
+  white-space: nowrap;
+}
+th.text-right.text-padding-number-footer-cell {
+  padding-right: 20px !important;
+  white-space: nowrap;
+}
+code.single-line {
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  max-width: 400px;
+}
+p.monospace,
+span.monospace {
+  font-family: monospace, monospace;
+}
+legend.highlight {
+  background: repeating-linear-gradient(45deg, #222d32, #222d32 10px, #444 10px, #444 11px);
+  color: #fff;
+  font-size: 18px;
+  padding: 6px 6px 6px 10px;
+}
+legend.highlight a {
+  color: #fff;
+  cursor: pointer;
+}
+fieldset.bottom-padded {
+  padding-bottom: 20px;
+}
+caption.tableCaption {
+  font-size: 18px;
+  padding-left: 8px;
+}
+.sidebar-toggle.btn {
+  border-radius: 3px;
+  box-shadow: none;
+  border-top: 0px solid transparent;
+  border-bottom: 0px solid transparent;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-left: -47px;
+  margin-top: 2px;
+}
+.popover.help-popover,
+.popover.help-popover .popover-content,
+.popover.help-popover .popover-body,
+.popover.help-popover .popover-title,
+.popover.help-popover .popover-header {
+  color: #000;
+}
+.visually-hidden {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: preserve;
+  display: inline-block;
+}
 
+
+/*# sourceMappingURL=overrides.css.map*/
