@@ -244,19 +244,6 @@ class Actionlog extends SnipeModel
     }
 
 
-    /**
-     * Establishes the actionlog -> uploads relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v3.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
-    public function uploads()
-    {
-        return $this->morphTo('item')
-            ->where('action_type', '=', 'uploaded')
-            ->withTrashed();
-    }
 
     /**
      * Establishes the actionlog -> userlog relationship
@@ -400,6 +387,25 @@ class Actionlog extends SnipeModel
             ->orderBy('item_id', 'asc')
             ->orderBy('created_at', 'asc')
             ->get();
+    }
+
+    /**
+     * @return \App\Models\Actionlog
+     * @since [v8.0.4]
+     * @author  Godfrey Martinez
+     */
+    public function logUploadDelete($object, $filename)
+    {
+        $log = new Actionlog;
+        $log->item_type = $object instanceof SnipeModel ? get_class($object) : $object;
+        $log->item_id = $object->id;
+        $log->created_by = auth()->id();
+        $log->target_id = null;
+        $log->filename = $filename;
+        $log->created_at = date('Y-m-d H:i:s');
+        $log->logaction('upload deleted');
+
+        return $log;
     }
 
     public function uploads_file_url()

@@ -75,6 +75,7 @@ class AccessoryCheckoutController extends Controller
 
         $checkout_qty = $request->input('checkout_qty', 1);
 
+        session()->put(['checkout_to_type' => $target]);
         for ($i = 0; $i < $checkout_qty; $i++) {
 
             $accessory_checkout = new AccessoryCheckout([

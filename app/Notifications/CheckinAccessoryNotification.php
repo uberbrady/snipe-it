@@ -90,7 +90,7 @@ class CheckinAccessoryNotification extends Notification
             ->from($botname)
             ->to($channel)
             ->attachment(function ($attachment) use ($item, $note, $admin, $fields) {
-                $attachment->title(htmlspecialchars_decode($item->present()->name), $item->present()->viewUrl())
+                $attachment->title(htmlspecialchars_decode($item->display_name), $item->present()->viewUrl())
                     ->fields($fields)
                     ->content($note);
             });
@@ -107,7 +107,7 @@ class CheckinAccessoryNotification extends Notification
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('Accessory_Checkin_Notification'))
                 ->addStartGroupToSection('activityText')
-                ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityTitle')
+                ->fact(htmlspecialchars_decode($item->display_name), '', 'activityTitle')
                 ->fact(trans('mail.checked_into'), $item->location->name ? $item->location->name : '')
                 ->fact(trans('mail.Accessory_Checkin_Notification')." by ", $admin->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->numRemaining())
@@ -116,7 +116,7 @@ class CheckinAccessoryNotification extends Notification
 
         $message = trans('mail.Accessory_Checkin_Notification');
         $details = [
-            trans('mail.accessory_name') => htmlspecialchars_decode($item->present()->name),
+            trans('mail.accessory_name') => htmlspecialchars_decode($item->display_name),
             trans('mail.checked_into') => $item->location->name ? $item->location->name : '',
             trans('mail.Accessory_Checkin_Notification'). ' by' => $admin->display_name,
             trans('admin/consumables/general.remaining')=> $item->numRemaining(),
@@ -135,7 +135,7 @@ class CheckinAccessoryNotification extends Notification
                 Card::create()
                     ->header(
                         '<strong>'.trans('mail.Accessory_Checkin_Notification').'</strong>' ?: '',
-                        htmlspecialchars_decode($item->present()->name) ?: '',
+                        htmlspecialchars_decode($item->display_name) ?: '',
                     )
                     ->section(
                         Section::create(

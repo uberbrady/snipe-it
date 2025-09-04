@@ -378,7 +378,11 @@
                                             @if (isset($asset->location))
                                                 <li>
                                                     <x-icon type="locations" class="fa-fw" />
-                                                     {{ $asset->location->name }}</li>
+                                                     {{ $asset->location->parent?->name }}
+                                                        @if ($asset->location->parent)
+                                                            <i class="fas fa-long-arrow-alt-right" aria-hidden="true"></i>
+                                                        @endif
+                                                        {{ $asset->location->name }}</li>
                                                 <li>{{ $asset->location->address }}
                                                     @if ($asset->location->address2!='')
                                                         {{ $asset->location->address2 }}

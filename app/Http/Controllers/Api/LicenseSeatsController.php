@@ -129,7 +129,9 @@ class LicenseSeatsController extends Controller
             // nothing to update
             return response()->json(Helper::formatStandardApiResponse('success', $licenseSeat, trans('admin/licenses/message.update.success')));
         }
-
+        if ($touched && $licenseSeat->unreassignable_seat) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, trans('admin/licenses/message.checkout.unavailable')));
+        }
         // the logging functions expect only one "target". if both asset and user are present in the request,
         // we simply let assets take precedence over users...
         if ($licenseSeat->isDirty('assigned_to')) {
@@ -146,6 +148,9 @@ class LicenseSeatsController extends Controller
         $license->setLogTarget($target);
         $license->setLogNote($request->input('notes'));
         if ($is_checkin) {
+            if (!$licenseSeat->license->reassignable) {
+                $licenseSeat->unreassignable_seat = true;
+            }
             $license->setLogAction(ActionType::CheckinFrom);
         } else {
             $license->setLogAction(ActionType::Checkout);

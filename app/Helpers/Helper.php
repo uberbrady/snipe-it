@@ -1706,5 +1706,5 @@ class Helper
             }
         }
         return $mismatched;
-    }        
+    }
 }

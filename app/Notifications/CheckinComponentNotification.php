@@ -100,7 +100,7 @@ class CheckinComponentNotification extends Notification
             ->from($botname)
             ->to($channel)
             ->attachment(function ($attachment) use ($item, $note, $admin, $fields) {
-                $attachment->title(htmlspecialchars_decode($item->present()->name), $item->present()->viewUrl())
+                $attachment->title(htmlspecialchars_decode($item->display_name), $item->present()->viewUrl())
                     ->fields($fields)
                     ->content($note);
             });
@@ -118,7 +118,7 @@ class CheckinComponentNotification extends Notification
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('mail.Component_checkin_notification'))
                 ->addStartGroupToSection('activityText')
-                ->fact(htmlspecialchars_decode($item->present()->name), '', 'header')
+                ->fact(htmlspecialchars_decode($item->display_name), '', 'header')
                 ->fact(trans('mail.Component_checkin_notification')." by ", $admin->display_name ?: 'CLI tool')
                 ->fact(trans('mail.checkedin_from'), $target->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->numRemaining())
@@ -147,7 +147,7 @@ class CheckinComponentNotification extends Notification
                 Card::create()
                     ->header(
                         '<strong>'.trans('mail.Component_checkin_notification').'</strong>' ?: '',
-                        htmlspecialchars_decode($item->present()->name) ?: '',
+                        htmlspecialchars_decode($item->display_name) ?: '',
                     )
                     ->section(
                         Section::create(

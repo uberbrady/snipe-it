@@ -50,7 +50,12 @@ class ActionlogsTransformer
 
     public function transformActionlog (Actionlog $actionlog, $settings = null)
     {
+
         $icon = $actionlog->present()->icon();
+
+        if (($actionlog->filename!='') && ($actionlog->action_type!='upload deleted')) {
+            $icon =  Helper::filetype_icon($actionlog->filename);
+        }
 
         static $custom_fields = false;
 
@@ -58,9 +63,7 @@ class ActionlogsTransformer
             $custom_fields = CustomField::all();
         }
 
-        if ($actionlog->filename!='') {
-            $icon =  Helper::filetype_icon($actionlog->filename);
-        }
+
 
         // This is necessary since we can't escape special characters within a JSON object
         if (($actionlog->log_meta) && ($actionlog->log_meta!='')) {

@@ -33,12 +33,12 @@ class Maintenance extends SnipeModel implements ICompanyableChild
         'asset_id'               => 'required|integer',
         'supplier_id'            => 'nullable|integer',
         'asset_maintenance_type' => 'required',
-        'name'                  => 'required|max:100',
+        'name'                   => 'required|max:100',
         'is_warranty'            => 'boolean',
         'start_date'             => 'required|date_format:Y-m-d',
         'completion_date'        => 'date_format:Y-m-d|nullable|after_or_equal:start_date',
         'notes'                  => 'string|nullable',
-        'cost'                   => 'numeric|nullable',
+        'cost'                   =>  'numeric|nullable|gte:0|max:99999999999999999.99',
     ];
 
 

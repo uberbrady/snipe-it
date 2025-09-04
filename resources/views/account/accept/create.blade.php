@@ -2,7 +2,7 @@
 
 {{-- Page title --}}
 @section('title')
-    {{trans('general.accept', ['asset' => $acceptance->checkoutable->present()->name()])}}
+    {{trans('general.accept', ['asset' => $acceptance->checkoutable->display_name])}}
     @parent
 @stop
 
@@ -38,7 +38,7 @@
                 <div class="panel box box-default">
                     <div class="box-header with-border">
                         <h2 class="box-title">
-                            {{$acceptance->checkoutable->present()->name()}}
+                            {{ $acceptance->checkoutable->display_name }}
                             {{ (($acceptance->checkoutable) && ($acceptance->checkoutable->serial)) ? ' - '.trans('general.serial_number').': '.$acceptance->checkoutable->serial : '' }}
                         </h2>
                     </div>

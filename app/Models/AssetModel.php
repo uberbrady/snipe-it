@@ -73,6 +73,7 @@ class AssetModel extends SnipeModel
         'name',
         'notes',
         'requestable',
+        'require_serial'
     ];
 
     use Searchable;

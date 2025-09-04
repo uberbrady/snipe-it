@@ -64,6 +64,10 @@ class ActionlogPresenter extends Presenter
                 return 'fa-solid fa-user-minus';
             }
 
+            if ($this->action_type == 'upload deleted') {
+                return 'fa-solid fa-trash';
+            }
+
             if ($this->action_type == 'update') {
                 return 'fa-solid fa-user-pen';
             }
@@ -76,7 +80,7 @@ class ActionlogPresenter extends Presenter
             return 'fa-solid fa-plus';
         }
 
-        if ($this->action_type == 'delete') {
+        if (($this->action_type == 'delete') || ($this->action_type == 'upload deleted')) {
             return 'fa-solid fa-trash';
         }
 

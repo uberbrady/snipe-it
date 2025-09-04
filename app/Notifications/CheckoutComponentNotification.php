@@ -97,7 +97,7 @@ class CheckoutComponentNotification extends Notification
             ->from($botname)
             ->to($channel)
             ->attachment(function ($attachment) use ($item, $note, $admin, $fields) {
-                $attachment->title(htmlspecialchars_decode($item->present()->name), $item->present()->viewUrl())
+                $attachment->title(htmlspecialchars_decode($item->display_name), $item->present()->viewUrl())
                     ->fields($fields)
                     ->content($note);
             });
@@ -116,7 +116,7 @@ class CheckoutComponentNotification extends Notification
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('mail.Component_checkout_notification'))
                 ->addStartGroupToSection('activityText')
-                ->fact(htmlspecialchars_decode($item->present()->name), '', 'activityTitle')
+                ->fact(htmlspecialchars_decode($item->display_name), '', 'activityTitle')
                 ->fact(trans('mail.Component_checkout_notification')." by ", $admin->display_name)
                 ->fact(trans('mail.assigned_to'), $target->display_name)
                 ->fact(trans('admin/consumables/general.remaining'), $item->numRemaining())
@@ -126,7 +126,7 @@ class CheckoutComponentNotification extends Notification
         $message = trans('mail.Component_checkout_notification');
         $details = [
             trans('mail.assigned_to') => $target->display_name,
-            trans('mail.item') => htmlspecialchars_decode($item->present()->name),
+            trans('mail.item') => htmlspecialchars_decode($item->display_name),
             trans('mail.Component_checkout_notification').' by' => $admin->display_name,
             trans('admin/consumables/general.remaining') => $item->numRemaining(),
             trans('mail.notes') => $note ?: '',
@@ -146,7 +146,7 @@ class CheckoutComponentNotification extends Notification
                 Card::create()
                     ->header(
                         '<strong>'.trans('mail.Component_checkout_notification').'</strong>' ?: '',
-                        htmlspecialchars_decode($item->present()->name) ?: '',
+                        htmlspecialchars_decode($item->display_name) ?: '',
                     )
                     ->section(
                         Section::create(

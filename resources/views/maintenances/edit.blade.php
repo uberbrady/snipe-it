@@ -105,8 +105,6 @@
 
 
         @include ('partials.forms.edit.maintenance_type')
-        @include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
-
 
         <!-- Start Date -->
         <div class="form-group {{ $errors->has('start_date') ? ' has-error' : '' }}">
@@ -142,6 +140,9 @@
           </div>
         </div>
 
+        @include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
+
+
         <!-- Warranty -->
         <div class="form-group">
           <div class="col-sm-offset-3 col-sm-9">
@@ -155,7 +156,7 @@
         <!-- Asset Maintenance Cost -->
         <div class="form-group {{ $errors->has('cost') ? ' has-error' : '' }}">
           <label for="cost" class="col-md-3 control-label">{{ trans('admin/maintenances/form.cost') }}</label>
-          <div class="col-md-2">
+          <div class="col-md-3">
             <div class="input-group">
               <span class="input-group-addon">
                 @if (($item->asset) && ($item->asset->location) && ($item->asset->location->currency!=''))
@@ -164,7 +165,7 @@
                   {{ $snipeSettings->default_currency }}
                 @endif
               </span>
-              <input class="col-md-2 form-control" type="text" name="cost" id="cost" value="{{ old('cost', Helper::formatCurrencyOutput($item->cost)) }}" />
+              <input class="form-control" type="number" name="cost" min="0.00" max="99999999999999999.000" step="0.001" aria-label="cost" id="cost" value="{{ old('cost', $item->cost) }}" maxlength="25" />
               {!! $errors->first('cost', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
             </div>
           </div>

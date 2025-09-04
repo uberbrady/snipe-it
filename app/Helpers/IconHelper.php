@@ -16,6 +16,7 @@ class IconHelper
             case 'clone':
                 return 'far fa-clone';
             case 'delete':
+            case 'upload deleted':
                 return 'fas fa-trash';
             case 'create':
                 return 'fa-solid fa-plus';

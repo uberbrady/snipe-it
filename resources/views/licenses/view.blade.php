@@ -582,20 +582,13 @@
              {{ trans('admin/licenses/general.bulk.checkin_all.button') }}
             </a>
         </span>
-        @elseif (! $license->reassignable)
-          <span data-tooltip="true" title=" {{ trans('admin/licenses/general.bulk.checkin_all.disabled_tooltip_reassignable') }}">
-            <a href="#"  class="btn btn-primary bg-purple btn-sm btn-social btn-block hidden-print disabled"  style="margin-bottom: 25px;">
-              <x-icon type="checkin" />
-             {{ trans('admin/licenses/general.bulk.checkin_all.button') }}
-            </a>
-        </span>
-        @else
-          <a href="#"  class="btn btn-primary bg-purple btn-sm btn-social btn-block hidden-print" style="margin-bottom: 25px;" data-toggle="modal" data-tooltip="true"  data-target="#checkinFromAllModal" data-content="{{ trans('general.sure_to_delete') }}" data-title="{{  trans('general.delete') }}" onClick="return false;">
-            <x-icon type="checkin" />
-            {{ trans('admin/licenses/general.bulk.checkin_all.button') }}
-          </a>
-        @endif
-      @endcan
+      @else
+        <a href="#"  class="btn btn-primary bg-purple btn-sm btn-social btn-block hidden-print" style="margin-bottom: 25px;" data-toggle="modal" data-tooltip="true"  data-target="#checkinFromAllModal" data-content="{{ trans('general.sure_to_delete') }} data-title="{{  trans('general.delete') }}" onClick="return false;">
+          <x-icon type="checkin" />
+          {{ trans('admin/licenses/general.bulk.checkin_all.button') }}
+        </a>
+      @endif
+    @endcan
 
       @can('delete', $license)
 

@@ -4,8 +4,8 @@ return [
 
     'Accessory_Checkin_Notification' => 'Accessory checked in',
     'Accessory_Checkout_Notification' => 'Accessory checked out',
-    'Asset_Checkin_Notification' => 'Asset checked in: [:tag]',
-    'Asset_Checkout_Notification' => 'Asset checked out: [:tag]',
+    'Asset_Checkin_Notification' => 'Asset checked in: :tag',
+    'Asset_Checkout_Notification' => 'Asset checked out: :tag',
     'Confirm_Accessory_Checkin' => 'Accessory checkin confirmation',
     'Confirm_Asset_Checkin' => 'Asset checkin confirmation',
     'Confirm_component_checkin' => 'Component checkin confirmation',

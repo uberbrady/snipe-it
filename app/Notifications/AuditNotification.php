@@ -93,7 +93,7 @@ use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
         }
             $message = class_basename(get_class($params['item'])) . ' Audited By '.$admin_user->display_name;
             $details = [
-                trans('mail.asset') => htmlspecialchars_decode($item->present()->name),
+                trans('mail.asset') => htmlspecialchars_decode($item->display_name),
                 trans('mail.notes') => $note ?: '',
                 trans('general.location') => $location ?: '',
                 ];

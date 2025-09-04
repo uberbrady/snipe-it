@@ -55,7 +55,7 @@
     @endif
 <br>
 @if ($company)
-    <b>{{ trans('admin/companies/table.name') }}:</b> {{ $company->present()->Name() }}</b>
+    <b>{{ trans('admin/companies/table.name') }}:</b> {{ $company->display_name }}
 <br>
 @endif
 @if ($manager)

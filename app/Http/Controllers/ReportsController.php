@@ -830,7 +830,7 @@ class ReportsController extends Controller
                     }
                     
                     if ($request->filled('location')) {
-                        $row[] = ($asset->location) ? $asset->location->present()->name() : '';
+                        $row[] = ($asset->location) ? $asset->location->display_name : '';
                     }
 
                     if ($request->filled('location_address')) {
@@ -843,7 +843,7 @@ class ReportsController extends Controller
                     }
 
                     if ($request->filled('rtd_location')) {
-                        $row[] = ($asset->defaultLoc) ? $asset->defaultLoc->present()->name() : '';
+                        $row[] = ($asset->defaultLoc) ? $asset->defaultLoc->display_name : '';
                     }
 
                     if ($request->filled('rtd_location_address')) {
