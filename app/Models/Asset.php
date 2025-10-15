@@ -161,7 +161,6 @@ class Asset extends Depreciable
         'eol_explicit',
         'last_audit_date',
         'next_audit_date',
-        'asset_eol_date',
         'last_checkin',
         'last_checkout',
     ];
@@ -228,7 +227,6 @@ class Asset extends Depreciable
     }
 
 
-
     public function customFieldValidationRules()
     {
 
@@ -267,7 +265,6 @@ class Asset extends Depreciable
         return parent::save($params);
     }
 
-
     public function getDisplayNameAttribute()
     {
         return $this->present()->name();
@@ -278,20 +275,128 @@ class Asset extends Depreciable
      *
      * @return \Carbon\Carbon|null
      */
-    public function getWarrantyExpiresAttribute()
+
+
+    protected function warrantyExpires(): Attribute
     {
-        if (isset($this->attributes['warranty_months']) && isset($this->attributes['purchase_date'])) {
-            if (is_string($this->attributes['purchase_date']) || is_string($this->attributes['purchase_date'])) {
-                $purchase_date = \Carbon\Carbon::parse($this->attributes['purchase_date']);
-            } else {
-                $purchase_date = \Carbon\Carbon::instance($this->attributes['purchase_date']);
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => ($attributes['warranty_months'] && $attributes['purchase_date']) ? Carbon::parse($attributes['purchase_date'])->addMonths($attributes['warranty_months']) : null,
+        );
+    }
+
+    protected function warrantyExpiresFormattedDate(): Attribute
+    {
+
+        return Attribute:: make(
+             get: fn(mixed $value, array $attributes) => Helper::getFormattedDateObject($this->warrantyExpires, 'date', false)
+        );
+    }
+
+    protected function warrantyExpiresDiff(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->warrantyExpires ? round((Carbon::now()->diffInDays($this->warrantyExpires))) : null,
+        );
+
+    }
+
+    protected function warrantyExpiresDiffForHumans(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->warrantyExpires ? Carbon::parse($this->warrantyExpires)->diffForHumans() : null,
+        );
+
+    }
+
+
+    protected function lastAuditFormattedDate(): Attribute
+    {
+
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => Helper::getFormattedDateObject($this->last_audit_date, 'datetime', false)
+        );
+    }
+
+    protected function lastAuditDiff(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->warrantyExpires ? round((Carbon::now()->diffInDays($this->warrantyExpires))) : null,
+        );
+
+    }
+
+    protected function lastAuditDiffForHumans(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) =>  $attributes['last_audit_date'] ? Carbon::parse($attributes['last_audit_date'])->diffForHumans() : null,
+        );
+
+    }
+
+    protected function nextAuditFormattedDate(): Attribute
+    {
+
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => Helper::getFormattedDateObject($this->next_audit_date, 'date', false)
+        );
+    }
+
+    protected function nextAuditDiffInDays(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $attributes['next_audit_date'] ? Carbon::now()->diffInDays($attributes['next_audit_date']) : null,
+        );
+    }
+
+    protected function nextAuditDiffForHumans(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $attributes['next_audit_date'] ? Carbon::parse($attributes['next_audit_date'])->diffForHumans() : null,
+        );
+
+    }
+
+    protected function eolDate(): Attribute
+    {
+
+        return Attribute:: make(
+            get: function(mixed $value, array $attributes) {
+                if ($attributes['asset_eol_date'] && $attributes['eol_explicit'] == '1') {
+                    return Carbon::parse($attributes['asset_eol_date']);
+                } elseif ($attributes['purchase_date'] && $this->model && ((int) $this->model->eol > 0)) {
+                    return Carbon::parse($attributes['purchase_date'])->addMonths((int) $this->model->eol);
+                } else {
+                    return null;
+                }
             }
-            $purchase_date->setTime(0, 0, 0);
+        );
 
-            return $purchase_date->addMonths((int) $this->attributes['warranty_months']);
-        }
+    }
 
-        return null;
+
+
+    protected function eolFormattedDate(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->eolDate ? Helper::getFormattedDateObject($this->eolDate, 'date', false) : null,
+        );
+    }
+
+    protected function eolDiffInDays(): Attribute
+    {
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->eolDate ? round((Carbon::now()->diffInDays(Carbon::parse($this->eolDate), false,  1))) : null,
+        );
+
+    }
+
+    protected function eolDiffForHumans(): Attribute
+    {
+
+        return Attribute:: make(
+            get: fn(mixed $value, array $attributes) => $this->eolDate  ? Carbon::parse($this->eolDate)->diffForHumans() : null,
+        );
+
     }
 
 
@@ -824,21 +929,26 @@ class Asset extends Depreciable
      * @since  [v2.0]
      * @return mixed
      */
-    public static function getExpiringWarrantee($days = 30)
+    public static function getExpiringWarrantyOrEol($days = 30)
     {
-        $days = (is_null($days)) ? 30 : $days;
-
-        return self::where('archived', '=', '0') // this can stay for right now, as `archived` defaults to 0 at the db level, but should probably be replaced with assetstatus->archived?
-            ->whereNotNull('warranty_months')
-            ->whereNotNull('purchase_date')
-            ->whereNull('deleted_at')
+        
+        return self::where('archived', '=', '0')
             ->NotArchived()
-            ->whereRaw(
-                'DATE_ADD(`purchase_date`, INTERVAL `warranty_months` MONTH) <= DATE_ADD(NOW(), INTERVAL '
-                                 . $days
-                . ' DAY) AND DATE_ADD(`purchase_date`, INTERVAL `warranty_months` MONTH) > NOW()'
-            )
-            ->orderByRaw('DATE_ADD(`purchase_date`,INTERVAL `warranty_months` MONTH)')
+            ->whereNull('deleted_at')
+            ->where(function ($query) use ($days) {
+                // Check for manual asset EOL first
+                $query->where(function ($query) use ($days) {
+                    $query->whereNotNull('asset_eol_date')
+                        ->whereBetween('asset_eol_date', [Carbon::now(), Carbon::now()->addDays($days)]);
+                // Otherwise use the warranty months + purchase date + threshold
+                })->orWhere(function ($query) use ($days) {
+                    $query->whereNotNull('purchase_date')
+                        ->whereNotNull('warranty_months')
+                        ->whereBetween('purchase_date', [Carbon::now(), Carbon::now()->addMonths('assets.warranty_months')->addDays($days)]);
+                });
+            })
+            ->orderBy('asset_eol_date', 'ASC')
+            ->orderBy('purchase_date', 'ASC')
             ->get();
     }
 
@@ -1019,31 +1129,6 @@ class Asset extends Depreciable
         return false;
     }
 
-
-    /**
-     * Checks for a category-specific EULA, and if that doesn't exist,
-     * checks for a settings level EULA
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v4.0]
-     * @return string | false
-     */
-    public function getEula()
-    {
-
-        if (($this->model) && ($this->model->category)) {
-            if (($this->model->category->eula_text) && ($this->model->category->use_default_eula == 0)) {
-                return Helper::parseEscapedMarkedown($this->model->category->eula_text);
-            } elseif ($this->model->category->use_default_eula == 1) {
-                return Helper::parseEscapedMarkedown(Setting::getSettings()->default_eula_text);
-            } else {
-
-                return false;
-            }
-        }
-
-        return false;
-    }
     public function getComponentCost()
     {
         $cost = 0;
@@ -1796,16 +1881,32 @@ class Asset extends Depreciable
                         );
                     }
 
-                    if ($fieldname =='assigned_to') {
+                    if ($fieldname == 'assigned_to') {
                         $query->whereHasMorph(
                             'assignedTo', [User::class], function ($query) use ($search_val) {
                                 $query->where(
                                     function ($query) use ($search_val) {
                                         $query->where('users.first_name', 'LIKE', '%'.$search_val.'%')
-                                            ->orWhere('users.last_name', 'LIKE', '%'.$search_val.'%');
+                                            ->orWhere('users.last_name', 'LIKE', '%'.$search_val.'%')
+                                            ->orWhere('users.username', 'LIKE', '%'.$search_val.'%');
                                     }
                                 );
                             }
+                        )->orWhereHasMorph(
+                            'assignedTo', [Location::class], function ($query) use ($search_val) {
+                                $query->where('locations.name', 'LIKE', '%'.$search_val.'%');
+                            }
+                        )->orWhereHasMorph(
+                            'assignedTo', [Asset::class], function ($query) use ($search_val) {
+                            $query->where(
+                                function ($query) use ($search_val) {
+                                    // Don't use the asset table prefix here because it will pull from the original asset,
+                                    // not the subselect we're doing here to get the assigned asset
+                                    $query->where('name', 'LIKE', '%'.$search_val.'%')
+                                        ->orWhere('asset_tag', 'LIKE', '%'.$search_val.'%');
+                                }
+                            );
+                        }
                         );
                     }
 
@@ -1845,51 +1946,44 @@ class Asset extends Depreciable
                     }
 
                     if ($fieldname == 'model') {
-                        $query->where(
-                            function ($query) use ($search_val) {
-                                $query->whereHas(
-                                    'model', function ($query) use ($search_val) {
-                                        $query->where('models.name', 'LIKE', '%'.$search_val.'%');
-                                    }
-                                );
-                            }
+                        $query->whereHas(
+                            'model', function ($query) use ($search_val) {
+                            $query->where('models.name', 'LIKE', '%'.$search_val.'%');
+                        }
                         );
                     }
 
+
                     if ($fieldname == 'model_number') {
-                        $query->where(
-                            function ($query) use ($search_val) {
-                                $query->whereHas(
-                                    'model', function ($query) use ($search_val) {
-                                        $query->where('models.model_number', 'LIKE', '%'.$search_val.'%');
-                                    }
-                                );
-                            }
+                        $query->whereHas(
+                            'model', function ($query) use ($search_val) {
+                            $query->where('models.model_number', 'LIKE', '%'.$search_val.'%');
+                        }
                         );
                     }
 
 
                     if ($fieldname == 'company') {
-                        $query->where(
-                            function ($query) use ($search_val) {
-                                $query->whereHas(
-                                    'company', function ($query) use ($search_val) {
-                                        $query->where('companies.name', 'LIKE', '%'.$search_val.'%');
-                                    }
-                                );
-                            }
+                        $query->whereHas(
+                            'company', function ($query) use ($search_val) {
+                            $query->where('companies.name', 'LIKE', '%'.$search_val.'%');
+                        }
                         );
                     }
 
                     if ($fieldname == 'supplier') {
-                        $query->where(
-                            function ($query) use ($search_val) {
-                                $query->whereHas(
-                                    'supplier', function ($query) use ($search_val) {
-                                        $query->where('suppliers.name', 'LIKE', '%'.$search_val.'%');
-                                    }
-                                );
-                            }
+                        $query->whereHas(
+                            'supplier', function ($query) use ($search_val) {
+                            $query->where('suppliers.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+                    
+                    if ($fieldname == 'status_label') {
+                        $query->whereHas(
+                            'assetstatus', function ($query) use ($search_val) {
+                            $query->where('status_labels.name', 'LIKE', '%'.$search_val.'%');
+                        }
                         );
                     }
 
