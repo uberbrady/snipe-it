@@ -75,7 +75,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
             ->where('item_id', $newAccessory->id)
             ->sole();
 
-        $this->assertEquals('create', $activityLog->action_type);
+        $this->assertEquals('create', $activityLog->action_type->value);
         $this->assertEquals('importer', $activityLog->action_source);
         $this->assertEquals($newAccessory->company->id, $activityLog->company_id);
 

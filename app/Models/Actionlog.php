@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\Searchable;
+use App\Enums\ActionType;
 use App\Presenters\Presentable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,6 +43,13 @@ class Actionlog extends SnipeModel
         'target_type',
         'stored_eula'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'action_type' => ActionType::class,
+        ];
+    }
 
     use Searchable;
 

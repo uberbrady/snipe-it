@@ -75,7 +75,7 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
             ->where('item_id', $newComponent->id)
             ->sole();
 
-        $this->assertEquals('create', $activityLog->action_type);
+        $this->assertEquals('create', $activityLog->action_type->value);
         $this->assertEquals('importer', $activityLog->action_source);
         $this->assertEquals($newComponent->company->id, $activityLog->company_id);
 

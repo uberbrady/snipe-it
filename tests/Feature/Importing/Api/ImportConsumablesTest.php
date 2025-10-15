@@ -75,7 +75,7 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
             ->where('item_id', $newConsumable->id)
             ->sole();
 
-        $this->assertEquals('create', $activityLog->action_type);
+        $this->assertEquals('create', $activityLog->action_type->value);
         $this->assertEquals('importer', $activityLog->action_source);
         $this->assertEquals($newConsumable->company->id, $activityLog->company_id);
 

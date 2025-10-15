@@ -84,14 +84,14 @@ class ImportAssetsTest extends ImportDataTestCase implements TestsPermissionsReq
 
         $this->assertCount(2, $activityLogs);
 
-        $this->assertEquals('checkout', $activityLogs[0]->action_type);
+        $this->assertEquals('checkout', $activityLogs[0]->action_type->value);
         $this->assertEquals(Asset::class, $activityLogs[0]->item_type);
         $this->assertEquals($assignee->id, $activityLogs[0]->target_id);
         $this->assertEquals(User::class, $activityLogs[0]->target_type);
         $this->assertEquals('Checkout from CSV Importer', $activityLogs[0]->note);
         $this->assertHasTheseActionLogs($newAsset, ['create', 'checkout']); // TODO - order reversed but passes?!
 
-        $this->assertEquals('create', $activityLogs[1]->action_type);
+        $this->assertEquals('create', $activityLogs[1]->action_type->value);
         $this->assertNull($activityLogs[1]->target_id);
         $this->assertEquals(Asset::class, $activityLogs[1]->item_type);
         $this->assertNull($activityLogs[1]->note);
