@@ -264,8 +264,8 @@ class CheckoutableListener
 
         $acceptance->qty = 1;
 
-        if (isset($event->checkoutable->checkout_qty)) {
-            $acceptance->qty = $event->checkoutable->checkout_qty;
+        if ($event->checkoutable->getLogQuantity()) {
+            $acceptance->qty = $event->checkoutable->getLogQuantity();
         }
 
         $category = $this->getCategoryFromCheckoutable($event->checkoutable);
