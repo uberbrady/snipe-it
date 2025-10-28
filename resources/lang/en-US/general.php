@@ -350,6 +350,7 @@ return [
     'login_disabled'        => 'Login Disabled',
     'audit_due'             => 'Due for Audit',
     'audit_due_days'        => '{}Assets Due or Overdue for Audit|[1]Assets Due or Overdue for Audit Within a Day|[2,*]Assets Due or Overdue for Audit Within :days Days',
+    'audit_due_days_view_all' => '{}Assets Due or Overdue for Audit|[1]View All Assets Due or Overdue for Audit Within a Day|[2,*]View All Assets Due or Overdue for Audit Within :days Days',
     'checkin_due'           => 'Due for Checkin',
     'checkin_overdue'       => 'Overdue for Checkin',
     'checkin_due_days'      => '{}Due for Checkin|[1]Assets Due for Checkin Within :days Day|[2,*]Assets Due for Checkin Within :days Days',
