@@ -14,13 +14,15 @@ return array(
     'update' => array(
         'error'   => '분류가 갱신되지 않았습니다. 다시 시도해 주세요',
         'success' => '분류가 갱신되었습니다.',
-        'cannot_change_category_type'   => 'You cannot change the category type once it has been created',
+        'cannot_change_category_type'   => '',
     ),
 
     'delete' => array(
-        'confirm'   => '이 분류를 삭제하시겠습니까?',
-        'error'   => '분류 삭제 중 문제가 발생했습니다. 다시 시도해 주세요.',
-        'success' => '분류가 삭제되었습니다'
+        'confirm'                => '이 분류를 삭제하시겠습니까?',
+        'error'                  => '분류 삭제 중 문제가 발생했습니다. 다시 시도해 주세요.',
+        'success'                => 'Category was deleted successfully.',
+        'bulk_success'           => 'Categories were deleted successfully.',
+        'partial_success'        => 'Category deleted successfully. See additional information below. | :count categories were deleted successfully. See additional information below.',
     )
 
 );

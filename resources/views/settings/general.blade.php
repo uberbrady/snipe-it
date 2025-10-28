@@ -34,10 +34,10 @@
 
                    <div class="col-md-12">
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset">
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.scoping') }}
-                           </legend>
+                           </x-form-legend>
                             <!-- Full Multiple Companies Support -->
                             <div class="form-group {{ $errors->has('full_multiple_companies_support') ? 'error' : '' }}">
                                 <div class="col-md-8 col-md-offset-3">
@@ -63,14 +63,13 @@
 
                        </fieldset>
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset">
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.formats') }}
-                           </legend>
-
+                           </x-form-legend>
                            <!-- Email domain -->
                            <div class="form-group {{ $errors->has('email_domain') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="email_domain">{{ trans('general.email_domain') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -83,18 +82,23 @@
 
                            <!-- Email format -->
                            <div class="form-group {{ $errors->has('email_format') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="email_format">{{ trans('admin/settings/general.email_formats.email_format') }}</label>
                                </div>
                                <div class="col-md-8">
-                                   {!! Form::email_format('email_format', old('email_format', $setting->email_format), 'select2') !!}
+                                   <x-input.email-format-select
+                                       name="email_format"
+                                       :selected="old('email_format', $setting->email_format)"
+                                       style="width: 100%"
+                                       aria-label="email_format"
+                                   />
                                    {!! $errors->first('email_format', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
                                </div>
                            </div>
 
                            <!-- Username format -->
                            <div class="form-group {{ $errors->has('username_format') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="username_format">{{ trans('admin/settings/general.username_formats.username_format') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -110,10 +114,10 @@
                        </fieldset>
 
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset">
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.profiles') }}
-                           </legend>
+                           </x-form-legend>
                            <!-- user profile edit checkbox -->
                            <div class="form-group">
                                <div class="col-md-8 col-md-offset-3">
@@ -126,10 +130,10 @@
                            </div>
                        </fieldset>
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset>
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.eula') }}
-                           </legend>
+                           </x-form-legend>
 
                            <!-- Require signature for acceptance -->
                            <div class="form-group {{ $errors->has('require_accept_signature') ? 'error' : '' }}">
@@ -146,7 +150,7 @@
 
                            <!-- Default EULA -->
                            <div class="form-group {{ $errors->has('default_eula_text') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="default_eula_text">{{ trans('admin/settings/general.default_eula_text') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -163,12 +167,14 @@
 
                        </fieldset>
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">{{ trans('admin/settings/general.legends.misc_display') }}</legend>
+                       <fieldset>
+                           <x-form-legend>
+                               {{ trans('admin/settings/general.legends.misc_display') }}
+                           </x-form-legend>
 
                            <!-- Thumb Size -->
                            <div class="form-group {{ $errors->has('thumbnail_max_h') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="thumbnail_max_h">{{ trans('admin/settings/general.thumbnail_max_h') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -180,7 +186,7 @@
 
                            <!-- Model List prefs -->
                            <div class="form-group {{ $errors->has('show_in_model_list') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <strong>{{ trans('admin/settings/general.show_in_model_list') }}</strong>
                                </div>
                                <div class="col-md-8">
@@ -242,14 +248,14 @@
                        </fieldset>
 
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset">
+                           <x-form-legend>
                                {{ trans('general.email') }}
-                           </legend>
+                           </x-form-legend>
 
                            <!-- Mail test -->
                            <div class="form-group">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="login_note">{{trans('admin/settings/general.test_mail')}}</label>
                                </div>
                                <div class="col-md-8" id="mailtestrow">
@@ -286,10 +292,10 @@
                        </fieldset>
 
 
-                       <fieldset name="checkin-preferences" class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset name="checkin-preferences"">
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.checkin') }}
-                           </legend>
+                           </x-form-legend>
 
                            <!-- Require Notes on checkin/checkout checkbox -->
                                <div class="form-group">
@@ -307,14 +313,14 @@
 
 
 
-                       <fieldset name="dashboard" class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset name="dashboard">
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.dashboard') }}
-                           </legend>
+                           </x-form-legend>
 
                            <!-- login text -->
                            <div class="form-group {{ $errors->has('login_note') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="login_note">{{ trans('admin/settings/general.login_note') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -333,7 +339,7 @@
 
                                <!-- dash chart -->
                                <div class="form-group {{ $errors->has('dash_chart_type') ? 'error' : '' }}">
-                                   <div class="col-md-3">
+                                   <div class="col-md-3 text-right">
                                        <label for="show_in_model_list">{{ trans('general.pie_chart_type') }}</label>
                                    </div>
                                    <div class="col-md-8">
@@ -348,7 +354,7 @@
 
                                <!-- dashboard text -->
                                <div class="form-group {{ $errors->has('dashboard_message') ? 'error' : '' }}">
-                                   <div class="col-md-3">
+                                   <div class="col-md-3 text-right">
                                        <label for="dashboard_message">{{ trans('admin/settings/general.dashboard_message') }}</label>
                                    </div>
                                    <div class="col-md-8">
@@ -369,14 +375,14 @@
                        </fieldset>
 
 
-                       <fieldset class="bottom-padded">
-                           <legend class="highlight">
+                       <fieldset>
+                           <x-form-legend>
                                {{ trans('admin/settings/general.legends.misc') }}
-                           </legend>
+                           </x-form-legend>
 
                            <!-- Privacy Policy Footer-->
                            <div class="form-group {{ $errors->has('privacy_policy_link') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <label for="privacy_policy_link">{{ trans('admin/settings/general.privacy_policy_link') }}</label>
                                </div>
                                <div class="col-md-8">
@@ -400,7 +406,7 @@
                            
                                <!-- Depreciation method -->
                                <div class="form-group {{ $errors->has('depreciation_method') ? 'error' : '' }}">
-                                   <div class="col-md-3">
+                                   <div class="col-md-3 text-right">
                                        <label for="depreciation_method">{{ trans('admin/depreciations/general.depreciation_method') }}</label>
                                    </div>
                                    <div class="col-md-8">
@@ -432,7 +438,7 @@
 
                            <!-- Manager View -->
                            <div class="form-group {{ $errors->has('manager_view_enabled') ? 'error' : '' }}">
-                               <div class="col-md-3">
+                               <div class="col-md-3 text-right">
                                    <strong>{{ trans('admin/settings/general.manager_view') }}</strong>
                                </div>
                                <div class="col-md-8">

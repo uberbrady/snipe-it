@@ -7,6 +7,7 @@ use App\Events\CheckoutableCheckedIn;
 use App\Http\Requests\StoreAssetRequest;
 use App\Http\Requests\UpdateAssetRequest;
 use App\Http\Traits\MigratesLegacyAssetLocations;
+use App\Http\Transformers\ComponentsTransformer;
 use App\Models\AccessoryCheckout;
 use App\Models\CheckoutAcceptance;
 use App\Models\LicenseSeat;
@@ -116,6 +117,22 @@ class AssetsController extends Controller
             'asset_eol_date',
             'requestable',
             'jobtitle',
+            // These are *relationships* so we wouldn't normally include them in this array,
+            // since they would normally create a `column not found` error,
+            // BUT we account for them in the ordering switch down at the end of this method
+            // DO NOT ADD ANYTHING TO THIS LIST WITHOUT CHECKING THE ORDERING SWITCH BELOW!
+            'company',
+            'model',
+            'location',
+            'rtd_location',
+            'category',
+            'status_label',
+            'manufacturer',
+            'supplier',
+            'jobtitle',
+            'assigned_to',
+            'created_by',
+
         ];
 
         $all_custom_fields = CustomField::all(); //used as a 'cache' of custom fields throughout this page load
@@ -132,6 +149,7 @@ class AssetsController extends Controller
             $filter = array_filter($filter, function ($key) use ($allowed_columns) {
                 return in_array($key, $allowed_columns);
             }, ARRAY_FILTER_USE_KEY);
+
         }
 
         $assets = Asset::select('assets.*')
@@ -166,7 +184,7 @@ class AssetsController extends Controller
         // Search custom fields by column name
         foreach ($all_custom_fields as $field) {
             if ($request->filled($field->db_column_name()) && $field->db_column_name()) {
-                $assets->where($field->db_column_name(), '=', $request->input($field->db_column_name()));
+                $assets->where('assets.'.$field->db_column_name(), '=', $request->input($field->db_column_name()));
             }
         }
 
@@ -1269,9 +1287,19 @@ class AssetsController extends Controller
 
     public function assignedAssets(Request $request, Asset $asset) : JsonResponse | array
     {
+        $this->authorize('view', Asset::class);
+        $this->authorize('view', $asset);
 
-        return [];
-        // to do
+        $query = Asset::where([
+            'assigned_to' => $asset->id,
+            'assigned_type' => Asset::class,
+        ]);
+
+        $total = $query->count();
+
+        $assets = $query->applyOffsetAndLimit($total)->get();
+
+        return (new AssetsTransformer)->transformAssets($assets, $total);
     }
 
     public function assignedAccessories(Request $request, Asset $asset) : JsonResponse | array
@@ -1291,6 +1319,18 @@ class AssetsController extends Controller
         return (new AssetsTransformer)->transformCheckedoutAccessories($accessory_checkouts, $total);
     }
 
+    public function assignedComponents(Request $request, Asset $asset): JsonResponse|array
+    {
+        $this->authorize('view', Asset::class);
+        $this->authorize('view', $asset);
+
+        $asset->loadCount('components');
+        $total = $asset->components_count;
+
+        $components = $asset->load(['components' => fn($query) => $query->applyOffsetAndLimit($total)])->components;
+
+        return (new ComponentsTransformer)->transformComponents($components, $total);
+    }
 
     /**
      * Generate asset labels by tag

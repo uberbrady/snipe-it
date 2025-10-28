@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\CheckoutRequest;
 use App\Models\User;
 

@@ -7,6 +7,7 @@ use App\Models\Traits\Acceptable;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
+use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\ConsumablePresenter;
 use App\Presenters\Presentable;
@@ -316,25 +317,6 @@ class Consumable extends SnipeModel
     }
 
     /**
-     * Checks for a category-specific EULA, and if that doesn't exist,
-     * checks for a settings level EULA
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v4.0]
-     * @return string | false
-     */
-    public function getEula()
-    {
-        if ($this->category->eula_text) {
-            return  Helper::parseEscapedMarkedown($this->category->eula_text);
-        } elseif ((Setting::getSettings()->default_eula_text) && ($this->category->use_default_eula == '1')) {
-            return  Helper::parseEscapedMarkedown(Setting::getSettings()->default_eula_text);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Check how many items within a consumable are checked out
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]
@@ -361,7 +343,10 @@ class Consumable extends SnipeModel
 
         return $remaining;
     }
+    public function totalCostSum() {
 
+        return $this->purchase_cost !== null ? $this->qty * $this->purchase_cost : null;
+    }
     /**
      * -----------------------------------------------
      * BEGIN MUTATORS
@@ -390,6 +375,99 @@ class Consumable extends SnipeModel
      * BEGIN QUERY SCOPES
      * -----------------------------------------------
      **/
+
+    /**
+     * Query builder scope to search on text filters for complex Bootstrap Tables API
+     *
+     * @param \Illuminate\Database\Query\Builder $query  Query builder instance
+     * @param text                               $filter JSON array of search keys and terms
+     *
+     * @return \Illuminate\Database\Query\Builder          Modified query builder
+     */
+    public function scopeByFilter($query, $filter)
+    {
+        return $query->where(
+            function ($query) use ($filter) {
+                foreach ($filter as $fieldname => $search_val) {
+
+                    if ($fieldname == 'name') {
+                        $query->where('consumables.name', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'notes') {
+                        $query->where('consumables.notes', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'model_number') {
+                        $query->where('consumables.model_number', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'order_number') {
+                        $query->where('consumables.order_number', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'item_no') {
+                        $query->where('consumables.item_no', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'serial') {
+                        $query->where('consumables.serial', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'purchase_cost') {
+                        $query->where('consumables.purchase_cost', 'LIKE', '%' . $search_val . '%');
+                    }
+
+                    if ($fieldname == 'location') {
+                        $query->whereHas(
+                            'location', function ($query) use ($search_val) {
+                            $query->where('locations.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+
+                    if ($fieldname == 'manufacturer') {
+                        $query->whereHas(
+                            'manufacturer', function ($query) use ($search_val) {
+                            $query->where('manufacturers.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+
+
+                    if ($fieldname == 'supplier') {
+                        $query->whereHas(
+                            'supplier', function ($query) use ($search_val) {
+                            $query->where('suppliers.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+
+
+                    if ($fieldname == 'category') {
+                        $query->whereHas(
+                            'category', function ($query) use ($search_val) {
+                            $query->where('categories.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+
+                    if ($fieldname == 'company') {
+                        $query->whereHas(
+                            'company', function ($query) use ($search_val) {
+                            $query->where('companies.name', 'LIKE', '%'.$search_val.'%');
+                        }
+                        );
+                    }
+
+
+
+                }
+
+
+            }
+        );
+    }
 
     /**
      * Query builder scope to order on company

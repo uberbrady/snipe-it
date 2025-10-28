@@ -403,6 +403,7 @@ class Importer extends Component
 
 
         $this->assetmodels_fields  = [
+            'id' => trans('general.id'),
             'category' => trans('general.category'),
             'eol' => trans('general.eol'),
             'fieldset' => trans('admin/models/general.fieldset'),

@@ -9,6 +9,7 @@ use App\Models\SnipeModel;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
+use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,6 +47,7 @@ class Location extends SnipeModel
         'manager_id'    => 'integer',
         'company_id'    => 'integer',
     ];
+
 
     /**
      * Whether the model should inject its identifier to the unique
@@ -117,12 +119,18 @@ class Location extends SnipeModel
     {
 
         return Gate::allows('delete', $this)
-                && ($this->assets_count == 0)
-                && ($this->assigned_assets_count == 0)
-                && ($this->children_count == 0)
-                && ($this->accessories_count == 0)
-                && ($this->users_count == 0);
+            && ($this->deleted_at == '')
+            && (($this->assets_count ?? $this->assets()->count()) === 0)
+            && (($this->assigned_assets_count ?? $this->assignedAssets()->count()) === 0)
+            && (($this->accessories_count ?? $this->accessories()->count()) === 0)
+            && (($this->assigned_accessories_count ?? $this->assignedAccessories()->count()) === 0)
+            && (($this->children_count ?? $this->children()->count()) === 0)
+            && (($this->components_count ?? $this->components()->count()) === 0)
+            && (($this->consumables_count ?? $this->consumables()->count()) === 0)
+            && (($this->rtd_assets_count ?? $this->rtd_assets()->count()) === 0)
+            && (($this->users_count ?? $this->users()->count()) === 0);
     }
+
 
     /**
      * Establishes the user -> location relationship

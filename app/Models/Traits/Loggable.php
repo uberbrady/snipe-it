@@ -13,6 +13,10 @@ use App\Models\User;
 use App\Notifications\AuditNotification;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Osama\LaravelTeamsNotification\TeamsNotification;
 
 trait Loggable
 {
@@ -277,5 +281,4 @@ trait Loggable
             ->sortByDesc('created_at')
             ->first();
     }
-
 }

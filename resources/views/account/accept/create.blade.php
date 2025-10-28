@@ -20,10 +20,20 @@
         }
 
         .m-signature-pad--body {
-            border-style: solid;
+            border-style: dashed;
             border-color: grey;
-            border-width: thin;
+            border-width: thick;
+            padding-top: 0px;
         }
+
+
+        .m-signature-pad {
+            box-shadow: none;
+            background-color: inherit;
+            border: none;
+
+        }
+
 
     </style>
 
@@ -39,25 +49,38 @@
                     <div class="box-header with-border">
                         <h2 class="box-title">
                             {{ $acceptance->checkoutable->display_name }}
-                            {{ (($acceptance->checkoutable) && ($acceptance->checkoutable->serial)) ? ' - '.trans('general.serial_number').': '.$acceptance->checkoutable->serial : '' }}
+                            @if ($acceptance->qty > 1)
+                                <strong>×{{ $acceptance->qty }}</strong>
+                            @endif
+
+                            {!!  (($acceptance->checkoutable) && ($acceptance->checkoutable->serial)) ? '<br>'.trans('general.serial_number').': '.e($acceptance->checkoutable->serial) : '' !!}
+
                         </h2>
                     </div>
                     <div class="box-body">
                         @if ($acceptance->checkoutable->getEula())
-                            <div class="col-md-12" style="padding-top: 15px; padding-bottom: 15px;">
-                                <div style="background-color: rgba(211,211,211,0.25); padding: 10px; border: lightgrey 1px solid;">
-                                    {!!  $acceptance->checkoutable->getEula() !!}
+                            <div class="col-md-12" style="padding-top: 5px; padding-bottom: 15px;">
+                                <div style="background-color: rgba(211,211,211,0.25); padding: 0px 10px 10px 10px; border: lightgrey 1px solid;">
+                                    {!!  str_replace('<p>', '<p dir="auto">', Helper::parseEscapedMarkedown($acceptance->checkoutable->getEula())) !!}
                                 </div>
                             </div>
                         @endif
                         <div class="col-md-12">
                             <label class="form-control">
                                 <input type="radio" name="asset_acceptance" id="accepted" value="accepted">
-                                {{trans('general.i_accept')}}
+                                @if ($acceptance->qty)
+                                    {{trans_choice('general.i_accept_with_count', $acceptance->qty)}}
+                                @else
+                                    {{trans('general.i_accept')}}
+                                @endif
                             </label>
                             <label class="form-control">
                                 <input type="radio" name="asset_acceptance" id="declined" value="declined">
-                                {{trans('general.i_decline')}}
+                                @if ($acceptance->qty)
+                                    {{trans_choice('general.i_decline_with_count', $acceptance->qty)}}
+                                @else
+                                    {{trans('general.i_decline')}}
+                                @endif
                             </label>
 
                         </div>
@@ -77,30 +100,37 @@
                                         <canvas style="width:100%;"></canvas>
                                         <input type="hidden" name="signature_output" id="signature_output">
                                     </div>
-                                    <div class="col-md-12 col-sm-12 col-lg-12 col-xs-12 text-center">
+                                    <div class="col-md-12 col-sm-12 col-lg-12 col-xs-12 text-left">
                                         <button type="button" class="btn btn-sm btn-default clear" data-action="clear" id="clear_button">{{trans('general.clear_signature')}}</button>
                                     </div>
                                 </div>
                             </div>
                         @endif
 
-                        @if (auth()->user()->email!='')
-                            <div class="col-md-12" style="padding-top: 20px; display: none;" id="showEmailBox">
-                                <label class="form-control">
-                                    <input type="checkbox" value="1" name="send_copy" id="send_copy" checked="checked" aria-label="send_copy">
-                                    {{ trans('mail.send_pdf_copy') }} ({{ auth()->user()->email }})
-                                </label>
-                            </div>
-                        @endif
 
                     </div> <!-- / box-body -->
-                    <div class="box-footer text-right" style="display: none;" id="showSubmit">
-                        <button type="submit" class="btn btn-success" id="submit-button">
-                            <i class="fa fa-check icon-white" aria-hidden="true" id="submitIcon"></i>
-                            <span id="buttonText">
-                                {{ trans('general.i_accept_item') }}
+                    <div class="box-footer" style="display: none;" id="showSubmit">
+                        <div class="row">
+                            <div class="col-md-7">
+                                @if (auth()->user()->email!='')
+                                    <div class="col-md-12" style="display: none;" id="showEmailBox">
+                                        <label class="form-control">
+                                            <input type="checkbox" value="1" name="send_copy" id="send_copy" checked="checked" aria-label="send_copy">
+                                            {{ trans('mail.send_pdf_copy') }} ({{ auth()->user()->email }})
+                                        </label>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col-md-5 text-right">
+                                <button type="submit" class="btn btn-success" id="submit-button">
+                                    <i class="fa fa-check icon-white" aria-hidden="true" id="submitIcon"></i>
+                                    <span id="buttonText">
+                                {{ trans_choice('general.i_accept_item', $acceptance->qty ?? null) }}
                             </span>
-                        </button>
+                                </button>
+                            </div>
+                        </div>
+
                     </div><!-- /.box-footer -->
                 </div> <!-- / box-default -->
             </div> <!-- / col -->
@@ -161,7 +191,7 @@
                 $("#showSubmit").show();
                 $("#submit-button").removeClass("btn-success").addClass("btn-danger").show();
                 $("#submitIcon").removeClass("fa-check").addClass("fa-times");
-                $("#buttonText").text('{{ trans('general.i_decline_item') }}');
+                $("#buttonText").text('{{ trans_choice('general.i_decline_item', $acceptance->qty ?? 1) }}');
                 $("#note").prop('required', true);
 
             } else if ($(this).is(':checked') && $(this).attr('id') === 'accepted') {
@@ -169,16 +199,9 @@
                 $("#showSubmit").show();
                 $("#submit-button").removeClass("btn-danger").addClass("btn-success").show();
                 $("#submitIcon").removeClass("fa-check").addClass("fa-check");
-                $("#buttonText").text('{{ trans('general.i_accept_item') }}');
+                $("#buttonText").text('{{ trans_choice('general.i_accept_item', $acceptance->qty ?? 1) }}');
                 $("#note").prop('required', false);
-
-
-
             }
-
         });
-
-
-
     </script>
 @stop

@@ -5,6 +5,9 @@ use App\Http\Controllers\ActionlogController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\BulkCategoriesController;
+use App\Http\Controllers\BulkManufacturersController;
+use App\Http\Controllers\BulkSuppliersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\CompaniesController;
 use App\Http\Controllers\DashboardController;
@@ -43,6 +46,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('categories', CategoriesController::class, [
         'parameters' => ['category' => 'category_id'],
     ]);
+
+    Route::post('categories/bulk/delete', [BulkCategoriesController::class, 'destroy'])->name('categories.bulk.delete');
   
     /*
     * Labels
@@ -71,10 +76,14 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('manufacturers', ManufacturersController::class);
 
+    Route::post('manufacturers/bulk/delete', [BulkManufacturersController::class, 'destroy'])->name('manufacturers.bulk.delete');
+
     /*
     * Suppliers
     */
     Route::resource('suppliers', SuppliersController::class);
+
+    Route::post('suppliers/bulk/delete', [BulkSuppliersController::class, 'destroy'])->name('suppliers.bulk.delete');
 
     /*
     * Depreciations
@@ -707,7 +716,7 @@ Route::group(['middleware' => 'web'], function () {
             'show'
         ]
     )->name('ui.files.show')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|components']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|components']);
 
     // Upload files(s)
     Route::post('{object_type}/{id}/files',
@@ -716,7 +725,7 @@ Route::group(['middleware' => 'web'], function () {
             'store'
         ]
     )->name('ui.files.store')
-        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|components']);
+        ->where(['object_type' => 'assets|audits|maintenances|hardware|models|users|locations|accessories|consumables|licenses|components']);
 
     // Delete files(s)
     Route::delete('{object_type}/{id}/files/{file_id}/delete',
@@ -725,7 +734,7 @@ Route::group(['middleware' => 'web'], function () {
             'destroy'
         ]
     )->name('ui.files.destroy')
-        ->where(['object_type' => 'assets|hardware|models|users|locations|accessories|consumables|licenses|components']);
+        ->where(['object_type' => 'assets|maintenances|hardware|models|users|locations|accessories|consumables|licenses|components']);
 });
 
 

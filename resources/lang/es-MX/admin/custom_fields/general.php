@@ -65,6 +65,6 @@ return [
         'listbox' => 'List Box',
         'textarea' => 'Textarea (multi-line)',
         'checkbox' => 'Checkbox',
-        'radio' => 'Radio Buttons',
+        'radio' => 'Botones de radio',
     ],
 ];

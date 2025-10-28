@@ -11,7 +11,7 @@
 |        |          |
 | ------------- | ------------- |
 | **{{ trans('mail.user') }}** | {{ $assignedTo->display_name }} |
-| **{{ trans('mail.name') }}** | {{ $item->present()->name() }} |
+| **{{ trans('mail.name') }}** | {{ $item->display_name }} |
 @if (isset($item->asset_tag))
 | **{{ trans('mail.asset_tag') }}** | {{ $item->asset_tag }} |
 @endif

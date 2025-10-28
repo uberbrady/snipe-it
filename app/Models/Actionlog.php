@@ -423,6 +423,10 @@ class Actionlog extends SnipeModel
             $object = 'models';
         }
 
+        if ($this->action_type == 'audit') {
+            $object = 'audits';
+        }
+
         return route('ui.files.show', [
             'object_type' => $object,
             'id' => $this->item_id,
@@ -436,6 +440,10 @@ class Actionlog extends SnipeModel
 
         if (($this->action_type == 'accepted') || ($this->action_type == 'declined')) {
             return 'private_uploads/eula-pdfs/'.$this->filename;
+        }
+
+        if ($this->action_type == 'audit')  {
+            return 'private_uploads/audits/'.$this->filename;
         }
 
         switch ($this->item_type) {

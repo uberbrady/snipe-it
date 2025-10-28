@@ -33,7 +33,7 @@ return [
     'create_fieldset_title' => 'Neuen Feldsatz erstellen',
     'create_field'            => 'Neues benutzerdefiniertes Feld',
     'create_field_title' => 'Neues benutzerdefiniertes Feld erstellen',
-    'value_encrypted'      	        => 'The value of this field is encrypted in the database. Only users with permission to view encrypted custom fields will be able to view the decrypted value',
+    'value_encrypted'      	        => 'Der Wert dieses Feldes ist in der Datenbank verschlüsselt. Nur Benutzer mit Berechtigungen können den entschlüsselten Wert sehen',
     'show_in_email'     => 'Feld miteinbeziehen bei Herausgabe-Emails an die Benutzer? Verschlüsselte Felder können nicht miteinbezogen werden',
     'show_in_email_short' => 'In E-Mails mit einbeziehen',
     'help_text' => 'Hilfetext',

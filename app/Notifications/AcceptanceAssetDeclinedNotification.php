@@ -30,6 +30,8 @@ class AcceptanceAssetDeclinedNotification extends Notification
         $this->assigned_to = $params['assigned_to'];
         $this->company_name = $params['company_name'];
         $this->settings = Setting::getSettings();
+        $this->qty = $params['qty'] ?? null;
+        $this->admin = $params['admin'] ?? null;
     }
 
     /**
@@ -69,6 +71,8 @@ class AcceptanceAssetDeclinedNotification extends Notification
                 'declined_date' => $this->declined_date,
                 'assigned_to'   => $this->assigned_to,
                 'company_name'  => $this->company_name,
+                'qty'           => $this->qty,
+                'admin'         => $this->admin,
                 'intro_text'    => trans('mail.acceptance_asset_declined'),
             ])
             ->subject(trans('mail.acceptance_asset_declined'));

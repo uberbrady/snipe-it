@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'show_all' => 'Show All',
     '2FA_reset'             => '2FA reset',
     'accessories'			=> 'Accessories',
     'activated'			    => 'Activated',
@@ -309,10 +310,12 @@ return [
     'total_licenses'		=> 'total licenses',
     'total_accessories'		=> 'total accessories',
     'total_consumables'		=> 'total consumables',
+    'total_cost'			=> 'Total Cost',
     'type'  				=> 'Type',
     'undeployable'			=> 'Un-deployable',
     'unknown_admin'			=> 'Unknown Admin',
     'unknown_user'          => 'Unknown User',
+    'unit_cost'				=> 'Unit Cost',
     'username'              => 'Username',
     'update'                => 'Update',
     'updating_item' => 'Updating :item',
@@ -353,9 +356,11 @@ return [
     'audit_overdue'         => 'Overdue for Audit',
     'accept'                => 'Accept :asset',
     'i_accept'              => 'I accept',
-    'i_decline_item'        => 'Decline this item',
-    'i_accept_item'         => 'Accept this item',
+    'i_accept_with_count' => 'I accept :count item|I accept :count items',
+    'i_decline_item' => 'Decline this item|Decline these items',
+    'i_accept_item' => 'Accept this item|Accept these items',
     'i_decline'             => 'I decline',
+    'i_decline_with_count' => 'I decline :count item|I decline :count items',
     'accept_decline'        => 'Accept/Decline',
     'sign_tos'              => 'Sign below to indicate that you agree to the terms of service:',
     'clear_signature'       => 'Clear Signature',
@@ -394,6 +399,7 @@ return [
     'permissions'           => 'Permissions',
     'managed_ldap'          => '(Managed via LDAP)',
     'export'                => 'Export',
+    'export_all_to_csv'     => 'Export all to CSV',
     'ldap_sync'             => 'LDAP Sync',
     'ldap_user_sync'        => 'LDAP User Sync',
     'synchronize'           => 'Synchronize',
@@ -515,7 +521,10 @@ return [
     'item_notes' => ':item Notes',
     'item_name_var' => ':item Name',
     'error_user_company' => 'Checkout target company and asset company do not match',
+    'error_user_company_multiple' => 'One or more of the checkout target company and asset company do not match',
     'error_user_company_accept_view' => 'An Asset assigned to you belongs to a different company so you can\'t accept nor deny it, please check with your manager',
+    'error_assets_already_checked_out' => 'One or more of the assets are already checked out',
+    'assigned_assets_removed' => 'The following were removed from the selected assets because they are already checked out',
     'importer' => [
         'checked_out_to_fullname' => 'Checked Out to: Full Name',
         'checked_out_to_first_name' => 'Checked Out to: First Name',
@@ -587,6 +596,8 @@ return [
         'components'  => ':count Component|:count Components',
     ],
 
+    'show_inactive' => 'Expired or Terminated',
+    'show_expiring' => 'Expiring or Terminating Soon',
     'more_info' => 'More Info',
     'quickscan_bulk_help' => 'Checking this box will edit the asset record to reflect this new location. Leaving it unchecked will simply note the location in the audit log. Note that if this asset is checked out, it will not change the location of the person, asset or location it is checked out to.',
     'whoops' => 'Whoops!',
@@ -612,10 +623,29 @@ return [
     'footer_credit' => '<a target="_blank" href="https://snipeitapp.com" rel="noopener">Snipe-IT</a> is open source software, made with <i class="fa fa-heart" aria-hidden="true" style="color: #a94442; font-size: 10px" /></i><span class="sr-only">love</span> by <a href="https://bsky.app/profile/snipeitapp.com" rel="noopener">@snipeitapp.com</a>.',
     'set_password' => 'Set a Password',
     'upload_deleted'        => 'Upload Deleted',
+    'child_locations' => 'Child Locations',
 
 // Add form placeholders here
     'placeholders' => [
         'notes'  => 'Add a note',
+    ],
+
+    'bulk_delete_associations' => [
+        'general_assoc_warning'       => ':item_name still has associated items. Please remove them before deleting this :item.',
+        'assoc_assets'                => ':item_name is currently associated with :asset_count asset(s) and cannot be deleted. Please update your assets to no longer reference this :item and try again.',
+        'asset_models'                => ':item_name is currently associated with :asset_count asset(s) and cannot be deleted. Please update your asset models to no longer reference this :item and try again.',
+        'assoc_maintenances'          => ':item_name is currently associated with :maintenance_count maintenance(s) and cannot be deleted. Please update your maintenances to no longer reference this :item and try again.',
+        'assoc_accessories'           => ':item_name is currently associated with :accessory_count accessory(ies) and cannot be deleted. Please update your accessories to no longer reference this :item and try again.',
+        'assoc_consumables'           => ':item_name is currently associated with :consumable_count consumable(s) and cannot be deleted. Please update your consumables to no longer reference this :item and try again.',
+        'assoc_components'            => ':item_name is currently associated with :component_count component(s) and cannot be deleted. Please update your components to no longer reference this :item and try again.',
+        'assoc_licenses'              => ':item_name is currently associated with :license_count license(s) and cannot be deleted. Please update your licenses to no longer reference this :item and try again.',
+        'assoc_assets_no_count'       => ':item_name is currently associated with other assets and cannot be deleted. Please update your assets to no longer reference this :item and try again.',
+        'asset_models_no_count'       => ':item_name is currently associated with other asset models and cannot be deleted. Please update your assets to no longer reference this :item and try again.',
+        'assoc_maintenances_no_count' => ':item_name is currently associated with other maintenances and cannot be deleted. Please update your maintenances to no longer reference this :item and try again.',
+        'assoc_accessories_no_count'  => ':item_name is currently associated with other accessories and cannot be deleted. Please update your accessories to no longer reference this :item and try again.',
+        'assoc_consumables_no_count'  => ':item_name is currently associated with other consumables and cannot be deleted. Please update your consumables to no longer reference this :item and try again.',
+        'assoc_components_no_count'   => ':item_name is currently associated with other components and cannot be deleted. Please update your components to no longer reference this :item and try again.',
+        'assoc_licenses_no_count'     => ':item_name is currently associated with other licenses and cannot be deleted. Please update your licenses to no longer reference this :item and try again.',
     ],
 
     'breadcrumb_button_actions' => [

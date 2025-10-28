@@ -33,7 +33,7 @@ return [
     'create_fieldset_title' => '创建一个新的字段集',
     'create_field'            => '新增字段',
     'create_field_title' => '创建一个新自定义字段',
-    'value_encrypted'      	        => 'The value of this field is encrypted in the database. Only users with permission to view encrypted custom fields will be able to view the decrypted value',
+    'value_encrypted'      	        => '此字段的值是在数据库中加密的。 只有拥有查看加密自定义字段权限的用户才能查看该值',
     'show_in_email'     => '是否在发送给用户的签出通知邮件中包含此字段？邮件中不包含加密字段。',
     'show_in_email_short' => '包含在电子邮件中',
     'help_text' => '帮助文本',
