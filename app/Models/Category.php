@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Gate;
 use Watson\Validating\ValidatingTrait;
 use App\Helpers\Helper;
 use Illuminate\Support\Str;
+use App\Models\Traits\LogsChanges;
 
 /**
  * Model for Categories. Categories are a higher-level group
@@ -27,6 +28,7 @@ class Category extends SnipeModel
     protected $presenter = \App\Presenters\CategoryPresenter::class;
     use Presentable;
     use SoftDeletes;
+    use LogsChanges;
 
     protected $table = 'categories';
     protected $hidden = ['created_by', 'deleted_at'];
