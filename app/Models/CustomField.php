@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\LogsChanges;
 use EasySlugger\Utf8Slugger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ class CustomField extends Model
     use HasFactory;
     use ValidatingTrait,
         UniqueUndeletedTrait;
+    use LogsChanges;
 
     /**
      *

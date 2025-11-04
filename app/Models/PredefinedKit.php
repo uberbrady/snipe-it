@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ class PredefinedKit extends SnipeModel
     protected $presenter = \App\Presenters\PredefinedKitPresenter::class;
     use HasFactory;
     use Presentable;
+    use LogsChanges;
     protected $table = 'kits';
 
     /**

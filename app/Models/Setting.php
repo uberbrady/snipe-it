@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 class Setting extends Model
 {
     use HasFactory;
-    use Notifiable, ValidatingTrait;
+    use Notifiable, ValidatingTrait, LogsChanges;
 
     /**
      * The cache property so that multiple invocations of this will only load the Settings record from disk only once

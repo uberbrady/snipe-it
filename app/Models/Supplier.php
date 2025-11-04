@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,6 +13,7 @@ class Supplier extends SnipeModel
 {
     use HasFactory;
     use SoftDeletes;
+    use LogsChanges;
 
     protected $table = 'suppliers';
 

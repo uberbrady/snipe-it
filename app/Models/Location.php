@@ -6,6 +6,7 @@ use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ class Location extends SnipeModel
 {
     use HasFactory;
     use CompanyableTrait;
-    use Loggable;
+    use LogsChanges;
 
     protected $presenter = \App\Presenters\LocationPresenter::class;
     use Presentable;

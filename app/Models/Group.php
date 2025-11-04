@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Watson\Validating\ValidatingTrait;
@@ -9,6 +10,7 @@ use Watson\Validating\ValidatingTrait;
 class Group extends SnipeModel
 {
     use HasFactory;
+    use LogsChanges;
 
     protected $table = 'permission_groups';
 

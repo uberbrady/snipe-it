@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ class Manufacturer extends SnipeModel
     protected $presenter = \App\Presenters\ManufacturerPresenter::class;
     use Presentable;
     use SoftDeletes;
+    use LogsChanges;
 
     protected $table = 'manufacturers';
 

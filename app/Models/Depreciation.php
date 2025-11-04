@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +11,7 @@ use Watson\Validating\ValidatingTrait;
 class Depreciation extends SnipeModel
 {
     use HasFactory;
+    use LogsChanges;
 
     protected $presenter = \App\Presenters\DepreciationPresenter::class;
     use Presentable;

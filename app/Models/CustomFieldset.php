@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\LogsChanges;
 use App\Rules\AlphaEncrypted;
 use App\Rules\BooleanEncrypted;
 use App\Rules\DateEncrypted;
@@ -22,6 +23,7 @@ class CustomFieldset extends Model
 {
     use HasFactory;
     use ValidatingTrait;
+    use LogsChanges;
 
     protected $guarded = ['id'];
 

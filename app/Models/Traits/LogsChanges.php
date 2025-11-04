@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Enums\ActionType;
 use App\Models\Actionlog;
+
 trait LogsChanges {
 
     private ?ActionType $action_type = null;
@@ -22,9 +23,14 @@ trait LogsChanges {
             }
         });
 
-        static::restoring(function ($model) {
-            $model->action_type = ActionType::Restore;
-        });
+        // The Settings object does not use soft-deletes, so it has no 'restoring' method
+        // so to be generic, we just look for that method existing at all, and don't call
+        // it if it doesn't.
+        if (method_exists(self::class, 'restoring')) {
+            static::restoring(function ($model) {
+                $model->action_type = ActionType::Restore;
+            });
+        }
 
         /* The main functionality is here: */
         static::saving(function ($model) {
@@ -81,7 +87,7 @@ trait LogsChanges {
         // target_id and target_type?
         // need IP and user-agent!!!!!
         $logAction->created_by = auth()->id();
-        $logAction->log_meta = json_encode($this->meta); // this gets weird on 'create'
+        $logAction->log_meta = $this->meta ? json_encode($this->meta) : null; // this gets weird on 'create'
         if($logAction->save()) {
             //success! Reset for more actions later...
             $this->action_type = null;

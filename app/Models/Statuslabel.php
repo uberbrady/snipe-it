@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
+use App\Models\Traits\LogsChanges;
 use App\Models\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,6 +15,7 @@ class Statuslabel extends SnipeModel
     use SoftDeletes;
     use ValidatingTrait;
     use UniqueUndeletedTrait;
+    use LogsChanges;
 
     protected $injectUniqueIdentifier = true;
 

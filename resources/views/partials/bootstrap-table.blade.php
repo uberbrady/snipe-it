@@ -1081,6 +1081,8 @@
 
         var item_destination = '';
         var item_icon;
+        var full_url = '';
+        var url_name = '';
 
         if ((value) && (value.type)) {
 
@@ -1111,13 +1113,29 @@
             } else if (value.type == 'model') {
                 item_destination = 'models'
                 item_icon = '';
+            } else if (value.type == 'category') {
+                item_destination = 'categories';
+            } else if (value.type == 'setting') {
+                full_url = 'admin';
+                url_name = '{{ trans('general.settings') }}';
+            } else if (value.type == 'customField' || value.type == 'customFieldset') {
+                full_url = 'fields';
+                url_name = '{{ trans('admin/custom_fields/general.custom_fields') }}'; //doesn't show META - FIXME!!!
+            } else if (value.type == 'predefinedKit') {
+                item_destination = 'kits';
+            } else if (value.type == 'reportTemplate') {
+                item_destination = 'reports/templates';
+            } else {
+                item_destination = value.type + 's'; //dumb pluralization
             }
 
             // display the username if it's checked out to a user, but don't do it if the username's there already
             if (value.username && !value.name.match('\\(') && !value.name.match('\\)')) {
                 value.name = value.name + ' (' + value.username + ')';
             }
-
+            if (full_url && url_name) { // TODO - I don't like how this looks/works
+                return '<nobr><a href="{{ config('app.url') }}/' + full_url + '" data-tooltip="true" title="' + value.type + '"><i class="' + item_icon + ' text-{{ $snipeSettings->skin!='' ? $snipeSettings->skin : 'blue' }} "></i>' + url_name + '</a></nobr>';
+            }
             return '<nobr><a href="{{ config('app.url') }}/' + item_destination +'/' + value.id + '" data-tooltip="true" title="' + value.type + '"><i class="' + item_icon + ' text-{{ $snipeSettings->skin!='' ? $snipeSettings->skin : 'blue' }} "></i> ' + value.name + '</a></nobr>';
 
         } else {
