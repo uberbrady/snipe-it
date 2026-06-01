@@ -6,6 +6,7 @@ use App\Models\Accessory;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
@@ -21,7 +22,7 @@ use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 use Symfony\Component\Mime\Email;
 
 #[AllowDynamicProperties]
-class CheckoutAccessoryNotification extends Notification
+class CheckoutAccessoryNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

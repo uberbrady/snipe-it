@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Channels\SlackWebhookChannel;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
@@ -21,7 +22,7 @@ use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 
 #[AllowDynamicProperties]
-class CheckoutAssetNotification extends Notification
+class CheckoutAssetNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

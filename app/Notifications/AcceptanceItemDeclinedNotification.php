@@ -4,12 +4,13 @@ namespace App\Notifications;
 
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
 #[AllowDynamicProperties]
-class AcceptanceItemDeclinedNotification extends Notification
+class AcceptanceItemDeclinedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

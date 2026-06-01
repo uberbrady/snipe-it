@@ -3,12 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
 #[AllowDynamicProperties]
-class ExpiringAssetsNotification extends Notification
+class ExpiringAssetsNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

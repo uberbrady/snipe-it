@@ -4,13 +4,14 @@ namespace App\Notifications;
 
 use App\Helpers\Helper;
 use App\Models\Setting;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
 #[AllowDynamicProperties]
-class RequestAssetNotification extends Notification
+class RequestAssetNotification extends Notification implements ShouldQueue
 {
     private $params;
 
