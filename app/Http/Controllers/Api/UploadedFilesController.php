@@ -71,7 +71,10 @@ class UploadedFilesController extends Controller
         }
 
         $total = $uploads->count();
-        $uploads = $uploads->skip($offset)->take($limit)->orderBy($sort, $order)->get();
+        // Secondary sort by id so files uploaded within the same second (a
+        // common case in tests and bulk uploads) return in a stable order
+        // rather than whatever the engine happens to pick.
+        $uploads = $uploads->skip($offset)->take($limit)->orderBy($sort, $order)->orderBy('id', $order)->get();
 
         return (new UploadedFilesTransformer)->transformFiles($uploads, $total);
     }
