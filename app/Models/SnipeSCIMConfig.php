@@ -190,7 +190,11 @@ class SnipeSCIMConfig
                         {
                             if ($value) {
                                 try {
-                                    $object->email = $value[0]['value'];
+                                    if (is_string($value)) {
+                                        $object->email = $value; // Weird MS-SCIM stuff :/
+                                    } else {
+                                        $object->email = $value[0]['value'];
+                                    }
                                 } catch (\Throwable $e) {
                                     \Log::debug($e);
                                     throw new SCIMException("Unknown email object:  '".print_r($value, true)."'", 422);
@@ -299,7 +303,7 @@ class SnipeSCIMConfig
                                 $address['primary'] = true;
                             }
 
-                            return $address;
+                            return [$address];
                         }
 
                         public function doWrite($operation, $subop, $value, Model &$object, ?Path $path = null, $removeIfNotSet = false)
