@@ -454,10 +454,10 @@ class AssetsController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
+        $total = $assets->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
 
         /**
@@ -491,17 +491,18 @@ class AssetsController extends Controller
             $assets = $assets->withTrashed();
         }
 
-        if (($assets = $assets->get()) && ($assets->count()) > 0) {
+        $total = $assets->count();
+        if (($assets = $assets->get()) && $total > 0) {
 
             // If there is exactly one result and the deleted parameter is not passed, we should pull the first (and only)
             // asset from the returned collection, since transformAsset() expects an Asset object, NOT a collection
-            if (($assets->count() == 1) && ($request->input('deleted') != 'true')) {
+            if (($total == 1) && ($request->input('deleted') != 'true')) {
                 return (new AssetsTransformer)->transformAsset($assets->first());
 
                 // If there is more than one result OR if the endpoint is requesting deleted items (even if there is only one
                 // match, return the normal collection transformed.
             } else {
-                return (new AssetsTransformer)->transformAssets($assets, $assets->count());
+                return (new AssetsTransformer)->transformAssets($assets, $total);
             }
         }
 
@@ -541,13 +542,13 @@ class AssetsController extends Controller
             $assets = $assets->withTrashed();
         }
 
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
+        $total = $assets->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
 
-        if (($assets) && ($assets->count()) > 0) {
+        if (($assets) && $total > 0) {
             return (new AssetsTransformer)->transformAssets($assets, $total);
         }
 
@@ -1453,10 +1454,10 @@ class AssetsController extends Controller
         $assets->requestableAssets();
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $assets->count()) ? $assets->count() : app('api_offset_value');
+        $total = $assets->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $assets->count();
         $assets = $assets->skip($offset)->take($limit)->get();
 
         return (new AssetsTransformer)->transformRequestedAssets($assets, $total);
@@ -1487,10 +1488,10 @@ class AssetsController extends Controller
             ->with('adminuser')
             ->with('accessories');
 
-        $offset = ($request->input('offset') > $accessory_checkouts->count()) ? $accessory_checkouts->count() : app('api_offset_value');
+        $total = $accessory_checkouts->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $accessory_checkouts->count();
         $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
 
         return (new AssetsTransformer)->transformCheckedoutAccessories($accessory_checkouts, $total);
@@ -1525,8 +1526,8 @@ class AssetsController extends Controller
                 break;
         }
 
-        $offset = ($request->input('offset') > $component_checkouts->count()) ? $component_checkouts->count() : app('api_offset_value');
         $total = $component_checkouts->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
         $component_checkouts = $component_checkouts->skip($offset)->take($limit)->get();
 

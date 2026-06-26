@@ -361,10 +361,10 @@ class UsersController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $users->count()) ? $users->count() : app('api_offset_value');
+        $total = $users->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $users->count();
         $users = $users->skip($offset)->take($limit)->get();
 
         return (new UsersTransformer)->transformUsers($users, $total);

@@ -30,12 +30,12 @@ class MaintenanceTypesController extends Controller
             $types->where('name', '=', $request->input('name'));
         }
 
-        $offset = ($request->input('offset') > $types->count()) ? $types->count() : app('api_offset_value');
+        $total = $types->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), ['id', 'name', 'created_at', 'updated_at']) ? $request->input('sort') : 'name';
 
-        $total = $types->count();
         $types = $types->orderBy($sort, $order)->skip($offset)->take($limit)->get();
 
         return (new MaintenanceTypesTransformer)->transformMaintenanceTypes($types, $total);

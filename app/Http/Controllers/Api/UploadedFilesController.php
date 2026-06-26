@@ -52,7 +52,8 @@ class UploadedFilesController extends Controller
         $uploads = self::$map_object_type[$object_type]::withTrashed()->find($id)->uploads()
             ->with('adminuser');
 
-        $offset = ($request->input('offset') > $uploads->count()) ? $uploads->count() : app('api_offset_value');
+        $total = $uploads->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
         $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
@@ -70,7 +71,6 @@ class UploadedFilesController extends Controller
             );
         }
 
-        $total = $uploads->count();
         $uploads = $uploads->skip($offset)->take($limit)->orderBy($sort, $order)->get();
 
         return (new UploadedFilesTransformer)->transformFiles($uploads, $total);
