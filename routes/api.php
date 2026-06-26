@@ -976,7 +976,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
                 Api\SettingsController::class,
                 'ldaptest',
             ]
-        )->name('api.settings.ldaptest');
+        )->middleware('throttle:5,1')->name('api.settings.ldaptest');
 
         Route::post('purge_barcodes',
             [
@@ -997,7 +997,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
                 Api\SettingsController::class,
                 'ldaptestlogin',
             ]
-        )->name('api.settings.ldaptestlogin');
+        )->middleware('throttle:5,1')->name('api.settings.ldaptestlogin');
 
         Route::post('mailtest',
             [
