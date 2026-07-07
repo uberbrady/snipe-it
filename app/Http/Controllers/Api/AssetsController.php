@@ -491,8 +491,7 @@ class AssetsController extends Controller
             $assets = $assets->withTrashed();
         }
 
-        $total = $assets->count();
-        if (($assets = $assets->get()) && $total > 0) {
+        if (($assets = $assets->get()) && ($total = $assets->count()) > 0) {
 
             // If there is exactly one result and the deleted parameter is not passed, we should pull the first (and only)
             // asset from the returned collection, since transformAsset() expects an Asset object, NOT a collection
@@ -548,7 +547,7 @@ class AssetsController extends Controller
 
         $assets = $assets->skip($offset)->take($limit)->get();
 
-        if (($assets) && $total > 0) {
+        if (($assets) && ($assets->count()) > 0) {
             return (new AssetsTransformer)->transformAssets($assets, $total);
         }
 
