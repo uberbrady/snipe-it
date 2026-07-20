@@ -9,10 +9,21 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class AcceptanceItemDeclinedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    public $item_name;
+    public $item_tag;
+    public $item_model;
+    public $item_serial;
+    public $item_status;
+    public $declined_date;
+    public $note;
+    public $assigned_to;
+    public $company_name;
+    public $qty;
+    public $admin;
 
     /**
      * Create a new notification instance.
@@ -30,7 +41,6 @@ class AcceptanceItemDeclinedNotification extends Notification implements ShouldQ
         $this->note = $params['note'];
         $this->assigned_to = $params['assigned_to'];
         $this->company_name = $params['company_name'];
-        $this->settings = Setting::getSettings();
         $this->qty = $params['qty'] ?? null;
         $this->admin = $params['admin'] ?? null;
     }
@@ -51,7 +61,7 @@ class AcceptanceItemDeclinedNotification extends Notification implements ShouldQ
 
     public function shouldSend($notifiable, $channel)
     {
-        return $this->settings->alerts_enabled && ! empty($this->settings->alert_email);
+        return Setting::getSettings()->alerts_enabled && !empty(Setting::getSettings()->alert_email);
     }
 
     /**
@@ -62,6 +72,8 @@ class AcceptanceItemDeclinedNotification extends Notification implements ShouldQ
      */
     public function toMail($notifiable)
     {
+        \Log::error("okay, about to mail the thing....");
+        \Log::error(print_r($this, true));
         $message = (new MailMessage)->markdown('notifications.markdown.asset-acceptance',
             [
                 'item_tag' => $this->item_tag,
