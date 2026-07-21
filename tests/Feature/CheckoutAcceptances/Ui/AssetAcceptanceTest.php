@@ -186,7 +186,6 @@ class AssetAcceptanceTest extends TestCase
 
     public function test_action_logged_when_declining_asset()
     {
-        $this->settings->disableAlertEmail(); //FIXME - it tries to send an email without having enough information, because the mailer is broken for queueing
         $checkoutAcceptance = CheckoutAcceptance::factory()->pending()->create();
 
         $this->actingAs($checkoutAcceptance->assignedTo)

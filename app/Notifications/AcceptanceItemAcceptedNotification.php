@@ -10,10 +10,22 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class AcceptanceItemAcceptedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    public $item_tag;
+    public $item_name;
+    public $item_model;
+    public $item_serial;
+    public $item_status;
+    public $accepted_date;
+    public $assigned_to;
+    public $company_name;
+    public $file;
+    public $qty;
+    public $note;
+    public $custom_fields;
 
     /**
      * Create a new notification instance.
@@ -30,7 +42,6 @@ class AcceptanceItemAcceptedNotification extends Notification implements ShouldQ
         $this->accepted_date = $params['accepted_date'];
         $this->assigned_to = $params['assigned_to'];
         $this->company_name = $params['company_name'];
-        $this->settings = Setting::getSettings();
         $this->file = $params['file'] ?? null;
         $this->qty = $params['qty'] ?? null;
         $this->note = $params['note'] ?? null;
@@ -55,7 +66,7 @@ class AcceptanceItemAcceptedNotification extends Notification implements ShouldQ
 
     public function shouldSend($notifiable, $channel)
     {
-        return $this->settings->alerts_enabled && ! empty($this->settings->alert_email);
+        return Setting::getSettings()->alerts_enabled && !empty(Setting::getSettings()->alert_email);
     }
 
     /**
