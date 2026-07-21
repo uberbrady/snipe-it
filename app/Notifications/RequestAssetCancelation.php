@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Helpers\Helper;
 use App\Models\Setting;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
@@ -13,6 +14,8 @@ use Symfony\Component\Mime\Email;
 
 class RequestAssetCancelation extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     public $target;
     public $item;
     public $note;

@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use AllowDynamicProperties;
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

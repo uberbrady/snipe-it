@@ -8,7 +8,6 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class MailTest extends Notification implements ShouldQueue
 {
     use Queueable;

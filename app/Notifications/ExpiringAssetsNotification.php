@@ -8,20 +8,18 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class ExpiringAssetsNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private $params;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct($params, $threshold)
+    public function __construct(
+        public $params,
+        public $threshold
+    )
     {
-        $this->assets = $params;
-        $this->threshold = $threshold;
     }
 
     /**

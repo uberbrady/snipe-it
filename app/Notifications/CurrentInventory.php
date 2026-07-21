@@ -2,13 +2,13 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class CurrentInventory extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -18,9 +18,10 @@ class CurrentInventory extends Notification implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct(
+        public User $user
+    )
     {
-        $this->user = $user;
     }
 
     /**

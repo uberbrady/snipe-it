@@ -19,7 +19,6 @@ use NotificationChannels\GoogleChat\Widgets\KeyValue;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 
-#[AllowDynamicProperties]
 class CheckinAccessoryNotification extends Notification implements ShouldQueue
 {
     use Queueable;
@@ -29,13 +28,13 @@ class CheckinAccessoryNotification extends Notification implements ShouldQueue
      *
      * @param  $params
      */
-    public function __construct(Accessory $accessory, $checkedOutTo, User $checkedInby, $note)
+    public function __construct(
+        public Accessory $item,
+        public $target,
+        User $admin,
+        public $note
+    )
     {
-        $this->item = $accessory;
-        $this->target = $checkedOutTo;
-        $this->admin = $checkedInby;
-        $this->note = $note;
-        $this->settings = Setting::getSettings();
     }
 
     /**
@@ -69,8 +68,8 @@ class CheckinAccessoryNotification extends Notification implements ShouldQueue
         $admin = $this->admin;
         $item = $this->item;
         $note = $this->note;
-        $botname = ($this->settings->webhook_botname) ? $this->settings->webhook_botname : 'Snipe-Bot';
-        $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
+        $botname = (Setting::getSettings()->webhook_botname) ? Setting::getSettings()->webhook_botname : 'Snipe-Bot';
+        $channel = (Setting::getSettings()->webhook_channel) ? Setting::getSettings()->webhook_channel : '';
 
         $fields = [
             trans('general.from') => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
@@ -103,7 +102,7 @@ class CheckinAccessoryNotification extends Notification implements ShouldQueue
         $note = $this->note;
         if (! Str::contains(Setting::getSettings()->webhook_endpoint, 'workflows')) {
             return MicrosoftTeamsMessage::create()
-                ->to($this->settings->webhook_endpoint)
+                ->to(Setting::getSettings()->webhook_endpoint)
                 ->type('success')
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('Accessory_Checkin_Notification'))
@@ -133,7 +132,7 @@ class CheckinAccessoryNotification extends Notification implements ShouldQueue
         $note = $this->note;
 
         return GoogleChatMessage::create()
-            ->to($this->settings->webhook_endpoint)
+            ->to(Setting::getSettings()->webhook_endpoint)
             ->card(
                 Card::create()
                     ->header(

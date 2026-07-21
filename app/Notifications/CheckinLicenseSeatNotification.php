@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\License;
 use App\Models\LicenseSeat;
 use App\Models\Setting;
 use App\Models\User;
@@ -19,12 +20,14 @@ use NotificationChannels\GoogleChat\Widgets\KeyValue;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 
-#[AllowDynamicProperties]
 class CheckinLicenseSeatNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private $params;
+    public $target;
+    public License $item;
+    public User $admin;
+    public $note;
 
     /**
      * Create a new notification instance.
@@ -34,10 +37,9 @@ class CheckinLicenseSeatNotification extends Notification implements ShouldQueue
     public function __construct(LicenseSeat $licenseSeat, $checkedOutTo, User $checkedInBy, $note)
     {
         $this->target = $checkedOutTo;
-        $this->item = $licenseSeat->license;
+        $this->item = $licenseSeat->license; // *This* is the thing preventing us from doing the constructor-promotion thing :(
         $this->admin = $checkedInBy;
         $this->note = $note;
-        $this->settings = Setting::getSettings();
     }
 
     /**
@@ -71,8 +73,8 @@ class CheckinLicenseSeatNotification extends Notification implements ShouldQueue
         $admin = $this->admin;
         $item = $this->item;
         $note = $this->note;
-        $botname = ($this->settings->webhook_botname) ? $this->settings->webhook_botname : 'Snipe-Bot';
-        $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
+        $botname = (Setting::getSettings()->webhook_botname) ? Setting::getSettings()->webhook_botname : 'Snipe-Bot';
+        $channel = (Setting::getSettings()->webhook_channel) ? Setting::getSettings()->webhook_channel : '';
 
         if ($admin) {
             $fields = [
@@ -114,7 +116,7 @@ class CheckinLicenseSeatNotification extends Notification implements ShouldQueue
         $note = $this->note;
         if (! Str::contains(Setting::getSettings()->webhook_endpoint, 'workflows')) {
             return MicrosoftTeamsMessage::create()
-                ->to($this->settings->webhook_endpoint)
+                ->to(Setting::getSettings()->webhook_endpoint)
                 ->type('success')
                 ->addStartGroupToSection('activityTitle')
                 ->title(trans('mail.License_Checkin_Notification'))
@@ -145,7 +147,7 @@ class CheckinLicenseSeatNotification extends Notification implements ShouldQueue
         $note = $this->note;
 
         return GoogleChatMessage::create()
-            ->to($this->settings->webhook_endpoint)
+            ->to(Setting::getSettings()->webhook_endpoint)
             ->card(
                 Card::create()
                     ->header(

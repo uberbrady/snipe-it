@@ -8,12 +8,11 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class FirstAdminNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private $_data = [];
+    public array $_data = [];
 
     /**
      * Create a new notification instance.

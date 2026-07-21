@@ -10,10 +10,17 @@ use Illuminate\Notifications\Messages\SlackMessage;
 use Illuminate\Notifications\Notification;
 use Symfony\Component\Mime\Email;
 
-#[AllowDynamicProperties]
 class RequestAssetNotification extends Notification implements ShouldQueue
 {
-    private $params;
+
+    public $target;
+    public $item;
+    public $item_type;
+    public $item_quantity;
+    public $note = '';
+    public $last_checkout = '';
+    public $expected_checkin = '';
+    public $requested_date;
 
     /**
      * Create a new notification instance.
@@ -24,12 +31,8 @@ class RequestAssetNotification extends Notification implements ShouldQueue
         $this->item = $params['item'];
         $this->item_type = $params['item_type'];
         $this->item_quantity = $params['item_quantity'];
-        $this->note = '';
-        $this->last_checkout = '';
-        $this->expected_checkin = '';
         $this->requested_date = Helper::getFormattedDateObject($params['requested_date'], 'datetime',
             false);
-        $this->settings = Setting::getSettings();
 
         if (array_key_exists('note', $params)) {
             $this->note = $params['note'];
@@ -71,8 +74,8 @@ class RequestAssetNotification extends Notification implements ShouldQueue
         $qty = $this->item_quantity;
         $item = $this->item;
         $note = $this->note;
-        $botname = ($this->settings->webhook_botname) ? $this->settings->webhook_botname : 'Snipe-Bot';
-        $channel = ($this->settings->webhook_channel) ? $this->settings->webhook_channel : '';
+        $botname = (Setting::getSettings()->webhook_botname) ? Setting::getSettings()->webhook_botname : 'Snipe-Bot';
+        $channel = (Setting::getSettings()->webhook_channel) ? Setting::getSettings()->webhook_channel : '';
 
         $fields = [
             'QTY' => $qty,
