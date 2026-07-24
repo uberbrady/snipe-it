@@ -137,15 +137,28 @@
                      new-user create). Avoids the FOUC that would happen if we
                      rendered the fields visible and let snipeit.js hide them
                      on document-ready. JS still toggles visibility on
-                     subsequent changes to the activated checkbox. The
-                     generator button lives inside the input-group as an
-                     input-group-btn addon so the row component's default
-                     grid works. --}}
+                     subsequent changes to the activated checkbox. The wand
+                     generator button sits in the row's after_input slot
+                     (col-md-1 sibling of the input column) so it lines up
+                     with the "new" button pattern from x-input.user-select
+                     instead of being fused into the input-group. --}}
                         <x-form.row
                             :label="trans('admin/users/table.password')"
                             name="password"
                             :style="((old('activated') == '1') || ($user->activated == '1')) ? null : 'display: none;'"
                         >
+                            {{-- Wand is available whenever the actor can edit auth fields on a
+                                 non-LDAP record AND either they're creating a new user (demo
+                                 mode still lets you spin up test accounts) OR they're editing
+                                 outside demo mode. Editing an existing user in demo mode is the
+                                 only combination that hides the wand. --}}
+                            @if (Gate::allows('canEditAuthFields', $user) && $user->ldap_import != '1' && (! $user->id || Gate::allows('editableOnDemo')))
+                                <x-slot:after_input>
+                                    <a href="#" class="btn btn-sm btn-theme" id="genPassword" data-password-length="{{ $snipeSettings->pwd_secure_min + 9 }}" data-tooltip="true" title="{{ trans('admin/users/general.generate_password') }}">
+                                        <i class="fa-solid fa-wand-magic-sparkles fa-fw"></i>
+                                    </a>
+                                </x-slot:after_input>
+                            @endif
                             <x-slot:input>
                                 @if ($user->ldap_import!='1' || str_contains(Route::currentRouteName(), 'clone'))
                                     <div class="input-group">
@@ -155,16 +168,12 @@
                                             <input type="password" name="password" class="form-control" id="password" value="" maxlength="500" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly {{ ((Helper::checkIfRequired($user, 'password')) && (! $user->id)) ? ' required' : '' }}>
                                         @endif
                                         <span class="input-group-addon">
-                                    <i data-toggle="#password" class="fa fa-fw fa-eye toggle-password" aria-hidden="true"></i>
-                                    <span class="sr-only">{{ trans('general.toggle_password_visibility') }}</span>
-                                </span>
-                                        @if (Gate::allows('editableOnDemo') && (Gate::allows('canEditAuthFields', $user)) && ($user->ldap_import!='1'))
-                                            <span class="input-group-btn">
-                                        <a href="#" class="btn btn-theme" id="genPassword" data-password-length="{{ $snipeSettings->pwd_secure_min + 9 }}" data-tooltip="true" title="{{ trans('admin/users/general.generate_password') }}">
-                                            <i class="fa-solid fa-wand-magic-sparkles fa-fw"></i>
-                                        </a>
-                                    </span>
-                                        @endif
+                                            {{-- jQuery's multi-selector: this eye toggles the visibility of
+                                                 both the password and the confirmation field in one click, so
+                                                 the confirmation row doesn't need its own eye addon. --}}
+                                            <i data-toggle="#password, #password_confirm" class="fa fa-fw fa-eye toggle-password" aria-hidden="true"></i>
+                                            <span class="sr-only">{{ trans('general.toggle_password_visibility') }}</span>
+                                        </span>
                                     </div>
                                     <x-form.error name="password"/>
                         @else
@@ -189,17 +198,13 @@
                                 :style="((old('activated') == '1') || ($user->activated == '1')) ? null : 'display: none;'"
                             >
                                 <x-slot:input>
-                                    <div class="input-group">
-                                        @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
-                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control form-control--disabled" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" disabled>
-                                        @else
-                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
-                                        @endif
-                                        <span class="input-group-addon">
-                                    <i data-toggle="#password_confirm" class="fa fa-fw fa-eye toggle-password" aria-hidden="true"></i>
-                                    <span class="sr-only">{{ trans('general.toggle_password_visibility') }}</span>
-                                </span>
-                                    </div>
+                                    {{-- No eye toggle here: the password field's eye reveals both
+                                         fields at once via a multi-selector data-toggle. --}}
+                                    @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
+                                        <input type="password" name="password_confirmation" id="password_confirm" class="form-control form-control--disabled" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" disabled>
+                                    @else
+                                        <input type="password" name="password_confirmation" id="password_confirm" class="form-control" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
+                                    @endif
 
                                     @cannot('canEditAuthFields', $user)
                                         <x-form.help name="password_confirmation-permission" icon="locked">
