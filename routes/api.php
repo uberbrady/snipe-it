@@ -1157,13 +1157,6 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
             ]
         )->name('api.users.ldapsync');
 
-        Route::post('two_factor_reset',
-            [
-                Api\UsersController::class,
-                'postTwoFactorReset',
-            ]
-        )->name('api.users.two_factor_reset');
-
         Route::get('me',
             [
                 Api\UsersController::class,

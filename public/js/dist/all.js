@@ -75605,6 +75605,56 @@ $(function () {
     syncPasswordFields($(this));
   });
 
+  // Generic "typing into input A enables checkbox B" pattern. Server
+  // marks the input with data-toggles-checkbox="{selector-of-target}".
+  // Threshold is 6 chars, which matches the legacy user-create
+  // behaviour of only enabling the send-welcome checkbox once the
+  // email is plausibly valid. Server omits the data-attribute when
+  // the enable-side should never fire (e.g. app.lock_passwords is on)
+  // so the target stays permanently disabled.
+  $(document).on('keyup', 'input[data-toggles-checkbox]', function () {
+    var $target = $($(this).data('toggles-checkbox'));
+    if (!$target.length) {
+      return;
+    }
+    if (this.value.length > 5) {
+      $target.prop('disabled', false);
+      $target.closest('.form-control').removeClass('form-control--disabled');
+    } else {
+      $target.prop('disabled', true).prop('checked', false);
+      $target.closest('.form-control').addClass('form-control--disabled');
+    }
+  });
+
+  // Bootstrap tooltips on any element carrying .tooltip-base.
+  // Attaching to body avoids clipping inside overflow-hidden panels.
+  $('.tooltip-base').tooltip({
+    container: 'body'
+  });
+
+  // Password generator button. Server puts the desired length on the
+  // button as data-password-length (typically pwd_secure_min + 9) so
+  // this JS doesn't have to know about app settings. Falls back to 16
+  // if the attribute is missing.
+  $('a[id="genPassword"], button[id="genPassword"]').each(function () {
+    var $btn = $(this);
+    if (typeof $btn.pGenerator !== 'function' || !$('#password').length) {
+      return;
+    }
+    $btn.pGenerator({
+      bind: 'click',
+      passwordElement: '#password',
+      passwordLength: parseInt($btn.data('password-length') || '16', 10),
+      uppercase: true,
+      lowercase: true,
+      numbers: true,
+      specialChars: true,
+      onPasswordGenerated: function onPasswordGenerated() {
+        $('#password_confirm').val($('#password').val());
+      }
+    });
+  });
+
   // A <select data-gates-submit> disables the submit button(s) in its
   // form until a value is chosen. Used by users/confirm-bulk-delete
   // where the operator must pick a status for the deleted users' assets
@@ -75682,8 +75732,35 @@ $(function () {
     select = link.data("select");
     refreshSelector = link.data("refresh");
     $('#createModal').load(link.attr('href'), function () {
-      // this sets the focus to be the name field
-      $('#modal-name').focus();
+      // Focus the first visible, non-hidden input regardless of
+      // which modal partial was loaded (user, company, category,
+      // etc. all differ on which id the "first" field has). The
+      // legacy `#modal-name` selector worked for some modals and
+      // silently missed for others. A generic first-input selector
+      // covers every partial without per-modal code.
+      $('#createModal').find('input:visible:not([type=hidden])').first().focus();
+
+      // Wire up the password generator button when the loaded
+      // modal is one that includes it (user create). Relocated here
+      // from an inline <script> block in modals/user.blade.php as
+      // part of the Vite migration prep to remove per-partial
+      // inline JS. The setTimeout the inline version used to defer
+      // this is no longer needed because we're inside .load()'s
+      // completion callback, which fires AFTER the DOM is ready.
+      if ($('#modal-genPassword').length && $('#modal-password').length) {
+        $('#modal-genPassword').pGenerator({
+          'bind': 'click',
+          'passwordElement': '#modal-password',
+          'passwordLength': 16,
+          'uppercase': true,
+          'lowercase': true,
+          'numbers': true,
+          'specialChars': true,
+          'onPasswordGenerated': function onPasswordGenerated() {
+            $('#modal-password_confirmation').val($('#modal-password').val());
+          }
+        });
+      }
 
       //do we need to re-select2 this, after load? Probably.
       $('#createModal').find('select.select2').select2();

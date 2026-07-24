@@ -865,53 +865,6 @@ class UsersController extends Controller
     }
 
     /**
-     * Reset the user's two-factor status
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     *
-     * @since [v3.0]
-     *
-     * @param  $userId
-     */
-    public function postTwoFactorReset(Request $request): JsonResponse
-    {
-        $this->authorize('update', User::class);
-
-        if ($request->filled('id')) {
-            try {
-                $user = User::find($request->input('id'));
-                $this->authorize('update', $user);
-
-                if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
-
-                    $user->two_factor_secret = null;
-                    $user->two_factor_enrolled = 0;
-                    $user->saveQuietly();
-
-                    // Log the reset
-                    $logaction = new Actionlog;
-                    $logaction->target_type = User::class;
-                    $logaction->target_id = $user->id;
-                    $logaction->item_type = User::class;
-                    $logaction->item_id = $user->id;
-                    $logaction->created_at = date('Y-m-d H:i:s');
-                    $logaction->created_by = auth()->id();
-                    $logaction->logaction('2FA reset');
-
-                    return response()->json(['message' => trans('admin/settings/general.two_factor_reset_success')], 200);
-                }
-
-                return response()->json(['message' => trans('general.unauthorized')], 500);
-            } catch (\Exception $e) {
-                return response()->json(['message' => trans('admin/settings/general.two_factor_reset_error')], 500);
-            }
-        }
-
-        return response()->json(['message' => 'No ID provided'], 500);
-
-    }
-
-    /**
      * Get info on the current user.
      *
      * @author [Juan Font] [<juanfontalonso@gmail.com>]

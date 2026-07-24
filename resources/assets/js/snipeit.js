@@ -1156,6 +1156,54 @@ $(function () {
         syncPasswordFields($(this));
     });
 
+    // Generic "typing into input A enables checkbox B" pattern. Server
+    // marks the input with data-toggles-checkbox="{selector-of-target}".
+    // Threshold is 6 chars, which matches the legacy user-create
+    // behaviour of only enabling the send-welcome checkbox once the
+    // email is plausibly valid. Server omits the data-attribute when
+    // the enable-side should never fire (e.g. app.lock_passwords is on)
+    // so the target stays permanently disabled.
+    $(document).on('keyup', 'input[data-toggles-checkbox]', function () {
+        var $target = $($(this).data('toggles-checkbox'));
+        if (! $target.length) {
+            return;
+        }
+        if (this.value.length > 5) {
+            $target.prop('disabled', false);
+            $target.closest('.form-control').removeClass('form-control--disabled');
+        } else {
+            $target.prop('disabled', true).prop('checked', false);
+            $target.closest('.form-control').addClass('form-control--disabled');
+        }
+    });
+
+    // Bootstrap tooltips on any element carrying .tooltip-base.
+    // Attaching to body avoids clipping inside overflow-hidden panels.
+    $('.tooltip-base').tooltip({ container: 'body' });
+
+    // Password generator button. Server puts the desired length on the
+    // button as data-password-length (typically pwd_secure_min + 9) so
+    // this JS doesn't have to know about app settings. Falls back to 16
+    // if the attribute is missing.
+    $('a[id="genPassword"], button[id="genPassword"]').each(function () {
+        var $btn = $(this);
+        if (typeof $btn.pGenerator !== 'function' || ! $('#password').length) {
+            return;
+        }
+        $btn.pGenerator({
+            bind: 'click',
+            passwordElement: '#password',
+            passwordLength: parseInt($btn.data('password-length') || '16', 10),
+            uppercase: true,
+            lowercase: true,
+            numbers: true,
+            specialChars: true,
+            onPasswordGenerated: function () {
+                $('#password_confirm').val($('#password').val());
+            },
+        });
+    });
+
     // A <select data-gates-submit> disables the submit button(s) in its
     // form until a value is chosen. Used by users/confirm-bulk-delete
     // where the operator must pick a status for the deleted users' assets

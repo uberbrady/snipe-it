@@ -15,7 +15,7 @@
 
 @if ($input_group_addon)
     <span class="input-group-addon">
-      <x-icon :type="$input_icon" />
+      <x-icon :type="$input_icon" class="fa-fw" />
     </span>
 </div>
 @endif
