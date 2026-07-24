@@ -198,13 +198,20 @@
                                 :style="((old('activated') == '1') || ($user->activated == '1')) ? null : 'display: none;'"
                             >
                                 <x-slot:input>
-                                    {{-- No eye toggle here: the password field's eye reveals both
-                                         fields at once via a multi-selector data-toggle. --}}
-                                    @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
-                                        <input type="password" name="password_confirmation" id="password_confirm" class="form-control form-control--disabled" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" disabled>
-                                    @else
-                                        <input type="password" name="password_confirmation" id="password_confirm" class="form-control" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
-                                    @endif
+                                    <div class="input-group">
+                                        @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
+                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control form-control--disabled" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" disabled>
+                                        @else
+                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
+                                        @endif
+                                        <span class="input-group-addon">
+                                            {{-- Shares the same multi-selector data-toggle as the password
+                                                 field's eye so both eyes and both fields stay in sync — see
+                                                 the .toggle-password handler in snipeit.js. --}}
+                                            <i data-toggle="#password, #password_confirm" class="fa fa-fw fa-eye toggle-password" aria-hidden="true"></i>
+                                            <span class="sr-only">{{ trans('general.toggle_password_visibility') }}</span>
+                                        </span>
+                                    </div>
 
                                     @cannot('canEditAuthFields', $user)
                                         <x-form.help name="password_confirmation-permission" icon="locked">
@@ -254,8 +261,22 @@
                             />
                         @endif
 
-                  
-                  <x-input.image-upload :item="$user" fieldname="avatar" :imagePath="app('users_upload_path')" :clonedModel="$cloned_model ?? null" />
+                  {{-- Avatar upload is hidden when editing an existing user in demo mode
+                       (would otherwise let visitors overwrite arbitrary users' avatars).
+                       Creation flow keeps it available so demo-mode operators can still
+                       spin up new accounts with an image. --}}
+                  @if (! $user->id || Gate::allows('editableOnDemo'))
+                      <x-input.image-upload :item="$user" fieldname="avatar" :imagePath="app('users_upload_path')" :clonedModel="$cloned_model ?? null" />
+                  @else
+                      <x-form.row :label="trans('general.image_upload')" name="avatar">
+                          <x-slot:input>
+                              @if ($user->avatar)
+                                  <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url(app('users_upload_path').e($user->avatar)) }}" class="img-responsive" alt="" style="max-width: 300px;">
+                              @endif
+                              <x-demo-lock :item="$user"/>
+                          </x-slot:input>
+                      </x-form.row>
+                  @endif
 
 
                   <!-- begin optional disclosure arrow stuff -->

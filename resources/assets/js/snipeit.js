@@ -662,14 +662,21 @@ function htmlEntities(str) {
 })(jQuery);
 
 $(document).ready(function () {
-    $(".toggle-password").click(function () {
-        $(this).toggleClass("fa-eye fa-eye-slash");
-        var input = $($(this).attr("data-toggle"));
-        if (input.attr("type") === "password") {
-            input.attr("type", "text");
-        } else {
-            input.attr("type", "password");
-        }
+    // Password-reveal eye. data-toggle is a jQuery selector — usually one
+    // input id, but a multi-selector like "#password, #password_confirm"
+    // lets a single click flip every matched input at once (the confirm
+    // field on the user create/edit form uses this so revealing the
+    // password reveals its confirmation too). Every .toggle-password
+    // sharing the same data-toggle string flips its icon together so the
+    // eye state doesn't visually drift between the two addons.
+    $(document).on('click', '.toggle-password', function () {
+        var toggleTarget = $(this).attr('data-toggle');
+        var $inputs = $(toggleTarget);
+        var reveal = $inputs.first().attr('type') === 'password';
+        $inputs.attr('type', reveal ? 'text' : 'password');
+        var $eyes = $('.toggle-password[data-toggle="' + toggleTarget + '"]');
+        $eyes.toggleClass('fa-eye', ! reveal);
+        $eyes.toggleClass('fa-eye-slash', reveal);
     });
 
     // Auto-init eonasdan datetimepickers. bootstrap-datepicker has a native
