@@ -1780,6 +1780,26 @@ Radio toggle styles for permission settings and check/uncheck all
 .tooltip-spin-hover:focus i {
   animation: fa-spin 2s infinite linear;
 }
+@media (min-width: 992px) {
+  .modal-xl {
+    width: 90%;
+    max-width: 1400px;
+  }
+}
+.modal-xl .modal-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.modal-xl .modal-body.form-horizontal > .form-group,
+.modal-xl .modal-body.form-horizontal > .row > .form-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+[data-theme="dark"] .bs-wizard > .bs-wizard-step .bs-wizard-stepnum,
+[data-theme="dark"] .bs-wizard > .bs-wizard-step .bs-wizard-info {
+  color: #d0d0d0;
+}
 @media (prefers-reduced-motion: reduce) {
   [class*="faa-"].animated,
   [class*="faa-"].animated-hover:hover,

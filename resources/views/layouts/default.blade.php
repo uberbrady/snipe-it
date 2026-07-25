@@ -1774,14 +1774,6 @@
                                         </li>
                                     @endcan
 
-                                    @can('admin')
-                                        <li id="import-history-sidenav-option" {!! (request()->is('hardware/history') ? ' class="active" aria-current="page"' : '') !!}>
-                                            <a href="{{ url('hardware/history') }}">
-                                                {{ trans('general.import-history') }}
-                                            </a>
-                                        </li>
-                                    @endcan
-
                                 </ul>
                             </li>
                         @endcan

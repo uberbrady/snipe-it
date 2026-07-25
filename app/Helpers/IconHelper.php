@@ -170,6 +170,7 @@ class IconHelper
             case 'plus':
                 return 'fas fa-plus';
             case 'history':
+            case 'assetHistory':
                 return 'fa-solid fa-timeline';
             case 'more-files':
                 return 'fa-solid fa-laptop-file';
@@ -285,6 +286,7 @@ class IconHelper
                 return 'fa-regular fa-square-caret-left';
             case 'square':
                 return 'fa-solid fa-square';
+            case 'assetModel':
             case 'models':
             case 'model':
                 return 'fa-solid fa-boxes-stacked';
