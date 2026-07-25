@@ -1493,7 +1493,9 @@
                             @endcan
 
                             @can('admin')
-                                <x-alert-menu />
+                                @if ($snipeSettings->show_alerts_in_menu == '1')
+                                    <livewire:alert-menu/>
+                                @endif
                             @endcan
 
 
