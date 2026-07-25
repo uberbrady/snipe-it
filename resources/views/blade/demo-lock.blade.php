@@ -1,9 +1,17 @@
-{{-- Inline "this field is locked because the app is in demo mode" notice.
-     Self-gates on the editableOnDemo policy and on the item having a
-     persisted id, so callers can drop it in a form column without
-     wrapping their own @if. Pass :item="$user" so the id check happens
-     inside the component. Default text is trans('admin/users/table.lock_passwords');
-     override by putting a translation string in the slot.
+{{-- Inline "this is locked because the app is in demo mode" notice.
+     Self-gates on the editableOnDemo policy so callers don't need to
+     wrap their own @if. Two calling shapes:
+
+       <x-demo-lock :item="$user" />
+         Per-form-field use. Additionally requires $item->id to be
+         truthy - keeps the notice off "create new" forms where nothing
+         is saved yet so there's nothing to lock down.
+
+       <x-demo-lock />
+         Feature-level use (e.g. importer side panel). No item context
+         is needed; the notice renders whenever demo mode is on.
+
+     Slot overrides the default text (trans('admin/users/table.lock_passwords')).
 
      Deliberately does NOT carry the .help-block class that x-form.help
      applies: the snipeValidatorOptions.highlight callback in
@@ -15,7 +23,7 @@
     'item' => null,
 ])
 
-@if (! Gate::allows('editableOnDemo') && ($item?->id))
+@if (! Gate::allows('editableOnDemo') && ($item === null || $item->id))
     <div {{ $attributes->merge(['class' => 'demo-lock-notice', 'role' => 'note']) }}>
         <x-icon type="locked"/>
         {{ $slot->isEmpty() ? trans('admin/users/table.lock_passwords') : $slot }}
