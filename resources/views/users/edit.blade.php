@@ -532,7 +532,6 @@
                                       <x-input.country-select
                                           name="country"
                                           :selected="old('country', $user->country)"
-                                          class="col-md-12"
                                       />
                                   </x-slot:input>
                               </x-form.row>
