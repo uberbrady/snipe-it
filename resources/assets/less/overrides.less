@@ -981,6 +981,53 @@ label.form-control--disabled {
   cursor: not-allowed;
 }
 
+/** Bootstrap's normalize.less sets `html input[disabled] { cursor: default }`
+    at load-order line 139, and its own `.form-control[disabled] { cursor: not-allowed }`
+    rule (line 2705) has higher specificity so it should win — but on some browser +
+    input-group combinations the resolved cursor still ends up as `text` because the
+    input-group parent's implicit text-cursor bleeds through. Explicit element-scoped
+    override to lock in the "no-entry" cursor on any disabled form control. **/
+input.form-control[disabled],
+select.form-control[disabled],
+textarea.form-control[disabled] {
+  cursor: not-allowed;
+}
+
+/** Anti-autofill masking for the readonly-plus-onfocus-strip trick used on
+    sensitive form fields (user create/edit username, password, email, etc.).
+    The field ships with `readonly` so password managers won't prefill or
+    overwrite it, then strips readonly on focus so the operator can type.
+    Bootstrap's `.form-control[readonly]` styles that field with a gray
+    disabled-looking background, which confuses the operator into thinking
+    the field is uneditable. Override to make it visually indistinguishable
+    from a regular editable input.
+    Deliberately does NOT match `[disabled]` — actually-disabled fields
+    (demo mode locks, permission gates) must keep their grayed appearance
+    and not-allowed cursor. **/
+input[readonly],
+textarea[readonly],
+.form-control[readonly] {
+  cursor: text !important;
+  background-color: var(--table-stripe-bg) !important;
+  color: var(--color-fg) !important;
+}
+
+/** Inline "this field is locked because the app is in demo mode" callout.
+    Rendered by the <x-demo-lock> anonymous component in resources/views/blade/demo-lock.blade.php.
+    Kept as a small inline-block box so it hugs its text width regardless
+    of the column it lands in (input rows use col-md-7, activated row
+    uses col-md-9, so a block-level notice would stretch inconsistently). **/
+.demo-lock-notice {
+  display: inline-block;
+  background-color: #fcf8e3;
+  border: 1px solid #faebcc;
+  color: #8a6d3b;
+  padding: 6px 10px;
+  margin-top: 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
 
 /** --------------------------------------- **/
 /** Start checkbox styles to replace iCheck **/
