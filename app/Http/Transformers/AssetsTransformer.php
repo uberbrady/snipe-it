@@ -187,8 +187,16 @@ class AssetsTransformer
                 $array['components'] = [];
 
                 foreach ($asset->components as $component) {
-                    $array['components'][] = [
+                    // Info-disclosure guard: if the caller is denied view
+                    // on this specific component, omit it from the response
+                    // entirely - not even id / pivot_id are exposed, so a
+                    // caller with an explicit components.view deny can't
+                    // enumerate what's on the asset.
+                    if (Gate::denies('view', $component)) {
+                        continue;
+                    }
 
+                    $array['components'][] = [
                         'id' => $component->id,
                         'pivot_id' => $component->pivot->id,
                         'name' => e($component->name),
@@ -196,7 +204,6 @@ class AssetsTransformer
                         'purchase_cost' => $component->purchase_cost,
                         'purchase_total' => $component->calculated_purchase_cost,
                         'checkout_date' => Helper::getFormattedDateObject($component->pivot->created_at, 'datetime'),
-
                     ];
                 }
             }
@@ -230,7 +237,7 @@ class AssetsTransformer
             // stripped is PII (username, email, employee_num, jobtitle,
             // first/last name split). Instance check so FMCS scoping
             // applies too.
-            if (! Gate::allows('view', $asset->assigned)) {
+            if (Gate::denies('view', $asset->assigned)) {
                 return [
                     'id' => (int) $asset->assigned->id,
                     'type' => 'user',
@@ -430,44 +437,49 @@ class AssetsTransformer
     public function transformCheckedoutComponents(Collection $components_assets, $total)
     {
         $array = [];
+        $suppressed = 0;
         foreach ($components_assets as $component_checkout) {
             $component = $component_checkout->component;
 
             // Info-disclosure guard: GET /api/v1/hardware/{asset}/assigned/components
             // is gated only on assets.view, so a caller with assets.view but
-            // not components.view used to read the component's name / qty /
-            // note straight off this response. Fall back to `{id, type}`
-            // when the caller can't view the specific component. Instance
-            // check so FMCS scoping applies too.
-            $canViewComponent = $component && Gate::allows('view', $component);
+            // an explicit deny on components.view used to read the component's
+            // name / qty / note straight off this response. When denied, skip
+            // the row entirely so nothing about the component (not even id
+            // or existence) is exposed. Instance check so FMCS scoping
+            // applies too.
+            //
+            // The controller-supplied $total still reflects the true row
+            // count and would leak "there are N components you can't see",
+            // so decrement it by the number of rows suppressed here.
+            if (! $component || Gate::denies('view', $component)) {
+                $suppressed++;
+
+                continue;
+            }
 
             $array[] = [
                 'assigned_pivot_id' => $component_checkout->id,
-                'name' => $canViewComponent
-                    ? [
-                        'id' => $component->id,
-                        'name' => e($component->display_name),
-                        'type' => 'component',
-                        'deleted_at' => $component->deleted_at,
-                    ]
-                    : [
-                        'id' => $component?->id,
-                        'type' => 'component',
-                    ],
-                'assigned_qty' => $canViewComponent ? $component_checkout->assigned_qty : null,
-                'note' => $canViewComponent && $component_checkout->note ? e($component_checkout->note) : null,
+                'name' => [
+                    'id' => $component->id,
+                    'name' => e($component->display_name),
+                    'type' => 'component',
+                    'deleted_at' => $component->deleted_at,
+                ],
+                'assigned_qty' => $component_checkout->assigned_qty,
+                'note' => ($component_checkout->note) ? e($component_checkout->note) : null,
                 'created_at' => Helper::getFormattedDateObject($component_checkout->created_at, 'datetime'),
                 'created_by' => $component_checkout->adminuser ? [
                     'id' => (int) $component_checkout->adminuser->id,
                     'name' => e($component_checkout->adminuser->display_name),
                 ] : null,
                 'available_actions' => [
-                    'checkin' => (($component?->deleted_at == '') && Gate::allows('checkin', Component::class)),
-                    'view' => (($component?->deleted_at == '') && Gate::allows('view', Component::class)),
+                    'checkin' => (($component->deleted_at == '') && Gate::allows('checkin', Component::class)),
+                    'view' => (($component->deleted_at == '') && Gate::allows('view', Component::class)),
                 ],
             ];
         }
 
-        return (new DatatablesTransformer)->transformDatatables($array, $total);
+        return (new DatatablesTransformer)->transformDatatables($array, max(0, $total - $suppressed));
     }
 }

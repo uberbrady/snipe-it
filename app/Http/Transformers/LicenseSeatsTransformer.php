@@ -79,7 +79,7 @@ class LicenseSeatsTransformer
             return null;
         }
 
-        if (! Gate::allows('view', $seat->user)) {
+        if (Gate::denies('view', $seat->user)) {
             return [
                 'id' => (int) $seat->user->id,
                 'type' => 'user',

@@ -42,7 +42,7 @@ class UsersTransformer
         // seat, an asset) legitimately needs to see WHO has it. What
         // gets stripped is PII (email, phone, address, department,
         // companies, permissions, employee_num, jobtitle, etc.).
-        if (auth()->id() !== $user->id && ! Gate::allows('view', $user)) {
+        if (auth()->id() !== $user->id && Gate::denies('view', $user)) {
             return [
                 'id' => (int) $user->id,
                 'type' => 'user',
@@ -186,7 +186,7 @@ class UsersTransformer
         // Gate check runs against the target instance, not the class, so
         // FMCS company-scoping applies too - a caller with users.view can
         // still be denied identity of a user in a company they can't see.
-        if (! Gate::allows('view', $user)) {
+        if (Gate::denies('view', $user)) {
             return [
                 'id' => (int) $user->id,
                 'type' => 'user',
