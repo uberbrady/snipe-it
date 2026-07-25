@@ -757,13 +757,29 @@ class Importer extends Component
     #[Computed]
     public function files()
     {
-        return Import::orderBy('id', 'desc')->paginate($this->perPage);
+        // Non-superusers only see their own imports. The delete path
+        // already enforced this (see destroy() + canDeleteFile()), but
+        // the file listing, activeFile computed property, and selectFile
+        // action all read Import records without an owner filter -
+        // letting a user with import permission enumerate every other
+        // user's uploaded CSV and preview its header + first-row values
+        // through the Livewire UI. Matches the scoping the API uses at
+        // Api\ImportController::index.
+        return Import::query()
+            ->when(! auth()->user()->isSuperUser(), fn ($q) => $q->where('created_by', auth()->id()))
+            ->orderBy('id', 'desc')
+            ->paginate($this->perPage);
     }
 
     #[Computed]
     public function activeFile()
     {
-        return Import::find($this->activeFileId);
+        // Same owner-scope as files() above. Returning null for records
+        // the caller doesn't own means selectFile()'s "file not found"
+        // branch fires and no header/preview state gets populated.
+        return Import::query()
+            ->when(! auth()->user()->isSuperUser(), fn ($q) => $q->where('created_by', auth()->id()))
+            ->find($this->activeFileId);
     }
 
     /**
