@@ -1,21 +1,7 @@
-{{-- See snipeit_modals.js for what powers this --}}
-
-<script nonce="{{ csrf_token() }}">
-    window.setTimeout(function () {
-        $('#modal-genPassword').pGenerator({
-            'bind': 'click',
-            'passwordElement': '#modal-password',
-            'passwordLength': 16,
-            'uppercase': true,
-            'lowercase': true,
-            'numbers': true,
-            'specialChars': true,
-            'onPasswordGenerated': function (generatedPassword) {
-                $('#modal-password_confirmation').val($('#modal-password').val());
-            }
-        });
-    }, 500);
-</script>
+{{-- See snipeit_modals.js for what powers this. The password-generator
+     wiring and the first-input focus that used to be inline <script>
+     blocks on this partial now live inside the modal-load callback in
+     snipeit_modals.js so all modal-lifecycle JS is in one place. --}}
 
 <div class="modal-dialog">
     <div class="modal-content">
@@ -141,9 +127,3 @@
         @include('modals.partials.footer')
     </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
-
-<script>
-    $(document).ready(function () {
-        $('#modal-first_name').focus();
-    });
-</script>

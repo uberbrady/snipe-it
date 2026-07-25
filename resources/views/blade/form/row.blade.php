@@ -119,6 +119,17 @@
             @endisset
         </div>
 
+    {{-- Optional col-md-1 sibling of the input column for a small
+         action button (e.g. the "new" button next to a user select,
+         or the wand generator next to the password field). Callers
+         pass <x-slot:after_input>...</x-slot:after_input>. Matches
+         the manager-picker layout in x-input.user-select. --}}
+    @isset($after_input)
+        <div class="col-md-1 col-sm-1 text-left">
+            {{ $after_input }}
+        </div>
+    @endisset
+
     @if ($info_tooltip_text)
         <!-- Info Tooltip -->
         <div class="col-md-1 text-left" style="padding-left:0; margin-top: 5px;">
