@@ -166,4 +166,104 @@ class ImporterTest extends TestCase
         $this->assertSame([], $component->get('selectedIds'));
         $this->assertFalse($component->get('selectAll'));
     }
+
+    /**
+     * Security regression pin. Before the fix in Importer::files, a
+     * non-superuser with the import permission could see every other
+     * user's uploaded CSV in the file list (created_by scoping was
+     * absent, matching the API's per-owner filter was not applied).
+     */
+    public function test_file_list_excludes_imports_owned_by_other_users(): void
+    {
+        Storage::fake();
+        $me = User::factory()->canImport()->create();
+        $someoneElse = User::factory()->canImport()->create();
+
+        $mine = Import::factory()->count(2)->create(['created_by' => $me->id]);
+        $theirs = Import::factory()->count(3)->create(['created_by' => $someoneElse->id]);
+
+        $files = Livewire::actingAs($me)
+            ->test(Importer::class)
+            ->get('files');
+
+        $visibleIds = collect($files->items())->pluck('id')->all();
+        sort($visibleIds);
+
+        $expected = $mine->pluck('id')->sort()->values()->all();
+
+        $this->assertSame($expected, $visibleIds, 'File list must only include imports owned by the caller');
+        foreach ($theirs as $import) {
+            $this->assertNotContains($import->id, $visibleIds);
+        }
+    }
+
+    /**
+     * Security regression pin. Before the fix in Importer::activeFile,
+     * selectFile($id) would populate headerRow / typeOfImport /
+     * field_map from ANY Import record, even one owned by another user.
+     * With the owner scope in place, activeFile returns null for a
+     * cross-user id and selectFile's "file not found" branch fires
+     * without ever reading the target's preview state.
+     */
+    public function test_selecting_another_users_import_does_not_leak_preview(): void
+    {
+        Storage::fake();
+        $me = User::factory()->canImport()->create();
+        $someoneElse = User::factory()->canImport()->create();
+
+        $theirImport = Import::factory()->create([
+            'created_by' => $someoneElse->id,
+            'header_row' => ['sensitive_column'],
+            'import_type' => 'asset',
+        ]);
+
+        Livewire::actingAs($me)
+            ->test(Importer::class)
+            ->call('selectFile', $theirImport->id)
+            ->assertSet('headerRow', [])
+            ->assertSet('typeOfImport', null)
+            ->assertSet('message_type', 'danger');
+    }
+
+    /**
+     * Positive-path sanity: the owner still sees + selects their own imports.
+     */
+    public function test_owner_can_still_select_their_own_import(): void
+    {
+        Storage::fake();
+        $me = User::factory()->canImport()->create();
+
+        $mine = Import::factory()->create([
+            'created_by' => $me->id,
+            'header_row' => ['my_column'],
+            'import_type' => 'asset',
+        ]);
+
+        Livewire::actingAs($me)
+            ->test(Importer::class)
+            ->call('selectFile', $mine->id)
+            ->assertSet('headerRow', ['my_column'])
+            ->assertSet('typeOfImport', 'asset');
+    }
+
+    /**
+     * Superusers keep the cross-user visibility they've always had.
+     */
+    public function test_superuser_sees_all_imports(): void
+    {
+        Storage::fake();
+        $superuser = User::factory()->superuser()->create();
+        $someoneElse = User::factory()->canImport()->create();
+
+        $theirs = Import::factory()->count(2)->create(['created_by' => $someoneElse->id]);
+
+        $files = Livewire::actingAs($superuser)
+            ->test(Importer::class)
+            ->get('files');
+
+        $visibleIds = collect($files->items())->pluck('id')->all();
+        foreach ($theirs as $import) {
+            $this->assertContains($import->id, $visibleIds);
+        }
+    }
 }
