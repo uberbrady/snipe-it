@@ -9,6 +9,8 @@ use App\Models\Accessory;
 use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Company;
+use App\Models\Component;
+use App\Models\Consumable;
 use App\Models\ConsumableAssignment;
 use App\Models\Group;
 use App\Models\License;
@@ -106,26 +108,23 @@ class BulkUsersController extends Controller
                 return redirect()->back()->with('success', trans('admin/users/message.password_resets_sent'));
 
             } elseif ($request->input('bulk_actions') == 'print') {
-                $users = User::query()
-                    ->with([
-                        'assets.assetlog',
-                        'assets.assignedAssets.assetlog',
-                        'assets.assignedAssets.defaultLoc',
-                        'assets.assignedAssets.location',
-                        'assets.assignedAssets.model.category',
-                        'assets.defaultLoc',
-                        'assets.location',
-                        'assets.model.category',
-                        'accessories.assetlog',
-                        'accessories.category',
-                        'accessories.manufacturer',
-                        'consumables.assetlog',
-                        'consumables.category',
-                        'consumables.manufacturer',
-                        'licenses.category',
-                    ])
-                    ->withTrashed()
-                    ->findMany($request->input('ids'));
+                $actor = auth()->user();
+                $canViewAssets = $actor->can('view', Asset::class);
+                $canViewLicenses = $actor->can('view', License::class);
+                $canViewAccessories = $actor->can('view', Accessory::class);
+                $canViewConsumables = $actor->can('view', Consumable::class);
+                $canViewComponents = $actor->can('view', Component::class);
+
+                $users = collect($request->input('ids'))
+                    ->map(fn ($id) => User::withInventoryRelations(
+                        (int) $id,
+                        $canViewAssets,
+                        $canViewLicenses,
+                        $canViewAccessories,
+                        $canViewConsumables,
+                        $canViewComponents,
+                    )->first())
+                    ->filter();
 
                 $users->each(fn ($user) => $this->authorize('view', $user));
 

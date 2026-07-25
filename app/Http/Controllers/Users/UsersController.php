@@ -15,6 +15,7 @@ use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\CheckoutAcceptance;
 use App\Models\Company;
+use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\Group;
 use App\Models\License;
@@ -714,16 +715,36 @@ class UsersController extends Controller
         $this->authorize('view', User::class);
 
         $actor = auth()->user();
+        $canViewAssets = $actor->can('view', Asset::class);
         $canViewLicenses = $actor->can('view', License::class);
         $canViewAccessories = $actor->can('view', Accessory::class);
         $canViewConsumables = $actor->can('view', Consumable::class);
+        $canViewComponents = $actor->can('view', Component::class);
 
-        $user = User::withInventoryRelations($id, $canViewLicenses, $canViewAccessories, $canViewConsumables)->first();
+        $user = User::withInventoryRelations(
+            $id,
+            $canViewAssets,
+            $canViewLicenses,
+            $canViewAccessories,
+            $canViewConsumables,
+            $canViewComponents,
+        )->first();
 
-        $indirectItemsCount = $user?->assets?->flatMap->assignedAssets->count()
-            + $user?->assets?->flatMap->components->count()
-            + ($canViewLicenses ? $user?->assets?->flatMap->licenses->count() : 0)
-            + ($canViewAccessories ? $user?->assets?->flatMap->assignedAccessories->count() : 0);
+        $indirectItemsCount = 0;
+        if ($canViewAssets && $user?->assets) {
+            foreach ($user->assets as $asset) {
+                $indirectItemsCount += $asset->assignedAssets->count();
+                if ($canViewComponents) {
+                    $indirectItemsCount += $asset->components->count();
+                }
+                if ($canViewLicenses) {
+                    $indirectItemsCount += $asset->licenses->count();
+                }
+                if ($canViewAccessories) {
+                    $indirectItemsCount += $asset->assignedAccessories->count();
+                }
+            }
+        }
 
         if ($user) {
             $this->authorize('view', $user);
