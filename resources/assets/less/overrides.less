@@ -1509,6 +1509,56 @@ Radio toggle styles for permission settings and check/uncheck all
   animation: fa-spin 2s infinite linear;
 }
 
+// Bootstrap 3 tops out at .modal-lg (900px). The wizard-style modals
+// (e.g. the CSV importer) need more horizontal room for their mapping
+// grid + preview table, so add a .modal-xl above modal-lg. Follows the
+// same @media breakpoint BS3 uses for .modal-lg (>= 992px) and caps at
+// 1400px so it doesn't stretch obnoxiously on ultra-wide monitors.
+@media (min-width: 992px) {
+  .modal-xl {
+    width: 90%;
+    max-width: 1400px;
+  }
+}
+
+// Long wizard content (dozens of mapping rows) can push the modal past
+// the viewport. Bootstrap 3 doesn't scroll the modal-body by default, so
+// the footer buttons (Back / Next / Preview / Process) end up below the
+// fold with no way to reach them. Cap the modal-body height and let it
+// scroll internally instead. Scoped to .modal-xl so smaller confirm-
+// action modals aren't affected. 200px leaves room for header (~60),
+// footer (~60), and the modal's own top/bottom margins. overflow-x is
+// hidden so a stray col-* with negative row margins doesn't produce a
+// horizontal scrollbar on the type-selection and mapping steps; the
+// preview step's wide sample table has its own .table-responsive
+// wrapper for horizontal scrolling.
+.modal-xl .modal-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+// Bootstrap 3's .form-horizontal .form-group carries -15px left/right
+// margins that cancel a modal-body's default 15px padding, leaving all
+// form content pinned flush to the modal edges. Zero it out inside the
+// wizard modal so labels + inputs stay inset from the modal chrome. The
+// inner .col-* children retain their own 15px padding, so the standard
+// horizontal-form gutter still lands correctly.
+.modal-xl .modal-body.form-horizontal > .form-group,
+.modal-xl .modal-body.form-horizontal > .row > .form-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// bs-wizard-stepnum ships hardcoded #595959 in bootstrap-less, which is
+// near-invisible against the dark-theme background. Override to the
+// theme's own body text color so "Choose type" / "Map fields" / "Preview"
+// stay readable in dark mode.
+[data-theme="dark"] .bs-wizard > .bs-wizard-step .bs-wizard-stepnum,
+[data-theme="dark"] .bs-wizard > .bs-wizard-step .bs-wizard-info {
+  color: #d0d0d0;
+}
+
 // Respect the user's OS-level "reduce motion" preference. The Font Awesome
 // spinners (.fa-spin) and Font Awesome Animation pulses (.faa-pulse, .animated)
 // loop indefinitely, which can trigger vestibular symptoms. One-shot animations
