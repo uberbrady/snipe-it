@@ -215,8 +215,30 @@ class AssetsTransformer
 
     public function transformAssignedTo($asset)
     {
+        if (! $asset->assigned) {
+            return null;
+        }
+
         if ($asset->checkedOutToUser()) {
-            return $asset->assigned ? [
+            // Info-disclosure guard: this shape is embedded in every
+            // asset response (index, show, checkout-listings). A caller
+            // with assets.view but not users.view used to read the
+            // assignee's username / email / employee number / jobtitle
+            // straight out of a hardware payload. Denied fallback keeps
+            // id / type / name because someone with assets.view
+            // legitimately needs to know WHO has an asset - what gets
+            // stripped is PII (username, email, employee_num, jobtitle,
+            // first/last name split). Instance check so FMCS scoping
+            // applies too.
+            if (! Gate::allows('view', $asset->assigned)) {
+                return [
+                    'id' => (int) $asset->assigned->id,
+                    'type' => 'user',
+                    'name' => e($asset->assigned->display_name),
+                ];
+            }
+
+            return [
                 'id' => (int) $asset->assigned->id,
                 'username' => e($asset->assigned->username),
                 'name' => e($asset->assigned->display_name),
@@ -226,14 +248,19 @@ class AssetsTransformer
                 'employee_number' => ($asset->assigned->employee_num) ? e($asset->assigned->employee_num) : null,
                 'jobtitle' => $asset->assigned->jobtitle ? e($asset->assigned->jobtitle) : null,
                 'type' => 'user',
-            ] : null;
+            ];
         }
 
-        return $asset->assigned ? [
+        // Assets can be checked out to assets or locations. Basic
+        // identity (name) is preserved without a permission gate on the
+        // target: someone with assets.view legitimately needs to know
+        // which location an asset is at or which parent asset it belongs
+        // to, and neither is PII.
+        return [
             'id' => $asset->assigned->id,
             'name' => e($asset->assigned->display_name),
             'type' => $asset->assignedType(),
-        ] : null;
+        ];
     }
 
     public function transformRequestedAssets(Collection $assets, $total)
@@ -404,24 +431,39 @@ class AssetsTransformer
     {
         $array = [];
         foreach ($components_assets as $component_checkout) {
+            $component = $component_checkout->component;
+
+            // Info-disclosure guard: GET /api/v1/hardware/{asset}/assigned/components
+            // is gated only on assets.view, so a caller with assets.view but
+            // not components.view used to read the component's name / qty /
+            // note straight off this response. Fall back to `{id, type}`
+            // when the caller can't view the specific component. Instance
+            // check so FMCS scoping applies too.
+            $canViewComponent = $component && Gate::allows('view', $component);
+
             $array[] = [
                 'assigned_pivot_id' => $component_checkout->id,
-                'name' => [
-                    'id' => $component_checkout->component?->id,
-                    'name' => e($component_checkout->component?->display_name),
-                    'type' => 'component',
-                    'deleted_at' => $component_checkout->component?->deleted_at,
-                ],
-                'assigned_qty' => $component_checkout->assigned_qty,
-                'note' => ($component_checkout->note) ? e($component_checkout->note) : null,
+                'name' => $canViewComponent
+                    ? [
+                        'id' => $component->id,
+                        'name' => e($component->display_name),
+                        'type' => 'component',
+                        'deleted_at' => $component->deleted_at,
+                    ]
+                    : [
+                        'id' => $component?->id,
+                        'type' => 'component',
+                    ],
+                'assigned_qty' => $canViewComponent ? $component_checkout->assigned_qty : null,
+                'note' => $canViewComponent && $component_checkout->note ? e($component_checkout->note) : null,
                 'created_at' => Helper::getFormattedDateObject($component_checkout->created_at, 'datetime'),
                 'created_by' => $component_checkout->adminuser ? [
                     'id' => (int) $component_checkout->adminuser->id,
                     'name' => e($component_checkout->adminuser->display_name),
                 ] : null,
                 'available_actions' => [
-                    'checkin' => (($component_checkout->component?->deleted_at == '') && Gate::allows('checkin', Component::class)),
-                    'view' => (($component_checkout->component?->deleted_at == '') && Gate::allows('view', Component::class)),
+                    'checkin' => (($component?->deleted_at == '') && Gate::allows('checkin', Component::class)),
+                    'view' => (($component?->deleted_at == '') && Gate::allows('view', Component::class)),
                 ],
             ];
         }
