@@ -143,6 +143,10 @@ class IconHelper
                 return 'fa fa-caret-down';
             case 'arrow-circle-right':
                 return 'fa fa-arrow-circle-right';
+            case 'arrow-right':
+                return 'fas fa-arrow-right';
+            case 'arrow-left':
+                return 'fas fa-arrow-left';
             case 'minus':
                 return 'fas fa-minus';
             case 'spinner':
