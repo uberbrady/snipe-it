@@ -153,7 +153,9 @@ $(function () {
     $el.on('click', '.delete-asset', function (evnt) {
         var $context = $(this);
         var $dataConfirmModal = $('#dataConfirmModal');
-        var href = $context.attr('href');
+        // Anchors keep the URL in href; buttons keep it in data-href
+        // (buttons don't semantically support href per HTML5).
+        var href = $context.attr('data-href') || $context.attr('href');
         var message = $context.attr('data-content');
         var headericon = $context.attr('data-icon');
         var title = $context.attr('data-title');
@@ -783,6 +785,16 @@ $(document).ready(function () {
                 }
             });
         });
+    }
+
+    // Push the app's "week starts on" setting into moment's active locale so
+    // the eonasdan datetimepicker (which reads firstDayOfWeek from moment
+    // locale data, not from its own options) opens with the calendar column
+    // order the admin picked in Localization settings. Runs once before any
+    // picker is initialized; downstream code that formats using moment's w/W
+    // tokens will pick up the same value.
+    if (window.snipeit && window.snipeit.settings && typeof window.snipeit.settings.first_day_of_week === 'number') {
+        moment.updateLocale(moment.locale(), { week: { dow: window.snipeit.settings.first_day_of_week } });
     }
 
     window.snipeitInitDatetimepickers();

@@ -523,6 +523,8 @@
         .modal-warning h2,
         .modal-danger h4,
         .modal-warning h4,
+        .box-solid.box-danger > .box-header,
+        .box-solid.box-danger > .box-header .box-title,
         .bg-maroon,
         .bg-maroon:hover,
         .bg-maroon:focus,
@@ -1292,7 +1294,8 @@
     <script nonce="{{ csrf_token() }}">
         window.snipeit = {
             settings: {
-                "per_page": {{ $snipeSettings->per_page }}
+                "per_page": {{ $snipeSettings->per_page }},
+                "first_day_of_week": {{ (int) $snipeSettings->week_start }}
             }
         };
     </script>
