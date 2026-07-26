@@ -277,7 +277,7 @@
                                     <label for="ldap_basedn" class="col-md-3 control-label">{{ trans('admin/settings/general.ldap_basedn') }}</label>
 
                                     <div class="col-md-8">
-                                        <input class="form-control" placeholder="{{ trans('general.example') .'cn=users/authorized,dc=example,dc=com' }}" name="ldap_basedn" type="text" id="ldap_basedn" value="{{ old('ldap_basedn', $setting->ldap_basedn) }}">
+                                        <input class="form-control" placeholder="{{ trans('general.example') .'ou=users,dc=example,dc=com' }}" name="ldap_basedn" type="text" id="ldap_basedn" value="{{ old('ldap_basedn', $setting->ldap_basedn) }}">
                                         <x-form.error name="ldap_basedn" />
 
                                         <x-demo-lock>{{ trans('general.feature_disabled') }}</x-demo-lock>
