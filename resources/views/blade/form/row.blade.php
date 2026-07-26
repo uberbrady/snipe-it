@@ -13,7 +13,6 @@
     'label' => null,
     'label_class' => 'col-md-3',
     'input_div_class' => 'col-md-7',
-    'errors_class' => $errors->has('support_url') ? ' has-error' : '',
     'input_icon' => null,
     'input_group_addon' => null,
     'maxlength' => null,
@@ -28,6 +27,15 @@
     'default_now' => true,
     'side_by_side' => false,
 ])
+
+@php
+    // Bootstrap 3 error styling: .form-group.has-error turns the label
+    // red and adds a red border to the input. Computed here instead of
+    // as a @props default because $name isn't in scope during Blade's
+    // first extractPropNames() pass. Sibling components x-form.checkbox-row
+    // and x-form.radio-row do the same thing.
+    $errors_class = $errors->has($name) ? ' has-error' : '';
+@endphp
 
 <div {{ $attributes->merge(['class' => 'form-group'. $errors_class]) }}>
 
@@ -140,10 +148,12 @@
     @endif
 
 
-    {{-- Error + help live in a single col-md-8 col-md-offset-3 wrapper so
-         they always span the wide-column area regardless of how narrow the
-         input above is. --}}
-    <div class="col-md-8 col-md-offset-3">
+    {{-- Error + help wrapper. Width tracks $input_div_class so the help
+         line sits directly under the input, not overhanging its right
+         edge. Offset stays col-md-offset-3 to align under the input
+         column (which sits after the col-md-3 label). Callers that
+         want a wider help area can override input_div_class. --}}
+    <div class="{{ $input_div_class }} col-md-offset-3">
         <x-form.error :name="$name" />
 
         @if ($help_text)
