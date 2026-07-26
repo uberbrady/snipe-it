@@ -150,7 +150,12 @@
             <x-form.help :name="$name" :icon="$help_icon">{{ $help_text }}</x-form.help>
         @elseif ($help_html)
             {{-- Raw HTML help — the caller has opted in, we render unescaped
-                 straight to the <p>. See the help_html prop docs above. --}}
+                 straight to the <p>. See the help_html prop docs above. Note:
+                 to pass a trans() string with HTML in it, use the static-
+                 attribute form  help_html="{!! trans('...') !!}"  — the
+                 dynamic-binding form  :help_html="trans('...')"  runs the
+                 value through BladeCompiler::sanitizeComponentAttribute()
+                 and turns your <a> tags into &lt;a&gt; entities. --}}
             <p class="help-block" id="{{ $name }}-help">
                 @if ($help_icon)
                     <x-icon :type="$help_icon" />
