@@ -1325,13 +1325,16 @@ $(function () {
     // Hardware bulk edit: live status-deployable check. When the user
     // picks a status, hit the deployable API and update the inline
     // status indicator so the operator knows whether that status will
-    // pull an asset out of active service. Guarded by presence of the
-    // #selected_status_status span so it only runs on the bulk page,
-    // not on every screen that happens to have a status_id select.
-    // Translated labels ride on the element's data attributes so they
-    // don't need a Blade-compiled inline script.
+    // pull an asset out of active service. Translated labels ride on
+    // the element's data attributes so this handler doesn't need to be
+    // a Blade-compiled inline script. Guarded on the data-deployable-
+    // label attribute (not just the id) because #selected_status_status
+    // also appears in partials/forms/edit/status.blade.php — used by
+    // hardware/edit — which has its own inline user_add() handler and
+    // doesn't render the labels, so we'd otherwise double-fire and
+    // overwrite that handler's output with an icon-only string.
     var statusStatusEl = document.getElementById('selected_status_status');
-    if (statusStatusEl) {
+    if (statusStatusEl && statusStatusEl.dataset.deployableLabel) {
         var deployableLabel = statusStatusEl.dataset.deployableLabel || '';
         var notDeployableLabel = statusStatusEl.dataset.notDeployableLabel || '';
 
