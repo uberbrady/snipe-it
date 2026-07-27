@@ -115,7 +115,7 @@
                     :component="'input.'.$blade_type"
                     :id="$name"
                     :required="Helper::checkIfRequired($item, $name)"
-                    :value="old($name, $item->{$name})"
+                    :value="old($name, $item?->{$name})"
                     :input_icon="$input_icon"
                     :input_group_addon="$input_group_addon"
                     :maxlength="$effective_maxlength"
