@@ -69,6 +69,14 @@ class LdapSettings extends Component
 
     public ?string $testMessage = null;
 
+    // Which step number was just completed on this render cycle.
+    // Populated by persistAndAdvance() the moment before it advances
+    // to the next step, consumed by the stepper's CSS animation so
+    // the newly-checked step spins a yellow star that morphs into a
+    // green checkmark. Cleared on goToStep, disableLdap, and
+    // finishWizard so back-nav doesn't retrigger the animation.
+    public ?int $justCompletedStep = null;
+
     // Step 1: Connection
     public bool $ldap_enabled = false;
 
@@ -284,6 +292,7 @@ class LdapSettings extends Component
 
             $this->currentStep = $step;
             $this->dirty = false;
+            $this->justCompletedStep = null;
             $this->clearTestResult();
             $this->dispatch('wizard-step-changed');
         }
@@ -1250,6 +1259,12 @@ class LdapSettings extends Component
         }
 
         $this->dirty = false;
+
+        // Remember which step number we're leaving so the stepper CSS
+        // animation can run on that step's dot (spinning yellow star
+        // that morphs into the green checkmark). Cleared elsewhere so
+        // manual back-nav via goToStep doesn't retrigger it.
+        $this->justCompletedStep = $this->currentStep;
 
         // Step 4 is the final config step, but it advances INTO a
         // completion summary (step 5) instead of redirecting away.

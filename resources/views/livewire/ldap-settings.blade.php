@@ -82,6 +82,92 @@
             border-color: #a94442 !important;
         }
 
+        /* Stepper "step complete" celebration. Two icons stacked in a
+           fixed-width wrapper. Default state: star hidden, green check
+           visible (so all older completed steps just show the check).
+           When persistAndAdvance sets justCompletedStep to a step
+           number, that step's wrapper gets .step-just-completed, and
+           these keyframes fire once (CSS animations do not re-run on
+           attribute preservation, so morphdom re-render is fine). The
+           star spins with a decelerating cubic-bezier, fades out, and
+           the checkmark fades in with a small pop. */
+        .ldap-wizard .stepper-icon-wrapper {
+            display: inline-block;
+            position: relative;
+            width: 1.1em;
+            height: 1em;
+            vertical-align: middle;
+            margin-right: 0.15em;
+        }
+
+        .ldap-wizard .stepper-icon-wrapper .stepper-star,
+        .ldap-wizard .stepper-icon-wrapper .stepper-check {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .ldap-wizard .stepper-icon-wrapper .stepper-star {
+            opacity: 0;
+        }
+
+        .ldap-wizard .stepper-icon-wrapper .stepper-check {
+            opacity: 1;
+        }
+
+        .ldap-wizard .stepper-icon-wrapper.step-just-completed .stepper-star {
+            color: #f0ad4e;
+            opacity: 1;
+            animation: ldap-stepper-star 900ms cubic-bezier(0.15, 0.6, 0.2, 1) forwards;
+        }
+
+        .ldap-wizard .stepper-icon-wrapper.step-just-completed .stepper-check {
+            opacity: 0;
+            animation: ldap-stepper-check 350ms ease 550ms forwards;
+        }
+
+        @keyframes ldap-stepper-star {
+            0% {
+                transform: rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            70% {
+                transform: rotate(900deg) scale(1.15);
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(1080deg) scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        @keyframes ldap-stepper-check {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.25);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ldap-wizard .stepper-icon-wrapper.step-just-completed .stepper-star {
+                animation: none;
+                opacity: 0;
+            }
+
+            .ldap-wizard .stepper-icon-wrapper.step-just-completed .stepper-check {
+                animation: none;
+                opacity: 1;
+            }
+        }
+
         /* Modal body text inherits AdminLTE's default dark-grey in
            light mode and the theme's neutral fg in dark mode, both of
            which are unreadable on the red .modal-danger background.
@@ -177,7 +263,19 @@
                             >
                                 <span aria-hidden="true">
                                     @if ($state === 'complete')
-                                        <x-icon type="checkmark" class="text-success" />
+                                        {{-- Two icons stacked in a fixed-width
+                                             wrapper. Default paint: star hidden,
+                                             check visible. When this step number
+                                             matches $justCompletedStep (set by
+                                             persistAndAdvance right before the
+                                             step advance), the .step-just-completed
+                                             class kicks in and the CSS keyframes
+                                             below spin the yellow star into a
+                                             green checkmark. --}}
+                                        <span class="stepper-icon-wrapper @if ($justCompletedStep === $stepNum) step-just-completed @endif">
+                                            <x-icon type="star" class="stepper-star"/>
+                                            <x-icon type="checkmark" class="text-success stepper-check"/>
+                                        </span>
                                     @endif
                                     {{ $stepNum }}<span class="hidden-xs">. {{ $stepTitle }}</span>
                                 </span>
@@ -208,8 +306,18 @@
                 id="wizard-panel"
                 tabindex="-1"
                 wire:key="wizard-panel-{{ $currentStep }}"
-                x-data
-                x-on:wizard-step-changed.window="$nextTick(() => $el.focus())"
+                x-data="{
+                    focusFirstField() {
+                        const selector = 'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]), textarea';
+                        const el = this.$el.querySelector(selector);
+                        if (el) el.focus(); else this.$el.focus();
+                    }
+                }"
+                x-init="$nextTick(() => focusFirstField())"
+                x-on:wizard-step-changed.window="
+                    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    setTimeout(() => focusFirstField(), reduced ? 0 : 1000);
+                "
                 class="form-horizontal"
                 style="outline: none;"
             >
@@ -619,25 +727,16 @@
                          options. Login is live but recurring user sync
                          has to be scheduled separately since the app
                          ships no default schedule for snipeit:ldap-sync. --}}
-                    <p>{{ trans('admin/settings/general.ldap_wizard.done.intro') }}</p>
 
-                    <h4 style="margin-top: 25px;">
-                        <x-icon type="clock" />
-                        {{ trans('admin/settings/general.ldap_wizard.done.sync_heading') }}
-                    </h4>
-                    <p>{{ trans('admin/settings/general.ldap_wizard.done.sync_intro') }}</p>
 
-                    <h5><strong>{{ trans('admin/settings/general.ldap_wizard.done.sync_cron_title') }}</strong></h5>
-                    <p>{!! trans('admin/settings/general.ldap_wizard.done.sync_cron_body') !!}</p>
-                    <pre><code>0 * * * * cd {{ base_path() }} && php artisan snipeit:ldap-sync >> /dev/null 2>&amp;1</code></pre>
+                    <div class="col-md-12">
+                        <h2>{{ trans('admin/settings/general.ldap_wizard.done.subtitle') }}</h2>
+                        <p>{{ trans('admin/settings/general.ldap_wizard.done.intro') }}</p>
+                        <p>{{ trans('admin/settings/general.ldap_wizard.done.sync_intro') }}</p>
+                        <br><br>
 
-                    <h5 style="margin-top: 20px;"><strong>{{ trans('admin/settings/general.ldap_wizard.done.sync_windows_title') }}</strong></h5>
-                    <p>{!! trans('admin/settings/general.ldap_wizard.done.sync_windows_body') !!}</p>
-                    <pre><code>php artisan snipeit:ldap-sync</code></pre>
-
-                    <h5 style="margin-top: 20px;"><strong>{{ trans('admin/settings/general.ldap_wizard.done.sync_manual_title') }}</strong></h5>
-                    <p>{{ trans('admin/settings/general.ldap_wizard.done.sync_manual_body') }}</p>
-                    <pre><code>php artisan snipeit:ldap-sync</code></pre>
+                        <br><br><br><br><br>
+                    </div>
 
                 @else
                     <x-alert type="info" role="status">
@@ -736,7 +835,7 @@
         </div>
 
     </div>
-    <x-form.help name="legacy_form">
+    <x-form.help name="legacy_form" icon="help">
         Having trouble with the new wizard? You can <a href="{{ route('settings.ldap.index') }}">find
             the legacy form here</a>, but please do let us know what trouble you're having so we can fix it.
     </x-form.help>
