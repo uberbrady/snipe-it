@@ -597,6 +597,20 @@
             border-top: 3px solid;
         }
 
+        /* .bs-wizard's connecting line background (.progress = #f5f5f5) and
+           inactive-step dots (#f5f5f5) both wash out against the dark-mode
+           body. Bump to the theme's mid-gray so wizard steps stay visible
+           on setup, importer modal, and the LDAP settings wizard. Selector
+           uses [data-theme="dark"] — the actual attribute Snipe-IT toggles
+           for dark mode. Disabled variant is called out explicitly because
+           .bs-wizard-step.disabled > .bs-wizard-dot is a same-specificity
+           rule from AdminLTE — the extra .disabled class ensures we win. */
+        [data-theme="dark"] .bs-wizard-step .progress,
+        [data-theme="dark"] .bs-wizard-step > .bs-wizard-dot,
+        [data-theme="dark"] .bs-wizard-step.disabled > .bs-wizard-dot {
+            background-color: #605e5e;
+        }
+
         .box.box-default {
             border-top:  var(--box-header-top-border);
         }
