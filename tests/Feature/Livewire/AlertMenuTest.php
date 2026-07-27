@@ -20,7 +20,22 @@ class AlertMenuTest extends TestCase
     {
         $placeholder = (new AlertMenu)->placeholder();
 
+        // Placeholder icon deliberately matches whatever glyph the
+        // loaded view (livewire/alert-menu.blade.php) renders via
+        // <x-icon type="alerts"/>. IconHelper maps "alerts" to
+        // fa-flag, so the placeholder uses fa-flag too — otherwise
+        // hydration would visibly swap the icon on first paint.
         $this->assertStringContainsString('dropdown', $placeholder);
-        $this->assertStringContainsString('fa-bell', $placeholder);
+        $this->assertStringContainsString('fa-flag', $placeholder);
+    }
+
+    public function test_placeholder_reserves_badge_footprint(): void
+    {
+        $placeholder = (new AlertMenu)->placeholder();
+
+        // The hidden .label reserves badge width so hydration with
+        // alerts does not push the surrounding top-nav items sideways.
+        $this->assertStringContainsString('label label-danger', $placeholder);
+        $this->assertStringContainsString('visibility: hidden', $placeholder);
     }
 }
