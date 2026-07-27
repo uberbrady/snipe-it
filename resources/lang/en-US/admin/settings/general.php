@@ -482,7 +482,7 @@ return [
     'labels_help' => 'Barcodes &amp; label settings',
     'purge_help' => 'Permanently delete soft-deleted records',
     'ldap_extension_warning' => 'It does not look like the LDAP extension is installed or enabled on this server. You can still save your settings, but you will need to enable the LDAP extension for PHP before LDAP syncing or login will work.',
-    'ldap_ad' => 'LDAP/AD',
+    'ldap_ad' => 'LDAP & Active Directory',
     'ldap_test_label' => 'Test LDAP Sync',
     'ldap_test_login' => ' Test LDAP Login',
     'ldap_username_placeholder' => 'LDAP Username',
