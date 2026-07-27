@@ -10,21 +10,27 @@
     'help_text' => null,
     'help_icon' => null,
     'info_tooltip_text' => null,
+    // Optional left-column section header for single-checkbox rows that need
+    // to sit under a labeled section (e.g. "SAML Integration" or "AD"), where
+    // the inner-label ("Enable SAML") is separate from the section framing.
+    // Rendered as a plain <div>, not a <label>, so screen readers get one
+    // accessible name from the inner form-control label — not two competing
+    // ones. Ignored in multi mode, which uses $label for the left column.
+    'section_label' => null,
     // Explicit checked-state override. When passed (non-null), it wins over
     // the old-input / $item fallback below. Needed for contexts (like
     // Livewire) where the source of truth is neither the session's old input
     // nor a bound Eloquent model but a live component property.
     'checked' => null,
-    // Default input column: only skip the offset when a left-hand label
-    // column is being rendered (i.e. multi mode with a label). Single mode
-    // never has a left label; multi mode without a label lays out the same
-    // way. Keeping the grid classes centralized here means a future Bootstrap /
+    // Default input column: skip the col-md-offset-3 when there's a left-hand
+    // column of any kind (multi with $label, or single with $section_label).
+    // Keeping the grid classes centralized here means a future Bootstrap /
     // AdminLTE upgrade only has to touch this file, not every callsite.
     // Note: Blade evaluates @props defaults twice (once via extractPropNames
     // before caller attrs are bound, once when applying defaults after). The
     // `?? null` guards against "undefined variable" on the first pass; isset()
     // is inherently safe against undefined vars, is_array() is not.
-    'input_div_class' => (is_array($options ?? null) && isset($label)) ? 'col-md-8' : 'col-md-8 col-md-offset-3',
+    'input_div_class' => ((is_array($options ?? null) && isset($label)) || isset($section_label)) ? 'col-md-8' : 'col-md-8 col-md-offset-3',
 ])
 
 @php
@@ -86,11 +92,17 @@
 
     @if (! $is_multi)
 
-        {{-- Single checkbox: no left-hand label column; label wraps the input.
-             $attributes are forwarded to the input itself (not the wrapper)
-             so `wire:model.live=...` from Livewire callers binds the actual
+        {{-- Single checkbox: optional section-label column on the left,
+             then a form-control label wrapping the input. $attributes are
+             forwarded to the input itself (not the wrapper) so
+             `wire:model.live=...` from Livewire callers binds the actual
              checkbox and not an inert div. Wrapper-level class/style props
              would be silently dropped here; no current caller uses them. --}}
+        @if ($section_label)
+            <div class="col-md-3 control-label">
+                <strong>{{ $section_label }}</strong>
+            </div>
+        @endif
         <div class="{{ $input_div_class }}">
             <label class="form-control">
                 <x-input.checkbox

@@ -1075,6 +1075,60 @@ $(function () {
         });
     }
 
+    // Branding settings page: live preview + reset for the four tenant
+    // colorpickers. The pickers themselves are initialized by the global
+    // $(".color").colorpicker() call in the default layout; this only wires
+    // the changeColor listeners and the reset button. Guarded on the reset
+    // button ID so it only runs on Settings > Branding, not on every page
+    // that happens to have a #header-color or #nav-link-color widget.
+    //
+    // Only header + nav-link get live preview. Link light/dark previews are
+    // deliberately skipped: they would recolor the buttons and other UI on
+    // this form itself, which can make it unreadable if the operator picks
+    // a low-contrast color. Those two settings just save and take effect on
+    // reload.
+    if (document.getElementById('branding-colors-reset')) {
+        var BRANDING_DEFAULTS = {
+            header_color: '#3c8dbc',
+            nav_link_color: '#ffffff',
+            link_light_color: '#296282',
+            link_dark_color: '#5fa4cc',
+        };
+
+        // Live preview works by writing the tenant CSS variables inline on
+        // <html>. Inline element style beats the :root and [data-theme]
+        // declarations in overrides.less on specificity, so this works even
+        // for the many rules those declarations lock in with !important.
+        var applyBrandingHeader = function (color) {
+            document.documentElement.style.setProperty('--main-theme-color', color);
+        };
+
+        var applyBrandingNavLink = function (color) {
+            document.documentElement.style.setProperty('--btn-theme-text-color', color);
+            document.documentElement.style.setProperty('--nav-hover-text-color', color);
+            document.documentElement.style.setProperty('--nav-primary-text-color', color);
+        };
+
+        $('#header-color').on('changeColor', function (e) {
+            applyBrandingHeader(e.color.toString('rgba'));
+        });
+
+        $('#nav-link-color').on('changeColor', function (e) {
+            applyBrandingNavLink(e.color.toString('rgba'));
+        });
+
+        // Reset: restore each picker's swatch and input to the stock
+        // defaults. Using setValue on the plugin (not just .val() on the
+        // input) fires the plugin's internal changeColor event, which
+        // re-runs applyBrandingHeader / applyBrandingNavLink automatically.
+        $('#branding-colors-reset').on('click', function () {
+            $('#header-color').colorpicker('setValue', BRANDING_DEFAULTS.header_color);
+            $('#nav-link-color').colorpicker('setValue', BRANDING_DEFAULTS.nav_link_color);
+            $('#link-light-color').colorpicker('setValue', BRANDING_DEFAULTS.link_light_color);
+            $('#link-dark-color').colorpicker('setValue', BRANDING_DEFAULTS.link_dark_color);
+        });
+    }
+
     // Reset the localStorage theme override when the user clicks the
     // "system default" link (any element carrying data-theme-toggle-clear).
     document.querySelectorAll('[data-theme-toggle-clear]').forEach(function (el) {

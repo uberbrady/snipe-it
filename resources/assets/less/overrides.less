@@ -1809,6 +1809,17 @@ whole select in dark mode so pre-selected items stay readable.
 }
 
 /**
+Site-logo preview swatch on Settings > Branding. Uses the tenant header
+color as its background so the logo shows against the same color it will
+have in the top nav. The header-color picker on the branding page writes
+--main-theme-color inline on <html> for live preview, so this rule picks
+up that update automatically.
+ */
+.header-preview {
+  background-color: var(--main-theme-color);
+}
+
+/**
 Multiselect maybe?
  */
 .select2-results__option[aria-selected=true] {
