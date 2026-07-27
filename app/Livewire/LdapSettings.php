@@ -392,6 +392,7 @@ class LdapSettings extends Component
             'ldap_client_tls_key' => [
                 'nullable',
                 'required_with:ldap_client_tls_cert',
+                /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
                 function ($attribute, $value, $fail) {
                     if (trim((string) $value) === '') {
                         return;
@@ -404,6 +405,7 @@ class LdapSettings extends Component
             'ldap_client_tls_cert' => [
                 'nullable',
                 'required_with:ldap_client_tls_key',
+                /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
                 function ($attribute, $value, $fail) {
                     if (trim((string) $value) === '') {
                         return;
@@ -618,6 +620,7 @@ class LdapSettings extends Component
                 // real filter. Catch it here with an explicit inline error
                 // rather than letting the wizard advance and confuse the
                 // user on step 3.
+                /** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
                 function ($attribute, $value, $fail) use ($normalizeDn, $bindDn) {
                     if ($bindDn !== '' && $normalizeDn($value) === $bindDn) {
                         $fail(trans('admin/settings/general.ldap_wizard.search.basedn_equals_binddn'));
@@ -657,43 +660,16 @@ class LdapSettings extends Component
             return;
         }
 
-        $settings = Setting::getSettings();
-        $server = (string) $settings->ldap_server;
-        if ($settings->ldap_server_cert_ignore) {
-            putenv('LDAPTLS_REQCERT=never');
-        }
-
-        $conn = @ldap_connect($server);
+        $conn = $this->openLdapConnectionForTest('ldap bind test');
         if (! $conn) {
-            $this->recordTestResult(
-                'error',
-                trans('admin/settings/general.ldap_wizard.test.connect_failed', ['server' => $server]),
-                'ldap bind test',
-            );
-
             return;
-        }
-
-        ldap_set_option($conn, LDAP_OPT_REFERRALS, 0);
-        ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
-        ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, self::TEST_NETWORK_TIMEOUT_SECONDS);
-
-        if ($settings->ldap_tls) {
-            if (! @ldap_start_tls($conn)) {
-                $this->recordTestResult(
-                    'error',
-                    trans('admin/settings/general.ldap_wizard.test.starttls_failed', ['error' => ldap_error($conn)]),
-                    'ldap bind test',
-                );
-                @ldap_unbind($conn);
-
-                return;
-            }
         }
 
         // Bind, always with credentials (uname required in step2SyntaxRules).
         // Password resolution: form value if provided, otherwise fall back
         // to the persisted encrypted password when the username matches.
+        $settings = Setting::getSettings();
+        $server = (string) $settings->ldap_server;
         $uname = trim($this->ldap_uname);
         $pword = $this->ldap_pword;
         if ($pword === '' && $uname === trim((string) $settings->ldap_uname) && $settings->ldap_pword) {
@@ -915,63 +891,12 @@ class LdapSettings extends Component
             return;
         }
 
-        $settings = Setting::getSettings();
-        $server = (string) $settings->ldap_server;
-        if ($settings->ldap_server_cert_ignore) {
-            putenv('LDAPTLS_REQCERT=never');
-        }
-
-        $conn = @ldap_connect($server);
+        $conn = $this->openLdapConnectionForTest('ldap search test');
         if (! $conn) {
-            $this->recordTestResult(
-                'error',
-                trans('admin/settings/general.ldap_wizard.test.connect_failed', ['server' => $server]),
-                'ldap search test',
-            );
-
-            return;
-        }
-        ldap_set_option($conn, LDAP_OPT_REFERRALS, 0);
-        ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
-        ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, self::TEST_NETWORK_TIMEOUT_SECONDS);
-
-        if ($settings->ldap_tls) {
-            if (! @ldap_start_tls($conn)) {
-                $this->recordTestResult(
-                    'error',
-                    trans('admin/settings/general.ldap_wizard.test.starttls_failed', ['error' => ldap_error($conn)]),
-                    'ldap search test',
-                );
-                @ldap_unbind($conn);
-
-                return;
-            }
-        }
-
-        $uname = (string) $settings->ldap_uname;
-        try {
-            $pword = $settings->ldap_pword ? Crypt::decrypt($settings->ldap_pword) : '';
-        } catch (\Exception $e) {
-            @ldap_unbind($conn);
-            $this->recordTestResult(
-                'error',
-                trans('admin/settings/general.ldap_wizard.search.pword_decrypt_failed'),
-                'ldap search test',
-            );
-
             return;
         }
 
-        $bindOk = $uname !== '' ? @ldap_bind($conn, $uname, $pword) : @ldap_bind($conn);
-        if (! $bindOk) {
-            $ldapError = ldap_error($conn);
-            @ldap_unbind($conn);
-            $this->recordTestResult(
-                'error',
-                trans('admin/settings/general.ldap_wizard.search.bind_failed', ['error' => $ldapError]),
-                'ldap search test',
-            );
-
+        if (! $this->bindWithPersistedCredentials($conn, 'ldap search test')) {
             return;
         }
 
@@ -1241,6 +1166,91 @@ class LdapSettings extends Component
             return false;
         }
         RateLimiter::hit($key, self::TEST_RATE_LIMIT_DECAY_SECONDS);
+
+        return true;
+    }
+
+    /**
+     * Shared connect / set_option / start_tls sequence for the step 2
+     * and step 3 network tests. Returns the LDAP connection on success
+     * or null on any failure (with the appropriate error message
+     * already recorded via recordTestResult, so the caller just needs
+     * to return). Reads server + cert-ignore + tls flags off the
+     * persisted Setting.
+     */
+    protected function openLdapConnectionForTest(string $actionType): ?\LDAP\Connection
+    {
+        $settings = Setting::getSettings();
+        $server = (string) $settings->ldap_server;
+        if ($settings->ldap_server_cert_ignore) {
+            putenv('LDAPTLS_REQCERT=never');
+        }
+
+        $conn = @ldap_connect($server);
+        if (! $conn) {
+            $this->recordTestResult(
+                'error',
+                trans('admin/settings/general.ldap_wizard.test.connect_failed', ['server' => $server]),
+                $actionType,
+            );
+
+            return null;
+        }
+
+        ldap_set_option($conn, LDAP_OPT_REFERRALS, 0);
+        ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, self::TEST_NETWORK_TIMEOUT_SECONDS);
+
+        if ($settings->ldap_tls && ! @ldap_start_tls($conn)) {
+            $this->recordTestResult(
+                'error',
+                trans('admin/settings/general.ldap_wizard.test.starttls_failed', ['error' => ldap_error($conn)]),
+                $actionType,
+            );
+            @ldap_unbind($conn);
+
+            return null;
+        }
+
+        return $conn;
+    }
+
+    /**
+     * Bind $conn using the persisted (encrypted) bind username and
+     * password. Used by step 3 which trusts step 2 has already
+     * verified those credentials. Returns true on success, false
+     * after recording the appropriate error and unbinding. Handles
+     * password decrypt failure and bind rejection.
+     */
+    protected function bindWithPersistedCredentials(\LDAP\Connection $conn, string $actionType): bool
+    {
+        $settings = Setting::getSettings();
+        $uname = (string) $settings->ldap_uname;
+        try {
+            $pword = $settings->ldap_pword ? Crypt::decrypt($settings->ldap_pword) : '';
+        } catch (\Exception $e) {
+            @ldap_unbind($conn);
+            $this->recordTestResult(
+                'error',
+                trans('admin/settings/general.ldap_wizard.search.pword_decrypt_failed'),
+                $actionType,
+            );
+
+            return false;
+        }
+
+        $bindOk = $uname !== '' ? @ldap_bind($conn, $uname, $pword) : @ldap_bind($conn);
+        if (! $bindOk) {
+            $ldapError = ldap_error($conn);
+            @ldap_unbind($conn);
+            $this->recordTestResult(
+                'error',
+                trans('admin/settings/general.ldap_wizard.search.bind_failed', ['error' => $ldapError]),
+                $actionType,
+            );
+
+            return false;
+        }
 
         return true;
     }
