@@ -23473,11 +23473,53 @@ label,
 .nav-tabs-custom > .nav-tabs > li.active > a:link {
   color: var(--color-fg);
 }
+/**
+Generic popover: Bootstrap 3 hardcodes body bg to #fff and text to #333,
+which reads as white-on-white in dark mode. Route background, text, and
+border through the theme variables so both modes render legibly and the
+help-popover variant keeps its more specific styling further down.
+ */
+.popover {
+  background-color: var(--box-bg) !important;
+  color: var(--color-fg) !important;
+  border-color: var(--box-header-top-border-color) !important;
+}
+.popover-title,
+.popover-content {
+  background-color: var(--box-bg) !important;
+  color: var(--color-fg) !important;
+}
+/**
+Popover arrows: Bootstrap 3 defaults the inner arrow to #fff and the
+outer to rgba(0,0,0,.25). In dark mode the outer disappears entirely
+(no contrast against the darker surroundings) and the inner reads as a
+white notch. Bind both to theme vars so every position (top / right /
+bottom / left) shows a visible connector between the popover body and
+its trigger in both modes.
+ */
+.popover.top .arrow {
+  border-top-color: var(--box-header-top-border-color) !important;
+}
+.popover.top .arrow:after {
+  border-top-color: var(--box-bg) !important;
+}
+.popover.right .arrow {
+  border-right-color: var(--box-header-top-border-color) !important;
+}
 .popover.right .arrow:after {
   border-right-color: var(--box-bg) !important;
 }
-.popover.right .arrow {
-  border-right-color: var(--box-bg) !important;
+.popover.bottom .arrow {
+  border-bottom-color: var(--box-header-top-border-color) !important;
+}
+.popover.bottom .arrow:after {
+  border-bottom-color: var(--box-bg) !important;
+}
+.popover.left .arrow {
+  border-left-color: var(--box-header-top-border-color) !important;
+}
+.popover.left .arrow:after {
+  border-left-color: var(--box-bg) !important;
 }
 .table-bordered > tbody > tr > td,
 .table-bordered > tbody > tr > th,
@@ -26521,11 +26563,53 @@ label,
 .nav-tabs-custom > .nav-tabs > li.active > a:link {
   color: var(--color-fg);
 }
+/**
+Generic popover: Bootstrap 3 hardcodes body bg to #fff and text to #333,
+which reads as white-on-white in dark mode. Route background, text, and
+border through the theme variables so both modes render legibly and the
+help-popover variant keeps its more specific styling further down.
+ */
+.popover {
+  background-color: var(--box-bg) !important;
+  color: var(--color-fg) !important;
+  border-color: var(--box-header-top-border-color) !important;
+}
+.popover-title,
+.popover-content {
+  background-color: var(--box-bg) !important;
+  color: var(--color-fg) !important;
+}
+/**
+Popover arrows: Bootstrap 3 defaults the inner arrow to #fff and the
+outer to rgba(0,0,0,.25). In dark mode the outer disappears entirely
+(no contrast against the darker surroundings) and the inner reads as a
+white notch. Bind both to theme vars so every position (top / right /
+bottom / left) shows a visible connector between the popover body and
+its trigger in both modes.
+ */
+.popover.top .arrow {
+  border-top-color: var(--box-header-top-border-color) !important;
+}
+.popover.top .arrow:after {
+  border-top-color: var(--box-bg) !important;
+}
+.popover.right .arrow {
+  border-right-color: var(--box-header-top-border-color) !important;
+}
 .popover.right .arrow:after {
   border-right-color: var(--box-bg) !important;
 }
-.popover.right .arrow {
-  border-right-color: var(--box-bg) !important;
+.popover.bottom .arrow {
+  border-bottom-color: var(--box-header-top-border-color) !important;
+}
+.popover.bottom .arrow:after {
+  border-bottom-color: var(--box-bg) !important;
+}
+.popover.left .arrow {
+  border-left-color: var(--box-header-top-border-color) !important;
+}
+.popover.left .arrow:after {
+  border-left-color: var(--box-bg) !important;
 }
 .table-bordered > tbody > tr > td,
 .table-bordered > tbody > tr > th,
