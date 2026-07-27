@@ -734,7 +734,13 @@
 
 
         </div>
+
     </div>
+    <x-form.help name="legacy_form">
+        Having trouble with the new wizard? You can <a href="{{ route('settings.ldap.index') }}">find
+            the legacy form here</a>, but please do let us know what trouble you're having so we can fix it.
+    </x-form.help>
+
 
     {{-- Disable-LDAP confirm modal. Only useful when LDAP is currently
          on; skipped otherwise so we don't emit dead markup. wire:ignore
