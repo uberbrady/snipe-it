@@ -71,7 +71,7 @@ class ConsumableImporter extends ItemImporter
      * Consumables can only be checked out to users (schema constraint -
      * consumables_users.assigned_to is a plain FK to users, no
      * assigned_type). Silently skip if the CSV row's checkout target
-     * resolves to a Location or Asset. Attaches a single unit and fires
+     * resolves to a Location. Attaches a single unit and fires
      * CheckoutableCheckedOut so the actionlog / notification path
      * matches a UI-driven checkout.
      */
