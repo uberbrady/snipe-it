@@ -303,6 +303,21 @@ a.accordion-header {
 .bs-wizard > .bs-wizard-step:first-child  > .progress {left: 50%; width: 50%;}
 .bs-wizard > .bs-wizard-step:last-child  > .progress {width: 50%;}
 .bs-wizard > .bs-wizard-step.disabled a.bs-wizard-dot{ pointer-events: none; }
+
+/**
+Prevent step titles from wrapping to a second line at intermediate
+widths (QA reported ~1265px). The .bs-wizard-dot is absolutely
+positioned at top:45px per step, so any step whose stepnum grows
+taller than one line pushes its progress bar down while its neighbours
+stay high — the connecting line looks broken. Nowrap + ellipsis keeps
+every stepnum a consistent single-line height so the line stays
+level and threads through the dot centers as designed.
+ */
+.bs-wizard > .bs-wizard-step .bs-wizard-stepnum {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /*END Form Wizard*/
 
 .left-navblock {
