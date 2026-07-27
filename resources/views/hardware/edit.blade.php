@@ -30,10 +30,11 @@
 
 
       @if ($item->id)
-          {{-- Editing an existing asset — only one tag input. --}}
+          {{-- Editing an existing asset — only one tag input.
+               UpdateAssetRequest + the Asset model rules key on
+               asset_tag (singular), so that's the only error to render. --}}
           <div class="col-md-7 col-sm-12">
               <input class="form-control" type="text" name="asset_tags[1]" id="asset_tag" value="{{ old('asset_tag', $item->asset_tag) }}" required>
-              <x-form.error name="asset_tags" />
               <x-form.error name="asset_tag" />
           </div>
       @else
@@ -42,13 +43,14 @@
                the Livewire component below. Passes the primary tag
                input's current DOM value so the component auto-increments
                from whatever the operator has actually typed, not the
-               server-rendered default. --}}
+               server-rendered default. CreateMultipleAssetRequest remaps
+               the asset_tag rule onto each row's asset_tags[N], so this
+               row's error keys on asset_tags.1. --}}
           <div class="col-md-7 col-sm-12">
               <input class="form-control"
                      type="text" name="asset_tags[1]" id="asset_tag"
                      value="{{ old('asset_tags.1', \App\Models\Asset::autoincrement_asset()) }}" required>
               <x-form.error name="asset_tags.1" />
-              <x-form.error name="asset_tag" />
           </div>
           <div class="col-md-2 col-sm-12">
               <button type="button" class="add_field_button btn btn-sm btn-theme" name="add_field_button" onclick="Livewire.dispatch('addTagRow', { firstTag: document.getElementById('asset_tag').value })">
