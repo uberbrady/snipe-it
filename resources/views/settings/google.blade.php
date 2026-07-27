@@ -94,9 +94,7 @@
                             <a class="btn btn-link text-left" href="{{ route('settings.index') }}">{{ trans('button.cancel') }}</a>
                         </div>
                         <div class="text-right col-md-6">
-                            <button type="submit" class="btn btn-success"{{ config('app.lock_passwords') === true ? ' disabled' : '' }}>
-                                <x-icon type="checkmark" /> {{ trans('general.save') }}
-                            </button>
+                            <x-button.submit class="btn-success" :disabled="config('app.lock_passwords') === true" />
                         </div>
                     </div>
                 </x-slot:customfooter>

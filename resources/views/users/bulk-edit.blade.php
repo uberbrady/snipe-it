@@ -299,10 +299,7 @@
                 <x-slot:customfooter>
                     <div class="box-footer text-right">
                         <a class="btn btn-link pull-left" href="{{ URL::previous() }}">{{ trans('button.cancel') }}</a>
-                        <button type="submit" class="btn btn-success"{{ config('app.lock_passwords') ? ' disabled' : '' }}>
-                            <x-icon type="checkmark" />
-                            {{ trans('general.update') }}
-                        </button>
+                        <x-button.submit class="btn-success" :label="trans('general.update')" :disabled="config('app.lock_passwords')" />
                     </div>
                 </x-slot:customfooter>
 
