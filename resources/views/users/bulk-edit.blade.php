@@ -34,6 +34,11 @@
                 <div class="box box-default">
                     <div class="box-body">
 
+                        <div class="row">
+                            <div class="col-md-12">
+                                <x-demo-callout />
+                            </div>
+                        </div>
 
                         <!--  Department -->
                         @include ('partials.forms.edit.department-select', ['translated_name' => trans('general.department'), 'fieldname' => 'department_id'])
