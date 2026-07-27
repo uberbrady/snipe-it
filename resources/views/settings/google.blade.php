@@ -73,9 +73,7 @@
                                     @disabled(config('app.lock_passwords')===true)
                                 >
                                 <x-form.error name="google_client_id" />
-                                @if (config('app.lock_passwords')===true)
-                                    <p class="text-warning"><i class="fas fa-lock" aria-hidden="true"></i> {{ trans('general.feature_disabled') }}</p>
-                                @endif
+                                <x-demo-lock>{{ trans('general.feature_disabled') }}</x-demo-lock>
                             </div>
                         </div>
 
@@ -93,9 +91,7 @@
                                 @endif
 
                                 <x-form.error name="google_client_secret" />
-                                @if (config('app.lock_passwords')===true)
-                                    <p class="text-warning"><i class="fas fa-lock" aria-hidden="true"></i> {{ trans('general.feature_disabled') }}</p>
-                                @endif
+                                <x-demo-lock>{{ trans('general.feature_disabled') }}</x-demo-lock>
                             </div>
                         </div>
 
