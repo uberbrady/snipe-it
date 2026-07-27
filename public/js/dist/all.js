@@ -75761,6 +75761,122 @@ $(function () {
       });
     }, 0);
   }
+
+  // Hardware bulk edit: clear-radio buttons blank every input of a
+  // named radio group so the caller can back out of a picked value.
+  // The .clear-radio button carries a data-target-name matching the
+  // radio group's name attribute.
+  document.querySelectorAll('.clear-radio').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var name = this.dataset.targetName;
+      var radios = document.querySelectorAll('input[type="radio"][name="' + name + '"]');
+      radios.forEach(function (radio) {
+        radio.checked = false;
+      });
+    });
+  });
+
+  // Hardware bulk edit: live status-deployable check. When the user
+  // picks a status, hit the deployable API and update the inline
+  // status indicator so the operator knows whether that status will
+  // pull an asset out of active service. Guarded by presence of the
+  // #selected_status_status span so it only runs on the bulk page,
+  // not on every screen that happens to have a status_id select.
+  // Translated labels ride on the element's data attributes so they
+  // don't need a Blade-compiled inline script.
+  var statusStatusEl = document.getElementById('selected_status_status');
+  if (statusStatusEl) {
+    var deployableLabel = statusStatusEl.dataset.deployableLabel || '';
+    var notDeployableLabel = statusStatusEl.dataset.notDeployableLabel || '';
+    var runStatusDeployableCheck = function runStatusDeployableCheck() {
+      var statusId = $('select[name="status_id"]').val();
+      if (statusId === '') {
+        return;
+      }
+      $('.status_spinner').css('display', 'inline');
+      $.ajax({
+        url: '/api/v1/statuslabels/' + statusId + '/deployable',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function success(data) {
+          $('.status_spinner').css('display', 'none');
+          $('#selected_status_status').fadeIn();
+          if (data == true) {
+            $('#selected_status_status').removeClass('text-danger').addClass('text-success').html('<i class="fa-solid fa-check" aria-hidden="true"></i> ' + deployableLabel);
+          } else {
+            $('#assignto_selector').hide();
+            $('#selected_status_status').removeClass('text-success').addClass('text-danger').html('<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ' + notDeployableLabel);
+          }
+        }
+      });
+    };
+    $('select[name="status_id"]').on('change', runStatusDeployableCheck);
+  }
+
+  // Hardware checkin: requestable-toggle wrapper. Show or hide the
+  // "make this asset requestable after checkin" checkbox depending on
+  // whether the currently-selected status is deployable. Preserve the
+  // checkbox state when hiding so a status bounce doesn't blow it
+  // away — the server only applies the value when the status is
+  // deployable anyway.
+  var requestableWrapper = document.getElementById('requestable-wrapper');
+  if (requestableWrapper) {
+    var deployableStatusIds = [];
+    try {
+      deployableStatusIds = JSON.parse(requestableWrapper.dataset.deployableStatusIds || '[]');
+    } catch (e) {
+      // Malformed data — leave the wrapper in its server-rendered state.
+    }
+    var statusSelect = document.getElementById('modal-statuslabel_types') || document.querySelector('select[name="status_id"]');
+    if (statusSelect) {
+      var toggleRequestableWrapper = function toggleRequestableWrapper() {
+        var value = statusSelect.value;
+        var statusId = Number.parseInt(value, 10);
+        var isDeployable = value !== '' && Number.isInteger(statusId) && deployableStatusIds.indexOf(statusId) !== -1;
+        requestableWrapper.style.display = isDeployable ? '' : 'none';
+      };
+      statusSelect.addEventListener('change', toggleRequestableWrapper);
+      if (window.jQuery) {
+        window.jQuery(statusSelect).on('select2:select select2:clear', toggleRequestableWrapper);
+      }
+      toggleRequestableWrapper();
+    }
+  }
+
+  // Hardware checkin: per-user localStorage preference for the
+  // requestable-checkbox default. Namespaced by user id so a shared
+  // browser doesn't leak one user's habit to another. Bypassed when
+  // the checkbox was repopulated from a validation-error redirect —
+  // old() beats the stored preference. On submit, save whatever the
+  // user actually chose so the preference tracks their real habit.
+  var requestableCheckbox = document.getElementById('requestable');
+  if (requestableCheckbox && requestableCheckbox.dataset.userPreferenceKey) {
+    var storageKey = requestableCheckbox.dataset.userPreferenceKey;
+    var hadOldInput = requestableCheckbox.dataset.hadOldInput === '1';
+    var form = requestableCheckbox.closest('form');
+    if (form) {
+      if (!hadOldInput) {
+        var stored = null;
+        try {
+          stored = window.localStorage.getItem(storageKey);
+        } catch (e) {
+          // localStorage may be unavailable (private mode, disabled).
+        }
+        if (stored === '1' || stored === '0') {
+          requestableCheckbox.checked = stored === '1';
+        }
+      }
+      form.addEventListener('submit', function () {
+        try {
+          window.localStorage.setItem(storageKey, requestableCheckbox.checked ? '1' : '0');
+        } catch (e) {
+          // Non-fatal: preference just won't persist this time.
+        }
+      });
+    }
+  }
 });
 
 /***/ }),
