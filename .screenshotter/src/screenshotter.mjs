@@ -720,6 +720,14 @@ if (ONE_SHOT) {
 // Full walkthrough
 // -------------------------------------------------------------------
 
+// Capture the login page BEFORE authenticating so the auth cookie
+// does not redirect us straight to dashboard. Fresh session, no
+// login flow, just goto the URL and shoot.
+console.log('→ login page (unauthenticated)');
+await context.clearCookies();
+await page.goto(`${BASE_URL}/login`, {waitUntil: 'domcontentloaded'});
+await shot('auth/login');
+
 console.log('→ logging in');
 await loginAs(USERNAME, PASSWORD);
 
@@ -875,6 +883,22 @@ if (ALL_ROUTES && !SECTION_FILTER) {
         }
     }
 }
+
+// Error pages are not in route:list because Laravel's exception
+// handler renders them directly. Hit an obviously-invalid URL to
+// trigger the 404 view. Capture both authenticated (in-session user
+// mis-typed a URL) and unauthenticated (external visitor hit a bad
+// link) because the layouts/basic.blade.php header differs by auth
+// state (logo becomes a home link when signed in).
+console.log('→ error pages');
+const missingUrl = `${BASE_URL}/this-page-does-not-exist-${Date.now()}`;
+
+await page.goto(missingUrl, {waitUntil: 'domcontentloaded', timeout: 20_000}).catch(() => {});
+await shot('errors/404-authenticated');
+
+await context.clearCookies();
+await page.goto(missingUrl, {waitUntil: 'domcontentloaded', timeout: 20_000}).catch(() => {});
+await shot('errors/404-unauthenticated');
 
 console.log('');
 const elapsedMs = performance.now() - RUN_STARTED_AT;

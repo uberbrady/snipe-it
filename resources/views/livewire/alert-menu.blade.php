@@ -5,9 +5,12 @@
     <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <x-icon type="alerts"/>
         <span class="sr-only">{{ trans('general.alerts') }}</span>
-        @if (count($alert_items) + count($deprecations))
-            <span class="label label-danger">{{ count($alert_items) + count($deprecations) }}</span>
-        @endif
+        {{-- Always render a label so the top-nav width stays constant
+             whether or not there are alerts. When count > 0, show the
+             real badge. When zero, hide with visibility (still occupies
+             layout width). Prevents the layout shift that would otherwise
+             happen when the lazy placeholder hydrates in. --}}
+        <span class="label label-danger" @if ($alert_count === 0) aria-hidden="true" style="visibility: hidden" @endif>{{ $alert_count ?: '0' }}</span>
     </a>
     <ul class="dropdown-menu">
 
