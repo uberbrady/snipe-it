@@ -358,7 +358,7 @@
                             <thead>
                                 <tr>
                                     @can('checkin', \App\Models\License::class)
-                                    <th scope="col" class="hidden-print"><input type="checkbox" id="userLicenseSelectAll"></th>
+                                        <th scope="col" class="hidden-print">{{ trans('general.id') }}</th>
                                     @endcan
                                     <th scope="col">{{ trans('general.name') }}</th>
                                     <th scope="col">{{ trans('admin/licenses/form.license_key') }}</th>
