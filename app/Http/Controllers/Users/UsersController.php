@@ -218,7 +218,9 @@ class UsersController extends Controller
     {
 
         $this->authorize('update', $user);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
         $user = User::with(['assets', 'assets.model', 'consumables', 'accessories', 'licenses', 'userloc'])->withTrashed()->find($user->id);
 
         if ($user) {

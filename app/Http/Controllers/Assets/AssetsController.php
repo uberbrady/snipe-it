@@ -315,7 +315,9 @@ class AssetsController extends Controller
     public function edit(Asset $asset): View|RedirectResponse
     {
         $this->authorize($asset);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
 
         return view('hardware/edit')
             ->with('item', $asset)

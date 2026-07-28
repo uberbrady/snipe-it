@@ -96,9 +96,15 @@ class BulkAssetsController extends Controller
             return redirect()->route('maintenances.create');
         }
 
-        // Figure out where we need to send the user after the update is complete, and store that in the session
-        $bulk_back_url = request()->headers->get('referer');
-        session(['bulk_back_url' => $bulk_back_url]);
+        // Stash where to redirect after update/destroy. Referer is user-
+        // controllable, so run it through the same-origin gate so a
+        // hostile referrer can't turn the later redirect($bulk_back_url)
+        // into an open-redirect. If the referrer fails validation the
+        // reader falls back to route('hardware.index') via the same
+        // helper coalescing pattern.
+        if ($safeReferer = Helper::sameOriginUrl(request()->headers->get('referer'))) {
+            session(['bulk_back_url' => $safeReferer]);
+        }
 
         $allowed_columns = [
             'id',
@@ -247,9 +253,11 @@ class BulkAssetsController extends Controller
         $has_errors = 0;
         $error_array = [];
 
-        // Get the back url from the session and then destroy the session
-
-        $bulk_back_url = $request->session()->pull('bulk_back_url', url()->previous());
+        // Pull the stashed-and-vetted back URL from edit(). If the
+        // session slot is empty (direct POST, session lost, etc.) fall
+        // back to the plain index rather than url()->previous(), which
+        // is Referer-derived and would need its own sanitize step.
+        $bulk_back_url = Helper::sameOriginUrl($request->session()->pull('bulk_back_url')) ?? route('hardware.index');
 
         $custom_field_columns = CustomField::all()->pluck('db_column')->toArray();
 
@@ -601,11 +609,10 @@ class BulkAssetsController extends Controller
     {
         $this->authorize('delete', Asset::class);
 
-        $bulk_back_url = route('hardware.index');
-
-        if ($request->session()->has('bulk_back_url')) {
-            $bulk_back_url = $request->session()->pull('bulk_back_url');
-        }
+        // Same pattern as update(): pull the vetted URL from edit()'s
+        // stash, fall through to the plain index if it's missing or was
+        // somehow poisoned upstream of the sanitize step.
+        $bulk_back_url = Helper::sameOriginUrl($request->session()->pull('bulk_back_url')) ?? route('hardware.index');
         $assetIds = $request->input('ids');
 
         if (empty($assetIds)) {
