@@ -508,12 +508,13 @@ class ImporterTest extends TestCase
             });
     }
 
-    public function test_demo_mode_blocks_start_processing(): void
+    public function test_demo_mode_blocks_start_processing_for_non_superadmin(): void
     {
         // With lock_passwords set the Process button on the wizard is
         // disabled in the blade, but a hand-crafted Livewire call would
         // still fire the action - guard it server-side so the modal can't
-        // flip into processing mode either.
+        // flip into processing mode either. Superadmins bypass this gate
+        // in demo mode so the seeded demo imports can actually be run.
         config(['app.lock_passwords' => true]);
 
         $user = User::factory()->canImport()->create();
@@ -523,6 +524,18 @@ class ImporterTest extends TestCase
             ->call('startProcessing')
             ->assertSet('processing', false)
             ->assertSet('message_type', 'danger');
+    }
+
+    public function test_demo_mode_allows_start_processing_for_superadmin(): void
+    {
+        config(['app.lock_passwords' => true]);
+
+        $user = User::factory()->canImport()->superuser()->create();
+
+        Livewire::actingAs($user)
+            ->test(Importer::class)
+            ->call('startProcessing')
+            ->assertSet('processing', true);
     }
 
     public function test_demo_mode_blocks_destroy(): void

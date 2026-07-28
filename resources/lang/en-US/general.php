@@ -385,6 +385,7 @@ return [
     'open_new_window' => 'Open this file in a new window',
     'file_upload_success' => 'File upload success!',
     'no_files_uploaded' => 'No files were uploaded.',
+    'no_import_files_yet' => 'No import files yet. Upload a CSV using the panel on the right to get started.',
     'token_expired' => 'Your form session has expired. Please try again.',
     'login_enabled' => 'Login Enabled',
     'login_disabled' => 'Login Disabled',
