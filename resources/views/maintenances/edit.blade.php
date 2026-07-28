@@ -91,12 +91,14 @@
                     input_div_class="col-md-4"
                 />
 
+
                 <x-form.row
                     :label="trans('admin/maintenances/form.completion_date')"
                     name="expected_completion_date"
                     type="datetimepicker"
                     :item="$item"
                     input_div_class="col-md-4"
+                    :default_now="false"
                 />
 
                 {{-- Editable actual-completion date. Available on create as
