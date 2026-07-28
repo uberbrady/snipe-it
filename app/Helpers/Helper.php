@@ -1769,10 +1769,10 @@ class Helper
         $checkedInFrom = session('checkedInFrom');
         $other_redirect = session('other_redirect');
 
-        // Same-origin gate: redirect()->intended() performs no host
-        // validation, and url.intended can be written from the SAML
-        // RelayState POST parameter (SamlController), which an
-        // attacker-controlled IdP could set to an off-site URL.
+        // Defense-in-depth: url.intended can be written by any writer
+        // in the app (SamlController::acs sanitizes its RelayState
+        // input up-front, but future writers may not), and Laravel's
+        // redirect()->intended() performs no host validation on read.
         $backUrl = self::sameOriginUrl(session()->pull('url.intended', 'home')) ?? route('home');
 
         // return to previous page

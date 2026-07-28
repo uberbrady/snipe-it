@@ -156,8 +156,11 @@ class MaintenancesController extends Controller
         // Capture the referring page (filtered index, asset-detail tab)
         // server-side so update() can restore the caller's context via
         // redirect()->intended() without trusting a hidden form field.
-        // Host-validated on read in update() below.
-        session()->put('url.intended', url()->previous());
+        // Same-origin gated on write; also host-validated on read in
+        // update() below.
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
 
         return view('maintenances/edit')
             ->with('selected_assets', $maintenance->asset->pluck('id')->toArray())
