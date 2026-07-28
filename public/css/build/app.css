@@ -2459,6 +2459,86 @@ table rows
   border-top: var(--table-border-row-top) !important;
   color: var(--color-fg) !important;
 }
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1),
+.snipe-table--sticky-right-1 > tbody > tr > td:nth-last-child(-n + 1) {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 1) {
+  background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 1) {
+  background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1) {
+  z-index: 3;
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2),
+.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(-n + 2) {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 2) {
+  background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 2) {
+  background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2) {
+  z-index: 3;
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(-n + 3) {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 3) {
+  background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 3) {
+  background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3) {
+  z-index: 3;
+}
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1),
+.snipe-table--sticky-left-1 > tbody > tr > td:nth-child(-n + 1) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 1) {
+  background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 1) {
+  background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1) {
+  z-index: 3;
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2),
+.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(-n + 2) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 2) {
+  background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 2) {
+  background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2) {
+  z-index: 3;
+}
 /**
 main header nav
  */

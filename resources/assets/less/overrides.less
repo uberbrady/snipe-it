@@ -2339,6 +2339,80 @@ table rows
 }
 
 
+// -----------------------------------------------------------------------------
+// CSS-sticky replacement for bootstrap-table's fixed-columns extension.
+//
+// Tables that pass use_sticky_css to <x-table> get one of these classes
+// (snipe-table--sticky-right-N / snipe-table--sticky-left-N) instead of the
+// extension's data-fixed-columns=true. The extension clones the table body
+// into an absolutely-positioned overlay, which drifts in height with
+// long-content rows (#19197) and misplaces tooltips when the container
+// reflows without a window resize (asset show + info panel toggle).
+//
+// Body cells match the zebra background so the sticky column keeps the
+// alternating pattern. Header cells use --box-bg so scrolling body rows
+// don't show through above the header stripe transition. Header z-index
+// sits above body sticky so a scrolled row can't render over the header.
+// -----------------------------------------------------------------------------
+
+// --table-stripe-bg-alt is intentionally translucent (rgba .25) so the
+// zebra stripe composites on top of the row's --box-bg. That works for
+// normal rows but leaves sticky cells see-through because scrolled
+// content passes UNDER them with no opaque backer. For sticky cells we
+// paint --box-bg as an opaque base and layer the (still-translucent)
+// stripe on top via linear-gradient, replicating the composited color.
+
+// Right-pinned columns. Generate rules for 1..3 (existing usage tops out at 3
+// via accessories/index; add more as needed).
+.snipe-table-sticky-right(@n) {
+    .snipe-table--sticky-right-@{n} > thead > tr > th:nth-last-child(-n+@{n}),
+    .snipe-table--sticky-right-@{n} > tbody > tr > td:nth-last-child(-n+@{n}) {
+        position: sticky;
+        right: 0;
+        z-index: 2;
+        background-color: var(--box-bg);
+    }
+    .snipe-table--sticky-right-@{n}.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n+@{n}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-right-@{n}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n+@{n}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
+    .snipe-table--sticky-right-@{n} > thead > tr > th:nth-last-child(-n+@{n}) {
+        z-index: 3;
+    }
+    // When multiple right columns are pinned, they all currently pin to
+    // right: 0 and overlap. Callers using N > 1 need per-column right:
+    // offsets based on measured widths (add JS to set --sticky-offset-N
+    // CSS vars). N=1 (maintenance table) is unaffected.
+}
+.snipe-table-sticky-right(1);
+.snipe-table-sticky-right(2);
+.snipe-table-sticky-right(3);
+
+// Left-pinned columns (current usage: 1).
+.snipe-table-sticky-left(@n) {
+    .snipe-table--sticky-left-@{n} > thead > tr > th:nth-child(-n+@{n}),
+    .snipe-table--sticky-left-@{n} > tbody > tr > td:nth-child(-n+@{n}) {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background-color: var(--box-bg);
+    }
+    .snipe-table--sticky-left-@{n}.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n+@{n}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-left-@{n}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n+@{n}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
+    .snipe-table--sticky-left-@{n} > thead > tr > th:nth-child(-n+@{n}) {
+        z-index: 3;
+    }
+}
+.snipe-table-sticky-left(1);
+.snipe-table-sticky-left(2);
+
+
 /**
 main header nav
  */

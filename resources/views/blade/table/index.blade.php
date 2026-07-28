@@ -11,13 +11,25 @@
     'sort_order' => 'asc',
     'sort_field' => 'name',
     'nosticky' => false,
+    'use_sticky_css' => false,
 ])
 
 @aware(['name'])
 
+{{-- When use_sticky_css is on, the bootstrap-table fixed-columns
+     extension is disabled (data-fixed-columns=false) and we pin the
+     first / last N columns via CSS position:sticky instead. Sidesteps
+     the clone-and-overlay approach that misplaces tooltips when the
+     container reflows (see /hardware/2600#maintenances + info panel
+     toggle) and drifts in height with long-content rows. Matching CSS
+     lives in overrides.less under `.snipe-table--sticky-*-N`. --}}
 <table
     role="table"
-    class="table table-striped snipe-table"
+    @class([
+        'table', 'table-striped', 'snipe-table',
+        'snipe-table--sticky-right-' . $fixed_right_number => $use_sticky_css && $fixed_right_number,
+        'snipe-table--sticky-left-' . $fixed_number => $use_sticky_css && $fixed_number,
+    ])
     data-cookie-id-table="{{ $name }}ListingTable"
     data-id-table="{{ $name }}ListingTable"
     data-sort-order="{{ $sort_order }}"
@@ -39,13 +51,13 @@
         data-columns="{{ $presenter }}"
     @endif
 
-    data-fixed-columns="{{ (($fixed_number) || ($fixed_right_number) || ($nosticky!='true')) ? 'true' : 'false' }}"
+    data-fixed-columns="{{ (! $use_sticky_css && (($fixed_number) || ($fixed_right_number) || ($nosticky!='true'))) ? 'true' : 'false' }}"
 
-    @if ($fixed_number)
+    @if ($fixed_number && ! $use_sticky_css)
         data-fixed-number="{{ $fixed_number }}"
     @endif
 
-    @if ($fixed_right_number)
+    @if ($fixed_right_number && ! $use_sticky_css)
         data-fixed-right-number="{{ $fixed_right_number }}"
     @endif
 
