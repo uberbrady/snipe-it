@@ -408,4 +408,29 @@ class AssetModel extends SnipeModel
     {
         return $query->leftJoin('users as admin_sort', 'models.created_by', '=', 'admin_sort.id')->select('models.*')->orderBy('admin_sort.first_name', $order)->orderBy('admin_sort.last_name', $order);
     }
+
+    /**
+     * Query builder scope to sort by the calculated `% remaining` column.
+     *
+     * `% remaining` is (available / total) * 100 — see percentRemaining().
+     * The caller (Api\AssetModelsController::index) already adds the
+     * `remaining` and `assets_count` withCount aliases before applying
+     * this scope, so we reference them directly in ORDER BY. Guarded
+     * against division by zero for models with no assets. Uses
+     * orderByRaw because Laravel's query builder has no arithmetic API
+     * for ORDER BY expressions.
+     *
+     * PostgreSQL note: this expression references SELECT-list aliases
+     * inside a compound ORDER BY expression, which PostgreSQL rejects
+     * per SQL standard. Snipe-IT officially supports MySQL/MariaDB and
+     * tests on SQLite (both allow this); moving to PostgreSQL would
+     * require inlining the subqueries or wrapping the query in an
+     * outer SELECT.
+     */
+    public function scopeOrderPercentRemaining($query, $order)
+    {
+        $direction = strtolower($order) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderByRaw('CASE WHEN assets_count = 0 THEN 0 ELSE (remaining * 100.0 / assets_count) END '.$direction);
+    }
 }
