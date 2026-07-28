@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ActionType;
+use App\Helpers\Helper;
 use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Maintenance;
@@ -18,8 +19,8 @@ class BulkMaintenancesController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
-        // Top-level gate mirrors MaintenancesController::complete()/destroy() —
-        // maintenance keys on the asset edit permission (see
+        // Top-level gate mirrors MaintenancesController::complete()/destroy(),
+        // because maintenance keys on the asset edit permission (see
         // MaintenancePolicy). This blocks users without any assets.edit rights
         // from hitting the endpoint at all; per-row policy still runs below.
         // FMCS company scoping is applied automatically on the Maintenance
@@ -32,15 +33,23 @@ class BulkMaintenancesController extends Controller
         $action = $request->input('bulk_actions');
         $ids = array_values(array_unique(array_filter(array_map('intval', (array) $request->input('ids', [])))));
 
+        // Prefer the Referer header (rather than a hidden form field,
+        // which clients can forge freely) so the user lands back on the
+        // surface they submitted from, whether that was the standalone
+        // index with its ?completed=true filter or the asset-detail
+        // maintenance tab. Helper::sameOriginUrl() rejects off-host and
+        // non-http(s) schemes; fall back to the plain index on rejection.
+        $backUrl = Helper::sameOriginUrl($request->headers->get('referer')) ?? route('maintenances.index');
+
         if (empty($ids)) {
-            return redirect()->route('maintenances.index')
+            return redirect($backUrl)
                 ->with('warning', trans('general.bulk_checkin_delete.nothing_selected', ['object_type' => trans('general.maintenances')]));
         }
 
         return match ($action) {
-            'delete' => $this->bulkDelete($ids),
-            'complete' => $this->bulkComplete($ids),
-            default => redirect()->route('maintenances.index')->with('error', trans('general.something_went_wrong')),
+            'delete' => $this->bulkDelete($ids, $backUrl),
+            'complete' => $this->bulkComplete($ids, $backUrl),
+            default => redirect($backUrl)->with('error', trans('general.something_went_wrong')),
         };
     }
 
@@ -48,7 +57,7 @@ class BulkMaintenancesController extends Controller
      * Soft-delete the selected maintenance records after per-row policy check.
      * Silently skips already-deleted rows and any the actor can't touch.
      */
-    private function bulkDelete(array $ids): RedirectResponse
+    private function bulkDelete(array $ids, string $backUrl): RedirectResponse
     {
         $success = 0;
         $skipped = 0;
@@ -63,7 +72,7 @@ class BulkMaintenancesController extends Controller
             $success++;
         });
 
-        return redirect()->route('maintenances.index')->with(
+        return redirect($backUrl)->with(
             $success > 0 ? 'success' : 'warning',
             trans_choice('admin/maintenances/message.bulk_delete', $success, ['count' => $success, 'skipped' => $skipped])
         );
@@ -73,7 +82,7 @@ class BulkMaintenancesController extends Controller
      * Mark the selected maintenance records complete. Skips rows that are
      * already completed (idempotent) and any the actor can't update.
      */
-    private function bulkComplete(array $ids): RedirectResponse
+    private function bulkComplete(array $ids, string $backUrl): RedirectResponse
     {
         $success = 0;
         $skipped = 0;
@@ -101,7 +110,7 @@ class BulkMaintenancesController extends Controller
             $success++;
         });
 
-        return redirect()->route('maintenances.index')->with(
+        return redirect($backUrl)->with(
             $success > 0 ? 'success' : 'warning',
             trans_choice('admin/maintenances/message.bulk_complete', $success, ['count' => $success, 'skipped' => $skipped])
         );
