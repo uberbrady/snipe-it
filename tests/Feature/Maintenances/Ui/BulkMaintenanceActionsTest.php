@@ -167,4 +167,33 @@ class BulkMaintenanceActionsTest extends TestCase
             ->assertRedirect(route('maintenances.index'))
             ->assertSessionHas('error');
     }
+
+    public function test_same_origin_referer_is_used_for_post_action_redirect()
+    {
+        $maintenance = Maintenance::factory()->create();
+        $referer = config('app.url').'/maintenances?completed=true';
+
+        $this->actingAs(User::factory()->superuser()->create())
+            ->withHeader('referer', $referer)
+            ->post(route('maintenances.bulk'), [
+                'bulk_actions' => 'delete',
+                'ids' => [$maintenance->id],
+            ])
+            ->assertRedirect($referer);
+    }
+
+    public function test_offsite_referer_is_rejected_and_falls_back_to_index()
+    {
+        $maintenance = Maintenance::factory()->create();
+
+        // Attacker-controlled referer must not be honored — protects
+        // against open-redirect / phishing hand-offs after the POST.
+        $this->actingAs(User::factory()->superuser()->create())
+            ->withHeader('referer', 'https://evil.example.com/steal-session')
+            ->post(route('maintenances.bulk'), [
+                'bulk_actions' => 'delete',
+                'ids' => [$maintenance->id],
+            ])
+            ->assertRedirect(route('maintenances.index'));
+    }
 }
