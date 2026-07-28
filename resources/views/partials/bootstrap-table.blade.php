@@ -3294,21 +3294,27 @@
                 if (! $topScroll.length) {
                     $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
                     $wrapper.before($topScroll);
-                    var top = $topScroll[0];
-                    var syncing = false;
-                    $topScroll.on('scroll', function () {
-                        if (syncing) return;
-                        syncing = true;
-                        body.scrollLeft = top.scrollLeft;
-                        syncing = false;
-                    });
-                    $body.on('scroll', function () {
-                        if (syncing) return;
-                        syncing = true;
-                        top.scrollLeft = body.scrollLeft;
-                        syncing = false;
-                    });
                 }
+
+                // Rebind scroll sync every time. The top scrollbar element
+                // persists across bootstrap-table renders, but .fixed-table-body
+                // is replaced on every post-body, so any handler we attached to
+                // the previous body is gone. Namespaced .off() clears whatever
+                // we may have attached before; .on() reattaches.
+                var top = $topScroll[0];
+                var syncing = false;
+                $topScroll.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
+                    if (syncing) return;
+                    syncing = true;
+                    body.scrollLeft = top.scrollLeft;
+                    syncing = false;
+                });
+                $body.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
+                    if (syncing) return;
+                    syncing = true;
+                    top.scrollLeft = body.scrollLeft;
+                    syncing = false;
+                });
 
                 $topScroll.children('.snipe-top-scrollbar-inner').css('width', tbl.scrollWidth + 'px');
             });

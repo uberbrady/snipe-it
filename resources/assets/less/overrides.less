@@ -2382,6 +2382,8 @@ table rows
 .gen-sticky-right(1);
 .gen-sticky-right(2);
 .gen-sticky-right(3);
+.gen-sticky-right(4);
+.gen-sticky-right(5);
 
 .gen-sticky-left(@maxN, @pos: 1) when (@pos <= @maxN) {
     .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(@{pos}),
@@ -2395,6 +2397,9 @@ table rows
 }
 .gen-sticky-left(1);
 .gen-sticky-left(2);
+.gen-sticky-left(3);
+.gen-sticky-left(4);
+.gen-sticky-left(5);
 
 // Shared: header z-index bump and zebra-stripe overlay for all pinned columns.
 .gen-sticky-right-shared(@maxN) {
@@ -2411,6 +2416,8 @@ table rows
 .gen-sticky-right-shared(1);
 .gen-sticky-right-shared(2);
 .gen-sticky-right-shared(3);
+.gen-sticky-right-shared(4);
+.gen-sticky-right-shared(5);
 
 .gen-sticky-left-shared(@maxN) {
     .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(-n+@{maxN}) {
@@ -2425,6 +2432,37 @@ table rows
 }
 .gen-sticky-left-shared(1);
 .gen-sticky-left-shared(2);
+.gen-sticky-left-shared(3);
+.gen-sticky-left-shared(4);
+.gen-sticky-left-shared(5);
+
+
+// -----------------------------------------------------------------------------
+// Checkbox column: bootstrap-table adds .bs-checkbox to the header and body
+// cells of any checkbox column. It should always be pinned to the left edge
+// regardless of what fixed_number the table sets, because the row-selection
+// affordance is expected to stay visible while the user scrolls horizontally
+// to review other columns before deciding what to check.
+// -----------------------------------------------------------------------------
+
+.snipe-table > thead > tr > th.bs-checkbox,
+.snipe-table > tbody > tr > td.bs-checkbox {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: var(--box-bg);
+}
+
+.snipe-table.table-striped > tbody > tr:nth-of-type(even) > td.bs-checkbox {
+    background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table.table-striped > tbody > tr:nth-of-type(odd) > td.bs-checkbox {
+    background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+
+.snipe-table > thead > tr > th.bs-checkbox {
+    z-index: 3;
+}
 
 
 // -----------------------------------------------------------------------------

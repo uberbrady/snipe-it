@@ -2,7 +2,7 @@
     'route' => route('api.assets.index'),
     'name' => 'default',
     'fixed_right_number' => 2,
-    'fixed_number' => 1,
+    'fixed_number' => 3,
     'table_header' => trans('general.assets'),
     'status_type' => null,
 ])
