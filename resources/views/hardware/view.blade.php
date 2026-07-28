@@ -197,14 +197,19 @@
 
 
 
-                                @if($asset->journal->last())
+                                {{-- journal() chains off assetlog() which orders created_at DESC,
+                                     so ->first() is the newest note. Template used to call
+                                     ->last() which returned the oldest note (the Collection
+                                     tail on a DESC ordering) — that was the "Last Note showing
+                                     the first-created note" bug. --}}
+                                @if ($asset->journal->first())
                                     <x-data-row :label="trans('general.last_note')" copy_what="last_note">
                                         <i class="fa-solid fa-quote-left"></i>
-                                        {{ $asset->journal->last()->note }}
+                                        {{ $asset->journal->first()->note }}
                                         <i class="fa-solid fa-quote-right"></i>
                                         <span class="text-muted">
-                                            - {!!  $asset->journal->last()->adminuser?->present()->formattedNameLink !!}
-                                            ({{ Helper::getFormattedDateObject($asset->journal->last()->created_at, 'datetime', false) }})
+                                            - {!! $asset->journal->first()->adminuser?->present()->formattedNameLink !!}
+                                            ({{ Helper::getFormattedDateObject($asset->journal->first()->created_at, 'datetime', false) }})
                                         </span>
                                     </x-data-row>
                                 @endif
