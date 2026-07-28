@@ -754,9 +754,12 @@ class BulkAssetsController extends Controller
                         $asset->status_id = $request->input('status_id');
                     }
 
-                    if ($request->boolean('set_not_requestable')) {
-                        $asset->requestable = false;
-                    }
+                    // The bulk-checkout form now carries a plain `requestable`
+                    // checkbox (matching the per-item hardware/checkout form
+                    // so the localStorage-backed remembered-default JS is
+                    // shared between the two). Always set the flag from the
+                    // request, so the operator's explicit choice sticks.
+                    $asset->requestable = $request->boolean('requestable');
 
                     $checkout_success = $asset->checkOut($target, $admin, $checkout_at, $expected_checkin, e($request->input('note')), $asset->name, null);
 
@@ -785,8 +788,17 @@ class BulkAssetsController extends Controller
                     e($request->get('note')),
                 );
 
-                // Redirect to the new asset page
-                return redirect()->to('hardware')->with('success', trans_choice('admin/hardware/message.multi-checkout.success', $asset_ids));
+                // Honor the redirect_option select from the form. Choosing
+                // 'bulk_checkout' bounces the operator right back to the
+                // bulk-checkout screen so they can keep scanning without
+                // navigating away — the workflow that Quick Scan Checkin
+                // uses for the checkin side. Any other value (default is
+                // 'index') falls back to the asset listing.
+                $redirect = $request->input('redirect_option') === 'bulk_checkout'
+                    ? route('hardware.bulkcheckout.show')
+                    : route('hardware.index');
+
+                return redirect()->to($redirect)->with('success', trans_choice('admin/hardware/message.multi-checkout.success', $asset_ids));
             }
 
             // Redirect to the asset management page with error

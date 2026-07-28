@@ -106,17 +106,21 @@ class BulkAssetCheckoutTest extends TestCase
         }
     }
 
-    public function test_bulk_checkout_can_set_assets_to_not_requestable()
+    public function test_bulk_checkout_sets_requestable_to_false_when_checkbox_unchecked()
     {
         $assets = Asset::factory()->count(2)->create(['requestable' => 1]);
         $targetUser = User::factory()->create();
 
+        // Bulk checkout now mirrors the per-item checkout: `requestable`
+        // is a plain checkbox and its posted value (or absence) is
+        // authoritative. Omitting the field means unchecked, so every
+        // selected asset ends up requestable=false regardless of its
+        // prior state.
         $this->actingAs(User::factory()->checkoutAssets()->create())
             ->post(route('hardware.bulkcheckout.store'), [
                 'selected_assets' => $assets->pluck('id')->toArray(),
                 'checkout_to_type' => 'user',
                 'assigned_user' => $targetUser->id,
-                'set_not_requestable' => 1,
             ]);
 
         $assets->each(function (Asset $asset) {
@@ -124,7 +128,7 @@ class BulkAssetCheckoutTest extends TestCase
         });
     }
 
-    public function test_bulk_checkout_leaves_requestable_unchanged_when_not_selected()
+    public function test_bulk_checkout_sets_requestable_to_true_when_checkbox_checked()
     {
         $requestableAsset = Asset::factory()->create(['requestable' => 1]);
         $nonRequestableAsset = Asset::factory()->create(['requestable' => 0]);
@@ -135,11 +139,11 @@ class BulkAssetCheckoutTest extends TestCase
                 'selected_assets' => [$requestableAsset->id, $nonRequestableAsset->id],
                 'checkout_to_type' => 'user',
                 'assigned_user' => $targetUser->id,
-                // Intentionally omitted: set_not_requestable
+                'requestable' => '1',
             ]);
 
         $this->assertTrue((bool) $requestableAsset->fresh()->requestable);
-        $this->assertFalse((bool) $nonRequestableAsset->fresh()->requestable);
+        $this->assertTrue((bool) $nonRequestableAsset->fresh()->requestable);
     }
 
     public static function checkoutTargets()
@@ -246,6 +250,37 @@ class BulkAssetCheckoutTest extends TestCase
      *
      * @see \App\Http\Controllers\Assets\BulkAssetsController::store
      */
+    public function test_bulk_checkout_defaults_to_asset_index_when_no_redirect_option()
+    {
+        Mail::fake();
+        $assets = Asset::factory()->count(2)->create();
+        $user = User::factory()->create();
+
+        $this->actingAs(User::factory()->checkoutAssets()->viewAssets()->create())
+            ->post(route('hardware.bulkcheckout.store'), [
+                'selected_assets' => $assets->pluck('id')->toArray(),
+                'checkout_to_type' => 'user',
+                'assigned_user' => $user->id,
+            ])
+            ->assertRedirect(route('hardware.index'));
+    }
+
+    public function test_bulk_checkout_returns_to_bulk_checkout_when_option_selected()
+    {
+        Mail::fake();
+        $assets = Asset::factory()->count(2)->create();
+        $user = User::factory()->create();
+
+        $this->actingAs(User::factory()->checkoutAssets()->viewAssets()->create())
+            ->post(route('hardware.bulkcheckout.store'), [
+                'selected_assets' => $assets->pluck('id')->toArray(),
+                'checkout_to_type' => 'user',
+                'assigned_user' => $user->id,
+                'redirect_option' => 'bulk_checkout',
+            ])
+            ->assertRedirect(route('hardware.bulkcheckout.show'));
+    }
+
     #[DataProvider('bulkCheckoutTargetTypesProvider')]
     public function test_bulk_checkout_stores_target_type_as_string_in_session(string $type)
     {
