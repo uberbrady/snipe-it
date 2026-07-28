@@ -383,7 +383,11 @@
 
                     <!-- start maintenances tab pane -->
                     <x-tabs.pane name="maintenances">
+                        <x-slot:bulkactions>
+                            <x-table.bulk-maintenances name="assetMaintenance" />
+                        </x-slot:bulkactions>
                         <x-table.maintenances
+                            name="assetMaintenance"
                             :route="route('api.maintenances.index', ['asset_id' => $asset->id])"
                             export_filename="export-maintenances-{{ str_slug($asset->name) }}-{{ date('Y-m-d') }}"
                         />

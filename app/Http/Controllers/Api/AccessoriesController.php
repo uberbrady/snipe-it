@@ -146,6 +146,9 @@ class AccessoriesController extends Controller
             case 'total_cost':
                 $accessories = $accessories->orderByRaw('COALESCE(purchase_cost, 0) * qty '.$order);
                 break;
+            case 'percent_remaining':
+                $accessories = $accessories->OrderPercentRemaining($order);
+                break;
             default:
                 $accessories = $accessories->orderBy($column_sort, $order);
                 break;

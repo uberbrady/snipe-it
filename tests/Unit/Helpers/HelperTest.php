@@ -294,4 +294,50 @@ class HelperTest extends TestCase
 
         $this->assertEquals(route('users.index').'?company_id=5', $redirect->getTargetUrl());
     }
+
+    public function test_same_origin_url_returns_null_for_empty_input()
+    {
+        $this->assertNull(Helper::sameOriginUrl(null));
+        $this->assertNull(Helper::sameOriginUrl(''));
+    }
+
+    public function test_same_origin_url_returns_relative_url_unchanged()
+    {
+        $this->assertSame('/maintenances?completed=true', Helper::sameOriginUrl('/maintenances?completed=true'));
+        $this->assertSame('home', Helper::sameOriginUrl('home'));
+    }
+
+    public function test_same_origin_url_accepts_url_pointing_at_app_host()
+    {
+        $url = config('app.url').'/hardware/42';
+        $this->assertSame($url, Helper::sameOriginUrl($url));
+    }
+
+    public function test_same_origin_url_rejects_offsite_host()
+    {
+        $this->assertNull(Helper::sameOriginUrl('https://evil.example.com/steal-session'));
+    }
+
+    public function test_same_origin_url_rejects_dangerous_schemes()
+    {
+        $this->assertNull(Helper::sameOriginUrl('javascript:alert(1)'));
+        $this->assertNull(Helper::sameOriginUrl('data:text/html,<script>alert(1)</script>'));
+        $this->assertNull(Helper::sameOriginUrl('file:///etc/passwd'));
+    }
+
+    public function test_same_origin_url_strips_crlf_to_prevent_header_injection()
+    {
+        // A CR/LF in a Location: header would let an attacker split the
+        // HTTP response and inject arbitrary headers/body. The helper
+        // must strip them before returning.
+        $this->assertSame('/foo', Helper::sameOriginUrl("/foo\r\n"));
+        $this->assertSame('/foo/bar', Helper::sameOriginUrl("/foo\r\n/bar"));
+    }
+
+    public function test_same_origin_url_rejects_scheme_relative_offsite_url()
+    {
+        // //evil.com/... is a scheme-relative URL that inherits the
+        // current scheme and points at evil.com. Must be rejected.
+        $this->assertNull(Helper::sameOriginUrl('//evil.example.com/steal-session'));
+    }
 }

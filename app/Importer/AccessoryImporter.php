@@ -68,7 +68,7 @@ class AccessoryImporter extends ItemImporter
     }
 
     /**
-     * If the CSV row identified a checkout target (User/Location/Asset via
+     * If the CSV row identified a checkout target (User or Location via
      * ItemImporter::determineCheckout), attach one AccessoryCheckout row
      * and fire the standard CheckoutableCheckedOut event so the actionlog
      * and notification paths behave the same as a UI-driven checkout.

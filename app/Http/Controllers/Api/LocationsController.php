@@ -104,11 +104,17 @@ class LocationsController extends Controller
             'locations.created_by',
             'locations.deleted_at',
         ])
-            ->withCount('assignedAssets as assigned_assets_count')
-            ->withCount('assets as assets_count')
+            // Asset counts thread through AssetsForShow so the API totals
+            // agree with the tab counts in resources/views/locations/view.blade.php,
+            // which use ->assets()->AssetsForShow() etc. Without the scope,
+            // rtd_assets_count in particular ignores the show_archived_in_list
+            // setting because the rtd_assets() relation has no built-in status
+            // filter. See #17565.
+            ->withCount(['assignedAssets as assigned_assets_count' => fn ($q) => $q->AssetsForShow()])
+            ->withCount(['assets as assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('assignedAccessories as assigned_accessories_count')
             ->withCount('accessories as accessories_count')
-            ->withCount('rtd_assets as rtd_assets_count')
+            ->withCount(['rtd_assets as rtd_assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('children as children_count')
             ->withCount('users as users_count')
             ->withCount('consumables as consumables_count')
@@ -279,11 +285,12 @@ class LocationsController extends Controller
                 'locations.notes',
                 'locations.tag_color',
             ])
-            ->withCount('assignedAssets as assigned_assets_count')
-            ->withCount('assets as assets_count')
+            // See index() for why the asset counts thread AssetsForShow. #17565.
+            ->withCount(['assignedAssets as assigned_assets_count' => fn ($q) => $q->AssetsForShow()])
+            ->withCount(['assets as assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('assignedAccessories as assigned_accessories_count')
             ->withCount('accessories as accessories_count')
-            ->withCount('rtd_assets as rtd_assets_count')
+            ->withCount(['rtd_assets as rtd_assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('children as children_count')
             ->withCount('users as users_count')
             ->withCount('consumables as consumables_count')

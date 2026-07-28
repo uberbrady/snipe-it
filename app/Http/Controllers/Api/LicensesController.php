@@ -154,6 +154,9 @@ class LicensesController extends Controller
             case 'product_key':
                 $licenses = $licenses->orderBy('licenses.serial', $order);
                 break;
+            case 'percent_remaining':
+                $licenses = $licenses->OrderPercentRemaining($order);
+                break;
             default:
                 $allowed_columns =
                     [

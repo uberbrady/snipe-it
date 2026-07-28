@@ -153,7 +153,9 @@ $(function () {
     $el.on('click', '.delete-asset', function (evnt) {
         var $context = $(this);
         var $dataConfirmModal = $('#dataConfirmModal');
-        var href = $context.attr('href');
+        // Anchors keep the URL in href; buttons keep it in data-href
+        // (buttons don't semantically support href per HTML5).
+        var href = $context.attr('data-href') || $context.attr('href');
         var message = $context.attr('data-content');
         var headericon = $context.attr('data-icon');
         var title = $context.attr('data-title');
@@ -785,6 +787,16 @@ $(document).ready(function () {
         });
     }
 
+    // Push the app's "week starts on" setting into moment's active locale so
+    // the eonasdan datetimepicker (which reads firstDayOfWeek from moment
+    // locale data, not from its own options) opens with the calendar column
+    // order the admin picked in Localization settings. Runs once before any
+    // picker is initialized; downstream code that formats using moment's w/W
+    // tokens will pick up the same value.
+    if (window.snipeit && window.snipeit.settings && typeof window.snipeit.settings.first_day_of_week === 'number') {
+        moment.updateLocale(moment.locale(), { week: { dow: window.snipeit.settings.first_day_of_week } });
+    }
+
     window.snipeitInitDatetimepickers();
     initDateRangeLinking();
 });
@@ -1063,6 +1075,60 @@ $(function () {
         });
     }
 
+    // Branding settings page: live preview + reset for the four tenant
+    // colorpickers. The pickers themselves are initialized by the global
+    // $(".color").colorpicker() call in the default layout; this only wires
+    // the changeColor listeners and the reset button. Guarded on the reset
+    // button ID so it only runs on Settings > Branding, not on every page
+    // that happens to have a #header-color or #nav-link-color widget.
+    //
+    // Only header + nav-link get live preview. Link light/dark previews are
+    // deliberately skipped: they would recolor the buttons and other UI on
+    // this form itself, which can make it unreadable if the operator picks
+    // a low-contrast color. Those two settings just save and take effect on
+    // reload.
+    if (document.getElementById('branding-colors-reset')) {
+        var BRANDING_DEFAULTS = {
+            header_color: '#3c8dbc',
+            nav_link_color: '#ffffff',
+            link_light_color: '#296282',
+            link_dark_color: '#5fa4cc',
+        };
+
+        // Live preview works by writing the tenant CSS variables inline on
+        // <html>. Inline element style beats the :root and [data-theme]
+        // declarations in overrides.less on specificity, so this works even
+        // for the many rules those declarations lock in with !important.
+        var applyBrandingHeader = function (color) {
+            document.documentElement.style.setProperty('--main-theme-color', color);
+        };
+
+        var applyBrandingNavLink = function (color) {
+            document.documentElement.style.setProperty('--btn-theme-text-color', color);
+            document.documentElement.style.setProperty('--nav-hover-text-color', color);
+            document.documentElement.style.setProperty('--nav-primary-text-color', color);
+        };
+
+        $('#header-color').on('changeColor', function (e) {
+            applyBrandingHeader(e.color.toString('rgba'));
+        });
+
+        $('#nav-link-color').on('changeColor', function (e) {
+            applyBrandingNavLink(e.color.toString('rgba'));
+        });
+
+        // Reset: restore each picker's swatch and input to the stock
+        // defaults. Using setValue on the plugin (not just .val() on the
+        // input) fires the plugin's internal changeColor event, which
+        // re-runs applyBrandingHeader / applyBrandingNavLink automatically.
+        $('#branding-colors-reset').on('click', function () {
+            $('#header-color').colorpicker('setValue', BRANDING_DEFAULTS.header_color);
+            $('#nav-link-color').colorpicker('setValue', BRANDING_DEFAULTS.nav_link_color);
+            $('#link-light-color').colorpicker('setValue', BRANDING_DEFAULTS.link_light_color);
+            $('#link-dark-color').colorpicker('setValue', BRANDING_DEFAULTS.link_dark_color);
+        });
+    }
+
     // Reset the localStorage theme override when the user clicks the
     // "system default" link (any element carrying data-theme-toggle-clear).
     document.querySelectorAll('[data-theme-toggle-clear]').forEach(function (el) {
@@ -1115,16 +1181,27 @@ $(function () {
     // User::noPassword() raw so no Hash::check can ever match.
     // Applies to both the main users/edit create form and the
     // users/modal form since they share the input names.
+    //
+    // Required-state preservation: the server renders password/password_
+    // confirmation with `required` only on create (see users/edit.blade.php
+    // and modals/user.blade.php). We cache that server-rendered state on
+    // the first call so subsequent activated-toggles only ever re-apply
+    // the ORIGINAL server intent — otherwise editing an existing
+    // (activated) user would silently flip password to required on page
+    // load and jQuery Validate would block Save with the password empty.
     var syncPasswordFields = function ($checkbox) {
         var $form = $checkbox.closest('form');
         var $passwords = $form.find(
             'input[name="password"], input[name="password_confirmation"]'
         );
-        var visible = $checkbox.is(':checked');
-        $passwords.prop('required', visible);
+        var activated = $checkbox.is(':checked');
         $passwords.each(function () {
+            if (this.dataset.serverRequired === undefined) {
+                this.dataset.serverRequired = this.required ? '1' : '0';
+            }
+            this.required = activated && this.dataset.serverRequired === '1';
             var $wrap = $(this).closest('.form-group, .dynamic-form-row');
-            if (visible) {
+            if (activated) {
                 $wrap.show();
             } else {
                 $wrap.hide();
@@ -1242,5 +1319,138 @@ $(function () {
                 $results.show();
             });
         }, 0);
+    }
+
+    // Hardware bulk edit: clear-radio buttons blank every input of a
+    // named radio group so the caller can back out of a picked value.
+    // The .clear-radio button carries a data-target-name matching the
+    // radio group's name attribute.
+    document.querySelectorAll('.clear-radio').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var name = this.dataset.targetName;
+            var radios = document.querySelectorAll('input[type="radio"][name="' + name + '"]');
+            radios.forEach(function (radio) { radio.checked = false; });
+        });
+    });
+
+    // Hardware bulk edit: live status-deployable check. When the user
+    // picks a status, hit the deployable API and update the inline
+    // status indicator so the operator knows whether that status will
+    // pull an asset out of active service. Translated labels ride on
+    // the element's data attributes so this handler doesn't need to be
+    // a Blade-compiled inline script. Guarded on the data-deployable-
+    // label attribute (not just the id) because #selected_status_status
+    // also appears in partials/forms/edit/status.blade.php — used by
+    // hardware/edit — which has its own inline user_add() handler and
+    // doesn't render the labels, so we'd otherwise double-fire and
+    // overwrite that handler's output with an icon-only string.
+    var statusStatusEl = document.getElementById('selected_status_status');
+    if (statusStatusEl && statusStatusEl.dataset.deployableLabel) {
+        var deployableLabel = statusStatusEl.dataset.deployableLabel || '';
+        var notDeployableLabel = statusStatusEl.dataset.notDeployableLabel || '';
+
+        var runStatusDeployableCheck = function () {
+            var statusId = $('select[name="status_id"]').val();
+            if (statusId === '') {
+                return;
+            }
+            $('.status_spinner').css('display', 'inline');
+            $.ajax({
+                url: '/api/v1/statuslabels/' + statusId + '/deployable',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                },
+                success: function (data) {
+                    $('.status_spinner').css('display', 'none');
+                    $('#selected_status_status').fadeIn();
+                    if (data == true) {
+                        $('#selected_status_status')
+                            .removeClass('text-danger')
+                            .addClass('text-success')
+                            .html('<i class="fa-solid fa-check" aria-hidden="true"></i> ' + deployableLabel);
+                    } else {
+                        $('#assignto_selector').hide();
+                        $('#selected_status_status')
+                            .removeClass('text-success')
+                            .addClass('text-danger')
+                            .html('<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> ' + notDeployableLabel);
+                    }
+                },
+            });
+        };
+
+        $('select[name="status_id"]').on('change', runStatusDeployableCheck);
+    }
+
+    // Hardware checkin: requestable-toggle wrapper. Show or hide the
+    // "make this asset requestable after checkin" checkbox depending on
+    // whether the currently-selected status is deployable. Preserve the
+    // checkbox state when hiding so a status bounce doesn't blow it
+    // away — the server only applies the value when the status is
+    // deployable anyway.
+    var requestableWrapper = document.getElementById('requestable-wrapper');
+    if (requestableWrapper) {
+        var deployableStatusIds = [];
+        try {
+            deployableStatusIds = JSON.parse(requestableWrapper.dataset.deployableStatusIds || '[]');
+        } catch (e) {
+            // Malformed data — leave the wrapper in its server-rendered state.
+        }
+
+        var statusSelect = document.getElementById('modal-statuslabel_types')
+            || document.querySelector('select[name="status_id"]');
+
+        if (statusSelect) {
+            var toggleRequestableWrapper = function () {
+                var value = statusSelect.value;
+                var statusId = Number.parseInt(value, 10);
+                var isDeployable = value !== ''
+                    && Number.isInteger(statusId)
+                    && deployableStatusIds.indexOf(statusId) !== -1;
+                requestableWrapper.style.display = isDeployable ? '' : 'none';
+            };
+
+            statusSelect.addEventListener('change', toggleRequestableWrapper);
+            if (window.jQuery) {
+                window.jQuery(statusSelect).on('select2:select select2:clear', toggleRequestableWrapper);
+            }
+            toggleRequestableWrapper();
+        }
+    }
+
+    // Hardware checkin: per-user localStorage preference for the
+    // requestable-checkbox default. Namespaced by user id so a shared
+    // browser doesn't leak one user's habit to another. Bypassed when
+    // the checkbox was repopulated from a validation-error redirect —
+    // old() beats the stored preference. On submit, save whatever the
+    // user actually chose so the preference tracks their real habit.
+    var requestableCheckbox = document.getElementById('requestable');
+    if (requestableCheckbox && requestableCheckbox.dataset.userPreferenceKey) {
+        var storageKey = requestableCheckbox.dataset.userPreferenceKey;
+        var hadOldInput = requestableCheckbox.dataset.hadOldInput === '1';
+        var form = requestableCheckbox.closest('form');
+
+        if (form) {
+            if (!hadOldInput) {
+                var stored = null;
+                try {
+                    stored = window.localStorage.getItem(storageKey);
+                } catch (e) {
+                    // localStorage may be unavailable (private mode, disabled).
+                }
+                if (stored === '1' || stored === '0') {
+                    requestableCheckbox.checked = stored === '1';
+                }
+            }
+
+            form.addEventListener('submit', function () {
+                try {
+                    window.localStorage.setItem(storageKey, requestableCheckbox.checked ? '1' : '0');
+                } catch (e) {
+                    // Non-fatal: preference just won't persist this time.
+                }
+            });
+        }
     }
 });

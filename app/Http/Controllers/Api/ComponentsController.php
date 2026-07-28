@@ -151,6 +151,9 @@ class ComponentsController extends Controller
             case 'created_by':
                 $components = $components->OrderByCreatedBy($order);
                 break;
+            case 'percent_remaining':
+                $components = $components->OrderPercentRemaining($order);
+                break;
             default:
                 $components = $components->orderBy($column_sort, $order);
                 break;

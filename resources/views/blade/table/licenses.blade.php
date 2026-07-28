@@ -22,6 +22,7 @@
         :$presenter
         :$fixed_right_number
         :$fixed_number
+        use_sticky_css
         :$show_search
         :$show_column_search
         :$show_advanced_search

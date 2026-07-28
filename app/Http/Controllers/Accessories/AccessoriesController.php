@@ -117,7 +117,9 @@ class AccessoriesController extends Controller
     public function edit(Accessory $accessory): View|RedirectResponse
     {
         $this->authorize('update', $accessory);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
 
         return view('accessories.edit')->with('item', $accessory)->with('category_type', 'accessory');
     }

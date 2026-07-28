@@ -143,7 +143,9 @@ class LicensesController extends Controller
     {
 
         $this->authorize('update', $license);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
         $maintained_list = [
             '' => 'Maintained',
             '1' => 'Yes',
