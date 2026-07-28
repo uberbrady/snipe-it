@@ -48,24 +48,12 @@
                         </x-slot:input>
                     </x-form.row>
 
-                    <x-form.row
-                        :label="trans('admin/hardware/form.requestable')"
-                        name="set_not_requestable"
-                    >
-                        <x-slot:input>
-                            <x-input.select
-                                name="set_not_requestable"
-                                id="set_not_requestable"
-                                :options="[
-                                    '' => trans('general.do_not_change'),
-                                    '1' => trans('admin/hardware/general.not_requestable'),
-                                ]"
-                                :selected="old('set_not_requestable', '')"
-                                style="width: 100%;"
-                                aria-label="set_not_requestable"
-                            />
-                        </x-slot:input>
-                    </x-form.row>
+                    <x-form.checkbox-row
+                        name="requestable"
+                        :label="trans('admin/hardware/general.requestable')"
+                        data-user-preference-key="snipeit.checkout.requestable_default.{{ auth()->id() ?? 'guest' }}"
+                        data-had-old-input="{{ ((bool) old('requestable', false)) || session()->has('_old_input.requestable') ? '1' : '0' }}"
+                    />
 
                     @include ('partials.forms.checkout-selector', ['user_select' => 'true', 'asset_select' => 'true', 'location_select' => 'true'])
                     <x-input.user-select
@@ -102,10 +90,14 @@
                     </x-form.row>
 
                     <x-slot:customfooter>
-                        <div class="box-footer">
-                            <a class="btn btn-link" href="{{ URL::previous() }}">{{ trans('button.cancel') }}</a>
-                            <button type="submit" class="btn btn-primary pull-right"><x-icon type="checkmark"/> {{ trans('general.checkout') }}</button>
-                        </div>
+                        <x-redirect_submit_options
+                            index_route="hardware.index"
+                            :button_label="trans('general.checkout')"
+                            :options="[
+                                'bulk_checkout' => trans('admin/hardware/form.redirect_to_bulk_checkout'),
+                                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => trans('general.assets')]),
+                            ]"
+                        />
                     </x-slot:customfooter>
 
                 </x-box>

@@ -42,6 +42,7 @@ return [
     'redirect_to_all' => 'Return to all :type',
     'redirect_to_type' => 'Go to :type',
     'redirect_to_checked_out_to' => 'Go to Checked Out to',
+    'redirect_to_bulk_checkout' => 'Return to Bulk Checkout',
     'select_statustype' => 'Select Status Type',
     'serial' => 'Serial',
     'serial_required' => 'Asset :number requires a serial number',
