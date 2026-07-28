@@ -1404,6 +1404,7 @@ class Helper
             'png' => 'far fa-image',
             'webp' => 'far fa-image',
             'avif' => 'far fa-image',
+            'ico' => 'far fa-image',
             'svg' => 'fas fa-vector-square',
 
             // word
@@ -1428,14 +1429,17 @@ class Helper
             'txt' => 'far fa-file-alt',
             'rtf' => 'far fa-file-alt',
             'xml' => 'fas fa-code',
+            'json' => 'fas fa-code',
 
             // Misc
             'pdf' => 'far fa-file-pdf',
             'lic' => 'far fa-save',
+            'key' => 'fas fa-key',
 
             // video
             'mov' => 'fa-solid fa-video',
             'mp4' => 'fa-solid fa-video',
+            'webm' => 'fa-solid fa-video',
 
             // audio
             'ogg' => 'fa-solid fa-file-audio',
