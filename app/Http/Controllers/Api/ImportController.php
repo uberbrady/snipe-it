@@ -57,14 +57,28 @@ class ImportController extends Controller
             $detector = new EncodingDetector;
 
             foreach ($files as $file) {
-                if (! in_array($file->getMimeType(), [
+                $allowedMimes = [
                     'application/vnd.ms-excel',
                     'text/csv',
                     'application/csv',
                     'text/x-Algol68', // because wtf CSV files?
                     'text/plain',
                     'text/comma-separated-values',
-                    'text/tsv', ])) {
+                    'text/tsv',
+                ];
+                $allowedExtensions = ['csv', 'tsv', 'txt'];
+                $clientExtension = strtolower(trim($file->getClientOriginalExtension()));
+
+                // The MIME allowlist is the primary check. When it fails,
+                // fall back to the client extension because finfo returns
+                // `application/octet-stream` for CSVs on Windows/IIS and
+                // for various perfectly-valid CSVs whose first row happens
+                // to match another magic signature. Callers reach this
+                // endpoint only with the `import` permission, and the CSV
+                // reader below will reject anything that isn't actually
+                // parseable with a more precise error than a MIME veto.
+                // See issue #10387.
+                if (! in_array($file->getMimeType(), $allowedMimes) && ! in_array($clientExtension, $allowedExtensions, true)) {
                     $results['error'] = 'File type must be CSV. Uploaded file is '.$file->getMimeType();
 
                     return response()->json(Helper::formatStandardApiResponse('error', null, $results['error']), 422);
