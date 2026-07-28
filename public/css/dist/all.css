@@ -23660,12 +23660,71 @@ table rows
   border-top: var(--table-border-row-top) !important;
   color: var(--color-fg) !important;
 }
-.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1),
-.snipe-table--sticky-right-1 > tbody > tr > td:nth-last-child(-n + 1) {
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-1 > tbody > tr > td:nth-last-child(1) {
   position: sticky;
-  right: 0;
+  right: var(--sticky-right-offset-1, 0);
   z-index: 2;
   background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(1) {
+  position: sticky;
+  right: var(--sticky-right-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(2),
+.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(2) {
+  position: sticky;
+  right: var(--sticky-right-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(1) {
+  position: sticky;
+  right: var(--sticky-right-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(2),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(2) {
+  position: sticky;
+  right: var(--sticky-right-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(3),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(3) {
+  position: sticky;
+  right: var(--sticky-right-offset-3, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(1),
+.snipe-table--sticky-left-1 > tbody > tr > td:nth-child(1) {
+  position: sticky;
+  left: var(--sticky-left-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(1),
+.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(1) {
+  position: sticky;
+  left: var(--sticky-left-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(2),
+.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(2) {
+  position: sticky;
+  left: var(--sticky-left-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1) {
+  z-index: 3;
 }
 .snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -23673,15 +23732,8 @@ table rows
 .snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1) {
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2) {
   z-index: 3;
-}
-.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2),
-.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(-n + 2) {
-  position: sticky;
-  right: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -23689,15 +23741,8 @@ table rows
 .snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2) {
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3) {
   z-index: 3;
-}
-.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3),
-.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(-n + 3) {
-  position: sticky;
-  right: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 3) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -23705,15 +23750,8 @@ table rows
 .snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 3) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3) {
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1) {
   z-index: 3;
-}
-.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1),
-.snipe-table--sticky-left-1 > tbody > tr > td:nth-child(-n + 1) {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -23721,15 +23759,8 @@ table rows
 .snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1) {
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2) {
   z-index: 3;
-}
-.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2),
-.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(-n + 2) {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -23737,8 +23768,14 @@ table rows
 .snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2) {
-  z-index: 3;
+.snipe-top-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 15px;
+  margin-bottom: 4px;
+}
+.snipe-top-scrollbar-inner {
+  height: 1px;
 }
 /**
 main header nav
@@ -26844,12 +26881,71 @@ table rows
   border-top: var(--table-border-row-top) !important;
   color: var(--color-fg) !important;
 }
-.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1),
-.snipe-table--sticky-right-1 > tbody > tr > td:nth-last-child(-n + 1) {
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-1 > tbody > tr > td:nth-last-child(1) {
   position: sticky;
-  right: 0;
+  right: var(--sticky-right-offset-1, 0);
   z-index: 2;
   background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(1) {
+  position: sticky;
+  right: var(--sticky-right-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(2),
+.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(2) {
+  position: sticky;
+  right: var(--sticky-right-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(1),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(1) {
+  position: sticky;
+  right: var(--sticky-right-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(2),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(2) {
+  position: sticky;
+  right: var(--sticky-right-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(3),
+.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(3) {
+  position: sticky;
+  right: var(--sticky-right-offset-3, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(1),
+.snipe-table--sticky-left-1 > tbody > tr > td:nth-child(1) {
+  position: sticky;
+  left: var(--sticky-left-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(1),
+.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(1) {
+  position: sticky;
+  left: var(--sticky-left-offset-1, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(2),
+.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(2) {
+  position: sticky;
+  left: var(--sticky-left-offset-2, 0);
+  z-index: 2;
+  background-color: var(--box-bg);
+}
+.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1) {
+  z-index: 3;
 }
 .snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -26857,15 +26953,8 @@ table rows
 .snipe-table--sticky-right-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-1 > thead > tr > th:nth-last-child(-n + 1) {
+.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2) {
   z-index: 3;
-}
-.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2),
-.snipe-table--sticky-right-2 > tbody > tr > td:nth-last-child(-n + 2) {
-  position: sticky;
-  right: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -26873,15 +26962,8 @@ table rows
 .snipe-table--sticky-right-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-2 > thead > tr > th:nth-last-child(-n + 2) {
+.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3) {
   z-index: 3;
-}
-.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3),
-.snipe-table--sticky-right-3 > tbody > tr > td:nth-last-child(-n + 3) {
-  position: sticky;
-  right: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n + 3) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -26889,15 +26971,8 @@ table rows
 .snipe-table--sticky-right-3.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n + 3) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-right-3 > thead > tr > th:nth-last-child(-n + 3) {
+.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1) {
   z-index: 3;
-}
-.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1),
-.snipe-table--sticky-left-1 > tbody > tr > td:nth-child(-n + 1) {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -26905,15 +26980,8 @@ table rows
 .snipe-table--sticky-left-1.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 1) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-left-1 > thead > tr > th:nth-child(-n + 1) {
+.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2) {
   z-index: 3;
-}
-.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2),
-.snipe-table--sticky-left-2 > tbody > tr > td:nth-child(-n + 2) {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  background-color: var(--box-bg);
 }
 .snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
@@ -26921,8 +26989,14 @@ table rows
 .snipe-table--sticky-left-2.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n + 2) {
   background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
 }
-.snipe-table--sticky-left-2 > thead > tr > th:nth-child(-n + 2) {
-  z-index: 3;
+.snipe-top-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 15px;
+  margin-bottom: 4px;
+}
+.snipe-top-scrollbar-inner {
+  height: 1px;
 }
 /**
 main header nav
