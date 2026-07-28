@@ -853,10 +853,13 @@ class Importer extends Component
      */
     public function startProcessing(bool $withBackup = false): void
     {
-        // Demo mode: the actual per-slice POSTs would 422 out of
-        // Api\ImportController::process() anyway, but bail here so we
-        // don't even flip the UI into processing mode.
-        if (config('app.lock_passwords')) {
+        // Demo mode: uploads are blocked at Api\ImportController::store,
+        // but a demo superadmin should still be able to run the seeded
+        // sample imports so the end-to-end flow is exercisable in the
+        // demo. Non-superadmins get the same "feature disabled" bail as
+        // before. Api\ImportController::process() applies the matching
+        // gate on the per-slice POSTs.
+        if (config('app.lock_passwords') && ! auth()->user()->isSuperUser()) {
             $this->message = trans('general.feature_disabled');
             $this->message_type = 'danger';
 

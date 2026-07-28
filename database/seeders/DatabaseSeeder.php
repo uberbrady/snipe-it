@@ -84,7 +84,8 @@ class DatabaseSeeder extends Seeder
         Model::reguard();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        DB::table('imports')->truncate();
+        $this->call(ImportSeeder::class);
+        $this->reportMemory('after ImportSeeder');
         DB::table('requested_assets')->truncate();
 
         $this->reportMemory('DatabaseSeeder end');

@@ -217,10 +217,10 @@ class ImportController extends Controller
     {
         $this->authorize('import');
 
-        // Demo mode: same "feature disabled" gate as store(). Uploading
-        // was blocked there but processing an existing (seeded or leftover)
-        // Import row would still mutate the demo DB - close the loophole.
-        if (config('app.lock_passwords')) {
+        // Demo mode: uploads stay blocked at store(), but superadmins can
+        // still process the seeded sample imports so the demo shows off
+        // the flow end to end.
+        if (config('app.lock_passwords') && ! auth()->user()->isSuperUser()) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.feature_disabled')), 422);
         }
 
@@ -248,9 +248,6 @@ class ImportController extends Controller
         $redirectTo = 'hardware.index';
         switch ($request->input('import-type')) {
             case 'asset':
-                $model_perms = 'App\Models\Asset';
-                $redirectTo = 'hardware.index';
-                break;
             case 'assetHistory':
                 $model_perms = 'App\Models\Asset';
                 $redirectTo = 'hardware.index';

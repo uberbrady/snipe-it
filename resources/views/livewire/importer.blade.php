@@ -73,6 +73,18 @@
                         <div class="row">
                             <div class="col-md-12 table-responsive">
 
+                                @if ($this->files->isEmpty())
+                                    {{-- Nothing to list yet. Hide the whole
+                                         table so an empty <thead> doesn't
+                                         render as a stub, and point the user
+                                         at the upload widget in the sidebar. --}}
+                                    <div class="text-center text-muted" style="padding: 40px 20px;">
+                                        <p style="font-size: 16px; margin-bottom: 0;">
+                                            {{ trans('general.no_import_files_yet') }}
+                                        </p>
+                                    </div>
+                                @else
+
                                 @if (count($selectedIds) > 0)
                                     <div class="row" style="padding-bottom: 10px;">
                                         <div class="col-md-12">
@@ -199,6 +211,8 @@
                                         </div>
                                     </div>
                                 @endif
+
+                                @endif {{-- $this->files->isEmpty() --}}
                             </div>
                         </div>
                     </div>
