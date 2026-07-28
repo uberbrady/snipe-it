@@ -2362,55 +2362,94 @@ table rows
 // paint --box-bg as an opaque base and layer the (still-translucent)
 // stripe on top via linear-gradient, replicating the composited color.
 
-// Right-pinned columns. Generate rules for 1..3 (existing usage tops out at 3
-// via accessories/index; add more as needed).
-.snipe-table-sticky-right(@n) {
-    .snipe-table--sticky-right-@{n} > thead > tr > th:nth-last-child(-n+@{n}),
-    .snipe-table--sticky-right-@{n} > tbody > tr > td:nth-last-child(-n+@{n}) {
-        position: sticky;
-        right: 0;
-        z-index: 2;
-        background-color: var(--box-bg);
-    }
-    .snipe-table--sticky-right-@{n}.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n+@{n}) {
-        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
-    }
-    .snipe-table--sticky-right-@{n}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n+@{n}) {
-        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
-    }
-    .snipe-table--sticky-right-@{n} > thead > tr > th:nth-last-child(-n+@{n}) {
-        z-index: 3;
-    }
-    // When multiple right columns are pinned, they all currently pin to
-    // right: 0 and overlap. Callers using N > 1 need per-column right:
-    // offsets based on measured widths (add JS to set --sticky-offset-N
-    // CSS vars). N=1 (maintenance table) is unaffected.
-}
-.snipe-table-sticky-right(1);
-.snipe-table-sticky-right(2);
-.snipe-table-sticky-right(3);
+// Per-position offset variables (--sticky-right-offset-P, --sticky-left-offset-P)
+// are set by the JS block in partials/bootstrap-table.blade.php after every
+// render. Position 1 is the outermost pinned column and gets offset 0; each
+// subsequent position adds the outerWidth of the previous columns so pinned
+// cells sit flush against each other instead of stacking at the edge.
 
-// Left-pinned columns (current usage: 1).
-.snipe-table-sticky-left(@n) {
-    .snipe-table--sticky-left-@{n} > thead > tr > th:nth-child(-n+@{n}),
-    .snipe-table--sticky-left-@{n} > tbody > tr > td:nth-child(-n+@{n}) {
+// Position-specific sticky rules. Recurses from @pos=1 up to @maxN.
+.gen-sticky-right(@maxN, @pos: 1) when (@pos <= @maxN) {
+    .snipe-table--sticky-right-@{maxN} > thead > tr > th:nth-last-child(@{pos}),
+    .snipe-table--sticky-right-@{maxN} > tbody > tr > td:nth-last-child(@{pos}) {
         position: sticky;
-        left: 0;
+        right: var(~"--sticky-right-offset-@{pos}", 0);
         z-index: 2;
         background-color: var(--box-bg);
     }
-    .snipe-table--sticky-left-@{n}.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n+@{n}) {
-        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    .gen-sticky-right(@maxN, (@pos + 1));
+}
+.gen-sticky-right(1);
+.gen-sticky-right(2);
+.gen-sticky-right(3);
+
+.gen-sticky-left(@maxN, @pos: 1) when (@pos <= @maxN) {
+    .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(@{pos}),
+    .snipe-table--sticky-left-@{maxN} > tbody > tr > td:nth-child(@{pos}) {
+        position: sticky;
+        left: var(~"--sticky-left-offset-@{pos}", 0);
+        z-index: 2;
+        background-color: var(--box-bg);
     }
-    .snipe-table--sticky-left-@{n}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n+@{n}) {
-        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
-    }
-    .snipe-table--sticky-left-@{n} > thead > tr > th:nth-child(-n+@{n}) {
+    .gen-sticky-left(@maxN, (@pos + 1));
+}
+.gen-sticky-left(1);
+.gen-sticky-left(2);
+
+// Shared: header z-index bump and zebra-stripe overlay for all pinned columns.
+.gen-sticky-right-shared(@maxN) {
+    .snipe-table--sticky-right-@{maxN} > thead > tr > th:nth-last-child(-n+@{maxN}) {
         z-index: 3;
     }
+    .snipe-table--sticky-right-@{maxN}.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-right-@{maxN}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
 }
-.snipe-table-sticky-left(1);
-.snipe-table-sticky-left(2);
+.gen-sticky-right-shared(1);
+.gen-sticky-right-shared(2);
+.gen-sticky-right-shared(3);
+
+.gen-sticky-left-shared(@maxN) {
+    .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(-n+@{maxN}) {
+        z-index: 3;
+    }
+    .snipe-table--sticky-left-@{maxN}.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-left-@{maxN}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
+}
+.gen-sticky-left-shared(1);
+.gen-sticky-left-shared(2);
+
+
+// -----------------------------------------------------------------------------
+// Top scrollbar: mirrored above the bootstrap-table body so users on wide
+// tables don't have to scroll to the bottom to find the horizontal
+// scrollbar. Managed by updateTopScrollbar() in partials/bootstrap-table.
+// The wrapper node only exists when the table actually overflows
+// horizontally, so tables that fit in their container don't get any
+// extra chrome.
+// -----------------------------------------------------------------------------
+
+.snipe-top-scrollbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    // Slightly taller than the OS scrollbar so the thumb is always
+    // reachable even on platforms that render fatter scrollbars.
+    height: 15px;
+    margin-bottom: 4px;
+}
+
+.snipe-top-scrollbar-inner {
+    // Height just enough to make the parent scrollable; width is set by
+    // JS to match the underlying table's scrollWidth.
+    height: 1px;
+}
 
 
 /**
