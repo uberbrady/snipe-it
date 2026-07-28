@@ -4,6 +4,7 @@ use App\Http\Controllers\Assets\AssetCheckinController;
 use App\Http\Controllers\Assets\AssetCheckoutController;
 use App\Http\Controllers\Assets\AssetsController;
 use App\Http\Controllers\Assets\BulkAssetsController;
+use App\Http\Controllers\BulkMaintenancesController;
 use App\Http\Controllers\MaintenancesController;
 use App\Models\Asset;
 use App\Models\Setting;
@@ -202,6 +203,10 @@ Route::resource('maintenances',
 Route::post('maintenances/{maintenance}/complete',
     [MaintenancesController::class, 'complete']
 )->name('maintenances.complete')->middleware(['auth']);
+
+Route::post('maintenances/bulk',
+    [BulkMaintenancesController::class, 'store']
+)->name('maintenances.bulk')->middleware(['auth']);
 
 Route::get('ht/{any?}',
     [AssetsController::class, 'getAssetByTag'])

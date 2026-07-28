@@ -1720,6 +1720,47 @@ class Helper
             ]) ? 'rtl' : 'ltr';
     }
 
+    /**
+     * Return $url if it points at the same origin as config('app.url'),
+     * otherwise null. Callers should coalesce with a safe default:
+     *
+     *   $target = Helper::sameOriginUrl($input) ?? route('home');
+     *
+     * Any user-controllable redirect target (hidden form field, Referer
+     * header, SAML RelayState, url.intended session value, etc.) MUST
+     * pass through this before reaching redirect(...) or we hand attackers
+     * an open-redirect / phishing hand-off primitive. Relative URLs are
+     * treated as same-origin; javascript:/data: and other non-http(s)
+     * schemes are rejected. CR/LF are stripped to prevent response-splitting
+     * via a crafted Location header.
+     */
+    public static function sameOriginUrl(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+
+        $url = str_replace(["\r", "\n"], '', $url);
+
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return null;
+        }
+
+        if (isset($parts['scheme']) && ! in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return null;
+        }
+
+        $host = $parts['host'] ?? null;
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+        if ($host !== null && strcasecmp($host, (string) $appHost) !== 0) {
+            return null;
+        }
+
+        return $url;
+    }
+
     public static function getRedirectOption($request, $id, $table, $item_id = null): RedirectResponse
     {
 
@@ -1727,17 +1768,12 @@ class Helper
         $checkout_to_type = session('checkout_to_type') ?? null;
         $checkedInFrom = session('checkedInFrom');
         $other_redirect = session('other_redirect');
-        $backUrl = str_replace(["\r", "\n"], '', session()->pull('url.intended', 'home'));
 
-        // Reject any stored back-URL that points off-site. redirect()->intended() performs
-        // no host validation, and url.intended can be written from the SAML RelayState POST
-        // parameter (SamlController), which an attacker-controlled IdP could set to an
-        // off-site URL.
-        $backHost = parse_url($backUrl, PHP_URL_HOST);
-        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
-        if ($backHost && $backHost !== $appHost) {
-            $backUrl = route('home');
-        }
+        // Same-origin gate: redirect()->intended() performs no host
+        // validation, and url.intended can be written from the SAML
+        // RelayState POST parameter (SamlController), which an
+        // attacker-controlled IdP could set to an off-site URL.
+        $backUrl = self::sameOriginUrl(session()->pull('url.intended', 'home')) ?? route('home');
 
         // return to previous page
         if ($redirect_option == 'back') {
@@ -1753,6 +1789,7 @@ class Helper
                 'Accessories' => route('accessories.index'),
                 'Components' => route('components.index'),
                 'Consumables' => route('consumables.index'),
+                'Maintenances' => route('maintenances.index'),
             };
 
             // #15214: preserve query-string filters when the user came

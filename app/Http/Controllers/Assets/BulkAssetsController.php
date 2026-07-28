@@ -82,8 +82,7 @@ class BulkAssetsController extends Controller
         }
 
         if ($request->input('bulk_actions') === 'checkin') {
-            $referer = request()->headers->get('referer');
-            if ($referer && parse_url($referer, PHP_URL_HOST) === parse_url(config('app.url'), PHP_URL_HOST)) {
+            if ($referer = Helper::sameOriginUrl($request->headers->get('referer'))) {
                 redirect()->setIntendedUrl($referer);
             }
             $request->session()->flashInput(['selected_assets' => $asset_ids]);
