@@ -1388,7 +1388,6 @@ class Asset extends Depreciable
     public function journal()
     {
         return $this->assetlog()->where('action_type', '=', 'note added')
-            ->orderBy('created_at', 'desc')
             ->withTrashed();
     }
 
