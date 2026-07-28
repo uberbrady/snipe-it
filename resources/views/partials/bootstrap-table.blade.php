@@ -3274,8 +3274,17 @@
                 var body = $body[0];
                 var $wrapper = $body.closest('.fixed-table-container');
 
+                // Fixed-height tables (data-height, e.g. dashboard widgets)
+                // already show their bottom scrollbar within the box they
+                // live in — you don't have to scroll down to reach it — so
+                // the top scrollbar adds noise without a benefit. Skip them.
+                if ($(tbl).is('[data-height]')) {
+                    $wrapper.prev('.snipe-top-scrollbar').remove();
+                    return;
+                }
+
                 var overflows = tbl.scrollWidth > body.clientWidth;
-                var $topScroll = $wrapper.children('.snipe-top-scrollbar');
+                var $topScroll = $wrapper.prev('.snipe-top-scrollbar');
 
                 if (! overflows) {
                     $topScroll.remove();
@@ -3284,7 +3293,7 @@
 
                 if (! $topScroll.length) {
                     $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
-                    $wrapper.prepend($topScroll);
+                    $wrapper.before($topScroll);
                     var top = $topScroll[0];
                     var syncing = false;
                     $topScroll.on('scroll', function () {
