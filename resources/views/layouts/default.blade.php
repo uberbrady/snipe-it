@@ -34,15 +34,6 @@
 
     @include('partials.theme-mode-preflight')
 
-    {{-- Preload the two Font-Awesome families the top-nav uses so the
-         icon glyphs are ready by first paint. Without these, `.far` and
-         `.fas` icons render as invisible / tofu until the woff2 files
-         finish downloading (typically triggered by the CSS parse), and
-         then flicker into place — most visible on the alert bell and
-         user-menu chrome on first-ever page load. --}}
-    <link rel="preload" href="{{ url('css/webfonts/fa-regular-400.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{{ url('css/webfonts/fa-solid-900.woff2') }}" as="font" type="font/woff2" crossorigin>
-
     {{-- stylesheets --}}
     <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
 
