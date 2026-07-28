@@ -19,13 +19,14 @@ class BulkMaintenancesController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // Top-level gate mirrors MaintenancesController::complete()/destroy() —
-        // maintenance CRUD keys on the asset edit permission (see
+        // maintenance keys on the asset edit permission (see
         // MaintenancePolicy). This blocks users without any assets.edit rights
         // from hitting the endpoint at all; per-row policy still runs below.
         // FMCS company scoping is applied automatically on the Maintenance
         // lookups further down via the model's CompanyableChildTrait global
         // scope, so a scoped user can't reach maintenance rows for assets
         // outside their company set even if they submit those ids directly.
+        // We should probably consider making maintenances their own permission though
         $this->authorize('update', Asset::class);
 
         $action = $request->input('bulk_actions');
