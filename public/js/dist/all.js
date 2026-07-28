@@ -75633,14 +75633,25 @@ $(function () {
   // User::noPassword() raw so no Hash::check can ever match.
   // Applies to both the main users/edit create form and the
   // users/modal form since they share the input names.
+  //
+  // Required-state preservation: the server renders password/password_
+  // confirmation with `required` only on create (see users/edit.blade.php
+  // and modals/user.blade.php). We cache that server-rendered state on
+  // the first call so subsequent activated-toggles only ever re-apply
+  // the ORIGINAL server intent — otherwise editing an existing
+  // (activated) user would silently flip password to required on page
+  // load and jQuery Validate would block Save with the password empty.
   var syncPasswordFields = function syncPasswordFields($checkbox) {
     var $form = $checkbox.closest('form');
     var $passwords = $form.find('input[name="password"], input[name="password_confirmation"]');
-    var visible = $checkbox.is(':checked');
-    $passwords.prop('required', visible);
+    var activated = $checkbox.is(':checked');
     $passwords.each(function () {
+      if (this.dataset.serverRequired === undefined) {
+        this.dataset.serverRequired = this.required ? '1' : '0';
+      }
+      this.required = activated && this.dataset.serverRequired === '1';
       var $wrap = $(this).closest('.form-group, .dynamic-form-row');
-      if (visible) {
+      if (activated) {
         $wrap.show();
       } else {
         $wrap.hide();
