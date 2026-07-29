@@ -6,7 +6,6 @@ return [
     'reset_password' => 'Reset Password',
     'saml_login' => 'Login via SAML',
     'login' => 'Login',
-    'logn_help' => 'Some systems require case-sensitive usernames.',
     'login_prompt' => 'Please Login',
     'forgot_password' => 'I forgot my password',
     'ldap_reset_password' => 'Please click here to reset your LDAP password',

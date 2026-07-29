@@ -3,7 +3,7 @@
 return [
 
     'account_already_exists' => 'An account with the this email already exists.',
-    'account_not_found' => 'The username or password is incorrect. Some systems require case-sensitive usernames.',
+    'account_not_found' => 'The username or password is incorrect.',
     'account_not_activated' => 'This user account is not activated.',
     'account_suspended' => 'This user account is suspended.',
 
