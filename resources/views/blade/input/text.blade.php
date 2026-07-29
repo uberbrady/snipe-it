@@ -10,7 +10,7 @@
         <div class="input-group">
 @endif
     <input
-        {{ $attributes->merge(['class' => 'form-control']) }}
+        {{ $attributes->merge(['type' => 'text', 'class' => 'form-control']) }}
         @if ($ignoreAutofill)
             autocomplete="off"
             data-1p-ignore="true"
