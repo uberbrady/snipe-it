@@ -60,7 +60,7 @@ class ManufacturerImporter extends ItemImporter
         } else {
             $this->log('No Matching Manufacturer, Create a new one');
             $manufacturer = new Manufacturer;
-            $manufacturer->created_by = auth()->id();
+            $manufacturer->created_by = $this->created_by;
         }
 
         // Pull the records from the CSV to determine their values

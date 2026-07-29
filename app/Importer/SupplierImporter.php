@@ -60,7 +60,7 @@ class SupplierImporter extends ItemImporter
         } else {
             $this->log('No Matching Supplier, Create a new one');
             $supplier = new Supplier;
-            $supplier->created_by = auth()->id();
+            $supplier->created_by = $this->created_by;
         }
 
         // Pull the records from the CSV to determine their values

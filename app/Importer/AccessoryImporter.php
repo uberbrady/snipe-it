@@ -50,7 +50,7 @@ class AccessoryImporter extends ItemImporter
         }
         $this->log('No Matching Accessory, Creating a new one');
         $accessory = new Accessory;
-        $accessory->created_by = auth()->id();
+        $accessory->created_by = $this->created_by;
         $this->item['model_number'] = $this->findCsvMatch($row, 'model_number');
         $this->item['min_amt'] = $this->findCsvMatch($row, 'min_amt');
         $accessory->fill($this->sanitizeItemForStoring($accessory));

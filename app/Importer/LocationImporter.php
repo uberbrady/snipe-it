@@ -60,7 +60,7 @@ class LocationImporter extends ItemImporter
         } else {
             $this->log('No Matching Location, Create a new one');
             $location = new Location;
-            $location->created_by = auth()->id();
+            $location->created_by = $this->created_by;
         }
 
         // Pull the records from the CSV to determine their values

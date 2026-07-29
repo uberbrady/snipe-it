@@ -85,7 +85,7 @@ class LicenseImporter extends ItemImporter
             $license->update($this->sanitizeItemForUpdating($license));
         } else {
             $license->fill($this->sanitizeItemForStoring($license));
-            $license->created_by = auth()->id();
+            $license->created_by = $this->created_by;
         }
 
         // This sets an attribute on the Loggable trait for the action log
@@ -116,7 +116,7 @@ class LicenseImporter extends ItemImporter
                         ]));
                     } else {
                         $targetLicense->assigned_to = $checkout_target->id;
-                        $targetLicense->created_by = auth()->id();
+                        $targetLicense->created_by = $this->created_by;
                         if ($asset) {
                             $targetLicense->asset_id = $asset->id;
                         }
@@ -130,7 +130,7 @@ class LicenseImporter extends ItemImporter
                             'target' => trans('general.asset').' "'.$asset->display_name.'"',
                         ]));
                     } else {
-                        $targetLicense->created_by = auth()->id();
+                        $targetLicense->created_by = $this->created_by;
                         $targetLicense->asset_id = $asset->id;
                         $targetLicense->save();
                     }

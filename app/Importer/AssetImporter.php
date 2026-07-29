@@ -102,6 +102,14 @@ class AssetImporter extends ItemImporter
         } else {
             $this->log('No Matching Asset, Creating a new one');
             $asset = new Asset;
+            // created_by is not in Asset's $fillable, so the value that
+            // ItemImporter::handle() puts on $this->item is stripped by
+            // sanitizeItemForStoring() before it reaches the model. Set
+            // it directly. Use $this->created_by (the property set by
+            // setCreatedBy() from both ItemImportRequest and
+            // ObjectImportCommand) rather than auth()->id() so CLI-run
+            // imports get the --user_id option value instead of null.
+            $asset->created_by = $this->created_by;
         }
 
         // If no status ID is found

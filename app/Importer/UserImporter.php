@@ -4,7 +4,6 @@ namespace App\Importer;
 
 use App\Models\Asset;
 use App\Models\Company;
-use App\Models\Department;
 use App\Models\Location;
 use App\Models\Setting;
 use App\Models\User;
@@ -232,7 +231,7 @@ class UserImporter extends ItemImporter
         }
 
         $user = new User;
-        $user->created_by = auth()->id();
+        $user->created_by = $this->created_by;
 
         $user->fill($this->sanitizeItemForStoring($user));
 
@@ -269,44 +268,6 @@ class UserImporter extends ItemImporter
         }
 
         $this->logError($user, 'User');
-    }
-
-    /**
-     * Fetch an existing department, or create new if it doesn't exist
-     *
-     * @author Daniel Melzter
-     *
-     * @since 5.0
-     *
-     * @param  $department_name  string
-     * @return int id of department created/found
-     */
-    public function createOrFetchDepartment($department_name)
-    {
-        if (is_null($department_name) || $department_name == '') {
-            return null;
-        }
-
-        $department = Department::where(['name' => $department_name])->first();
-        if ($department) {
-            $this->log('A matching department '.$department_name.' already exists');
-
-            return $department->id;
-        }
-
-        $department = new Department;
-        $department->name = $department_name;
-        $department->created_by = $this->created_by;
-
-        if ($department->save()) {
-            $this->log('department '.$department_name.' was created');
-
-            return $department->id;
-        }
-
-        $this->logError($department, 'Department');
-
-        return null;
     }
 
     public function sendWelcome($send = true)
