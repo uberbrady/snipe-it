@@ -445,8 +445,8 @@
                                             <span class="badge">{{ (isset($total_pending_sidebar)) ? $total_pending_sidebar : '' }}</span>
                                         </a>
                                     </li>
-                                    <li id="undeployable-sidenav-option"{!! (request()->query('status') == 'Undeployable' ? ' class="active" aria-current="page"' : '') !!} ><a
-                                            href="{{ url('hardware?status_type=Undeployable') }}">
+                                    <li id="undeployable-sidenav-option"{!! (request()->query('status_type') == 'Undeployable' ? ' class="active" aria-current="page"' : '') !!}>
+                                        <a href="{{ url('hardware?status_type=Undeployable') }}">
                                             <x-icon type="x" class="text-red fa-fw" />
                                             {{ trans('general.undeployable') }}
                                             <span class="badge">{{ (isset($total_undeployable_sidebar)) ? $total_undeployable_sidebar : '' }}</span>
@@ -664,7 +664,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\AssetModel::class)
-                                        <li {{!! (request()->is('models*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('models*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('models.index') }}">
                                                 {{ trans('general.asset_models') }}
                                             </a>
@@ -672,7 +672,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Category::class)
-                                        <li {{!! (request()->is('categories*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('categories*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('categories.index') }}">
                                                 {{ trans('general.categories') }}
                                             </a>
@@ -680,7 +680,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Manufacturer::class)
-                                        <li {{!! (request()->is('manufacturers*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('manufacturers*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('manufacturers.index') }}">
                                                 {{ trans('general.manufacturers') }}
                                             </a>
@@ -688,7 +688,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Supplier::class)
-                                        <li {{!! (request()->is('suppliers*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('suppliers*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('suppliers.index') }}">
                                                 {{ trans('general.suppliers') }}
                                             </a>
@@ -696,7 +696,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Department::class)
-                                        <li {{!! (request()->is('departments*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('departments*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('departments.index') }}">
                                                 {{ trans('general.departments') }}
                                             </a>
@@ -704,7 +704,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Location::class)
-                                        <li {{!! (request()->is('locations*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('locations*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('locations.index') }}">
                                                 {{ trans('general.locations') }}
                                             </a>
@@ -712,7 +712,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Company::class)
-                                        <li {{!! (request()->is('companies*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li {!! (request()->is('companies*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('companies.index') }}">
                                                 {{ trans('general.companies') }}
                                             </a>
@@ -720,7 +720,7 @@
                                     @endcan
 
                                     @can('view', \App\Models\Depreciation::class)
-                                        <li  {{!! (request()->is('depreciations*') ? ' class="active" aria-current="page"' : '') !!}}>
+                                        <li  {!! (request()->is('depreciations*') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('depreciations.index') }}">
                                                 {{ trans('general.depreciation') }}
                                             </a>
@@ -740,51 +740,51 @@
                                 </a>
 
                                 <ul class="treeview-menu">
-                                    <li {{!! (request()->is('reports') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('reports.index') }}">
                                             {{ trans('general.list_all') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports/activity') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/activity') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('reports.activity') }}">
                                             {{ trans('general.activity_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports/custom') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/custom') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ url('reports/custom') }}">
                                             {{ trans('general.custom_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports.custom.component') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->routeIs('reports.custom.component') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('reports.custom.component') }}">
                                             {{ trans('general.custom_component_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports/audit') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/audit') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('reports.audit') }}">
                                             {{ trans('general.audit_report') }}</a>
                                     </li>
-                                    <li {{!! (request()->is('reports/depreciation') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/depreciation') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ url('reports/depreciation') }}">
                                             {{ trans('general.depreciation_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports/licenses') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/licenses') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ url('reports/licenses') }}">
                                             {{ trans('general.license_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('ui.reports.maintenances') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->routeIs('ui.reports.maintenances') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ route('ui.reports.maintenances') }}">
                                             {{ trans('general.asset_maintenance_report') }}
                                         </a>
                                     </li>
-                                    <li {{!! (request()->is('reports/unaccepted_assets') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li {!! (request()->is('reports/unaccepted_assets') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ url('reports/unaccepted_assets') }}">
                                             {{ trans('general.unaccepted_asset_report') }}
                                         </a>
                                     </li>
-                                    <li  {{!! (request()->is('reports/accessories') ? ' class="active" aria-current="page"' : '') !!}}>
+                                    <li  {!! (request()->is('reports/accessories') ? ' class="active" aria-current="page"' : '') !!}>
                                         <a href="{{ url('reports/accessories') }}">
                                             {{ trans('general.accessory_report') }}
                                         </a>
