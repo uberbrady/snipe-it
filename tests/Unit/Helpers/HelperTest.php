@@ -342,7 +342,7 @@ class HelperTest extends TestCase
     }
 
     /**
-     * FD-56675 regression coverage: customFieldFormValue collapses the
+     * FD-56673 regression coverage: customFieldFormValue collapses the
      * gate + decrypt + default fallback that every branch of
      * custom_fields_form.blade.php used to hand-roll (and got wrong on
      * seven of them). These unit tests pin the four possible states of

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
 
 /**
- * FD-56675 regression coverage. Asserts that every element-type branch in
+ * FD-56673 regression coverage. Asserts that every element-type branch in
  * resources/views/models/custom_fields_form.blade.php honors the
  * assets.view.encrypted_custom_fields gate, and that the fix is picked up
  * on each of the four form contexts that include the template
