@@ -374,13 +374,13 @@ class Location extends SnipeModel
      * level". Using 0 (not null) avoids PHP 8.4's deprecation of null array
      * offsets when callers build the map from `$location->parent_id`.
      *
-     * `$prefix` is the accumulated breadcrumb path of the current node's
-     * ancestors. Empty at the top-level call, then each recursion passes down
-     * the full parent chain so every entry's `use_text` shows the whole path
-     * (e.g. `DC1 › Rack 1 › Rack 1a`) rather than just an indent-depth marker.
-     * The `›` separator matches the parent-chain breadcrumb rendered in the
-     * location info-panel at resources/views/blade/info-panel/index.blade.php
-     * so the select2 dropdown and the info-panel display are visually unified.
+     * `$prefix` is the accumulated indent marker for the current recursion
+     * depth (two dashes per level), so `use_text` reads e.g.
+     * `-- Rack 1` or `---- Rack 1a` in the dropdown. Locations can nest
+     * arbitrarily deep and the previous `A › B › C` breadcrumb form produced
+     * unreadable long strings for even modestly nested hierarchies
+     * (see #19398). Company::indenter keeps the breadcrumb form because its
+     * hierarchy is capped at one parent level and reads cleanly there.
      */
     public static function indenter($locations_with_children, int $parent_id = 0, $prefix = '')
     {
@@ -391,15 +391,13 @@ class Location extends SnipeModel
         }
 
         foreach ($locations_with_children[$parent_id] as $location) {
-            $breadcrumb = $prefix === ''
+            $location->use_text = $prefix === ''
                 ? $location->name
-                : $prefix.' › '.$location->name;
-
-            $location->use_text = $breadcrumb;
+                : $prefix.' '.$location->name;
             $location->use_image = ($location->image) ? Storage::disk('public')->url('locations/'.$location->image) : null;
             $results[] = $location;
             if (array_key_exists($location->id, $locations_with_children)) {
-                $results = array_merge($results, self::indenter($locations_with_children, $location->id, $breadcrumb));
+                $results = array_merge($results, self::indenter($locations_with_children, $location->id, $prefix.'--'));
             }
         }
 

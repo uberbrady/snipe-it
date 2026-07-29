@@ -56,13 +56,13 @@ class LocationsForSelectListTest extends TestCase
             ->assertOk();
     }
 
-    public function test_search_result_shows_parent_chain_in_breadcrumb(): void
+    public function test_search_result_shows_plain_names_without_parent_chain(): void
     {
-        // Two data centers each with their own rack. Location::name is
-        // `unique_undeleted` today so two children literally named
-        // "Rack 1" cannot coexist, but the disambiguation the breadcrumb
-        // provides is still valuable whenever the child names share a
-        // prefix or the tree is deep.
+        // Per #19398, the location dropdown reverted from the breadcrumb
+        // form (`DC1 › RackA`) to plain indentation. Search results are
+        // cherry-picked out of the tree so there's no depth to indent by;
+        // they render as plain names and the user's search term supplies
+        // the disambiguation context.
         $dc1 = Location::factory()->create(['name' => 'DC1']);
         $dc2 = Location::factory()->create(['name' => 'DC2']);
         Location::factory()->create(['name' => 'RackA', 'parent_id' => $dc1->id]);
@@ -73,14 +73,14 @@ class LocationsForSelectListTest extends TestCase
             ->assertOk();
 
         $texts = collect($response->json('results'))->pluck('text');
-        $this->assertTrue($texts->contains('DC1 › RackA'));
-        $this->assertTrue($texts->contains('DC2 › RackB'));
+        $this->assertTrue($texts->contains('RackA'));
+        $this->assertTrue($texts->contains('RackB'));
     }
 
-    public function test_search_result_walks_multiple_ancestor_levels(): void
+    public function test_search_result_for_deeply_nested_match_shows_plain_name(): void
     {
-        // Deeper tree: HQ > DC1 > Rack 1. The chain should show every
-        // ancestor level.
+        // Deeper tree: HQ > DC1 > Rack 1. Only the matched leaf's name
+        // renders in the search result — no ancestor chain.
         $hq = Location::factory()->create(['name' => 'HQ']);
         $dc1 = Location::factory()->create(['name' => 'DC1', 'parent_id' => $hq->id]);
         Location::factory()->create(['name' => 'Rack 1', 'parent_id' => $dc1->id]);
@@ -90,7 +90,7 @@ class LocationsForSelectListTest extends TestCase
             ->assertOk();
 
         $texts = collect($response->json('results'))->pluck('text');
-        $this->assertTrue($texts->contains('HQ › DC1 › Rack 1'));
+        $this->assertTrue($texts->contains('Rack 1'));
     }
 
     public function test_search_result_for_top_level_location_has_no_prefix(): void
@@ -105,5 +105,23 @@ class LocationsForSelectListTest extends TestCase
 
         $texts = collect($response->json('results'))->pluck('text');
         $this->assertTrue($texts->contains('Standalone Site'));
+    }
+
+    public function test_unsearched_dropdown_uses_dash_indentation_for_nested_locations(): void
+    {
+        // Pins the reverted-to-old-style dropdown display. Root shows plain
+        // name, children get "-- " prefix, grandchildren "---- ", etc.
+        $hq = Location::factory()->create(['name' => 'HQ']);
+        $dc1 = Location::factory()->create(['name' => 'DC1', 'parent_id' => $hq->id]);
+        Location::factory()->create(['name' => 'Rack 1', 'parent_id' => $dc1->id]);
+
+        $response = $this->actingAsForApi(User::factory()->createUsers()->create())
+            ->getJson(route('api.locations.selectlist'))
+            ->assertOk();
+
+        $texts = collect($response->json('results'))->pluck('text');
+        $this->assertTrue($texts->contains('HQ'), 'Top-level location renders without indent prefix.');
+        $this->assertTrue($texts->contains('-- DC1'), 'One-level-deep location gets a two-dash indent.');
+        $this->assertTrue($texts->contains('---- Rack 1'), 'Two-levels-deep location gets a four-dash indent.');
     }
 }
