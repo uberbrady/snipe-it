@@ -3288,23 +3288,54 @@
     // container get no extra chrome.
     function updateTopScrollbar(root) {
         var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
+        // Track which outer .bootstrap-table wrappers have already been
+        // processed this pass. Bootstrap-table's fixed-columns extension
+        // (and some other add-ons) clone the table into extra inner
+        // wrappers inside a single .bootstrap-table container. Iterating
+        // .snipe-table naively then produced one top scrollbar per clone
+        // stacked above the same table, and none of them tracked the
+        // primary .fixed-table-body's actual scroll width — visible on
+        // /hardware and /locations as two mis-sized top scrollbars.
+        var processedWrappers = [];
         $targets.each(function () {
             var tbl = this;
             var $body = $(tbl).closest('.fixed-table-body');
             if (! $body.length) return;
-            var body = $body[0];
-            var $wrapper = $body.closest('.fixed-table-container');
+            var $btWrapper = $body.closest('.bootstrap-table');
+            if (! $btWrapper.length) return;
+
+            var wrapperEl = $btWrapper[0];
+            if (processedWrappers.indexOf(wrapperEl) !== -1) return;
+            processedWrappers.push(wrapperEl);
+
+            // Always mirror the PRIMARY .fixed-table-body (the first one
+            // inside the outer .bootstrap-table wrapper). Extension clones
+            // have their own .fixed-table-body but tracking any of them
+            // would produce a scrollbar that only spans the pinned
+            // columns' width, not the full table.
+            var $primaryContainer = $btWrapper.children('.fixed-table-container').first();
+            if (! $primaryContainer.length) return;
+            var $primaryBody = $primaryContainer.find('.fixed-table-body').first();
+            if (! $primaryBody.length) return;
+            var primaryBody = $primaryBody[0];
+            var $primaryTable = $primaryBody.find('table.snipe-table').first();
+            if (! $primaryTable.length) return;
+            var primaryTable = $primaryTable[0];
 
             // Fixed-height tables (data-height, e.g. dashboard widgets)
             // already show their bottom scrollbar within the box they
             // live in, so the top scrollbar adds noise without benefit.
             if ($(tbl).is('[data-height]')) {
-                $wrapper.prev('.snipe-top-scrollbar').remove();
+                $primaryContainer.children('.snipe-top-scrollbar').remove();
                 return;
             }
 
-            var overflows = tbl.scrollWidth > body.clientWidth;
-            var $topScroll = $wrapper.prev('.snipe-top-scrollbar');
+            var overflows = primaryTable.scrollWidth > primaryBody.clientWidth;
+            // Look up an existing scrollbar as a direct child of the
+            // primary .fixed-table-container, sitting immediately above
+            // .fixed-table-body so it hugs the top of the table the same
+            // way the native scrollbar hugs the bottom of it.
+            var $topScroll = $primaryContainer.children('.snipe-top-scrollbar');
 
             if (! overflows) {
                 $topScroll.remove();
@@ -3313,7 +3344,7 @@
 
             if (! $topScroll.length) {
                 $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
-                $wrapper.before($topScroll);
+                $primaryBody.before($topScroll);
             }
 
             // Rebind scroll sync every time. The top scrollbar element
@@ -3326,25 +3357,48 @@
             $topScroll.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
                 if (syncing) return;
                 syncing = true;
-                body.scrollLeft = top.scrollLeft;
+                primaryBody.scrollLeft = top.scrollLeft;
                 syncing = false;
             });
-            $body.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
+            $primaryBody.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
                 if (syncing) return;
                 syncing = true;
-                top.scrollLeft = body.scrollLeft;
+                top.scrollLeft = primaryBody.scrollLeft;
                 syncing = false;
             });
 
-            $topScroll.children('.snipe-top-scrollbar-inner').css('width', tbl.scrollWidth + 'px');
+            $topScroll.children('.snipe-top-scrollbar-inner').css('width', primaryTable.scrollWidth + 'px');
         });
+    }
+
+    // Helper: run the given callback after enough layout has settled that
+    // clientWidth / scrollWidth reads on newly-visible tables are stable.
+    //
+    // Uses two nested requestAnimationFrame calls (fires two frames later)
+    // plus a setTimeout fallback for the same tick, so we're robust
+    // against both:
+    //   - browsers where RAF fires before the paint that finalizes layout
+    //     of a just-un-hidden pane, and
+    //   - the resetView path in snipeit.js that runs on the same tick as
+    //     shown.bs.tab and adjusts column widths after us.
+    function deferAfterLayout(fn) {
+        var raf = window.requestAnimationFrame || function (cb) { return window.setTimeout(cb, 0); };
+        raf(function () {
+            raf(function () {
+                fn();
+            });
+        });
+        window.setTimeout(fn, 120);
     }
 
     // Re-measure after every bootstrap-table render. Delegated on document
     // so it catches tables that init after this handler was attached.
     $(document).on('post-body.bs.table', '.snipe-table', function () {
-        updateStickyColumnOffsets(this);
-        updateTopScrollbar(this);
+        var tbl = this;
+        deferAfterLayout(function () {
+            updateStickyColumnOffsets(tbl);
+            updateTopScrollbar(tbl);
+        });
     });
 
     // Re-measure when a tab becomes visible. Bootstrap 3 renders inactive
@@ -3353,9 +3407,24 @@
     // post-body time. shown.bs.tab fires on the tab trigger after the pane
     // has been made visible; a zero-arg call re-measures all snipe-tables
     // on the page.
+    //
+    // Also listen for reset-view.bs.table, which bootstrap-table fires
+    // when snipeit.js calls `.bootstrapTable('resetView')` from its own
+    // shown.bs.tab handler (that path recomputes column widths after us
+    // and can leave scrollWidth stale if we measured on the same tick).
     $(document).on('shown.bs.tab', function () {
-        updateStickyColumnOffsets();
-        updateTopScrollbar();
+        deferAfterLayout(function () {
+            updateStickyColumnOffsets();
+            updateTopScrollbar();
+        });
+    });
+
+    $(document).on('reset-view.bs.table', '.snipe-table', function () {
+        var tbl = this;
+        deferAfterLayout(function () {
+            updateStickyColumnOffsets(tbl);
+            updateTopScrollbar(tbl);
+        });
     });
 
     $(window).on('resize', function () {
