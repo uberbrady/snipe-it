@@ -82,7 +82,7 @@ class ItemImporter extends Importer
         $this->item['min_amt'] = $this->findCsvMatch($row, 'min_amt');
         $this->item['qty'] = $this->findCsvMatch($row, 'quantity');
         $this->item['requestable'] = $this->findCsvMatch($row, 'requestable');
-        $this->item['created_by'] = auth()->id();
+        $this->item['created_by'] = $this->created_by;
         $this->item['asset_tag'] = $this->findCsvMatch($row, 'asset_tag');
         $this->item['serial'] = $this->findCsvMatch($row, 'serial');
         $this->item['item_no'] = trim($this->findCsvMatch($row, 'item_no'));
@@ -256,7 +256,7 @@ class ItemImporter extends Importer
 
         $this->log('No Matching Model, Creating a new one');
         $asset_model = new AssetModel;
-        $asset_model->created_by = auth()->id();
+        $asset_model->created_by = $this->created_by;
         $item = $this->sanitizeItemForStoring($asset_model, $editingModel);
         $item['name'] = $asset_model_name;
         $item['model_number'] = $asset_modelNumber;
@@ -313,7 +313,7 @@ class ItemImporter extends Importer
         }
 
         $category = new Category;
-        $category->created_by = auth()->id();
+        $category->created_by = $this->created_by;
         $category->name = $asset_category;
         $category->category_type = $item_type;
 
@@ -353,7 +353,7 @@ class ItemImporter extends Importer
             return $company->id;
         }
         $company = new Company;
-        $company->created_by = auth()->id();
+        $company->created_by = $this->created_by;
         $company->name = $asset_company_name;
 
         if ($company->save()) {
@@ -425,7 +425,7 @@ class ItemImporter extends Importer
         }
         $this->log('Creating a new status');
         $status = new Statuslabel;
-        $status->created_by = auth()->id();
+        $status->created_by = $this->created_by;
         $status->name = trim($asset_statuslabel_name);
 
         $status->deployable = 1;
@@ -469,7 +469,7 @@ class ItemImporter extends Importer
         // Otherwise create a manufacturer.
         $manufacturer = new Manufacturer;
         $manufacturer->name = trim($item_manufacturer);
-        $manufacturer->created_by = auth()->id();
+        $manufacturer->created_by = $this->created_by;
 
         if ($manufacturer->save()) {
             $this->log('Manufacturer '.$manufacturer->name.' was created');
@@ -520,7 +520,7 @@ class ItemImporter extends Importer
         $location->city = '';
         $location->state = '';
         $location->country = '';
-        $location->created_by = auth()->id();
+        $location->created_by = $this->created_by;
 
         if ($location->save()) {
             $this->log('Location '.$asset_location.' was created');
@@ -558,7 +558,7 @@ class ItemImporter extends Importer
 
         $supplier = new Supplier;
         $supplier->name = $item_supplier;
-        $supplier->created_by = auth()->id();
+        $supplier->created_by = $this->created_by;
 
         if ($supplier->save()) {
             $this->log('Supplier '.$item_supplier.' was created');
