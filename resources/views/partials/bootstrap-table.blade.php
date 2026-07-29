@@ -3212,120 +3212,156 @@
         $('.search-input').keyup(searchboxHighlighter);
 
         //  This is necessary to make the bootstrap tooltips work inside of the
-        // wenzhixin/bootstrap-table formatters
+        // wenzhixin/bootstrap-table formatters. The measurement handlers
+        // (post-body + shown.bs.tab) are registered at script parse time
+        // below, outside this ready wrapper, so they're active before
+        // snipeit.js's URL-hash-driven .tab('show') fires. This tooltip
+        // hook can stay in the ready wrapper because it doesn't depend on
+        // handler-timing.
         $(document).on('post-body.bs.table', '.snipe-table', function () {
             $('[data-tooltip="true"]').tooltip({
                 container: 'body'
             });
-            updateStickyColumnOffsets(this);
-            updateTopScrollbar(this);
-        });
-
-        // Tables opted into use_sticky_css (see blade/table/index.blade.php)
-        // pin the first / last N columns via position:sticky. Each pinned
-        // column needs a right/left offset equal to the cumulative outerWidth
-        // of the pinned columns outside it, otherwise they all stack at the
-        // edge. The offsets are per-column and can change on column-toggle
-        // and window resize, so recompute after every render + resize.
-        function updateStickyColumnOffsets(root) {
-            var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
-            $targets.each(function () {
-                var el = this;
-                var $t = $(this);
-                var cls = el.className;
-                var $ths = $t.find('> thead > tr').first().children('th');
-                var count = $ths.length;
-
-                var mR = /\bsnipe-table--sticky-right-(\d+)\b/.exec(cls);
-                if (mR) {
-                    var nR = Math.min(parseInt(mR[1], 10), count);
-                    var offR = 0;
-                    for (var i = 1; i <= nR; i++) {
-                        el.style.setProperty('--sticky-right-offset-' + i, offR + 'px');
-                        offR += $ths.eq(count - i).outerWidth() || 0;
-                    }
-                }
-
-                var mL = /\bsnipe-table--sticky-left-(\d+)\b/.exec(cls);
-                if (mL) {
-                    var nL = Math.min(parseInt(mL[1], 10), count);
-                    var offL = 0;
-                    for (var j = 1; j <= nL; j++) {
-                        el.style.setProperty('--sticky-left-offset-' + j, offL + 'px');
-                        offL += $ths.eq(j - 1).outerWidth() || 0;
-                    }
-                }
-            });
-        }
-
-        // Second horizontal scrollbar mirrored above the table so users don't
-        // have to scroll down first to find a way to scroll right on wide
-        // tables. Bootstrap-table doesn't ship this; we mirror the native
-        // scrollbar of .fixed-table-body via a slim spacer div whose width
-        // tracks the underlying table's scrollWidth. Only rendered when the
-        // table actually overflows horizontally, so tables that fit in their
-        // container get no extra chrome.
-        function updateTopScrollbar(root) {
-            var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
-            $targets.each(function () {
-                var tbl = this;
-                var $body = $(tbl).closest('.fixed-table-body');
-                if (! $body.length) return;
-                var body = $body[0];
-                var $wrapper = $body.closest('.fixed-table-container');
-
-                // Fixed-height tables (data-height, e.g. dashboard widgets)
-                // already show their bottom scrollbar within the box they
-                // live in — you don't have to scroll down to reach it — so
-                // the top scrollbar adds noise without a benefit. Skip them.
-                if ($(tbl).is('[data-height]')) {
-                    $wrapper.prev('.snipe-top-scrollbar').remove();
-                    return;
-                }
-
-                var overflows = tbl.scrollWidth > body.clientWidth;
-                var $topScroll = $wrapper.prev('.snipe-top-scrollbar');
-
-                if (! overflows) {
-                    $topScroll.remove();
-                    return;
-                }
-
-                if (! $topScroll.length) {
-                    $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
-                    $wrapper.before($topScroll);
-                }
-
-                // Rebind scroll sync every time. The top scrollbar element
-                // persists across bootstrap-table renders, but .fixed-table-body
-                // is replaced on every post-body, so any handler we attached to
-                // the previous body is gone. Namespaced .off() clears whatever
-                // we may have attached before; .on() reattaches.
-                var top = $topScroll[0];
-                var syncing = false;
-                $topScroll.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
-                    if (syncing) return;
-                    syncing = true;
-                    body.scrollLeft = top.scrollLeft;
-                    syncing = false;
-                });
-                $body.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
-                    if (syncing) return;
-                    syncing = true;
-                    top.scrollLeft = body.scrollLeft;
-                    syncing = false;
-                });
-
-                $topScroll.children('.snipe-top-scrollbar-inner').css('width', tbl.scrollWidth + 'px');
-            });
-        }
-
-        $(window).on('resize', function () {
-            updateStickyColumnOffsets();
-            updateTopScrollbar();
         });
     }
 
+    // -----------------------------------------------------------------
+    // Sticky-column offsets and top-scrollbar mirror.
+    //
+    // Both function definitions AND both delegated handlers below are
+    // deliberately at script parse time (outside the $(function () { })
+    // wrapper). Reason: snipeit.js's URL-hash-to-tab logic
+    // (assets/js/snipeit.js) calls .tab('show') from its own
+    // document.ready, which fires 'shown.bs.tab' synchronously. If our
+    // handler is registered inside a later document.ready callback, we
+    // miss that first firing and the top-scrollbar's inner width stays at
+    // whatever bootstrap-table measured while the tab was still
+    // display:none (usually 0). Same issue for post-body.bs.table if
+    // bootstrap-table's own init fires it before our ready runs. Parsing
+    // these attachments at top level means they're subscribed before any
+    // document.ready callback runs anywhere.
+    // -----------------------------------------------------------------
+
+    // Tables opted into use_sticky_css (see blade/table/index.blade.php)
+    // pin the first / last N columns via position:sticky. Each pinned
+    // column needs a right/left offset equal to the cumulative outerWidth
+    // of the pinned columns outside it, otherwise they all stack at the
+    // edge. The offsets are per-column and can change on column-toggle
+    // and window resize, so recompute after every render + resize.
+    function updateStickyColumnOffsets(root) {
+        var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
+        $targets.each(function () {
+            var el = this;
+            var $t = $(this);
+            var cls = el.className;
+            var $ths = $t.find('> thead > tr').first().children('th');
+            var count = $ths.length;
+
+            var mR = /\bsnipe-table--sticky-right-(\d+)\b/.exec(cls);
+            if (mR) {
+                var nR = Math.min(parseInt(mR[1], 10), count);
+                var offR = 0;
+                for (var i = 1; i <= nR; i++) {
+                    el.style.setProperty('--sticky-right-offset-' + i, offR + 'px');
+                    offR += $ths.eq(count - i).outerWidth() || 0;
+                }
+            }
+
+            var mL = /\bsnipe-table--sticky-left-(\d+)\b/.exec(cls);
+            if (mL) {
+                var nL = Math.min(parseInt(mL[1], 10), count);
+                var offL = 0;
+                for (var j = 1; j <= nL; j++) {
+                    el.style.setProperty('--sticky-left-offset-' + j, offL + 'px');
+                    offL += $ths.eq(j - 1).outerWidth() || 0;
+                }
+            }
+        });
+    }
+
+    // Second horizontal scrollbar mirrored above the table so users don't
+    // have to scroll down first to find a way to scroll right on wide
+    // tables. Bootstrap-table doesn't ship this; we mirror the native
+    // scrollbar of .fixed-table-body via a slim spacer div whose width
+    // tracks the underlying table's scrollWidth. Only rendered when the
+    // table actually overflows horizontally, so tables that fit in their
+    // container get no extra chrome.
+    function updateTopScrollbar(root) {
+        var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
+        $targets.each(function () {
+            var tbl = this;
+            var $body = $(tbl).closest('.fixed-table-body');
+            if (! $body.length) return;
+            var body = $body[0];
+            var $wrapper = $body.closest('.fixed-table-container');
+
+            // Fixed-height tables (data-height, e.g. dashboard widgets)
+            // already show their bottom scrollbar within the box they
+            // live in, so the top scrollbar adds noise without benefit.
+            if ($(tbl).is('[data-height]')) {
+                $wrapper.prev('.snipe-top-scrollbar').remove();
+                return;
+            }
+
+            var overflows = tbl.scrollWidth > body.clientWidth;
+            var $topScroll = $wrapper.prev('.snipe-top-scrollbar');
+
+            if (! overflows) {
+                $topScroll.remove();
+                return;
+            }
+
+            if (! $topScroll.length) {
+                $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
+                $wrapper.before($topScroll);
+            }
+
+            // Rebind scroll sync every time. The top scrollbar element
+            // persists across bootstrap-table renders, but .fixed-table-body
+            // is replaced on every post-body, so any handler we attached to
+            // the previous body is gone. Namespaced .off() clears whatever
+            // we may have attached before; .on() reattaches.
+            var top = $topScroll[0];
+            var syncing = false;
+            $topScroll.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
+                if (syncing) return;
+                syncing = true;
+                body.scrollLeft = top.scrollLeft;
+                syncing = false;
+            });
+            $body.off('scroll.snipeScrollSync').on('scroll.snipeScrollSync', function () {
+                if (syncing) return;
+                syncing = true;
+                top.scrollLeft = body.scrollLeft;
+                syncing = false;
+            });
+
+            $topScroll.children('.snipe-top-scrollbar-inner').css('width', tbl.scrollWidth + 'px');
+        });
+    }
+
+    // Re-measure after every bootstrap-table render. Delegated on document
+    // so it catches tables that init after this handler was attached.
+    $(document).on('post-body.bs.table', '.snipe-table', function () {
+        updateStickyColumnOffsets(this);
+        updateTopScrollbar(this);
+    });
+
+    // Re-measure when a tab becomes visible. Bootstrap 3 renders inactive
+    // .tab-pane elements with display:none, so any bootstrap-table that was
+    // rendered inside a hidden tab measured its container width as 0 at
+    // post-body time. shown.bs.tab fires on the tab trigger after the pane
+    // has been made visible; a zero-arg call re-measures all snipe-tables
+    // on the page.
+    $(document).on('shown.bs.tab', function () {
+        updateStickyColumnOffsets();
+        updateTopScrollbar();
+    });
+
+    $(window).on('resize', function () {
+        updateStickyColumnOffsets();
+        updateTopScrollbar();
+    });
 
 </script>
     

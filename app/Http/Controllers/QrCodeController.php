@@ -35,7 +35,7 @@ class QrCodeController extends Controller
             return $object_type.' is not a valid type.';
         }
 
-        $object = self::$map_object_type[$object_type]::withTrashed()->find($id);
+        $object = parent::getMapObjectType()[$object_type]::withTrashed()->find($id);
 
         if (! $object) {
             return 'That item is invalid';
