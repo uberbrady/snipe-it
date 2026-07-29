@@ -31,7 +31,7 @@ class AssetImportCreatedByTest extends TestCase
     public function new_asset_created_via_import_records_the_importing_users_id_as_created_by(): void
     {
         $category = Category::factory()->create(['category_type' => 'asset']);
-        $location = Location::factory()->create();
+        Location::factory()->create();
         $statusLabel = Statuslabel::factory()->create();
         Company::factory()->create();
         AssetModel::factory()->for($category, 'category')->create(['name' => 'Import Test Model']);
@@ -146,7 +146,7 @@ class AssetImportCreatedByTest extends TestCase
         // that new user landed with created_by = null, matching the same
         // omission on the asset itself.
         $category = Category::factory()->create(['category_type' => 'asset']);
-        $location = Location::factory()->create();
+        Location::factory()->create();
         $statusLabel = Statuslabel::factory()->create();
         Company::factory()->create();
         AssetModel::factory()->for($category, 'category')->create(['name' => 'Auto User Test Model']);
@@ -198,7 +198,7 @@ class AssetImportCreatedByTest extends TestCase
         // through to the auto-created user (previously dropped on the
         // floor because createOrFetchUser hard-coded department_id to '').
         $category = Category::factory()->create(['category_type' => 'asset']);
-        $location = Location::factory()->create();
+        Location::factory()->create();
         $statusLabel = Statuslabel::factory()->create();
         Company::factory()->create();
         AssetModel::factory()->for($category, 'category')->create(['name' => 'Auto Dept Test Model']);
