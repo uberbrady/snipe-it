@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use League\Csv\EscapeFormula;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -344,7 +345,9 @@ class LicensesController extends Controller
 
         $this->disableDebugbar();
 
-        $response = new StreamedResponse(function () {
+        $canViewKeys = Gate::allows('viewKeys', License::class);
+
+        $response = new StreamedResponse(function () use ($canViewKeys) {
             // Open output stream
             $handle = fopen('php://output', 'w');
             $licenses = License::with('company',
@@ -358,7 +361,7 @@ class LicensesController extends Controller
             }
             $licenses = $licenses->orderBy('created_at', 'DESC');
             Company::scopeCompanyables($licenses)
-                ->chunk(500, function ($licenses) use ($handle) {
+                ->chunk(500, function ($licenses) use ($handle, $canViewKeys) {
                     $headers = [
                         // strtolower to prevent Excel from trying to open it as a SYLK file
                         strtolower(trans('general.id')),
@@ -399,7 +402,7 @@ class LicensesController extends Controller
                             $license->id,
                             $license->company ? $license->company->name : '',
                             $license->name,
-                            $license->serial,
+                            $canViewKeys ? $license->serial : License::PRODUCT_KEY_MASK,
                             $license->purchase_date,
                             $license->purchase_cost,
                             $license->order_number,

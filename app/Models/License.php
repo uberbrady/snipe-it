@@ -44,6 +44,13 @@ class License extends Depreciable
 
     protected $table = 'licenses';
 
+    /**
+     * Placeholder emitted anywhere a license product key would appear for a
+     * caller who lacks the viewKeys gate. Kept as a single source of truth
+     * so the API transformer, CSV export, and any future surface stay in sync.
+     */
+    public const PRODUCT_KEY_MASK = '------------';
+
     protected $casts = [
         'purchase_date' => 'date',
         'expiration_date' => 'date',
@@ -828,6 +835,28 @@ class License extends Depreciable
     public function freeSeats()
     {
         return $this->hasMany(LicenseSeat::class)->whereNull('assigned_to')->whereNull('deleted_at')->whereNull('asset_id');
+    }
+
+    /**
+     * TextSearch variant that removes `serial` from the searchable attribute
+     * set for the duration of the call. Used by the API index for callers
+     * who lack the `viewKeys` permission, so search / filter parameters
+     * cannot be used as an existence oracle against license product keys.
+     */
+    public function scopeTextSearchWithoutSerial($query, $search)
+    {
+        $original = $this->searchableAttributes;
+
+        $this->searchableAttributes = array_values(array_filter(
+            $original,
+            fn ($attribute) => $attribute !== 'serial'
+        ));
+
+        try {
+            return $query->TextSearch($search);
+        } finally {
+            $this->searchableAttributes = $original;
+        }
     }
 
     public function scopeActiveLicenses($query)
