@@ -139,12 +139,17 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
                 'SECRET-INSIDE-MARKDOWN-TEXTAREA',
             ],
             'date_picker' => [
+                // Intentionally-artificial dates that won't collide with
+                // real timestamps rendered elsewhere on the page (footer,
+                // recent-activity strings, "created N days ago" text,
+                // etc.). Any real date is at risk of matching an
+                // incidental page render on the day the suite runs.
                 ['element' => 'date_picker'],
-                '2026-07-29',
+                '1899-06-15',
             ],
             'datetime_picker' => [
                 ['element' => 'datetime_picker'],
-                '2026-07-29 13:37:00',
+                '1899-06-15 03:14:15',
             ],
             // Note: element='text' with format='DATE' or 'DATETIME' also render
             // decrypt chains in the template, but CustomField::canEncryptFor()
