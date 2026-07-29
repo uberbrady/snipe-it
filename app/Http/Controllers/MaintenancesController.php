@@ -299,7 +299,7 @@ class MaintenancesController extends Controller
         }
 
         $objectType = 'maintenances';
-        $storagePath = parent::$map_storage_path[$objectType];
+        $storagePath = parent::getMapStoragePath()[$objectType];
 
         if (! Storage::exists($storagePath)) {
             Storage::makeDirectory($storagePath, 775);
@@ -314,7 +314,7 @@ class MaintenancesController extends Controller
 
             $fileName = $uploadFileRequest->handleFile(
                 $storagePath,
-                parent::$map_file_prefix[$objectType].'-'.$maintenance->id,
+                parent::getMapFilePrefix()[$objectType].'-'.$maintenance->id,
                 $file
             );
 

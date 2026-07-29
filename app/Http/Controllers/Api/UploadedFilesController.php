@@ -31,7 +31,7 @@ class UploadedFilesController extends Controller
     {
 
         // Check the permissions to make sure the user can view the object
-        $object = parent::$map_object_type[$object_type]::withTrashed()->find($id);
+        $object = parent::getMapObjectType()[$object_type]::withTrashed()->find($id);
         $this->authorize('files', $object);
 
         if (! $object) {
@@ -49,7 +49,7 @@ class UploadedFilesController extends Controller
                 'created_at',
             ];
 
-        $uploads = parent::$map_object_type[$object_type]::withTrashed()->find($id)->uploads()
+        $uploads = parent::getMapObjectType()[$object_type]::withTrashed()->find($id)->uploads()
             ->with('adminuser');
 
         $limit = app('api_limit_value');
@@ -97,7 +97,7 @@ class UploadedFilesController extends Controller
         // to the object. `manageFiles` is stricter than `files` (used by
         // index/show below) so a read-only cascade like the one on
         // AssetModelPolicy does not accidentally grant write access.
-        $object = parent::$map_object_type[$object_type]::withTrashed()->find($id);
+        $object = parent::getMapObjectType()[$object_type]::withTrashed()->find($id);
         $this->authorize('manageFiles', $object);
 
         if (! $object) {
@@ -105,21 +105,21 @@ class UploadedFilesController extends Controller
         }
 
         // If the file storage directory doesn't exist, create it
-        if (! Storage::exists(parent::$map_storage_path[$object_type])) {
-            Storage::makeDirectory(parent::$map_storage_path[$object_type], 775);
+        if (! Storage::exists(parent::getMapStoragePath()[$object_type])) {
+            Storage::makeDirectory(parent::getMapStoragePath()[$object_type], 775);
         }
 
         if ($request->hasFile('file')) {
             // Loop over the attached files and add them to the object
             foreach ($request->file('file') as $file) {
-                $file_name = $request->handleFile(parent::$map_storage_path[$object_type], parent::$map_file_prefix[$object_type].'-'.$object->id, $file);
+                $file_name = $request->handleFile(parent::getMapStoragePath()[$object_type], parent::getMapFilePrefix()[$object_type].'-'.$object->id, $file);
                 $files[] = $file_name;
                 $object->logUpload($file_name, $request->input('notes'));
             }
 
             if (isset($files)) {
                 $file_results = Actionlog::select('action_logs.*')->where('action_type', '=', 'uploaded')
-                    ->where('item_type', '=', parent::$map_object_type[$object_type])
+                    ->where('item_type', '=', parent::getMapObjectType()[$object_type])
                     ->where('item_id', '=', $id)->whereIn('filename', $files)
                     ->get();
 
@@ -147,7 +147,7 @@ class UploadedFilesController extends Controller
     public function show($object_type, $id, $file_id): JsonResponse|StreamedResponse|Storage|StorageHelper|BinaryFileResponse
     {
         // Check the permissions to make sure the user can view the object
-        $object = parent::$map_object_type[$object_type]::withTrashed()->find($id);
+        $object = parent::getMapObjectType()[$object_type]::withTrashed()->find($id);
         $this->authorize('files', $object);
 
         if (! $object) {
@@ -155,17 +155,17 @@ class UploadedFilesController extends Controller
         }
 
         // Check that the file being requested exists for the object
-        if (! $log = Actionlog::whereNotNull('filename')->where('item_type', parent::$map_object_type[$object_type])->where('item_id', $object->id)->find($file_id)
+        if (! $log = Actionlog::whereNotNull('filename')->where('item_type', parent::getMapObjectType()[$object_type])->where('item_id', $object->id)->find($file_id)
         ) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.invalid_id')), 200);
         }
 
-        if (! Storage::exists(parent::$map_storage_path[$object_type].$log->filename)) {
+        if (! Storage::exists(parent::getMapStoragePath()[$object_type].$log->filename)) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.file_upload_status.file_not_found'), 200));
         }
 
         if (request('inline') == 'true') {
-            $path = parent::$map_storage_path[$object_type];
+            $path = parent::getMapStoragePath()[$object_type];
 
             // Only allowlisted extensions may be served inline. Everything
             // else (including XML, which can pull an XSLT stylesheet and
@@ -180,7 +180,7 @@ class UploadedFilesController extends Controller
             ]);
         }
 
-        return StorageHelper::downloader(parent::$map_storage_path[$object_type].$log->filename);
+        return StorageHelper::downloader(parent::getMapStoragePath()[$object_type].$log->filename);
 
     }
 
@@ -201,7 +201,7 @@ class UploadedFilesController extends Controller
 
         // See store(): `manageFiles` is the strict write ability so a
         // read-only cascade in files() does not authorize deletion.
-        $object = parent::$map_object_type[$object_type]::withTrashed()->find($id);
+        $object = parent::getMapObjectType()[$object_type]::withTrashed()->find($id);
         $this->authorize('manageFiles', $object);
 
         if (! $object) {
@@ -212,14 +212,14 @@ class UploadedFilesController extends Controller
         $log = Actionlog::query()
             ->where('id', $file_id)
             ->where('action_type', 'uploaded')
-            ->where('item_type', parent::$map_object_type[$object_type])
+            ->where('item_type', parent::getMapObjectType()[$object_type])
             ->where('item_id', $object->id)
             ->first();
 
         if ($log) {
             // Check the file actually exists, and delete it
-            if (Storage::exists(parent::$map_storage_path[$object_type].$log->filename)) {
-                Storage::delete(parent::$map_storage_path[$object_type].$log->filename);
+            if (Storage::exists(parent::getMapStoragePath()[$object_type].$log->filename)) {
+                Storage::delete(parent::getMapStoragePath()[$object_type].$log->filename);
             }
             // Delete the record of the file
             if ($log->logUploadDelete($object, $log->filename)) {
