@@ -306,11 +306,6 @@ class UsersController extends Controller
         $user->end_date = $request->input('end_date', null);
         $user->autoassign_licenses = $request->input('autoassign_licenses', 0);
 
-        // Update the location of any assets checked out to this user
-        Asset::where('assigned_type', User::class)
-            ->where('assigned_to', $user->id)
-            ->update(['location_id' => $request->input('location_id', null)]);
-
         // Permission-gated fields: `activated` lives inside this gate too.
         // An earlier version of this method assigned `activated` right
         // before the gate on the theory that the gate would overwrite it.
