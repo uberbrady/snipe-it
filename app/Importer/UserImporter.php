@@ -141,10 +141,25 @@ class UserImporter extends ItemImporter
             // CLI imports run unauthenticated and are fully trusted; only restrict web-initiated imports.
             // Note: unset must target $this->item, not the model — sanitizeItemForUpdating() reads from $this->item.
             if (Auth::check() && (! Auth::user()->hasAccess('users.edit') || ! Gate::allows('canEditAuthFields', $user))) {
-                unset($this->item['username']);
-                unset($this->item['email']);
-                unset($this->item['password']);
-                unset($this->item['activated']);
+                // GATED_AUTH_FIELDS is the shared list across the API,
+                // web-UI, and importer paths. The importer naturally
+                // filters out fields that are not present in the CSV
+                // via array_intersect, so `permissions` (which the
+                // importer never processes) drops out on its own.
+                $deniedAuthFields = array_values(array_intersect(User::GATED_AUTH_FIELDS, array_keys($this->item)));
+                foreach ($deniedAuthFields as $field) {
+                    unset($this->item[$field]);
+                }
+                if (! empty($deniedAuthFields)) {
+                    // Surface the skip in the import summary rather than
+                    // silently persisting a partial row. Halting the whole
+                    // import on the first affected row would be worse UX.
+                    $this->log(sprintf(
+                        'Skipped auth fields (%s) on user %s: caller lacks canEditAuthFields on this target.',
+                        implode(', ', $deniedAuthFields),
+                        $user->username,
+                    ));
+                }
             }
 
             if (! $this->validateFmcsLocation($this->item['location_id'] ?? null, $companyIds)) {

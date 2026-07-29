@@ -13,6 +13,7 @@ return [
     'nothing_currently_assigned' => 'Nothing currently assigned.',
     'user_password_required' => 'The password is required.',
     'insufficient_permissions' => 'Insufficient Permissions.',
+    'auth_fields_denied' => 'You do not have permission to modify credential or activation fields on this user. Requested fields not updated: :fields',
     'user_deleted_warning' => 'This user has been deleted. You will have to restore this user to edit them or assign them new assets.',
     'ldap_not_configured' => 'LDAP integration has not been configured for this installation.',
     'password_resets_sent' => 'The selected users who are activated and have a valid email addresses have been sent a password reset link.',

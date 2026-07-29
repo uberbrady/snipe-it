@@ -584,10 +584,38 @@ class UsersController extends Controller
             return response()->json(Helper::formatStandardApiResponse('error', null, 'Permission denied. You cannot update user information via API on the demo.'));
         }
 
-        // Pull out sensitive fields that require extra permission
-        $user->fill($request->except(['password', 'username', 'email', 'activated', 'permissions', 'activation_code', 'remember_token', 'two_factor_secret', 'two_factor_enrolled', 'two_factor_optin']));
+        // User::GATED_AUTH_FIELDS enter through the canEditAuthFields branch
+        // below. If the caller does not hold that gate against this target
+        // but their request nevertheless carries any of those fields, fail
+        // loud rather than persisting a partial write while returning a
+        // success response. Prior behavior silently dropped the auth-field
+        // writes and returned `success`, which misrepresented what
+        // actually persisted.
+        $requestedAuthFields = array_values(array_intersect(User::GATED_AUTH_FIELDS, array_keys($request->all())));
+        $canEditAuthFields = auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo');
 
-        if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
+        if (! empty($requestedAuthFields) && ! $canEditAuthFields) {
+            return response()->json(Helper::formatStandardApiResponse(
+                'error',
+                null,
+                trans('admin/users/message.auth_fields_denied', ['fields' => implode(', ', $requestedAuthFields)]),
+            ));
+        }
+
+        // Pull out sensitive fields that require extra permission. The
+        // GATED_AUTH_FIELDS constant covers user-editable secrets; the
+        // additional keys below are internal state (2FA secrets, remember
+        // tokens, activation codes) that must never be settable from a
+        // request payload regardless of caller privilege.
+        $user->fill($request->except(array_merge(User::GATED_AUTH_FIELDS, [
+            'activation_code',
+            'remember_token',
+            'two_factor_secret',
+            'two_factor_enrolled',
+            'two_factor_optin',
+        ])));
+
+        if ($canEditAuthFields) {
 
             if ($request->filled('password')) {
                 $user->password = bcrypt($request->input('password'));
