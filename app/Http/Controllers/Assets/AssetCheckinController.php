@@ -15,7 +15,6 @@ use App\Models\Statuslabel;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Log;
 
 class AssetCheckinController extends Controller
 {
@@ -138,28 +137,40 @@ class AssetCheckinController extends Controller
 
         $this->migrateLegacyLocations($asset);
 
-        $asset->location_id = $asset->rtd_location_id;
-
-        if ($request->has('location_id')) {
-            if ($request->filled('location_id')) {
-                // Resolve via the scoped Location query so non-existent IDs and IDs the actor
-                // cannot see under FMCS are rejected before we write them to the asset.
-                $submittedLocation = Location::find($request->input('location_id'));
-
-                if (! $submittedLocation) {
-                    return redirect()->back()->withInput()
-                        ->with('error', trans('admin/hardware/message.create.target_not_found.location'));
+        // The checkin form ships two location pickers (location_id and
+        // rtd_location_id), both pre-populated with the asset's existing
+        // rtd_location_id. The common case (submit without touching either
+        // field) reproduces the codebase-wide checkin convention: current
+        // location resets to rtd, default stays put. Fixes #19401.
+        //
+        // Both are resolved through the scoped Location query so
+        // non-existent IDs and IDs the actor cannot see under FMCS are
+        // rejected before we write them.
+        foreach (['location_id', 'rtd_location_id'] as $field) {
+            if (! $request->has($field)) {
+                // Field wasn't in the submitted form at all (test / API
+                // caller). Fall back to the pre-fix "reset location to rtd"
+                // convention for location_id; leave rtd untouched.
+                if ($field === 'location_id') {
+                    $asset->location_id = $asset->rtd_location_id;
                 }
 
-                Log::debug('NEW Location ID: '.$submittedLocation->id);
-                $asset->location_id = $submittedLocation->id;
-                if ($request->input('update_default_location') == 0) {
-                    $asset->rtd_location_id = $submittedLocation->id;
-                }
-            } else {
-                // Explicitly submitted as empty — clear the location
-                $asset->location_id = null;
+                continue;
             }
+
+            if (! $request->filled($field)) {
+                // User cleared the picker via select2's X button.
+                $asset->{$field} = null;
+
+                continue;
+            }
+
+            $submittedLocation = Location::find($request->input($field));
+            if (! $submittedLocation) {
+                return redirect()->back()->withInput()
+                    ->with('error', trans('admin/hardware/message.create.target_not_found.location'));
+            }
+            $asset->{$field} = $submittedLocation->id;
         }
 
         $originalValues = $asset->getRawOriginal();
