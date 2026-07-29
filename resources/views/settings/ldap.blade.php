@@ -264,7 +264,7 @@
                                     <label for="ldap_pword" class="col-md-3 control-label">{{ trans('admin/settings/general.ldap_pword') }}</label>
 
                                     <div class="col-md-8">
-                                        <input class="form-control" type="password" name="ldap_pword" id="ldap_pword" value="" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly>
+                                        <input class="form-control js-antifill-readonly" type="password" name="ldap_pword" id="ldap_pword" value="" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly>
                                         <x-form.error name="ldap_pword" />
 
                                         <x-demo-lock>{{ trans('general.feature_disabled') }}</x-demo-lock>
@@ -628,7 +628,7 @@
                                                 <input type="text" name="ldaptest_user" id="ldaptest_user"  class="form-control" placeholder="{{trans('admin/settings/general.ldap_username_placeholder')}}">
                                             </div>
                                             <div class="col-md-4">
-                                                <input type="password" name="ldaptest_password" id="ldaptest_password" class="form-control" placeholder="{{trans('admin/settings/general.ldap_password_placeholder')}}" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+                                                <input type="password" name="ldaptest_password" id="ldaptest_password" class="form-control js-antifill-readonly" placeholder="{{trans('admin/settings/general.ldap_password_placeholder')}}" autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
                                             </div>
                                             <div class="col-md-3">
                                                 <a class="btn btn-theme btn-sm" id="ldaptestlogin" style="margin-right: 10px;">{{ trans('admin/settings/general.ldap_test') }}</a>
