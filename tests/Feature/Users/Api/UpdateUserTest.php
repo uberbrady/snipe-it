@@ -205,6 +205,38 @@ class UpdateUserTest extends TestCase
         $this->assertEquals(1, $user->refresh()->activated);
     }
 
+    /**
+     * Companion regression to
+     * tests/Feature/Users/Ui/UpdateUserTest::test_editing_users_cannot_toggle_admin_activated_via_full_valid_payload
+     * The API path already excludes `activated` from the pre-gate fill()
+     * and only assigns it inside the canEditAuthFields branch, so this
+     * has always been safe. Pinning the behavior explicitly so a future
+     * refactor to `$user->fill($request->all())` or similar can't
+     * silently regress it.
+     */
+    public function test_api_editing_users_cannot_toggle_admin_activated()
+    {
+        $editing_user = User::factory()->editUsers()->create(['activated' => true]);
+        $admin = User::factory()->admin()->create([
+            'first_name' => 'Admin',
+            'last_name' => 'Target',
+            'username' => 'api_admin_target',
+            'email' => 'api-admin-target@example.test',
+            'activated' => true,
+        ]);
+
+        $this->actingAsForApi($editing_user)
+            ->patch(route('api.users.update', $admin), [
+                'first_name' => $admin->first_name,
+                'last_name' => $admin->last_name,
+                'username' => $admin->username,
+                'email' => $admin->email,
+                'activated' => 0,
+            ]);
+
+        $this->assertSame(1, (int) $admin->fresh()->activated, 'Non-admin actor must not be able to deactivate an admin via API.');
+    }
+
     public function test_api_users_can_be_deactivated_with_number()
     {
         $admin = User::factory()->editUsers()->create();
