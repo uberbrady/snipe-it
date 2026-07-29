@@ -52,7 +52,7 @@ class ConsumableImporter extends ItemImporter
 
         $this->log('No matching consumable, creating one');
         $consumable = new Consumable;
-        $consumable->created_by = auth()->id();
+        $consumable->created_by = $this->created_by;
         $consumable->fill($this->sanitizeItemForStoring($consumable));
 
         // This sets an attribute on the Loggable trait for the action log

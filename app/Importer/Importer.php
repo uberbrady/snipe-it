@@ -347,7 +347,11 @@ abstract class Importer
             'display_name' => $this->findCsvMatch($row, 'display_name'),
             'email' => $this->findCsvMatch($row, 'email'),
             'manager_id' => '',
-            'department_id' => '',
+            // ItemImporter::handle() has already created the Department (if
+            // the CSV row had one) and stored its id on $this->item so it
+            // can flow through to the user record. Previously this value
+            // was hard-coded to '' and the Department was orphaned.
+            'department_id' => $this->item['department_id'] ?? '',
             'username' => $this->findCsvMatch($row, 'username'),
             'activated' => $this->fetchHumanBoolean($this->findCsvMatch($row, 'activated')),
             'remote' => $this->fetchHumanBoolean(($this->findCsvMatch($row, 'remote'))),
@@ -434,6 +438,13 @@ abstract class Importer
         $user->department_id = $user_array['department_id'] ?? null;
         $user->activated = 1;
         $user->password = $this->tempPassword;
+        // Use $this->created_by (set by setCreatedBy() from both
+        // ItemImportRequest for web imports and ObjectImportCommand for
+        // CLI imports) rather than auth()->id() so CLI-run imports get
+        // the --user_id option value instead of null. Without this,
+        // users minted as checkout targets during asset import land in
+        // the DB with a null created_by, breaking blame in the user list.
+        $user->created_by = $this->created_by;
 
         Log::debug('Creating a user with the following attributes: '.print_r($user_array, true));
 
@@ -576,25 +587,34 @@ abstract class Importer
      */
     public function createOrFetchDepartment($user_department_name)
     {
-        if ($user_department_name != '') {
-            $department = Department::where('name', '=', $user_department_name)->first();
-
-            if ($department) {
-                $this->log('A matching Department '.$user_department_name.' already exists');
-
-                return $department->id;
-            }
-
-            $department = new Department;
-            $department->name = $user_department_name;
-
-            if ($department->save()) {
-                $this->log('Department '.$user_department_name.' was created');
-
-                return $department->id;
-            }
-            $this->logError($department, 'Department');
+        // Explicit is_null check before the loose equality guard so a null
+        // input doesn't trigger PHP 8.x null-to-string deprecation warnings
+        // (the previous form was `!= ''` which coerces null to '' first).
+        if (is_null($user_department_name) || $user_department_name === '') {
+            return null;
         }
+
+        $department = Department::where('name', $user_department_name)->first();
+
+        if ($department) {
+            $this->log('A matching Department '.$user_department_name.' already exists');
+
+            return $department->id;
+        }
+
+        $department = new Department;
+        $department->name = $user_department_name;
+        // $this->created_by, not auth()->id(), so CLI-run imports
+        // attribute created_by to the --user_id option value rather
+        // than null.
+        $department->created_by = $this->created_by;
+
+        if ($department->save()) {
+            $this->log('Department '.$user_department_name.' was created');
+
+            return $department->id;
+        }
+        $this->logError($department, 'Department');
 
         return null;
     }

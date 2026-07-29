@@ -122,7 +122,7 @@ class AssetModelImporter extends ItemImporter
         } else {
             Log::debug('Creating model');
             $assetModel->fill($this->sanitizeItemForStoring($assetModel));
-            $assetModel->created_by = auth()->id();
+            $assetModel->created_by = $this->created_by;
         }
 
         if ($assetModel->save()) {

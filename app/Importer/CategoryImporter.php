@@ -60,7 +60,7 @@ class CategoryImporter extends ItemImporter
         } else {
             $this->log('No Matching Category, Create a new one');
             $category = new Category;
-            $category->created_by = auth()->id();
+            $category->created_by = $this->created_by;
         }
 
         // Pull the records from the CSV to determine their values
