@@ -488,7 +488,22 @@ class LocationsController extends Controller
         }
 
         if ((Setting::getSettings()->full_multiple_companies_support == '1') && $request->filled('companyId')) {
-            $locations->where('locations.company_id', '=', (int) $request->input('companyId'));
+            $companyId = (int) $request->input('companyId');
+
+            if (Setting::getSettings()->null_company_is_floater) {
+                // Floater mode: include null-company (floater) locations too,
+                // matching the "items from any company can be checked out
+                // to targets with no company assignment" policy. Without
+                // this the strict equality below hid all floaters from the
+                // checkout dropdown while the server-side canCheckoutTo
+                // still permitted the checkout (#19394).
+                $locations->where(function ($q) use ($companyId) {
+                    $q->where('locations.company_id', '=', $companyId)
+                        ->orWhereNull('locations.company_id');
+                });
+            } else {
+                $locations->where('locations.company_id', '=', $companyId);
+            }
         }
 
         $locations = $locations->orderBy('name', 'ASC')->get();
