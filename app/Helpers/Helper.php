@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -1259,6 +1260,31 @@ class Helper
         }
 
         return $string;
+    }
+
+    /**
+     * Resolves the value to render in a custom-field form input for the current
+     * request. Encapsulates the "encrypted + no view.encrypted_custom_fields
+     * gate" branch so every element type in custom_fields_form.blade.php
+     * consults the same rule, and any future form template can call one method
+     * rather than reconstructing the ternary inline.
+     *
+     * Returns the shared masked-value string when the field is encrypted and
+     * the caller cannot view encrypted custom fields. Otherwise returns the
+     * decrypted stored value for the given $item, or the model-scoped default
+     * value when no $item is present (create form path).
+     */
+    public static function customFieldFormValue(CustomField $field, $item, $model)
+    {
+        if ($field->field_encrypted && ! Gate::allows('assets.view.encrypted_custom_fields')) {
+            return strtoupper(trans('admin/custom_fields/general.encrypted'));
+        }
+
+        if (isset($item)) {
+            return self::gracefulDecrypt($field, $item->{$field->db_column_name()});
+        }
+
+        return $field->defaultValue($model->id);
     }
 
     public static function formatStandardApiResponse($status, $payload = null, $messages = null)

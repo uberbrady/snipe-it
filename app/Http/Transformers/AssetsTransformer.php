@@ -403,7 +403,7 @@ class AssetsTransformer
         if (Gate::allows('viewKeys', $licenseseat->license)) {
             $product_key = $licenseseat->license->serial ?? null;
         } else {
-            $product_key = '------------';
+            $product_key = License::PRODUCT_KEY_MASK;
         }
 
         $array = [

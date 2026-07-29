@@ -47,6 +47,22 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     use Searchable;
     use UniqueUndeletedTrait;
 
+    /**
+     * Fields governed by the `canEditAuthFields` gate: credentials (username,
+     * email, password), the activation flag, and the permission blob. Any
+     * controller / importer / job that mass-assigns from user input must gate
+     * writes to these fields on `canEditAuthFields` against the target, and
+     * signal denial rather than silently dropping them. Add to this list to
+     * bring a new field under the same gate everywhere at once.
+     */
+    public const GATED_AUTH_FIELDS = [
+        'password',
+        'username',
+        'email',
+        'activated',
+        'permissions',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',
