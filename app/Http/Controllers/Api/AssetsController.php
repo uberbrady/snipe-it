@@ -633,7 +633,20 @@ class AssetsController extends Controller
             && ! auth()->user()->isSuperUser()) {
             $companyIds = array_values(array_filter(array_map('intval', explode(',', $request->input('companyId')))));
             if (! empty($companyIds)) {
-                $assets->whereIn('assets.company_id', $companyIds);
+                if (Setting::getSettings()->null_company_is_floater) {
+                    // Floater mode: include null-company (floater) assets too,
+                    // matching the "items from any company can be checked out
+                    // to targets with no company assignment" policy. Without
+                    // this the whereIn below hid all floaters from the
+                    // checkout dropdown while server-side canCheckoutTo still
+                    // permitted the checkout (#19394).
+                    $assets->where(function ($q) use ($companyIds) {
+                        $q->whereIn('assets.company_id', $companyIds)
+                            ->orWhereNull('assets.company_id');
+                    });
+                } else {
+                    $assets->whereIn('assets.company_id', $companyIds);
+                }
             }
         }
 
