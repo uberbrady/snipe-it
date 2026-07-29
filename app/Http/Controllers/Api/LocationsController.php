@@ -506,22 +506,13 @@ class LocationsController extends Controller
         }
 
         if ($request->filled('search')) {
-            // Search results are cherry-picked out of the tree so the
-            // pre-search Location::indenter walk cannot be reused as-is.
-            // Instead, walk each match's parent chain and inline the
-            // ancestors with the same `›` breadcrumb separator that
-            // Location::indenter uses on the tree-order branch, so both
-            // views share one visual style: `DC1 › Rack 1` distinguishes
-            // Rack 1 under DC1 from Rack 1 under DC2.
-            $locations->load('parent');
+            // Search results are cherry-picked out of the tree — no useful
+            // indent depth to apply — so just use the plain name. The user
+            // is filtering by typed text so context comes from the search
+            // term rather than dropdown position (see #19398 for why we
+            // stopped inlining the parent chain here too).
             foreach ($locations as $location) {
-                $chain = [$location->name];
-                $ancestor = $location->parent;
-                while ($ancestor) {
-                    array_unshift($chain, $ancestor->name);
-                    $ancestor = $ancestor->parent;
-                }
-                $location->use_text = implode(' › ', $chain);
+                $location->use_text = $location->name;
             }
             $locations_formatted = $locations;
         } else {
