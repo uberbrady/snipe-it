@@ -950,12 +950,17 @@ textarea.form-control[disabled] {
     disabled-looking background, which confuses the operator into thinking
     the field is uneditable. Override to make it visually indistinguishable
     from a regular editable input.
+    Scoped to `.js-antifill-readonly` so legitimately-readonly fields
+    (SAML SP entity ID, ACS/SLS URLs, generated cert, metadata URL, etc.)
+    keep the gray-out styling from the readonly rule further down in this
+    file. Adding `readonly` alone should look readonly; opt in to the
+    autofill-masking override by adding the class explicitly.
     Deliberately does NOT match `[disabled]` — actually-disabled fields
     (demo mode locks, permission gates) must keep their grayed appearance
     and not-allowed cursor. **/
-input[readonly],
-textarea[readonly],
-.form-control[readonly] {
+input.js-antifill-readonly[readonly],
+textarea.js-antifill-readonly[readonly],
+.form-control.js-antifill-readonly[readonly] {
   cursor: text !important;
   background-color: var(--table-stripe-bg) !important;
   color: var(--color-fg) !important;
