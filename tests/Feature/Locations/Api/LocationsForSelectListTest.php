@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Locations\Api;
 
+use App\Models\Company;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -123,5 +124,60 @@ class LocationsForSelectListTest extends TestCase
         $this->assertTrue($texts->contains('HQ'), 'Top-level location renders without indent prefix.');
         $this->assertTrue($texts->contains('-- DC1'), 'One-level-deep location gets a two-dash indent.');
         $this->assertTrue($texts->contains('---- Rack 1'), 'Two-levels-deep location gets a four-dash indent.');
+    }
+
+    /**
+     * #19394 regression: under FMCS + floater mode, a company-scoped user
+     * asking for locations narrowed by companyId should also see
+     * null-company (floater) locations. Matches the documented "items
+     * from any company can be checked out to targets with no company
+     * assignment" rule that server-side canCheckoutTo already enforces.
+     */
+    public function test_floater_locations_appear_in_selectlist_under_floater_mode_when_narrowed_by_company()
+    {
+        $this->settings->enableMultipleFullCompanySupport();
+        $this->settings->enableFloaterMode();
+
+        [$companyA, $companyB] = Company::factory()->count(2)->create();
+
+        $companyLocation = Location::factory()->create(['name' => 'FloaterModeLocA', 'company_id' => $companyA->id]);
+        $otherCompanyLocation = Location::factory()->create(['name' => 'FloaterModeLocB', 'company_id' => $companyB->id]);
+        $floaterLocation = Location::factory()->create(['name' => 'FloaterModeLocNull', 'company_id' => null]);
+
+        $actor = User::factory()->createUsers()->forCompany($companyA->id)->create();
+
+        $response = $this->actingAsForApi($actor)
+            ->getJson(route('api.locations.selectlist', ['companyId' => $companyA->id]))
+            ->assertOk();
+
+        $ids = collect($response->json('results'))->pluck('id')->all();
+        $this->assertContains($companyLocation->id, $ids, 'Same-company location must be visible.');
+        $this->assertContains($floaterLocation->id, $ids, 'Null-company (floater) location must be visible under floater mode.');
+        $this->assertNotContains($otherCompanyLocation->id, $ids, 'Other-company location must not leak in.');
+    }
+
+    /**
+     * #19394 negative counterpart: under FMCS + strict mode (floater OFF),
+     * the companyId narrowing must stay exact — null-company locations
+     * do not leak into the picker for a company-scoped caller.
+     */
+    public function test_floater_locations_are_hidden_in_selectlist_under_strict_mode_when_narrowed_by_company()
+    {
+        $this->settings->enableMultipleFullCompanySupport();
+        $this->settings->disableFloaterMode();
+
+        $companyA = Company::factory()->create();
+        $companyLocation = Location::factory()->create(['name' => 'StrictLocA', 'company_id' => $companyA->id]);
+        $floaterLocation = Location::factory()->create(['name' => 'StrictLocNull', 'company_id' => null]);
+
+        $actor = User::factory()->createUsers()->forCompany($companyA->id)->create();
+
+        $response = $this->actingAsForApi($actor)
+            ->getJson(route('api.locations.selectlist', ['companyId' => $companyA->id]))
+            ->assertOk();
+
+        $ids = collect($response->json('results'))->pluck('id')->all();
+        $this->assertContains($companyLocation->id, $ids);
+        $this->assertNotContains($floaterLocation->id, $ids, 'Null-company location must not appear under strict mode.');
     }
 }
