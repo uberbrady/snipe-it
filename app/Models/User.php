@@ -1307,17 +1307,18 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      * @return string
      */
     /**
-     * Verify that a resolved local user's stored username byte-exactly matches
-     * the externally-supplied identifier. The MySQL/MariaDB default collation
-     * utf8mb4_unicode_ci folds accents and case, so `WHERE username = ?` on
-     * that engine can silently route 'snípeitreport3' or 'Admin' to the row
-     * for 'snipeitreport3' or 'admin'. Federated/SSO auth flows (SAML, LDAP,
-     * REMOTE_USER, Google OAuth) must call this after their username lookup
-     * so an attacker-controlled external identifier can't authenticate as a
-     * different local account. hash_equals runs in constant time so this
-     * check doesn't leak any timing signal.
+     * The MySQL/MariaDB default collation utf8mb4_unicode_ci folds accents
+     * and case, so `WHERE username = ?` on that engine can silently route
+     * 'snípeitreport3' (with an accent on the i) to the row for 'snipeitreport3'.
      *
-     * Returns the user when the strings match byte-for-byte, null otherwise.
+     * Federated/SSO auth flows (SAML, LDAP, REMOTE_USER, Google OAuth) must call
+     * this after their username lookup so an attacker-controlled external identifier
+     * can't authenticate as a different local account. hash_equals runs in constant
+     * time so this check doesn't leak any timing signal.
+     *
+     * Returns the user when the strings match byte-for-byte after lowercasing,
+     * null otherwise. (This was previously just bite-for-bite, but most IdPs are
+     * case-insensitive, so we normalize to lowercase before comparing.)
      */
     public static function verifyExactUsernameMatch(?self $user, string $expected): ?self
     {
@@ -1325,7 +1326,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             return null;
         }
 
-        return hash_equals((string) $user->username, $expected) ? $user : null;
+        return hash_equals(mb_strtolower((string) $user->username), mb_strtolower($expected)) ? $user : null;
     }
 
     public static function generateEmailFromFullName($name)
