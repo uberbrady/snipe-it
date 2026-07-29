@@ -31,14 +31,15 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on MySQL');
 
-        [$asset, $field] = $this->assetWithEncryptedField($fieldAttributes, $secret);
+        $asset = $this->assetWithEncryptedField($fieldAttributes, $secret);
 
         $actor = User::factory()->editAssets()->create();
 
-        $response = $this->actingAs($actor)->get(route('hardware.edit', $asset))->assertOk();
-
-        $response->assertDontSee($secret, false);
-        $response->assertSee(strtoupper(trans('admin/custom_fields/general.encrypted')), false);
+        $this->actingAs($actor)
+            ->get(route('hardware.edit', $asset))
+            ->assertOk()
+            ->assertDontSee($secret, false)
+            ->assertSee(strtoupper(trans('admin/custom_fields/general.encrypted')), false);
     }
 
     /**
@@ -48,7 +49,7 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on MySQL');
 
-        [$asset] = $this->assetWithEncryptedField($fieldAttributes, $secret);
+        $asset = $this->assetWithEncryptedField($fieldAttributes, $secret);
 
         $actor = User::factory()->superuser()->create();
 
@@ -64,7 +65,7 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
 
         // Checkin flow requires the asset to be checked out first, otherwise the
         // controller redirects to hardware.index with "already checked in".
-        [$asset] = $this->assetWithEncryptedField(
+        $asset = $this->assetWithEncryptedField(
             ['element' => 'textarea', 'display_checkin' => 1],
             'CHECKIN-SECRET-SHOULD-NOT-LEAK',
             fn ($factory) => $factory->assignedToUser()
@@ -82,7 +83,7 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on MySQL');
 
-        [$asset] = $this->assetWithEncryptedField(
+        $asset = $this->assetWithEncryptedField(
             ['element' => 'textarea', 'display_checkout' => 1],
             'CHECKOUT-SECRET-SHOULD-NOT-LEAK'
         );
@@ -99,7 +100,7 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
     {
         $this->markIncompleteIfMySQL('Custom Fields tests do not work on MySQL');
 
-        [$asset] = $this->assetWithEncryptedField(
+        $asset = $this->assetWithEncryptedField(
             ['element' => 'textarea', 'display_audit' => 1],
             'AUDIT-SECRET-SHOULD-NOT-LEAK'
         );
@@ -165,7 +166,7 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
      * Optionally accepts a $factoryState closure to layer additional Asset
      * factory states (e.g. assignedToUser() for the checkin test).
      */
-    private function assetWithEncryptedField(array $fieldAttributes, string $secret, ?callable $factoryState = null): array
+    private function assetWithEncryptedField(array $fieldAttributes, string $secret, ?callable $factoryState = null): Asset
     {
         $uniqueName = 'Encrypted Field '.uniqid();
 
@@ -190,6 +191,6 @@ class EncryptedCustomFieldFormDisclosureTest extends TestCase
             $assetFactory = $factoryState($assetFactory);
         }
 
-        return [$assetFactory->create(), $field];
+        return $assetFactory->create();
     }
 }
