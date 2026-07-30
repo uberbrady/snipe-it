@@ -41,7 +41,12 @@ class LicensesController extends Controller
     {
         $this->authorize('view', License::class);
 
-        return view('licenses/index');
+        $bulkActions = [
+            'delete' => ['label' => trans('general.delete')],
+            'delete_with_checkin' => ['label' => trans('admin/licenses/general.bulk.delete_with_checkin.label')],
+        ];
+
+        return view('licenses/index', ['bulkActions' => $bulkActions]);
     }
 
     /**
