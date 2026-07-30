@@ -68,6 +68,35 @@ Route::middleware(['web', 'auth', 'can:self.api'])->prefix('oauth')->group(funct
         ->name('passport.personal.tokens.destroy');
 });
 
+/*
+ * Gate Passport's default OAuth-client management routes behind the
+ * superuser check that already protects Snipe-IT's own
+ * /admin/oauth surfaces (see the /admin group below,
+ * middleware ['auth', 'authorize:superuser']).
+ *
+ * These four routes were auto-registered by PassportServiceProvider
+ * with only `web, auth:web` middleware, so any user with a valid
+ * session cookie could POST /oauth/clients with an attacker-controlled
+ * redirect URI. If a phished admin then approved the resulting
+ * consent screen, the attacker exchanged the auth code for a
+ * long-lived bearer token carrying the admin's full API permissions.
+ *
+ * Same FIFO route-precedence trick as the personal-access-tokens
+ * override above: routes/web.php loads before the Passport package
+ * service provider boots, so these gated registrations win over the
+ * package originals.
+ */
+Route::middleware(['web', 'auth', 'authorize:superuser'])->prefix('oauth')->group(function () {
+    Route::get('clients', [\Laravel\Passport\Http\Controllers\ClientController::class, 'forUser'])
+        ->name('passport.clients.index');
+    Route::post('clients', [\Laravel\Passport\Http\Controllers\ClientController::class, 'store'])
+        ->name('passport.clients.store');
+    Route::put('clients/{client_id}', [\Laravel\Passport\Http\Controllers\ClientController::class, 'update'])
+        ->name('passport.clients.update');
+    Route::delete('clients/{client_id}', [\Laravel\Passport\Http\Controllers\ClientController::class, 'destroy'])
+        ->name('passport.clients.destroy');
+});
+
 Route::group(['middleware' => 'auth'], function () {
     /*
     * Companies
