@@ -963,18 +963,69 @@ class BulkAssetsController extends Controller
     {
         $this->authorize('audit', Asset::class);
 
+        $settings = Setting::getSettings();
+
         // Only prefill next_audit_date when the install has an
         // audit_interval configured. Without it, `(int) null` falls
         // out to 0 months and the field prefills as today, which
         // reads as "audit this again immediately" and isn't useful.
-        $settings = Setting::getSettings();
         $next_audit_date = $settings->audit_interval
             ? Carbon::now()->addMonths((int) $settings->audit_interval)->toDateString()
             : null;
 
+        // FMCS location-scoping only: a location under scope_locations_fmcs
+        // belongs to exactly one company, so a shared audit-location can't
+        // legitimately fit assets from multiple companies. Inspect the
+        // selection, then either scope the picker to the shared company
+        // or hide the controls entirely. If location scoping is off (or
+        // FMCS is off), the picker renders unscoped, matching the
+        // pre-existing behavior.
+        [$sharedCompanyId, $hideLocationFields] = $this->auditLocationVisibility($settings);
+
         return view('hardware/bulk-audit', [
             'next_audit_date' => $next_audit_date,
+            'sharedCompanyId' => $sharedCompanyId,
+            'hideLocationFields' => $hideLocationFields,
         ]);
+    }
+
+    /**
+     * Decide how the bulk-audit location controls should render, based
+     * on the selection's company distribution and the current FMCS
+     * settings. Returns [sharedCompanyId, hideLocationFields].
+     *
+     * Extracted from showAudit() so the outer render method stays
+     * focused; also reused by storeAudit() as a server-side guard so
+     * a crafted POST that includes a location_id + update_location=1
+     * on a spanning selection can't sneak past the UI hiding the
+     * fields for that case.
+     */
+    private function auditLocationVisibility(Setting $settings): array
+    {
+        if (! $settings->scope_locations_fmcs) {
+            return [null, false];
+        }
+
+        $selected = old('selected_assets');
+        if (! is_array($selected) || empty($selected)) {
+            return [null, false];
+        }
+
+        $companyIds = Asset::whereIn('id', $selected)
+            ->distinct()
+            ->pluck('company_id')
+            ->filter(fn ($id) => $id !== null)
+            ->unique();
+
+        if ($companyIds->count() === 1) {
+            return [(int) $companyIds->first(), false];
+        }
+
+        if ($companyIds->count() > 1) {
+            return [null, true];
+        }
+
+        return [null, false];
     }
 
     /**
@@ -995,16 +1046,29 @@ class BulkAssetsController extends Controller
         $asset_ids = array_filter($request->input('selected_assets'));
         $assets = Asset::whereIn('id', $asset_ids)->get();
 
-        // Resolve the submitted location through the FMCS-scoped query
+        // Resolve the submitted location once, before we touch any asset,
         // so a location the actor can't see (or a fabricated id) fails
-        // fast, before we touch any asset. Matches the pattern the
-        // storeCheckin method uses one method up.
+        // fast. Matches the pattern the storeCheckin method uses.
         $submittedLocation = null;
         if ($request->filled('location_id')) {
             $submittedLocation = Location::find($request->input('location_id'));
             if (! $submittedLocation) {
                 return redirect()->route('hardware.bulk-audit.show')->withInput()
                     ->with('error', trans('admin/hardware/message.create.target_not_found.location'));
+            }
+
+            // Server-side guard mirroring the UI's hide behavior: under
+            // FMCS location scoping, a location legitimately belongs to
+            // one company only. If the selection spans multiple
+            // companies, discard the submitted location so we don't
+            // fail every row on the fmcs_location model validation. UI
+            // hides the field for this case; this handles a crafted
+            // POST that submits location_id anyway.
+            if (Setting::getSettings()->scope_locations_fmcs) {
+                $selectedCompanies = $assets->pluck('company_id')->filter()->unique();
+                if ($selectedCompanies->count() > 1) {
+                    $submittedLocation = null;
+                }
             }
         }
 
@@ -1013,52 +1077,11 @@ class BulkAssetsController extends Controller
 
         DB::transaction(function () use ($assets, $request, $submittedLocation, &$errors, &$succeeded) {
             foreach ($assets as $asset) {
-                $this->authorize('audit', $asset);
-
-                $originalValues = $asset->getRawOriginal();
-
-                if ($request->filled('next_audit_date')) {
-                    $asset->next_audit_date = $request->input('next_audit_date');
-                }
-                $asset->last_audit_date = date('Y-m-d H:i:s');
-
-                // Only overwrite the asset's physical location when the
-                // "update_location" opt-in is checked. Without it, the
-                // audit log still records the submitted location below
-                // (as "where the audit happened") but the asset itself
-                // stays where it was. Matches the single-audit form's
-                // matching checkbox and the API's update_location=1
-                // gate, so an integration and a UI user get identical
-                // behavior from the same intent.
-                if ($submittedLocation && $request->input('update_location') == '1') {
-                    $asset->location_id = $submittedLocation->id;
-                }
-
-                // Skip observer + fire model-level validation manually,
-                // matching AssetsController::auditStore's rationale.
-                $asset->unsetEventDispatcher();
-
-                if ($asset->isValid() && $asset->save()) {
-                    // A single uploaded image is applied to every
-                    // audit row, matching the API's bulkAudit shape.
-                    // We hand handleFile the current asset's id so
-                    // the stored filename is scoped per-row (avoids
-                    // filename collisions when multiple audits fire
-                    // in the same second).
-                    $file_name = null;
-                    if ($request->hasFile('image')) {
-                        $file_name = $request->handleFile('private_uploads/audits/', 'audit-'.$asset->id, $request->file('image'));
-                    }
-
-                    $asset->logAudit(
-                        $request->input('note'),
-                        $submittedLocation?->id,
-                        $file_name,
-                        $originalValues,
-                    );
+                $rowError = $this->auditSingleAsset($asset, $request, $submittedLocation);
+                if ($rowError === null) {
                     $succeeded++;
                 } else {
-                    $errors[$asset->id] = $asset->getErrors()->toArray();
+                    $errors[$asset->id] = $rowError;
                 }
             }
         });
@@ -1071,6 +1094,61 @@ class BulkAssetsController extends Controller
         return redirect()->route('hardware.bulk-audit.show')->withInput()
             ->with('error', trans_choice('admin/hardware/message.multi-audit.partial_error', count($errors), ['success' => $succeeded, 'failed' => count($errors)]))
             ->withErrors($errors);
+    }
+
+    /**
+     * Apply the shared bulk-audit payload to one asset. Returns the
+     * model's errors array on failure, null on success.
+     *
+     * Extracted from storeAudit() so that method stays under Codacy's
+     * NPath complexity threshold. Nested filled()/hasFile()/isValid()
+     * branches inside a transaction closure multiply out to ~300 NPath
+     * when inline; the split drops the outer method well under 100.
+     *
+     * Behavioral notes preserved from the inline version:
+     * - update_location=1 is required to overwrite the asset's actual
+     *   location_id (matches single-audit + API semantics).
+     * - The audit log always records the submitted location as
+     *   "where the audit happened" regardless of update_location.
+     * - unsetEventDispatcher + manual isValid() skips the observer's
+     *   redundant "update" log entry alongside the "audit" entry.
+     * - A single uploaded image is copied per-asset (per-row filename
+     *   avoids collisions when two audits fire in the same second).
+     */
+    private function auditSingleAsset(Asset $asset, UploadFileRequest $request, ?Location $submittedLocation): ?array
+    {
+        $this->authorize('audit', $asset);
+
+        $originalValues = $asset->getRawOriginal();
+
+        if ($request->filled('next_audit_date')) {
+            $asset->next_audit_date = $request->input('next_audit_date');
+        }
+        $asset->last_audit_date = date('Y-m-d H:i:s');
+
+        if ($submittedLocation && $request->input('update_location') == '1') {
+            $asset->location_id = $submittedLocation->id;
+        }
+
+        $asset->unsetEventDispatcher();
+
+        if (! $asset->isValid() || ! $asset->save()) {
+            return $asset->getErrors()->toArray();
+        }
+
+        $file_name = null;
+        if ($request->hasFile('image')) {
+            $file_name = $request->handleFile('private_uploads/audits/', 'audit-'.$asset->id, $request->file('image'));
+        }
+
+        $asset->logAudit(
+            $request->input('note'),
+            $submittedLocation?->id,
+            $file_name,
+            $originalValues,
+        );
+
+        return null;
     }
 
     public function restore(Request $request): RedirectResponse

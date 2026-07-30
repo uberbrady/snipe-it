@@ -1538,6 +1538,14 @@ class AssetsController extends Controller
             ), 200);
         }
 
+        // Per-instance authorize so the policy layer independently
+        // enforces FMCS scoping on the resolved asset, regardless of
+        // whether it came from route-model binding or body lookup.
+        // Without this, FMCS enforcement depends solely on
+        // CompanyableScope firing on the underlying Asset::where /
+        // route-binding lookup.
+        $this->authorize('audit', $resolvedAsset);
+
         $result = $this->applyAssetAudit($resolvedAsset, $request);
 
         return response()->json($this->formatSingleAuditResponse($result));

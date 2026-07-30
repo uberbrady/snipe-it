@@ -32,22 +32,39 @@
                     'asset_ids' => old('selected_assets'),
                 ])
 
-                <x-input.location-select
-                    :label="trans('general.location')"
-                    name="location_id"
-                    :selected="old('location_id')"
-                />
+                {{-- Location controls: hidden entirely when the
+                     selection spans multiple companies AND FMCS
+                     location scoping is on, since a shared location
+                     can't legitimately fit assets from different
+                     companies under that mode. When one shared
+                     company is detected, the picker is scoped so
+                     only that company's locations show. Otherwise
+                     the picker is unscoped, matching the pre-existing
+                     behavior. All three cases are decided server-side
+                     in BulkAssetsController::auditLocationVisibility. --}}
+                @if ($hideLocationFields)
+                    <p class="help-block col-md-8 col-md-offset-3">
+                        {{ trans('admin/hardware/general.bulk_audit_location_hidden_mixed_companies') }}
+                    </p>
+                @else
+                    <x-input.location-select
+                        :label="trans('general.location')"
+                        name="location_id"
+                        :selected="old('location_id')"
+                        :companyId="$sharedCompanyId"
+                    />
 
-                {{-- When unchecked (default), the
-                     location above is only recorded on each audit log
-                     entry (as "where the audit happened"). When checked,
-                     the assets' physical location_id is also overwritten
-                     to that location. --}}
-                <x-form.checkbox-row
-                    name="update_location"
-                    :label="trans('admin/hardware/form.asset_location')"
-                    :help_html="trans('help.audit_help')"
-                />
+                    {{-- When unchecked (default), the location above is
+                         only recorded on each audit log entry (as
+                         "where the audit happened"). When checked, the
+                         assets' physical location_id is also
+                         overwritten to that location. --}}
+                    <x-form.checkbox-row
+                        name="update_location"
+                        :label="trans('admin/hardware/form.asset_location')"
+                        :help_html="trans('help.audit_help')"
+                    />
+                @endif
 
                 {{-- Next audit date. Prefilled with today + audit_interval
                      from settings so users can accept the calculated

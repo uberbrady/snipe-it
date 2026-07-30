@@ -843,6 +843,11 @@ class AssetsController extends Controller
     public function audit(Asset $asset): View|RedirectResponse
     {
         $this->authorize('audit', Asset::class);
+        // Per-instance authorize so SnipePermissionsPolicy::before()
+        // runs Company::isCurrentUserHasAccess($asset) at the policy
+        // layer instead of leaving FMCS scoping solely to the route-
+        // model-binding + CompanyableScope combo.
+        $this->authorize('audit', $asset);
         $settings = Setting::getSettings();
 
         // Invoke the validation to see if the audit will complete successfully
@@ -861,6 +866,11 @@ class AssetsController extends Controller
     {
 
         $this->authorize('audit', Asset::class);
+        // Per-instance authorize: without this, FMCS enforcement on
+        // an audit write depends entirely on route-model binding
+        // firing CompanyableScope. Explicit instance authorize means
+        // the policy layer independently rejects cross-company writes.
+        $this->authorize('audit', $asset);
 
         session()->put('redirect_option', $request->input('redirect_option'));
         session()->put('other_redirect', 'audit');
