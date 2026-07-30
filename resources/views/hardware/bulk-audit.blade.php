@@ -38,6 +38,17 @@
                     :selected="old('location_id')"
                 />
 
+                {{-- When unchecked (default), the
+                     location above is only recorded on each audit log
+                     entry (as "where the audit happened"). When checked,
+                     the assets' physical location_id is also overwritten
+                     to that location. --}}
+                <x-form.checkbox-row
+                    name="update_location"
+                    :label="trans('admin/hardware/form.asset_location')"
+                    :help_html="trans('help.audit_help')"
+                />
+
                 {{-- Next audit date. Prefilled with today + audit_interval
                      from settings so users can accept the calculated
                      default or override for this batch. --}}

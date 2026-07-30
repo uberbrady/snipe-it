@@ -1022,7 +1022,15 @@ class BulkAssetsController extends Controller
                 }
                 $asset->last_audit_date = date('Y-m-d H:i:s');
 
-                if ($submittedLocation) {
+                // Only overwrite the asset's physical location when the
+                // "update_location" opt-in is checked. Without it, the
+                // audit log still records the submitted location below
+                // (as "where the audit happened") but the asset itself
+                // stays where it was. Matches the single-audit form's
+                // matching checkbox and the API's update_location=1
+                // gate, so an integration and a UI user get identical
+                // behavior from the same intent.
+                if ($submittedLocation && $request->input('update_location') == '1') {
                     $asset->location_id = $submittedLocation->id;
                 }
 
