@@ -230,8 +230,14 @@ class ViewAssetsController extends Controller
 
             return redirect()->back()->with('success')->with('success', trans('admin/hardware/message.requests.canceled'));
         } else {
+            // AssetModel was previously missing from this gate, so a
+            // POST to /account/request/asset_model/{id} would bypass
+            // the model's `requestable` flag entirely and still
+            // create a request record. Now uses RequestableModels()
+            // to match the Asset / Accessory checks above.
             if (($fullItemType === Asset::class && is_null(Asset::RequestableAssets()->find($item->id)))
-                || ($fullItemType === Accessory::class && is_null(Accessory::RequestableAccessories()->find($item->id)))) {
+                || ($fullItemType === Accessory::class && is_null(Accessory::RequestableAccessories()->find($item->id)))
+                || ($fullItemType === AssetModel::class && is_null(AssetModel::RequestableModels()->find($item->id)))) {
                 return redirect()->back()->with('error', trans('admin/hardware/message.requests.error'));
             }
 

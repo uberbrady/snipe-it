@@ -489,7 +489,8 @@ Route::group(['prefix' => 'account', 'middleware' => ['auth']], function () {
         ->name('account.request-asset.cancel');
 
     Route::post('request/{itemType}/{itemId}/{cancel_by_admin?}/{requestingUser?}', [ViewAssetsController::class, 'getRequestItem'])
-        ->name('account/request-item');
+        ->name('account/request-item')
+        ->where('itemType', 'asset|asset_model|accessory');
 
     Route::get(
         'display-sig/{filename}',
