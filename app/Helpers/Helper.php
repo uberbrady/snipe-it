@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -1896,13 +1897,33 @@ class Helper
     {
         $mismatched = [];
 
+        // Eager-load every relation the loop below walks, plus each item's own
+        // company/location for the mismatch-detail lookups. Previously each
+        // per-relation `$location->{$keyword}` fired one query per location and
+        // each per-item `$item->location->company->name` fired two more per
+        // mismatch, which blew up on installs with lots of locations
+        // (customer with 100+ locations timed out the settings-page enable
+        // check). Adding `.company` on each many-relation also removes the
+        // per-mismatch company query on the artisan report path.
+        $manyRelations = [
+            'accessories.company',
+            'assets.company',
+            'assignedAccessories.accessory.company',
+            'assignedAssets.company',
+            'components.company',
+            'consumables.company',
+            'rtd_assets.company',
+            'users.companies',
+        ];
+        $oneRelations = ['manager.companies', 'parent.company'];
+        $childrenRelation = $location_id ? ['children.company'] : [];
+        $eagerLoads = array_merge($manyRelations, $oneRelations, $childrenRelation);
+
         if ($location_id) {
-            $location = Location::find($location_id);
-            if ($location) {
-                $locations = collect([])->push(Location::find($location_id));
-            }
+            $location = Location::with($eagerLoads)->find($location_id);
+            $locations = $location ? collect([$location]) : collect();
         } else {
-            $locations = Location::all();
+            $locations = Location::with($eagerLoads)->get();
         }
 
         // Bail out early if there are no locations
@@ -1911,6 +1932,58 @@ class Helper
         }
 
         $floater = (bool) Setting::getSettings()->null_company_is_floater;
+
+        // Preload every user's pivot company memberships in one query so the
+        // canReceiveFromCompany check below is a pure in-memory lookup instead
+        // of a per-user pivot query. We hit the pivot table directly (rather
+        // than reading `$user->companies`) to match canReceiveFromCompany's
+        // FMCS-scope-bypassing behavior on the User model.
+        $userIds = collect();
+        foreach ($locations as $location) {
+            $userIds = $userIds->concat($location->users->pluck('id'));
+            if ($location->manager) {
+                $userIds->push($location->manager->id);
+            }
+        }
+        $userIds = $userIds->filter()->unique()->values();
+        $userCompanyMap = $userIds->isEmpty()
+            ? collect()
+            : DB::table('company_user')
+                ->whereIn('user_id', $userIds)
+                ->get()
+                ->groupBy('user_id')
+                ->map(fn ($rows) => $rows->pluck('company_id')->map(fn ($id) => (int) $id)->all());
+
+        // Preload the (child_id -> parent_id) map once so the parent-company
+        // branch of canReceiveFromCompany doesn't fire a per-user query. The
+        // hierarchy is one level deep so this stays small.
+        $parentByChild = DB::table('companies')
+            ->whereNotNull('parent_id')
+            ->pluck('parent_id', 'id')
+            ->map(fn ($p) => (int) $p);
+
+        // In-memory equivalent of User::canReceiveFromCompany that uses the
+        // preloaded pivot and parent maps. Kept as a closure so a future
+        // change to the on-model logic is easy to mirror here.
+        $canUserReceive = function (int $userId, ?int $companyId) use ($userCompanyMap, $parentByChild, $floater) {
+            $userCompanyIds = $userCompanyMap->get($userId, []);
+            if ($companyId === null) {
+                if ($floater) {
+                    return true;
+                }
+
+                return empty($userCompanyIds);
+            }
+            if (empty($userCompanyIds)) {
+                return $floater;
+            }
+            if (in_array($companyId, $userCompanyIds, true)) {
+                return true;
+            }
+            $parentOfItemCompany = $parentByChild->get($companyId);
+
+            return $parentOfItemCompany !== null && in_array($parentOfItemCompany, $userCompanyIds, true);
+        };
 
         foreach ($locations as $location) {
             // in case of an update of a single location, use the newly requested company_id
@@ -1962,13 +2035,11 @@ class Helper
                         }
 
                         // Users belong to companies via the many-to-many pivot (company_user).
-                        // canReceiveFromCompany() returns true only when the user's pivot
-                        // contains the location's company, so !canReceiveFromCompany() is
-                        // the correct mismatch signal. Pass $location_company through as
-                        // ?int — casting null to (int) would coerce it to 0 and miss the
-                        // null-company branch inside the method.
+                        // Use the preloaded closure instead of $item->canReceiveFromCompany
+                        // so this stays in-memory (avoids one pivot query + one parent
+                        // hierarchy query per user).
                         if ($item instanceof User) {
-                            $isMismatch = ! $item->canReceiveFromCompany($location_company === null ? null : (int) $location_company);
+                            $isMismatch = ! $canUserReceive((int) $item->id, $location_company === null ? null : (int) $location_company);
                         } elseif ($item->company_id == $location_company) {
                             $isMismatch = false;
                         } elseif (is_null($item->company_id) || is_null($location_company)) {
