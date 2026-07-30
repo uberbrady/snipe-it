@@ -31,11 +31,11 @@ class AssetCheckinInvalidModelTest extends TestCase
         $asset = Asset::factory()->assignedToUser()->create();
 
         // Bypass model events + validation to write an invalid value
-        // directly. warranty_months has a `digits_between:0,240` rule
-        // (Asset::$rules), so 999 will trip isInvalid() at checkin time.
+        // directly. purchase_cost has a `gte:0` rule (Asset::$rules),
+        // so a negative value trips isInvalid() at checkin time.
         // Using DB::update rather than $asset->forceSave() keeps us
         // out of the observer stack entirely.
-        DB::table('assets')->where('id', $asset->id)->update(['warranty_months' => 999]);
+        DB::table('assets')->where('id', $asset->id)->update(['purchase_cost' => -1]);
 
         $response = $this->actingAs(User::factory()->superuser()->create())
             ->get(route('hardware.checkin.create', $asset));
@@ -45,14 +45,14 @@ class AssetCheckinInvalidModelTest extends TestCase
 
         // The generic errors bag is still populated so inline
         // .has-error styling fires on any visible fields.
-        $response->assertSessionHasErrors('warranty_months');
+        $response->assertSessionHasErrors('purchase_cost');
 
         // AND the specific message is flashed so notifications.blade.php
         // renders it in the top alert, catching the off-form case.
         $response->assertSessionHas('multi_error_messages', function ($messages) {
             return is_array($messages)
                 && count($messages) > 0
-                && collect($messages)->contains(fn ($msg) => str_contains(strtolower($msg), 'warranty'));
+                && collect($messages)->contains(fn ($msg) => str_contains(strtolower($msg), 'purchase cost'));
         });
     }
 
