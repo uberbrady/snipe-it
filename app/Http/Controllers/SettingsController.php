@@ -163,6 +163,38 @@ class SettingsController extends Controller
     }
 
     /**
+     * Stream a CSV of every location-scoping FMCS mismatch.
+     *
+     * This endpoint runs the full walk (artisan=true) and streams
+     * the same table columns the CLI command prints, as CSV.
+     */
+    public function downloadLocationScopingReport(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $mismatched = Helper::test_locations_fmcs(true);
+
+        $filename = 'location-scoping-mismatches-' . date('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($mismatched) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, [
+                'Type',
+                'ID',
+                'Name',
+                'Checkout Type',
+                'Company IDs',
+                'Item Companies',
+                'Item Location',
+                'Location Company',
+                'Location Company ID',
+            ]);
+            foreach ($mismatched as $row) {
+                fputcsv($out, $row);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
      * Return a form to allow a super admin to update settings.
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]

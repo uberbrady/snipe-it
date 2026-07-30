@@ -230,6 +230,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'authorize:superuser
     Route::post('settings', [SettingsController::class, 'postSettings'])
         ->name('settings.general.save');
 
+    Route::get('settings/location-scoping-report.csv', [SettingsController::class, 'downloadLocationScopingReport'])
+        ->name('settings.general.location_scoping_report');
+
     Route::get('branding', [SettingsController::class, 'getBranding'])
         ->name('settings.branding.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('settings.index')
