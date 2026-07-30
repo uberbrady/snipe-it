@@ -43,6 +43,10 @@
                         @endcan
                     @endif
 
+                    @can('audit', \App\Models\Asset::class)
+                        <option value="audit">{{ trans('admin/hardware/general.bulk_audit') }}</option>
+                    @endcan
+
                     @can('delete', \App\Models\Asset::class)
                         <option value="delete">{{ trans('general.bulk_delete') }}</option>
                     @endcan
