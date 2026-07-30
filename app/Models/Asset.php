@@ -113,33 +113,24 @@ class Asset extends Depreciable
      * assignment, never 0. Old data and previous bugs occasionally
      * left `0` behind (empty select2 → '' → integer-cast → 0), which
      * then breaks `exists:` validation and FMCS queries that treat
-     * NULL and 0 as different. Mutators normalize on write; matching
-     * accessors normalize on read so legacy rows already storing 0
-     * present as null at the model boundary until they're re-saved.
-     * Mirrors the parent_id pattern on Company / SnipeModel.
+     * NULL and 0 as different. `set` normalizes on write, `get`
+     * normalizes on read so legacy rows already storing 0 present as
+     * null at the model boundary until they're re-saved.
      */
-    public function setLocationIdAttribute($value): void
+    protected function locationId(): Attribute
     {
-        $this->attributes['location_id'] = ($value === '' || $value === null || (int) $value === 0)
-            ? null
-            : (int) $value;
+        return Attribute::make(
+            get: fn ($value) => ($value === null || (int) $value === 0) ? null : (int) $value,
+            set: fn ($value) => ($value === '' || $value === null || (int) $value === 0) ? null : (int) $value,
+        );
     }
 
-    public function getLocationIdAttribute($value): ?int
+    protected function companyId(): Attribute
     {
-        return ($value === null || (int) $value === 0) ? null : (int) $value;
-    }
-
-    public function setCompanyIdAttribute($value): void
-    {
-        $this->attributes['company_id'] = ($value === '' || $value === null || (int) $value === 0)
-            ? null
-            : (int) $value;
-    }
-
-    public function getCompanyIdAttribute($value): ?int
-    {
-        return ($value === null || (int) $value === 0) ? null : (int) $value;
+        return Attribute::make(
+            get: fn ($value) => ($value === null || (int) $value === 0) ? null : (int) $value,
+            set: fn ($value) => ($value === '' || $value === null || (int) $value === 0) ? null : (int) $value,
+        );
     }
 
     protected $rules = [
