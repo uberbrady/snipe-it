@@ -140,6 +140,12 @@ return [
         'no_assets_selected' => 'You must select at least one asset from the list',
     ],
 
+    'multi-audit' => [
+        'success' => ':count asset audited successfully.|:count assets audited successfully.',
+        'partial_error' => ':success asset audited, :failed failed. Check the errors below and try again.|:success assets audited, :failed failed. Check the errors below and try again.',
+        'no_assets_selected' => 'You must select at least one asset from the list',
+    ],
+
     'checkin' => [
         'error' => 'Asset was not checked in, please try again',
         'success' => 'Asset checked in successfully.',

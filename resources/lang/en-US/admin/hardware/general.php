@@ -7,6 +7,7 @@ return [
     'asset' => 'Asset',
     'bulk_checkout' => 'Bulk Checkout',
     'bulk_checkin' => 'Bulk Checkin',
+    'bulk_audit' => 'Bulk Audit',
     'checkin' => 'Checkin Asset',
     'checkin_assets' => 'Checkin Assets',
     'checkout' => 'Checkout Asset',

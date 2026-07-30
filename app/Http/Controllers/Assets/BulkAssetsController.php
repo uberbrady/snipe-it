@@ -7,6 +7,7 @@ use App\Events\CheckoutablesCheckedOutInBulk;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssetCheckoutRequest;
+use App\Http\Requests\UploadFileRequest;
 use App\Http\Traits\CheckInOutTrait;
 use App\Http\Traits\MigratesLegacyAssetLocations;
 use App\Models\Asset;
@@ -88,6 +89,12 @@ class BulkAssetsController extends Controller
             $request->session()->flashInput(['selected_assets' => $asset_ids]);
 
             return redirect()->route('hardware.bulkcheckin.show');
+        }
+
+        if ($request->input('bulk_actions') === 'audit') {
+            $request->session()->flashInput(['selected_assets' => $asset_ids]);
+
+            return redirect()->route('hardware.bulk-audit.show');
         }
 
         if ($request->input('bulk_actions') === 'maintenance') {
@@ -938,6 +945,123 @@ class BulkAssetsController extends Controller
 
         return redirect()->route('hardware.bulkcheckin.show')->withInput()
             ->with('error', trans_choice('admin/hardware/message.multi-checkin.error', count($asset_ids)))
+            ->withErrors($errors);
+    }
+
+    /**
+     * Show the bulk-audit form: single shared note, optional location
+     * override, optional next_audit_date override. Applied uniformly
+     * to every selected asset when the form is submitted.
+     *
+     * The full walk-per-asset customization the single-audit form
+     * offers (custom fields, per-asset image, etc.) is intentionally
+     * out of scope here; the whole point of bulk audit is to
+     * touch-and-go a stack of items at once. Users needing to record
+     * per-item details should still use the single audit form.
+     */
+    public function showAudit(): View
+    {
+        $this->authorize('audit', Asset::class);
+
+        // Only prefill next_audit_date when the install has an
+        // audit_interval configured. Without it, `(int) null` falls
+        // out to 0 months and the field prefills as today, which
+        // reads as "audit this again immediately" and isn't useful.
+        $settings = Setting::getSettings();
+        $next_audit_date = $settings->audit_interval
+            ? Carbon::now()->addMonths((int) $settings->audit_interval)->toDateString()
+            : null;
+
+        return view('hardware/bulk-audit', [
+            'next_audit_date' => $next_audit_date,
+        ]);
+    }
+
+    /**
+     * Apply the audit to every selected asset. Same skip-observer
+     * pattern the single-asset audit uses (AssetsController::auditStore)
+     * so the assets table update doesn't fire an extra Actionlog
+     * 'update' entry alongside the 'audit' entry logAudit() writes.
+     */
+    public function storeAudit(UploadFileRequest $request): RedirectResponse
+    {
+        $this->authorize('audit', Asset::class);
+
+        if (! is_array($request->input('selected_assets'))) {
+            return redirect()->route('hardware.bulk-audit.show')->withInput()
+                ->with('error', trans('admin/hardware/message.multi-audit.no_assets_selected'));
+        }
+
+        $asset_ids = array_filter($request->input('selected_assets'));
+        $assets = Asset::whereIn('id', $asset_ids)->get();
+
+        // Resolve the submitted location through the FMCS-scoped query
+        // so a location the actor can't see (or a fabricated id) fails
+        // fast, before we touch any asset. Matches the pattern the
+        // storeCheckin method uses one method up.
+        $submittedLocation = null;
+        if ($request->filled('location_id')) {
+            $submittedLocation = Location::find($request->input('location_id'));
+            if (! $submittedLocation) {
+                return redirect()->route('hardware.bulk-audit.show')->withInput()
+                    ->with('error', trans('admin/hardware/message.create.target_not_found.location'));
+            }
+        }
+
+        $errors = [];
+        $succeeded = 0;
+
+        DB::transaction(function () use ($assets, $request, $submittedLocation, &$errors, &$succeeded) {
+            foreach ($assets as $asset) {
+                $this->authorize('audit', $asset);
+
+                $originalValues = $asset->getRawOriginal();
+
+                if ($request->filled('next_audit_date')) {
+                    $asset->next_audit_date = $request->input('next_audit_date');
+                }
+                $asset->last_audit_date = date('Y-m-d H:i:s');
+
+                if ($submittedLocation) {
+                    $asset->location_id = $submittedLocation->id;
+                }
+
+                // Skip observer + fire model-level validation manually,
+                // matching AssetsController::auditStore's rationale.
+                $asset->unsetEventDispatcher();
+
+                if ($asset->isValid() && $asset->save()) {
+                    // A single uploaded image is applied to every
+                    // audit row, matching the API's bulkAudit shape.
+                    // We hand handleFile the current asset's id so
+                    // the stored filename is scoped per-row (avoids
+                    // filename collisions when multiple audits fire
+                    // in the same second).
+                    $file_name = null;
+                    if ($request->hasFile('image')) {
+                        $file_name = $request->handleFile('private_uploads/audits/', 'audit-'.$asset->id, $request->file('image'));
+                    }
+
+                    $asset->logAudit(
+                        $request->input('note'),
+                        $submittedLocation?->id,
+                        $file_name,
+                        $originalValues,
+                    );
+                    $succeeded++;
+                } else {
+                    $errors[$asset->id] = $asset->getErrors()->toArray();
+                }
+            }
+        });
+
+        if (! $errors) {
+            return redirect()->route('hardware.index')
+                ->with('success', trans_choice('admin/hardware/message.multi-audit.success', $succeeded, ['count' => $succeeded]));
+        }
+
+        return redirect()->route('hardware.bulk-audit.show')->withInput()
+            ->with('error', trans_choice('admin/hardware/message.multi-audit.partial_error', count($errors), ['success' => $succeeded, 'failed' => count($errors)]))
             ->withErrors($errors);
     }
 

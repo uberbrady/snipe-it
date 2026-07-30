@@ -187,6 +187,19 @@ Route::group(
             [BulkAssetsController::class, 'storeCheckin']
         )->name('hardware.bulkcheckin.store');
 
+        // Checked-rows bulk audit. URL uses a dash to stay distinct
+        // from /hardware/bulkaudit (the barcode-scanner quickscan flow
+        // at assets.bulkaudit above).
+        Route::get('bulk-audit', [BulkAssetsController::class, 'showAudit'])
+            ->name('hardware.bulk-audit.show')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('hardware.index')
+                ->push(trans('admin/hardware/general.bulk_audit'), route('hardware.index'))
+            );
+
+        Route::post('bulk-audit',
+            [BulkAssetsController::class, 'storeAudit']
+        )->name('hardware.bulk-audit.store');
+
     });
 
 Route::resource('hardware',
