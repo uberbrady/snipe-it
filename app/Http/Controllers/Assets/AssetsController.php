@@ -444,6 +444,11 @@ class AssetsController extends Controller
         $asset->expected_checkin = $request->input('expected_checkin', null);
         $asset->requestable = $request->input('requestable', 0);
         $asset->rtd_location_id = $request->input('rtd_location_id', null);
+        // Current location is editable from the asset edit form as of
+        // the location-dropdown addition. Blank clears it (the mutator
+        // normalizes '' / 0 to NULL) so the next checkout can re-derive
+        // location_id from the target. See general.location_edit_help.
+        $asset->location_id = $request->input('location_id', null);
         $asset->byod = $request->input('byod', 0);
 
         $status = Statuslabel::find($request->input('status_id'));

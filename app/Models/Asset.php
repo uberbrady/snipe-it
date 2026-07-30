@@ -108,6 +108,40 @@ class Asset extends Depreciable
         'deleted_at' => 'datetime',
     ];
 
+    /**
+     * location_id and company_id should store NULL when there's no
+     * assignment, never 0. Old data and previous bugs occasionally
+     * left `0` behind (empty select2 → '' → integer-cast → 0), which
+     * then breaks `exists:` validation and FMCS queries that treat
+     * NULL and 0 as different. Mutators normalize on write; matching
+     * accessors normalize on read so legacy rows already storing 0
+     * present as null at the model boundary until they're re-saved.
+     * Mirrors the parent_id pattern on Company / SnipeModel.
+     */
+    public function setLocationIdAttribute($value): void
+    {
+        $this->attributes['location_id'] = ($value === '' || $value === null || (int) $value === 0)
+            ? null
+            : (int) $value;
+    }
+
+    public function getLocationIdAttribute($value): ?int
+    {
+        return ($value === null || (int) $value === 0) ? null : (int) $value;
+    }
+
+    public function setCompanyIdAttribute($value): void
+    {
+        $this->attributes['company_id'] = ($value === '' || $value === null || (int) $value === 0)
+            ? null
+            : (int) $value;
+    }
+
+    public function getCompanyIdAttribute($value): ?int
+    {
+        return ($value === null || (int) $value === 0) ? null : (int) $value;
+    }
+
     protected $rules = [
         'model_id' => ['required', 'integer', 'exists:models,id,deleted_at,NULL', 'not_array'],
         'status_id' => ['required', 'integer', 'exists:status_labels,id'],

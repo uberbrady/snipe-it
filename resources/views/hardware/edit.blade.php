@@ -118,6 +118,17 @@
         input_div_class="col-md-7 col-sm-12"
     />
 
+    {{-- Current location. When blank, the observer / checkout flow
+         updates location_id to match the checkout target's location
+         (user's location, target-location, or parent asset's location).
+         See the note under general.location_edit_help. --}}
+    <x-input.location-select
+        :label="trans('general.location')"
+        name="location_id"
+        :selected="old('location_id', $item?->location_id)"
+        :helpText="trans('general.location_edit_help')"
+    />
+
     {{-- Default (ready-to-deploy) location --}}
     <x-input.location-select
         :label="trans('admin/hardware/form.default_location')"
