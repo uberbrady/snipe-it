@@ -644,6 +644,7 @@ return [
     'copied' => 'Copied!',
     'status_compatibility' => 'If assets are already assigned, they cannot be changed to a non-deployable status type and this value change will be skipped.',
     'rtd_location_help' => 'This is the location of the asset when it is not checked out',
+    'location_edit_help' => 'If left blank, the location will be updated to match the location of whoever (or wherever) this asset is checked out to.',
     'item_not_found' => ':item_type ID :id does not exist or has been deleted',
     'item_target_not_found_hard' => ':item_type ID :id does not exist or has been hard-deleted. Would you like to force a checkin?',
     'force_checkin' => 'Force Checkin',

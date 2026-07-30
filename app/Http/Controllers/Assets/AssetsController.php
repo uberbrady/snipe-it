@@ -444,6 +444,15 @@ class AssetsController extends Controller
         $asset->expected_checkin = $request->input('expected_checkin', null);
         $asset->requestable = $request->input('requestable', 0);
         $asset->rtd_location_id = $request->input('rtd_location_id', null);
+        // Current location is editable from the asset edit form as of
+        // the location-dropdown addition. Only overwrite when the key
+        // is actually present in the request — a client that omits
+        // location_id entirely (a partial update API caller, an older
+        // form) still leaves the existing value intact. Present-but-
+        // blank clears via the mutator (see setLocationIdAttribute).
+        if ($request->has('location_id')) {
+            $asset->location_id = $request->input('location_id');
+        }
         $asset->byod = $request->input('byod', 0);
 
         $status = Statuslabel::find($request->input('status_id'));
