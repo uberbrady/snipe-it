@@ -48,7 +48,15 @@ class AssetCheckinController extends Controller
         $asset->setRules($asset->getRules() + $asset->customFieldValidationRules());
 
         if ($asset->isInvalid()) {
-            return redirect()->route('hardware.edit', $asset)->withErrors($asset->getErrors());
+            // Also flash the specific error messages so they surface
+            // in the top alert on the edit page. Without this, model-
+            // level rules that fail on a field the edit form doesn't
+            // render (or is scrolled off-screen) leave the user with
+            // a generic "check the form" message and nothing visibly
+            // highlighted. See notifications.blade.php multi_error_messages.
+            return redirect()->route('hardware.edit', $asset)
+                ->withErrors($asset->getErrors())
+                ->with('multi_error_messages', $asset->getErrors()->all());
         }
 
         $target_option = match ($asset->assigned_type) {
@@ -215,8 +223,13 @@ class AssetCheckinController extends Controller
                 ->with('success', trans('admin/hardware/message.checkin.success'));
         }
 
-        // Redirect to the asset management page with error
-        return redirect()->route('hardware.index')->with('error', trans('admin/hardware/message.checkin.error').$asset->getErrors());
+        // Redirect to the asset management page with error. Flash the
+        // specific validation messages via multi_error_messages so the
+        // user sees WHAT failed instead of the previous stringified
+        // MessageBag concatenation.
+        return redirect()->route('hardware.index')
+            ->with('error', trans('admin/hardware/message.checkin.error'))
+            ->with('multi_error_messages', $asset->getErrors()->all());
     }
 
     /**
