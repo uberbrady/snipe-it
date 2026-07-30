@@ -61,7 +61,16 @@ class CheckUserIsActivated
             // "known token, disabled account" case from an unknown
             // token. From the client's point of view this reads
             // identically to a rejected / expired token.
-            if ($request->expectsJson()) {
+            //
+            // Bearer-token check is a second signal alongside
+            // expectsJson() because some API clients don't set the
+            // Accept header (curl without -H, older SDKs, misconfigured
+            // integrations). Falling through to Auth::logout() on a
+            // bearer-authenticated request would call logout() on
+            // Passport's TokenGuard, which doesn't define that method,
+            // and produce a 500 (BadMethodCallException) instead of
+            // the intended 401.
+            if ($request->expectsJson() || $request->bearerToken()) {
                 return response()->json(
                     Helper::formatStandardApiResponse('error', null, trans('general.unauthorized')),
                     Response::HTTP_UNAUTHORIZED,
