@@ -2441,6 +2441,58 @@ table rows
 .gen-sticky-left-shared(4);
 .gen-sticky-left-shared(5);
 
+// Row-state overrides. Bootstrap-table adds `.selected` on click / checkbox
+// tick (see line ~2889 for the base rule), and Snipe-IT paints `.success`
+// and `.danger` rows for the audit / restore flows. Without these
+// overrides, the sticky columns keep their zebra background painted on top
+// of the row-selected color and read as unselected even when the rest of
+// the row is highlighted. Overriding both background-color AND
+// background-image (to clear the linear-gradient stripe overlay from the
+// -shared mixins) so the sticky cells pick up the row's highlight state.
+.gen-sticky-right-row-state(@maxN) {
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.selected > td:nth-last-child(-n+@{maxN}) {
+        background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+        background-image: none !important;
+    }
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.success > td:nth-last-child(-n+@{maxN}) {
+        background-color: #00a65a !important;
+        background-image: none !important;
+        color: white !important;
+    }
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.danger > td:nth-last-child(-n+@{maxN}) {
+        background-color: var(--text-danger) !important;
+        background-image: none !important;
+        color: white !important;
+    }
+}
+.gen-sticky-right-row-state(1);
+.gen-sticky-right-row-state(2);
+.gen-sticky-right-row-state(3);
+.gen-sticky-right-row-state(4);
+.gen-sticky-right-row-state(5);
+
+.gen-sticky-left-row-state(@maxN) {
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.selected > td:nth-child(-n+@{maxN}) {
+        background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+        background-image: none !important;
+    }
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.success > td:nth-child(-n+@{maxN}) {
+        background-color: #00a65a !important;
+        background-image: none !important;
+        color: white !important;
+    }
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.danger > td:nth-child(-n+@{maxN}) {
+        background-color: var(--text-danger) !important;
+        background-image: none !important;
+        color: white !important;
+    }
+}
+.gen-sticky-left-row-state(1);
+.gen-sticky-left-row-state(2);
+.gen-sticky-left-row-state(3);
+.gen-sticky-left-row-state(4);
+.gen-sticky-left-row-state(5);
+
 
 // -----------------------------------------------------------------------------
 // Checkbox column: bootstrap-table adds .bs-checkbox to the header and body
@@ -2467,6 +2519,27 @@ table rows
 
 .snipe-table > thead > tr > th.bs-checkbox {
     z-index: 3;
+}
+
+// Row-state overrides for the pinned checkbox column. Same reasoning as
+// the .gen-sticky-*-row-state mixins above: the opaque background baked
+// into the sticky cell would otherwise mask row-selected / .success /
+// .danger highlights on the checkbox column, which is exactly the column
+// users click to toggle the selection state, so the mismatch is most
+// visible there.
+.snipe-table > tbody > tr.selected > td.bs-checkbox {
+    background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+    background-image: none !important;
+}
+.snipe-table > tbody > tr.success > td.bs-checkbox {
+    background-color: #00a65a !important;
+    background-image: none !important;
+    color: white !important;
+}
+.snipe-table > tbody > tr.danger > td.bs-checkbox {
+    background-color: var(--text-danger) !important;
+    background-image: none !important;
+    color: white !important;
 }
 
 
