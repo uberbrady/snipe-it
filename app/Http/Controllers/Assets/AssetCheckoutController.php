@@ -45,7 +45,13 @@ class AssetCheckoutController extends Controller
         $asset->setRules($asset->getRules() + $asset->customFieldValidationRules());
 
         if ($asset->isInvalid()) {
-            return redirect()->route('hardware.edit', $asset)->withErrors($asset->getErrors());
+            // Also flash the specific validation messages via
+            // multi_error_messages so they surface in the top alert
+            // on the edit page. See the matching block in
+            // AssetCheckinController::create() for the reasoning.
+            return redirect()->route('hardware.edit', $asset)
+                ->withErrors($asset->getErrors())
+                ->with('multi_error_messages', $asset->getErrors()->all());
         }
 
         if ($asset->availableForCheckout()) {
@@ -172,10 +178,17 @@ class AssetCheckoutController extends Controller
                     ->with('success', trans('admin/hardware/message.checkout.success'));
             }
 
-            // Redirect to the asset management page with error
-            return redirect()->route('hardware.checkout.create', $asset)->with('error', trans('admin/hardware/message.checkout.error').$asset->getErrors());
+            // Redirect back to the checkout form with the specific
+            // validation messages surfaced via multi_error_messages
+            // (replaces the previous stringified MessageBag concat).
+            return redirect()->route('hardware.checkout.create', $asset)
+                ->with('error', trans('admin/hardware/message.checkout.error'))
+                ->with('multi_error_messages', $asset->getErrors()->all());
         } catch (ModelNotFoundException $e) {
-            return redirect()->back()->with('error', trans('admin/hardware/message.checkout.error'))->withErrors($asset->getErrors());
+            return redirect()->back()
+                ->with('error', trans('admin/hardware/message.checkout.error'))
+                ->withErrors($asset->getErrors())
+                ->with('multi_error_messages', $asset->getErrors()->all());
         } catch (CheckoutNotAllowed $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
