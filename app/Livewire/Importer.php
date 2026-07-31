@@ -836,6 +836,19 @@ class Importer extends Component
         }
 
         $this->headerRow = $this->activeFile->header_row;
+
+        // header_row is populated by the initial upload path but can be null for
+        // legacy imports created before that column was persisted, or for rows
+        // where a background job never wrote it. Without this guard the foreach
+        // below explodes with "foreach() argument must be of type array|object,
+        // null given" and the wizard is unrecoverable.
+        if (! is_array($this->headerRow) || $this->headerRow === []) {
+            $this->message = trans('admin/hardware/message.import.header_row_missing');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
         $this->typeOfImport = $this->activeFile->import_type;
 
         $this->field_map = null;
