@@ -1092,8 +1092,7 @@ class SettingsController extends Controller
 
         // Take a fresh pre-restore backup so we can point the operator at
         // it if the restore fails after we wipe. This is the mitigation
-        // the pre-existing "// TODO: run a backup" comment described but
-        // never implemented.
+        // the pre-existing
         $preRestoreBackupName = 'pre-restore-'.date('Y-m-d-H-i-s').'.zip';
         Log::debug('Running pre-restore backup: '.$preRestoreBackupName);
         $preBackupExit = Artisan::call('snipeit:backup', [

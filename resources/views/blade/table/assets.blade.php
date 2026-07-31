@@ -18,7 +18,7 @@
     </x-slot:table_header>
 
     <x-slot:bulkactions>
-        <x-table.bulk-assets :status_type="$status_type"/>
+        <x-table.bulk-assets />
     </x-slot:bulkactions>
 
     <x-table
