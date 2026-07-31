@@ -31,15 +31,15 @@ class ManufacturerImporter extends ItemImporter
         $this->item = [];
 
         foreach ([
-                     'name',
-                     'support_phone',
-                     'support_email',
-                     'url',
-                     'support_url',
-                     'warranty_lookup_url',
-                     'notes',
-                     'tag_color',
-                 ] as $field) {
+            'name',
+            'support_phone',
+            'support_email',
+            'url',
+            'support_url',
+            'warranty_lookup_url',
+            'notes',
+            'tag_color',
+        ] as $field) {
             $this->setItemFromCsvIfPresent($row, $field);
         }
 
@@ -49,6 +49,8 @@ class ManufacturerImporter extends ItemImporter
     /**
      * Override the base sanitize to skip the reject-empty pass. See handle()
      * above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function sanitizeItemForStoring($model, $updating = false)
     {
@@ -79,7 +81,7 @@ class ManufacturerImporter extends ItemImporter
 
         if ($manufacturer) {
             if (! $this->updating) {
-                $this->log('A matching Manufacturer ' . $name . ' already exists');
+                $this->log('A matching Manufacturer '.$name.' already exists');
                 $this->recordSkipped();
 
                 return;
@@ -117,7 +119,7 @@ class ManufacturerImporter extends ItemImporter
         } else {
             Log::debug($manufacturer->getErrors());
             $this->recordErrored();
-            $this->logError($manufacturer, 'Manufacturer "' . $name . '"');
+            $this->logError($manufacturer, 'Manufacturer "'.$name.'"');
 
             return $manufacturer->errors;
         }

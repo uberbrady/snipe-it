@@ -79,6 +79,8 @@ class ComponentImporter extends ItemImporter
     /**
      * Override the base sanitize to skip the reject-empty pass. See handle()
      * above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function sanitizeItemForStoring($model, $updating = false)
     {
