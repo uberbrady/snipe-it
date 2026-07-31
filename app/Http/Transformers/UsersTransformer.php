@@ -140,6 +140,14 @@ class UsersTransformer
             'delete' => ($user->isDeletable() && (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo'))),
             'clone' => (Gate::allows('create', User::class) && ($user->deleted_at == '')),
             'restore' => (Gate::allows('create', User::class) && ($user->deleted_at != '')),
+            'bulk_selectable' => [
+                'edit' => (Gate::allows('update', User::class) && $user->deleted_at == ''),
+                'send_assigned' => (Gate::allows('update', User::class) && $user->deleted_at == '' && ! empty($user->email)),
+                'delete' => (Gate::allows('delete', User::class) && $user->deleted_at == ''),
+                'merge' => (Gate::allows('delete', User::class) && $user->deleted_at == ''),
+                'bulkpasswordreset' => ($user->deleted_at == '' && $user->activated == '1' && ! empty($user->email) && $user->ldap_import != '1'),
+                'print' => $user->deleted_at == '',
+            ],
         ];
 
         $array += $permissions_array;
