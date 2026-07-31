@@ -182,6 +182,8 @@ class AssetImporter extends ItemImporter
      * populates $this->item exclusively from CSV columns that were present in
      * the row, so an empty value here is an explicit intent to clear the DB
      * field on update. See handle() above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function sanitizeItemForStoring($model, $updating = false)
     {

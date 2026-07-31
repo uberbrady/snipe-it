@@ -52,7 +52,7 @@ class BulkDeleteWithCheckinLicensesTest extends TestCase implements TestsPermiss
     {
         $license = License::factory()->create(['seats' => 3]);
         $asset = Asset::factory()->create();
-        $seat = LicenseSeat::factory()->assignedToAsset($asset)->create(['license_id' => $license->id]);
+        LicenseSeat::factory()->assignedToAsset($asset)->create(['license_id' => $license->id]);
 
         $this->actingAs(User::factory()->deleteLicenses()->checkinLicenses()->create())
             ->post(route('licenses.bulk.delete'), [

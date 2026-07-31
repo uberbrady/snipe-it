@@ -60,11 +60,10 @@ class ConsumableImporter extends ItemImporter
 
         if ($this->csvRowHas($row, 'purchase_date')) {
             $raw = $this->findCsvMatch($row, 'purchase_date');
+            $this->item['purchase_date'] = null;
             if ($raw !== '') {
                 $this->item['purchase_date'] = $raw;
                 $this->item['purchase_date'] = $this->parseOrNullDate('purchase_date');
-            } else {
-                $this->item['purchase_date'] = null;
             }
         }
 
@@ -80,6 +79,8 @@ class ConsumableImporter extends ItemImporter
     /**
      * Override the base sanitize to skip the reject-empty pass. See handle()
      * above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function sanitizeItemForStoring($model, $updating = false)
     {
