@@ -1894,6 +1894,80 @@
         updateSelectedCount(this);
     });
 
+    // Dynamic bulk actions: when a table's bulk-actions dropdown was rendered with
+    // data-dynamic-actions, its options are populated here from the intersection of
+    // each selected row's available_actions.bulk_selectable. An action shows only
+    // when every currently-selected row supports it. Tables that rendered a static
+    // option list have no data-dynamic-actions attribute and are unaffected.
+    function refreshDynamicBulkActions(table) {
+        var $table = $(table);
+        var formId = $table.data('bulk-form-id');
+        if (!formId) return;
+
+        var $select = $(formId).find('select[data-dynamic-actions]');
+        if ($select.length === 0) return;
+
+        var actions;
+        try {
+            actions = JSON.parse($select.attr('data-dynamic-actions')) || {};
+        } catch (e) {
+            return;
+        }
+
+        var selections = $table.bootstrapTable('getSelections');
+        var $button = $($table.data('bulk-button-id'));
+        var currentValue = $select.val();
+        var placeholder = $select.attr('data-placeholder') || '';
+
+        var eligible = null;
+        for (var i = 0; i < selections.length; i++) {
+            var supported = (selections[i].available_actions && selections[i].available_actions.bulk_selectable) || {};
+            var rowActions = {};
+            for (var k in supported) {
+                if (supported[k] === true) rowActions[k] = true;
+            }
+            if (eligible === null) {
+                eligible = rowActions;
+            } else {
+                var next = {};
+                for (var kk in eligible) if (rowActions[kk]) next[kk] = true;
+                eligible = next;
+            }
+        }
+
+        if ($select.hasClass('select2-hidden-accessible')) {
+            $select.select2('destroy');
+        }
+        $select.empty();
+
+        if (selections.length === 0) {
+            $select.append($('<option/>', { value: '', text: placeholder }));
+            $button.attr('disabled', 'disabled');
+        } else if (!eligible || Object.keys(eligible).length === 0) {
+            $select.append($('<option/>', { value: '', text: '{{ trans('general.bulk_actions_none_available') }}' }));
+            $button.attr('disabled', 'disabled');
+        } else {
+            var appendedAny = false;
+            for (var actionKey in actions) {
+                if (eligible[actionKey] && actions[actionKey] && actions[actionKey].label) {
+                    $select.append($('<option/>', { value: actionKey, text: actions[actionKey].label }));
+                    appendedAny = true;
+                }
+            }
+            if (appendedAny) {
+                if (currentValue && eligible[currentValue]) {
+                    $select.val(currentValue);
+                }
+                $button.removeAttr('disabled');
+            } else {
+                $select.append($('<option/>', { value: '', text: '{{ trans('general.bulk_actions_none_available') }}' }));
+                $button.attr('disabled', 'disabled');
+            }
+        }
+
+        $select.select2();
+    }
+
     // These methods dynamically add/remove hidden input values in the bulk actions form
     $('.snipe-table').on('check.bs.table .btSelectItem', function (row, $element) {
         var buttonName =  $(this).data('bulk-button-id');
@@ -1907,6 +1981,7 @@
             value: $element.id
         }));
         updateSelectedCount(this);
+        refreshDynamicBulkActions(this);
     });
 
     $('.snipe-table').on('check-all.bs.table', function (event, rowsAfter) {
@@ -1930,6 +2005,7 @@
             $(buttonName).removeAttr('disabled');
         }
         updateSelectedCount(this);
+        refreshDynamicBulkActions(this);
     });
 
 
@@ -1948,6 +2024,7 @@
 
             $(buttonName).attr('disabled', 'disabled');
         }
+        refreshDynamicBulkActions(this);
     });
 
     $('.snipe-table').on('uncheck-all.bs.table', function (event, rowsAfter, rowsBefore) {
@@ -1960,7 +2037,7 @@
             $('#' + tableId + "_checkbox_" + rowsBefore[i].id).remove();
         }
         updateSelectedCount(this);
-
+        refreshDynamicBulkActions(this);
     });
 
     // Initialize sort-order for bulk actions (label-generation) for snipe-tables

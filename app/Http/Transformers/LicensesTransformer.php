@@ -81,6 +81,7 @@ class LicensesTransformer
             'user_can_checkout' => (bool) (($license->free_seats_count - $unreassignable) > 0),
             'bulk_selectable' => [
                 'delete' => $license->isDeletable(),
+                'delete_with_checkin' => Gate::allows('delete', $license) && Gate::allows('checkin', $license) && ($license->deleted_at == ''),
             ],
         ];
 
