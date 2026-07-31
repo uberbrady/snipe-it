@@ -25,15 +25,7 @@
 
               @else
                 <x-slot:bulkactions>
-                    <x-table.bulk-actions
-                            name='manufacturer'
-                            action_route="{{route('manufacturers.bulk.delete')}}"
-                            model_name="manufacturer"
-                    >
-                        @can('delete', App\Models\Manufacturer::class)
-                            <option>Delete</option>
-                        @endcan
-                    </x-table.bulk-actions>
+                    <x-table.bulk-manufacturers />
                 </x-slot:bulkactions>
 
 

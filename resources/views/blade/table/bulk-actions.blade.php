@@ -50,3 +50,16 @@
         <button class="btn btn-theme" id="{{ $buttonId }}" disabled>{{ trans('button.go') }}</button>
     </form>
 </div>
+
+{{-- snipeit.js auto-initializes every .select2 with no config, which leaves
+     the search box on. Bulk-action menus never carry more than a handful of
+     options, so the search input just looks awkward. Reinitialize with
+     minimumResultsForSearch: Infinity to suppress the search box for this
+     select regardless of what snipeit.js did first. --}}
+@push('js')
+<script nonce="{{ csrf_token() }}">
+    $(function () {
+        $('#{{ $selectId }}').select2({ minimumResultsForSearch: Infinity });
+    });
+</script>
+@endpush

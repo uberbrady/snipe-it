@@ -1965,7 +1965,7 @@
             }
         }
 
-        $select.select2();
+        $select.select2({ minimumResultsForSearch: Infinity });
     }
 
     // These methods dynamically add/remove hidden input values in the bulk actions form

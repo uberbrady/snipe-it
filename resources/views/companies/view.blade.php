@@ -44,7 +44,10 @@
 
                     <!-- start licenses tab pane -->
                     <x-tabs.pane name="licenses">
-                        <x-table.licenses name="licenses" :route="route('api.licenses.index', ['company_id' => $company->id, 'expand_company_hierarchy' => 1])"/>
+                        <x-slot:bulkactions>
+                            <x-table.bulk-licenses />
+                        </x-slot:bulkactions>
+                        <x-table.licenses name="licenses" :export_name="$company->name" :route="route('api.licenses.index', ['company_id' => $company->id, 'expand_company_hierarchy' => 1])"/>
                     </x-tabs.pane>
                     <!-- end licenses tab pane -->
 

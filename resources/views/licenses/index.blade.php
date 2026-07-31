@@ -13,14 +13,7 @@
         <x-box>
 
             <x-slot:bulkactions>
-                @can('delete', App\Models\License::class)
-                    <x-table.bulk-actions
-                        name='licenses'
-                        action_route="{{ route('licenses.bulk.delete') }}"
-                        model_name="license"
-                        :actions="$bulkActions"
-                    />
-                @endcan
+                <x-table.bulk-licenses />
             </x-slot:bulkactions>
 
             <x-table.licenses
