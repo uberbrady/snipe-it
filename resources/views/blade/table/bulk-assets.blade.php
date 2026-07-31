@@ -4,7 +4,7 @@
     <x-table.bulk-actions
         :name="$name"
         :action_route="route('hardware.bulkedit.show')"
-        model_name="asset"
+        model_name="assets"
         :actions="[
             'edit' => ['label' => trans('general.bulk_edit')],
             'maintenance' => ['label' => trans('button.add_maintenance')],

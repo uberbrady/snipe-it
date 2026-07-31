@@ -5,7 +5,7 @@
         <x-table.bulk-actions
             :name="$name"
             :action_route="route('models.bulkedit.index')"
-            model_name="assetmodel"
+            model_name="models"
             :actions="[
                 'edit' => ['label' => trans('general.bulk_edit')],
                 'delete' => ['label' => trans('general.bulk_delete')],
