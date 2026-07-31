@@ -76,6 +76,7 @@ return [
         'file_already_deleted' => 'The file selected was already deleted',
         'file_missing_on_disk' => 'The file for this import is no longer on disk. It may have been deleted outside of Snipe-IT. Delete this entry and re-upload the file to try again.',
         'file_empty' => 'This file has no data rows. Nothing can be imported from it.',
+        'header_row_missing' => 'This file does not have a recognized header row. Delete this entry and re-upload the file to try again.',
         'header_row_has_malformed_characters' => 'One or more attributes in the header row contain malformed UTF-8 characters',
         'content_row_has_malformed_characters' => 'One or more attributes in the first row of content contain malformed UTF-8 characters',
         'transliterate_failure' => 'Transliteration from :encoding to UTF-8 failed due to invalid characters in input',

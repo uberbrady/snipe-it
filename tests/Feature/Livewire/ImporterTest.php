@@ -355,6 +355,29 @@ class ImporterTest extends TestCase
             ->assertSet('activeFileRowCount', 0);
     }
 
+    /**
+     * Regression for Rollbar: selectFile() foreach()-on-null when the Import
+     * row was persisted with header_row = null (legacy imports, or a background
+     * job that never wrote the column). Previously exploded with
+     * "foreach() argument must be of type array|object, null given" at the
+     * headerRow loop. The guard now short-circuits with a translated error.
+     */
+    public function test_selecting_a_file_with_null_header_row_shows_error_and_does_not_crash(): void
+    {
+        $user = User::factory()->canImport()->create();
+        $import = Import::factory()->create([
+            'created_by' => $user->id,
+            'header_row' => null,
+        ]);
+        $this->writeFakeImportFile($import, "asset tag\nAH-1\n");
+
+        Livewire::actingAs($user)
+            ->test(Importer::class)
+            ->call('selectFile', $import->id)
+            ->assertSet('message_type', 'danger')
+            ->assertSet('message', trans('admin/hardware/message.import.header_row_missing'));
+    }
+
     public function test_next_step_from_type_selection_advances_when_type_is_set(): void
     {
         Storage::fake();
