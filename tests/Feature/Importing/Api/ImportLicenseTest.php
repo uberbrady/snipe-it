@@ -349,10 +349,15 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         // Re-import with a CSV that only has the identity fields plus one
         // updated field. All other columns are absent from the CSV, so
         // their DB values must be preserved.
+        // A short static order number keeps the assertion within License's
+        // order_number varchar(50) limit regardless of what the initial row
+        // faker produced. Prefixing the faker value overflowed on some seeds.
+        $newOrderNumber = 'UPDATED-ORDER-123';
+
         $partialRow = [
             'licenseName' => $initialRow['licenseName'],
             'serialNumber' => $initialRow['serialNumber'],
-            'orderNumber' => 'UPDATED-'.$initialRow['orderNumber'],
+            'orderNumber' => $newOrderNumber,
         ];
         $partialFile = new ImportFileBuilder([$partialRow]);
         $partialImport = Import::factory()->license()->create([
@@ -364,7 +369,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         ])->assertOk();
 
         $license->refresh();
-        $this->assertEquals('UPDATED-'.$initialRow['orderNumber'], $license->order_number);
+        $this->assertEquals($newOrderNumber, $license->order_number);
         $this->assertEquals($originalEmail, $license->license_email);
         $this->assertEquals($originalNotes, $license->notes);
         $this->assertEquals($originalExpirationDate, $license->expiration_date?->toDateString());
