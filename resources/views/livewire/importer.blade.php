@@ -149,7 +149,11 @@
                                                 </td>
                                     			<td>
 
-                                                    @if ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperUser()))
+                                                    @if ($this->fileMissingOnDisk($currentFile))
+                                                        <span class="text-danger" style="text-decoration: line-through;" data-tooltip="true" title="{{ trans('general.file_does_not_exist') }}">
+                                                            <x-icon type="x" /> {{ $currentFile->file_path }}
+                                                        </span>
+                                                    @elseif ((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperUser()))
                                                         <a href="{{ route('imports.download', $currentFile) }}">{{ $currentFile->file_path }}</a>
                                                     @else
                                                         {{ $currentFile->file_path }}
@@ -180,10 +184,17 @@
                                                 </td>
                                     			<td>{{ Helper::formatFilesizeUnits($currentFile->filesize) }}</td>
                                                 <td class="col-md-1 text-right" style="white-space: nowrap;">
-                                                    <button class="btn btn-sm btn-info" wire:click="selectFile({{ $currentFile->id }})" data-tooltip="true" data-title="{{ trans('general.import_this_file') }}">
-                                                        <i class="fa-solid fa-list-check" aria-hidden="true"></i>
-                                                        <span class="sr-only">{{ trans('general.import') }}</span>
-                                                    </button>
+                                                    @if ($this->fileMissingOnDisk($currentFile))
+                                                        <button class="btn btn-sm btn-info disabled" disabled data-tooltip="true" data-title="{{ trans('general.file_does_not_exist') }}">
+                                                            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                                                            <span class="sr-only">{{ trans('general.import') }}</span>
+                                                        </button>
+                                                    @else
+                                                        <button class="btn btn-sm btn-info" wire:click="selectFile({{ $currentFile->id }})" data-tooltip="true" data-title="{{ trans('general.import_this_file') }}">
+                                                            <i class="fa-solid fa-list-check" aria-hidden="true"></i>
+                                                            <span class="sr-only">{{ trans('general.import') }}</span>
+                                                        </button>
+                                                    @endif
 
                                                     @if (((auth()->user()->id == $currentFile->adminuser?->id) || (auth()->user()->isSuperUser())) && ! config('app.lock_passwords'))
                                                         <a href="#" wire:click.prevent="$set('activeFileId',null)" data-tooltip="true" data-title="{{ trans('general.delete') }}">
@@ -397,6 +408,7 @@
                                 <x-form.checkbox-row
                                     name="update"
                                     :label="trans('general.update_existing_values')"
+                                    :help_text="trans('admin/hardware/message.import.update_mode_help')"
                                     :checked="(bool) $update"
                                     wire:model.live="update"
                                 />
@@ -1021,6 +1033,22 @@
                     var aggregatedErrors = {};
                     var lastRedirectUrl = null;
                     var anySliceFailed = false;
+                    var aggregatedTally = {created: 0, updated: 0, skipped: 0, errored: 0};
+
+                    function addTally(tally) {
+                        if (!tally) return;
+                        aggregatedTally.created += tally.created || 0;
+                        aggregatedTally.updated += tally.updated || 0;
+                        aggregatedTally.skipped += tally.skipped || 0;
+                        aggregatedTally.errored += tally.errored || 0;
+                    }
+
+                    function tallySummaryHtml() {
+                        return '{{ trans('admin/hardware/message.import.summary.created') }}: <strong>' + aggregatedTally.created + '</strong>' +
+                            ' | {{ trans('admin/hardware/message.import.summary.updated') }}: <strong>' + aggregatedTally.updated + '</strong>' +
+                            ' | {{ trans('admin/hardware/message.import.summary.skipped') }}: <strong>' + aggregatedTally.skipped + '</strong>' +
+                            ' | {{ trans('admin/hardware/message.import.summary.errored') }}: <strong>' + aggregatedTally.errored + '</strong>';
+                    }
 
                     function processSlice(sliceIndex) {
                         var offset = sliceIndex * SLICE_SIZE;
@@ -1076,6 +1104,9 @@
                             if (body && body.messages && body.messages.redirect_url) {
                                 lastRedirectUrl = body.messages.redirect_url;
                             }
+                            if (body && body.payload && body.payload.tally) {
+                                addTally(body.payload.tally);
+                            }
                             // Slice 0's response is our earliest signal
                             // that the sync backup has finished on the
                             // server (it runs at the top of process()
@@ -1098,6 +1129,9 @@
                                 $wire.markBackupComplete();
                             }
                             var body = jqXHR.responseJSON;
+                            if (body && body.payload && body.payload.tally) {
+                                addTally(body.payload.tally);
+                            }
                             if (body && body.status === 'import-errors' && body.messages) {
                                 // Merge each slice's per-row messages flat
                                 // into the aggregate map. The server
@@ -1141,12 +1175,14 @@
 
                     chain.always(function () {
                         $wire.$set('progress', 100);
+                        var somethingLanded = aggregatedTally.created > 0 || aggregatedTally.updated > 0;
+
                         if (anySliceFailed) {
                             $wire.$set('progress_bar_class', 'progress-bar-danger');
                             $wire.$dispatch('importError', aggregatedErrors);
                             $wire.$set('import_errors', aggregatedErrors);
                             $wire.$set('statusType', 'error');
-                            $wire.$set('statusText', "Some slices failed. Successful slices were still committed.");
+                            $wire.$set('statusText', "Some slices failed. Successful slices were still committed.<br>" + tallySummaryHtml());
                             // Reset processing so the modal footer's Back
                             // button reappears and the user can retry or
                             // navigate away rather than being trapped in
@@ -1154,28 +1190,37 @@
                             $wire.stopProcessing();
                             $wire.$set('activeFileId', null);
                             $('#importMappingModal').modal('hide');
+                            return;
                         }
-                        else {
-                            $wire.$set('progress_bar_class', 'progress-bar-success');
-                            // Deliberately not setting statusText here.
-                            // The two bars going green (backup + import)
-                            // already communicate "done"; the extra
-                            // alert-success box was reading as a third
-                            // green progress rectangle stacked above
-                            // them. The 800ms setTimeout below still
-                            // gives the user time to see the completed
-                            // bars before the browser navigates.
-                            if (lastRedirectUrl) {
-                                // Tiny CSVs complete so fast that the
-                                // success flash never renders before the
-                                // browser navigates. Hold the redirect
-                                // for ~800ms so the user actually sees
-                                // the green bar + "success, redirecting"
-                                // message.
-                                setTimeout(function () {
-                                    window.location.href = lastRedirectUrl;
-                                }, 800);
-                            }
+
+                        $wire.$set('progress_bar_class', 'progress-bar-success');
+
+                        // If nothing was created or updated (every row was skipped
+                        // as a duplicate, typically), stop and surface the summary
+                        // instead of redirecting - a silent 0-row-import looks
+                        // broken but is usually the user re-importing a file whose
+                        // rows already landed the first time.
+                        if (!somethingLanded) {
+                            $wire.$set('statusType', 'error');
+                            $wire.$set('statusText',
+                                '{{ trans('admin/hardware/message.import.summary.no_changes') }}<br>' + tallySummaryHtml()
+                            );
+                            $wire.stopProcessing();
+                            $wire.$set('activeFileId', null);
+                            $('#importMappingModal').modal('hide');
+                            return;
+                        }
+
+                        // Rows landed - show the summary briefly, then redirect.
+                        // 2500ms is enough to read the counts without being
+                        // obnoxious. Longer than the previous 800ms because the
+                        // summary is now user-relevant, not decorative.
+                        $wire.$set('statusType', 'success');
+                        $wire.$set('statusText', tallySummaryHtml());
+                        if (lastRedirectUrl) {
+                            setTimeout(function () {
+                                window.location.href = lastRedirectUrl;
+                            }, 2500);
                         }
                     });
                 });

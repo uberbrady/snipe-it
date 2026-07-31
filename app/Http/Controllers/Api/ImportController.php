@@ -294,17 +294,22 @@ class ImportController extends Controller
                 break;
         }
 
+        $tally = $request->getTally();
+        // Payload only carries the tally when at least one importer for this
+        // type has been wired up to record it. Un-instrumented importers
+        // leave every count at zero; suppress the block in that case so we
+        // don't surface a misleading all-zero summary in the wizard.
+        $tallyPayload = array_sum($tally) > 0 ? ['tally' => $tally] : null;
+
         if ($errors) { // Failure
-            return response()->json(Helper::formatStandardApiResponse('import-errors', null, $errors), 500);
+            return response()->json(Helper::formatStandardApiResponse('import-errors', $tallyPayload, $errors), 500);
         }
         // Flash message before the redirect
         Session::flash('success', trans('admin/hardware/message.import.success'));
 
-        if (auth()->user()->can('view', $model_perms)) {
-            return response()->json(Helper::formatStandardApiResponse('success', null, ['redirect_url' => route($redirectTo)]));
-        }
+        $redirect_url = auth()->user()->can('view', $model_perms) ? route($redirectTo) : route('imports.index');
 
-        return response()->json(Helper::formatStandardApiResponse('success', null, ['redirect_url' => route('imports.index')]));
+        return response()->json(Helper::formatStandardApiResponse('success', $tallyPayload, ['redirect_url' => $redirect_url]));
     }
 
     /**

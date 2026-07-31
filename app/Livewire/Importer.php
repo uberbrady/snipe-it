@@ -819,6 +819,22 @@ class Importer extends Component
             return;
         }
 
+        $path = config('app.private_uploads').'/imports/'.$this->activeFile->file_path;
+        if (! is_file($path)) {
+            $this->message = trans('admin/hardware/message.import.file_missing_on_disk');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
+        $this->activeFileRowCount = $this->countActiveFileRows();
+        if ($this->activeFileRowCount === 0) {
+            $this->message = trans('admin/hardware/message.import.file_empty');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
         $this->headerRow = $this->activeFile->header_row;
         $this->typeOfImport = $this->activeFile->import_type;
 
@@ -834,7 +850,6 @@ class Importer extends Component
         $this->file_id = $id;
         $this->import_errors = null;
         $this->statusText = null;
-        $this->activeFileRowCount = $this->countActiveFileRows();
         $this->wizardStep = 1;
         $this->previewRows = [];
         $this->processing = false;
@@ -1051,6 +1066,9 @@ class Importer extends Component
 
             $rows = [];
             foreach ($reader->getRecords() as $row) {
+                if (self::rowIsBlank($row)) {
+                    continue;
+                }
                 $rows[] = $row;
                 if (count($rows) >= self::PREVIEW_ROW_LIMIT) {
                     break;
@@ -1064,10 +1082,11 @@ class Importer extends Component
     }
 
     /**
-     * Count the number of data rows (excluding the header row) in the
-     * currently active file's CSV. Returns 0 if the file is missing or the
-     * CSV can't be read - the modal will render "0 rows" and the caller
-     * can still choose to cancel out.
+     * Count the number of NON-BLANK data rows in the currently active file's
+     * CSV. Rows where every cell is empty (like ",,,,,,") are excluded so
+     * a file that is technically 50 rows tall but has nothing importable
+     * counts as 0 and the wizard's file_empty guard refuses to open. Returns
+     * 0 also when the file is missing or the CSV can't be read.
      */
     private function countActiveFileRows(): int
     {
@@ -1084,10 +1103,34 @@ class Importer extends Component
             $reader = Reader::createFromPath($path);
             $reader->setHeaderOffset(0);
 
-            return iterator_count($reader->getRecords());
+            $count = 0;
+            foreach ($reader->getRecords() as $row) {
+                if (! self::rowIsBlank($row)) {
+                    $count++;
+                }
+            }
+
+            return $count;
         } catch (\Throwable $e) {
             return 0;
         }
+    }
+
+    /**
+     * True when every value in the CSV row is an empty string (after trim).
+     * Used to skip cells like ",,,,,,,," that carry no information but pad
+     * the file length and would otherwise inflate row counts, appear in the
+     * preview, and dispatch pointless slices to the server on Process.
+     */
+    private static function rowIsBlank(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function destroy($id)
@@ -1234,6 +1277,11 @@ class Importer extends Component
      * superuser). Kept as a method so the view can guard both the row
      * checkbox and the singular delete button consistently.
      */
+    public function fileMissingOnDisk(Import $import): bool
+    {
+        return ! is_file(config('app.private_uploads').'/imports/'.$import->file_path);
+    }
+
     public function canDeleteFile(Import $import): bool
     {
         return auth()->user()->id === $import->created_by || auth()->user()->isSuperUser();

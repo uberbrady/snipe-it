@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -480,6 +481,45 @@ class UsersController extends Controller
         $this->authorize('create', User::class);
 
         $authenticatedUser = auth()->user();
+
+        // Resolve requested company memberships up front, BEFORE any user
+        // record or pivot row lands on the DB. Prior behavior filled and
+        // saved the user first, then filtered company IDs after the fact
+        // (see syncCompaniesWithLogging below). A non-superuser could
+        // submit a company_id belonging to another company they were not
+        // a member of; the user row was persisted before the filter ran,
+        // producing an unauthorized cross-tenant record even when the
+        // pivot ended up empty (leaving the account as a floater under
+        // null_company_is_floater installs). Reject the whole request if
+        // any requested id fails the actor's permitted-companies filter.
+        $requestedCompanyIds = array_values(array_filter(array_map(
+            'intval',
+            (array) ($request->input('company_ids') ?? ($request->filled('company_id') ? [$request->input('company_id')] : [])),
+        )));
+        $permittedCompanyIds = Company::getIdsForCurrentUser($requestedCompanyIds);
+
+        if (count($requestedCompanyIds) !== count($permittedCompanyIds)) {
+            return response()->json(Helper::formatStandardApiResponse(
+                'error',
+                null,
+                trans('admin/users/message.error.company_not_permitted'),
+            ), 403);
+        }
+
+        // Groups validation runs BEFORE save so the transaction below is a
+        // straight-line succeed-or-rollback. Doing it after save (as the
+        // pre-refactor version did) meant a bad groups payload persisted a
+        // user record even though the response reported "error".
+        if (($request->has('groups')) && (auth()->user()->isSuperUser())) {
+            $groupsValidator = Validator::make($request->only('groups'), [
+                'groups.*' => 'integer|exists:permission_groups,id',
+            ]);
+
+            if ($groupsValidator->fails()) {
+                return response()->json(Helper::formatStandardApiResponse('error', null, $groupsValidator->errors()));
+            }
+        }
+
         $user = new User;
         $user->fill($request->all());
         $user->created_by = auth()->id();
@@ -491,7 +531,6 @@ class UsersController extends Controller
             ));
         }
 
-        //
         if ($request->filled('password')) {
             $user->password = bcrypt($request->input('password'));
         } else {
@@ -500,7 +539,19 @@ class UsersController extends Controller
 
         app('App\Http\Requests\ImageUploadRequest')->handleImages($user, 600, 'avatar', 'avatars', 'avatar');
 
-        if ($user->save()) {
+        // Wrap save + groups + company sync in a single transaction so a
+        // failure anywhere in the create sequence rolls back the whole
+        // thing. Without this, an exception in syncCompaniesWithLogging()
+        // or groups()->sync() would leave a partially-created user record
+        // on the DB with unfiltered attribute state from $request->all().
+        $saveFailed = false;
+
+        DB::transaction(function () use ($request, $user, $permittedCompanyIds, &$saveFailed) {
+            if (! $user->save()) {
+                $saveFailed = true;
+
+                return;
+            }
 
             if (($user->activated == '1') && ($user->email != '') && ($request->input('send_welcome') == '1')) {
 
@@ -513,29 +564,17 @@ class UsersController extends Controller
             }
 
             if (($request->has('groups')) && (auth()->user()->isSuperUser())) {
-
-                $validator = Validator::make($request->only('groups'), [
-                    'groups.*' => 'integer|exists:permission_groups,id',
-                ]);
-
-                if ($validator->fails()) {
-                    return response()->json(Helper::formatStandardApiResponse('error', null, $validator->errors()));
-                }
-
-                // Sync the groups since the user is a superuser and the groups pass validation
                 $user->groups()->sync($request->input('groups'));
             }
 
-            // Sync company memberships from company_ids[] or fall back to scalar company_id
-            $companyIds = array_filter(
-                (array) ($request->input('company_ids') ?? ($request->filled('company_id') ? [$request->input('company_id')] : []))
-            );
-            $user->syncCompaniesWithLogging(Company::getIdsForCurrentUser(array_map('intval', $companyIds)));
+            $user->syncCompaniesWithLogging($permittedCompanyIds);
+        });
 
-            return response()->json(Helper::formatStandardApiResponse('success', (new UsersTransformer)->transformUser($user), trans('admin/users/message.success.create')));
+        if ($saveFailed) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, $user->getErrors()));
         }
 
-        return response()->json(Helper::formatStandardApiResponse('error', null, $user->getErrors()));
+        return response()->json(Helper::formatStandardApiResponse('success', (new UsersTransformer)->transformUser($user), trans('admin/users/message.success.create')));
     }
 
     /**
@@ -582,6 +621,30 @@ class UsersController extends Controller
          */
         if ((($user->id == 1) || ($user->id == 2)) && (config('app.lock_passwords'))) {
             return response()->json(Helper::formatStandardApiResponse('error', null, 'Permission denied. You cannot update user information via API on the demo.'));
+        }
+
+        // Resolve requested company memberships up front, BEFORE any DB
+        // write. Same reasoning as store(): the pre-refactor update path
+        // filled the user record from $request->all() and saved it, then
+        // filtered the company IDs afterward. A non-superuser could
+        // therefore relocate an existing user into a different company
+        // via a scalar company_id or company_ids[] payload. Reject the
+        // whole request if any requested id fails the actor's permitted
+        // companies filter.
+        if ($request->has('company_ids') || $request->filled('company_id')) {
+            $requestedCompanyIds = array_values(array_filter(array_map(
+                'intval',
+                (array) ($request->input('company_ids') ?? [$request->input('company_id')]),
+            )));
+            $permittedCompanyIds = Company::getIdsForCurrentUser($requestedCompanyIds);
+
+            if (count($requestedCompanyIds) !== count($permittedCompanyIds)) {
+                return response()->json(Helper::formatStandardApiResponse(
+                    'error',
+                    null,
+                    trans('admin/users/message.error.company_not_permitted'),
+                ), 403);
+            }
         }
 
         // User::GATED_AUTH_FIELDS enter through the canEditAuthFields branch

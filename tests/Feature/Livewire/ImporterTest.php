@@ -11,6 +11,32 @@ use Tests\TestCase;
 
 class ImporterTest extends TestCase
 {
+    /**
+     * Write a minimal CSV file at the imports path an Import record points
+     * to, so selectFile()'s file-existence guard passes. The guard was added
+     * to block the wizard when a demo-seeded Import references a file that
+     * was deleted outside Snipe-IT (e.g. by git clean). Tests that seed
+     * factory Imports without a real file need to plant one here to exercise
+     * the code path beyond the guard.
+     */
+    protected function writeFakeImportFile(Import $import, string $csvBody = "a,b,c\n1,2,3\n"): void
+    {
+        $path = config('app.private_uploads').'/imports/'.$import->file_path;
+        file_put_contents($path, $csvBody);
+        $this->fakeImportPaths[] = $path;
+    }
+
+    /** @var array<int, string> */
+    protected array $fakeImportPaths = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->fakeImportPaths as $path) {
+            @unlink($path);
+        }
+        parent::tearDown();
+    }
+
     public function test_renders_successfully()
     {
         Livewire::actingAs(User::factory()->canImport()->create())
@@ -238,6 +264,7 @@ class ImporterTest extends TestCase
             'header_row' => ['my_column'],
             'import_type' => 'asset',
         ]);
+        $this->writeFakeImportFile($mine, "my_column\nvalue\n");
 
         Livewire::actingAs($me)
             ->test(Importer::class)
@@ -275,6 +302,7 @@ class ImporterTest extends TestCase
             'created_by' => $user->id,
             'header_row' => ['asset tag'],
         ]);
+        $this->writeFakeImportFile($import, "asset tag\nAH-1\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)
@@ -470,6 +498,7 @@ class ImporterTest extends TestCase
             'import_type' => 'user',
             'header_row' => ['First Name', 'Username', 'Email'],
         ]);
+        $this->writeFakeImportFile($import, "First Name,Username,Email\nAlice,alice,alice@example.com\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)
@@ -495,6 +524,7 @@ class ImporterTest extends TestCase
             'import_type' => 'asset',
             'header_row' => ['asset_tag', 'serial_number', 'purchase_cost'],
         ]);
+        $this->writeFakeImportFile($import, "asset_tag,serial_number,purchase_cost\nAH-1,ser-1,100\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)

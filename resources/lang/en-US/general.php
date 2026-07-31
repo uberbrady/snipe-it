@@ -62,6 +62,8 @@ return [
     'bulk_delete' => 'Bulk Delete',
     'bulk_restore' => 'Bulk Restore',
     'bulk_actions' => 'Bulk Actions',
+    'bulk_actions_selection_prompt' => 'Select rows to see available actions',
+    'bulk_actions_none_available' => 'No actions available for the selected rows',
     'bulk_checkin_delete' => 'Bulk Checkin / Delete Users',
     'byod' => 'BYOD',
     'byod_help' => 'This device is owned by the user',
