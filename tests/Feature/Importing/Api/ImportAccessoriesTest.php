@@ -58,7 +58,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->importFileResponse(['import' => $import->id])
             ->assertOk()
             ->assertExactJson([
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 1, 'updated' => 0, 'skipped' => 0, 'errored' => 0]],
                 'status' => 'success',
                 'messages' => [
                     'redirect_url' => route('accessories.index'),
@@ -255,7 +255,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
             ->assertInternalServerError()
             ->assertExactJson([
                 'status' => 'import-errors',
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errored' => 1]],
                 'messages' => [
                     '' => [
                         'Accessory' => [
@@ -349,6 +349,74 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
     }
 
     #[Test]
+    public function update_mode_clears_field_when_csv_column_is_present_but_empty(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $accessory = Accessory::factory()->create([
+            'notes' => 'Some pre-existing notes',
+            'purchase_date' => '2022-01-01',
+        ])->refresh();
+
+        $this->assertNotNull($accessory->purchase_date);
+        $this->assertNotEmpty($accessory->notes);
+
+        $row = ImportFileBuilder::new()->definition();
+        $row['itemName'] = $accessory->name;
+        $row['notes'] = '';
+        $row['purchaseDate'] = '';
+
+        $importFileBuilder = new ImportFileBuilder([$row]);
+        $import = Import::factory()->accessory()->create([
+            'file_path' => $importFileBuilder->saveToImportsDirectory(),
+        ]);
+
+        $this->importFileResponse([
+            'import' => $import->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $accessory->refresh();
+        $this->assertNull($accessory->notes);
+        $this->assertNull($accessory->purchase_date);
+    }
+
+    #[Test]
+    public function update_mode_preserves_fields_when_csv_column_is_absent(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $accessory = Accessory::factory()->create([
+            'notes' => 'Do not lose this',
+            'purchase_date' => '2022-01-01',
+        ])->refresh();
+
+        $originalNotes = $accessory->notes;
+        $originalPurchaseDate = $accessory->purchase_date?->toDateString();
+
+        // Import a CSV that only has the identity field (name) plus one
+        // updated column. All other Accessory fields are absent from the
+        // CSV, so their DB values must be preserved on update.
+        $partialFile = new ImportFileBuilder([[
+            'itemName' => $accessory->name,
+            'orderNumber' => 'UPDATED-ORDER',
+        ]]);
+        $partialImport = Import::factory()->accessory()->create([
+            'file_path' => $partialFile->saveToImportsDirectory(),
+        ]);
+
+        $this->importFileResponse([
+            'import' => $partialImport->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $accessory->refresh();
+        $this->assertEquals('UPDATED-ORDER', $accessory->order_number);
+        $this->assertEquals($originalNotes, $accessory->notes);
+        $this->assertEquals($originalPurchaseDate, $accessory->purchase_date?->toDateString());
+    }
+
+    #[Test]
     public function when_import_file_contains_empty_values(): void
     {
         $accessory = Accessory::factory()->create(['name' => Str::random()]);
@@ -377,7 +445,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
             ->assertInternalServerError()
             ->assertExactJson([
                 'status' => 'import-errors',
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errored' => 1]],
                 'messages' => [
                     $importFileBuilder->firstRow()['itemName'] => [
                         'Accessory' => [

@@ -178,6 +178,14 @@ abstract class Importer
             // CLI callers (ObjectImportCommand) and any external caller
             // hitting the API without offset/limit still work unchanged.
             foreach ($this->csv->getRecords($headerRow) as $row) {
+                // Fully blank rows (every cell empty, like ",,,,,,,,") carry
+                // no importable data. Skipping them before both the offset
+                // walk AND handle() means slice math, tallies, and per-row
+                // logging all reflect real work rather than padding rows.
+                if (self::rowIsBlank($row)) {
+                    continue;
+                }
+
                 if ($offset !== null && $importedItemsCount < $offset) {
                     $importedItemsCount++;
 
@@ -265,6 +273,52 @@ abstract class Importer
     }
 
     /**
+     * True when the CSV row contains a value for the given logical key
+     * (whether the value is populated or empty). Callers use this to
+     * distinguish "column absent from the CSV" (leave DB alone) from
+     * "column present with an empty value" (clear the DB field on update).
+     */
+    protected function csvRowHas(array $row, string $csvKey): bool
+    {
+        return array_key_exists($this->lookupCustomKey($csvKey), $row);
+    }
+
+    /**
+     * True when every cell in the CSV row is empty after trimming.
+     * Fully blank rows (like ",,,,,,,") get filtered out before handle()
+     * so they do not count toward the tally, appear in the preview,
+     * or trigger per-row logging.
+     */
+    protected static function rowIsBlank(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Assign a value from the CSV row into $this->item under the given item
+     * key, only when the CSV row actually contained that column. Empty CSV
+     * cells are assigned as null (not as empty strings) so the DB stores
+     * NULL when the user explicitly clears a nullable field on update.
+     * Columns absent from the CSV row are never touched, so update mode
+     * preserves existing DB values for any field the user did not include
+     * in their file.
+     */
+    protected function setItemFromCsvIfPresent(array $row, string $itemKey, ?string $csvKey = null): void
+    {
+        $csvKey = $csvKey ?? $itemKey;
+        if ($this->csvRowHas($row, $csvKey)) {
+            $value = $this->findCsvMatch($row, $csvKey);
+            $this->item[$itemKey] = ($value === '') ? null : $value;
+        }
+    }
+
+    /**
      * Looks up A custom key in the custom field map
      *
      * @author Daniel Melzter
@@ -320,6 +374,46 @@ abstract class Importer
         if ($this->errorCallback) {
             call_user_func($this->errorCallback, $item, $field, [$field => [$error_message]]);
         }
+    }
+
+    /**
+     * Per-row tally accumulated across the current slice. The wizard UI adds
+     * these across slices so the user sees a real "N created, M updated,
+     * K skipped as duplicates" summary at the end of an import instead of
+     * a generic success flash. logError() and addErrorToBag() auto-record
+     * errored; subclasses call recordCreated/Updated/Skipped explicitly
+     * from the branches of their handle() method.
+     */
+    protected array $tally = [
+        'created' => 0,
+        'updated' => 0,
+        'skipped' => 0,
+        'errored' => 0,
+    ];
+
+    protected function recordCreated(): void
+    {
+        $this->tally['created']++;
+    }
+
+    protected function recordUpdated(): void
+    {
+        $this->tally['updated']++;
+    }
+
+    protected function recordSkipped(): void
+    {
+        $this->tally['skipped']++;
+    }
+
+    protected function recordErrored(): void
+    {
+        $this->tally['errored']++;
+    }
+
+    public function getTally(): array
+    {
+        return $this->tally;
     }
 
     /**
