@@ -12,15 +12,7 @@
             <x-box>
 
                 <x-slot:bulkactions>
-                    <x-table.bulk-actions
-                            name='company'
-                            action_route="{{ route('companies.bulk.delete') }}"
-                            model_name="company"
-                    >
-                        @can('delete', App\Models\Company::class)
-                            <option>{{ trans('general.delete') }}</option>
-                        @endcan
-                    </x-table.bulk-actions>
+                    <x-table.bulk-companies />
                 </x-slot:bulkactions>
 
                 <x-table

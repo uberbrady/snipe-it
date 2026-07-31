@@ -17,14 +17,7 @@
     </x-slot:table_header>
 
     <x-slot:bulkactions>
-        <x-table.bulk-actions
-            name='accessory'
-            action_route="{{ route('accessories.bulk.delete') }}"
-            model_name="accessory">
-            @can('delete', App\Models\Accessory::class)
-                <option>{{ trans('general.delete') }}</option>
-            @endcan
-        </x-table.bulk-actions>
+        <x-table.bulk-accessories />
     </x-slot:bulkactions>
 
     <x-table

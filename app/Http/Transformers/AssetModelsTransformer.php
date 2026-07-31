@@ -91,6 +91,10 @@ class AssetModelsTransformer
             'delete' => $assetmodel->isDeletable(),
             'clone' => (Gate::allows('create', AssetModel::class) && ($assetmodel->deleted_at == '')),
             'restore' => (Gate::allows('create', AssetModel::class) && ($assetmodel->deleted_at != '')),
+            'bulk_selectable' => [
+                'edit' => (Gate::allows('update', AssetModel::class) && ($assetmodel->deleted_at == '')),
+                'delete' => (Gate::allows('delete', AssetModel::class) && $assetmodel->isDeletable()),
+            ],
         ];
 
         $array += $permissions_array;
