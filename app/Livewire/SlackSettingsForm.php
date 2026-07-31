@@ -59,6 +59,21 @@ class SlackSettingsForm extends Component
         ];
     }
 
+    /**
+     * Route-level middleware on the notifications settings page requires
+     * superuser, but snapshot replay to POST /livewire/update bypasses
+     * that gate. Without this check, a low-privilege user with a valid
+     * snapshot could invoke testWebhook / clearSettings / submit and
+     * mutate global webhook configuration or exfiltrate the configured
+     * webhook_endpoint / channel through the render payload.
+     */
+    public function boot(): void
+    {
+        if (! auth()->user()?->isSuperUser()) {
+            abort(403);
+        }
+    }
+
     public function mount()
     {
         $this->webhook_text = [

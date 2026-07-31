@@ -466,6 +466,11 @@ class UserFactory extends Factory
         return $this->appendPermission(['users.edit' => '1']);
     }
 
+    public function selfApi()
+    {
+        return $this->appendPermission(['self.api' => '1']);
+    }
+
     public function deleteUsers()
     {
         return $this->appendPermission(['users.delete' => '1']);
