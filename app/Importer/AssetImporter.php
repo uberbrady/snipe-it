@@ -327,7 +327,19 @@ class AssetImporter extends ItemImporter
 
             // If we have a target to checkout to, lets do so.
             if (isset($target) && ($target !== false)) {
-                $asset = $asset->fresh();
+                // Concurrency guard, same shape as Api\AssetsController::checkout.
+                // Two admins importing overlapping CSVs (or one admin importing
+                // while another checkout runs through the UI) could race here:
+                // the fresh() read + canCheckoutTo() check is followed by a
+                // checkOut() call with no row lock. Re-fetch the row under
+                // lockForUpdate and evaluate the ownership / eligibility
+                // conditions against the locked snapshot. If a racing operator
+                // claimed the asset in the interim, skip this row rather than
+                // stacking a duplicate history entry.
+                $asset = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                if (! $asset) {
+                    return;
+                }
 
                 if (! $asset->canCheckoutTo($target)) {
                     $this->log(trans('general.error_checkout_company_mismatch', [

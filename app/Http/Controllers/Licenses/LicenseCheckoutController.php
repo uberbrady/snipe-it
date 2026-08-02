@@ -303,16 +303,36 @@ class LicenseCheckoutController extends Controller
                 continue;
             }
 
-            $licenseSeat = $license->freeSeat();
-
-            // Update the seat with checkout info
-            $licenseSeat->assigned_to = $user->id;
-
-            if ($licenseSeat->save()) {
+            // Concurrency guard, same shape as Api\LicensesController::checkout.
+            // freeSeat() without $lock=true returns the first-available
+            // LicenseSeat unlocked; two racing bulkCheckout runs on the same
+            // license could each grab the same seat, both call save(), and
+            // both assigned_to writes land (second wins). The visible
+            // assignment is fine but logCheckout below runs twice and the
+            // decrement of $avail_count double-counts. Wrap each iteration
+            // in a transaction with freeSeat(lock: true) so the seat is
+            // pinned to this iteration until the save + log commit.
+            $seatClaimed = DB::transaction(function () use ($license, $user, &$avail_count, &$assigned_count) {
+                $licenseSeat = $license->freeSeat(lock: true);
+                if (! $licenseSeat) {
+                    return false;
+                }
+                $licenseSeat->assigned_to = $user->id;
+                if (! $licenseSeat->save()) {
+                    return false;
+                }
                 $avail_count--;
                 $assigned_count++;
                 $licenseSeat->logCheckout(trans('admin/licenses/general.bulk.checkout_all.log_msg'), $user);
                 Log::debug('License '.$license->name.' seat '.$licenseSeat->id.' checked out to '.$user->username);
+
+                return true;
+            });
+
+            if (! $seatClaimed) {
+                Log::debug('No free seat available for '.$user->username.'. Skipping...');
+
+                continue;
             }
 
             if ($avail_count == 0) {

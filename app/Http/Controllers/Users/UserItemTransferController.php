@@ -98,8 +98,16 @@ class UserItemTransferController extends Controller
         $skipped = [];
 
         foreach ($ids as $assetId) {
-            $asset = Asset::find($assetId);
-            if (! $this->assetBelongsToSource($asset, $source) || ! $asset->canCheckoutTo($target)) {
+            // Concurrency guard, same shape as Api\AssetsController::checkout.
+            // Transfer walks source-owned assets and re-checks them out to the
+            // target user. The checkinAsset + checkOut pair opens a window
+            // where another operator's checkout could claim the asset between
+            // the check-in and the target's re-checkout. Lock the row for the
+            // duration of the transfer and re-verify source ownership + target
+            // eligibility against the locked snapshot. Assets that have moved
+            // since the caller loaded the transfer form are skipped.
+            $asset = Asset::whereKey($assetId)->lockForUpdate()->first();
+            if (! $asset || ! $this->assetBelongsToSource($asset, $source) || ! $asset->canCheckoutTo($target)) {
                 $skipped[] = 'asset:'.$assetId;
 
                 continue;
