@@ -14,22 +14,26 @@ Route::group(['prefix' => 'fields', 'middleware' => ['auth']], function () {
     Route::post(
         'required/{fieldset_id}/{field_id}',
         [CustomFieldsetsController::class, 'makeFieldRequired']
-    )->name('fields.required');
+    )->where(['fieldset_id' => '[0-9]+', 'field_id' => '[0-9]+'])
+        ->name('fields.required');
 
     Route::post(
         'optional/{fieldset_id}/{field_id}',
         [CustomFieldsetsController::class, 'makeFieldOptional']
-    )->name('fields.optional');
+    )->where(['fieldset_id' => '[0-9]+', 'field_id' => '[0-9]+'])
+        ->name('fields.optional');
 
     Route::post(
         '{field_id}/fieldset/{fieldset_id}/disassociate',
         [CustomFieldsController::class, 'deleteFieldFromFieldset']
-    )->name('fields.disassociate');
+    )->where(['field_id' => '[0-9]+', 'fieldset_id' => '[0-9]+'])
+        ->name('fields.disassociate');
 
     Route::post(
         'fieldsets/{id}/associate',
         [CustomFieldsetsController::class, 'associate']
-    )->name('fieldsets.associate');
+    )->where('id', '[0-9]+')
+        ->name('fieldsets.associate');
 
     Route::resource('fieldsets', CustomFieldsetsController::class, [
         'parameters' => [
