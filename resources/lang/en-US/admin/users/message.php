@@ -4,6 +4,8 @@ return [
 
     'accepted' => 'You have successfully accepted this item.',
     'declined' => 'You have successfully declined this item.',
+    'accept_signature_write_failed' => 'Your acceptance signature could not be saved to storage. Acceptance was not recorded. Please contact your administrator.',
+    'accept_pdf_write_failed' => 'The acceptance PDF could not be saved to storage. Acceptance was not recorded. Please contact your administrator.',
     'bulk_manager_warn' => 'Your users have been successfully updated, however your manager entry was not saved because the manager you selected was also in the user list to be edited, and users may not be their own manager. Please select your users again, excluding the manager.',
     'user_exists' => 'User already exists!',
     'cannot_delete' => 'User does not exist or you do not have permission to delete them.',
