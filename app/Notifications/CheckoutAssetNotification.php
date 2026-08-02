@@ -129,9 +129,9 @@ class CheckoutAssetNotification extends Notification
                 ->type('success')
                 ->title(trans('mail.Asset_Checkout_Notification', ['tag' => '']))
                 ->addStartGroupToSection('activityText')
-                ->fact(trans('mail.assigned_to'), $target->display_name)
+                ->fact(trans('mail.assigned_to'), (string) ($target?->display_name ?? ''))
                 ->fact(htmlspecialchars_decode($item->display_name), '', 'activityText')
-                ->fact(trans('general.administrator'), $admin->display_name)
+                ->fact(trans('general.administrator'), (string) ($admin?->display_name ?? ''))
                 ->fact(trans('mail.notes'), $note ?: '');
         }
 
