@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use League\Csv\EscapeFormula;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use ZipArchive;
 
@@ -188,8 +189,21 @@ class SettingsController extends Controller
                 'Location Company',
                 'Location Company ID',
             ]);
+
+            // Formula-escape data rows using the same helper + setting as
+            // ReportsController's exports. Row values include user-editable
+            // free text (item name, item companies, item location, location
+            // company) which a low-privilege user could set to a spreadsheet
+            // formula. Without escaping, the payload evaluates when a
+            // superuser opens the downloaded CSV in Excel / LibreOffice /
+            // Google Sheets. Same backtick prefix ReportsController uses.
+            $formatter = new EscapeFormula('`');
             foreach ($mismatched as $row) {
-                fputcsv($out, $row);
+                if (config('app.escape_formulas') === false) {
+                    fputcsv($out, $row);
+                } else {
+                    fputcsv($out, $formatter->escapeRecord($row));
+                }
             }
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
