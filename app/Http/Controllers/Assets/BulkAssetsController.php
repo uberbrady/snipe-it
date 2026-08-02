@@ -768,6 +768,27 @@ class BulkAssetsController extends Controller
                     // request, so the operator's explicit choice sticks.
                     $asset->requestable = $request->boolean('requestable');
 
+                    // Concurrency guard, same shape as Api\AssetsController::checkout.
+                    // Bulk checkout iterates over a selection of asset IDs and
+                    // calls checkOut per asset without a per-row lock; two
+                    // operators submitting overlapping bulk selections at the
+                    // same instant could each pass the caller-side selection
+                    // and both proceed through checkOut on the same asset,
+                    // landing duplicate history rows and doubling
+                    // checkout_counter for that asset. Re-fetch the row under
+                    // lockForUpdate and re-check availability before invoking
+                    // checkOut. Assets that racing bulk actions have already
+                    // claimed are skipped and surfaced as errors, matching how
+                    // the per-asset checkout path behaves.
+                    $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                    if (! $locked || ! $locked->availableForCheckout()) {
+                        $errors = array_merge_recursive($errors, [
+                            'asset_'.$asset->id => [trans('admin/hardware/message.checkout.not_available')],
+                        ]);
+
+                        continue;
+                    }
+
                     $checkout_success = $asset->checkOut($target, $admin, $checkout_at, $expected_checkin, e($request->input('note')), $asset->name, null);
 
                     // TODO - I think this logic is duplicated in the checkOut method?

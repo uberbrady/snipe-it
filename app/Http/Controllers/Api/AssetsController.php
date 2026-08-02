@@ -1081,6 +1081,19 @@ class AssetsController extends Controller
             }
 
             if ($requestedCheckout) {
+                // Concurrency guard, same shape as Api\AssetsController::checkout.
+                // availableForCheckout() at line 1067 ran outside the transaction;
+                // without a row lock, two racing PATCH requests that both include
+                // assigned_user / assigned_asset / assigned_location could each
+                // pass that check and both proceed through checkOut(), producing
+                // duplicate checkout-history rows and a doubled checkout_counter.
+                // Re-fetch the row under lockForUpdate and re-check availability
+                // against the locked snapshot before invoking checkOut.
+                $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                if (! $locked || ! $locked->availableForCheckout()) {
+                    return false;
+                }
+
                 // Preserve the asset name if the name wasn't in the payload.
                 $asset_name = $request->has('name') ? $request->input('name') : $asset->name;
 
@@ -1342,8 +1355,23 @@ class AssetsController extends Controller
         //            $asset->location_id = $target->rtd_location_id;
         //        }
 
-        // Keep checkout mutation + checkout logging/event side effects atomic.
+        // Concurrency guard. availableForCheckout() above ran on an
+        // unlocked read, so two simultaneous checkout requests can both
+        // observe the asset as available and both proceed through
+        // checkOut(), producing duplicate checkout-history rows and
+        // double-incrementing checkout_counter on a single-assignment
+        // asset. Re-fetch the row under lockForUpdate INSIDE the
+        // transaction and re-check availability against the locked
+        // snapshot. Any concurrent checkout blocks on the row lock until
+        // this transaction commits, then sees the asset as no longer
+        // available. Mirrors the pattern in ConsumablesController::store
+        // (GHSA-x4g2-87xc-m5jm).
         $wasCheckedOut = DB::transaction(function () use ($asset, $target, $checkout_at, $expected_checkin, $note, $asset_name): bool {
+            $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+            if (! $locked || ! $locked->availableForCheckout()) {
+                return false;
+            }
+
             return $asset->checkOut($target, auth()->user(), $checkout_at, $expected_checkin, $note, $asset_name, $asset->location_id);
         });
 

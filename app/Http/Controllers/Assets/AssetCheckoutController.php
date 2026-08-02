@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class AssetCheckoutController extends Controller
 {
@@ -146,7 +147,27 @@ class AssetCheckoutController extends Controller
                 'sign_in_place' => $request->boolean('sign_in_place'),
             ]);
 
-            if ($asset->checkOut($target, $admin, $checkout_at, $expected_checkin, $request->input('note'), $request->input('name'), null, $request->boolean('sign_in_place'))) {
+            // Concurrency guard. availableForCheckout() above ran on an
+            // unlocked read, so two simultaneous form submits can both
+            // observe the asset as available and both proceed through
+            // checkOut(), producing duplicate checkout-history rows and
+            // double-incrementing checkout_counter on a single-assignment
+            // asset. Re-fetch the row under lockForUpdate INSIDE a
+            // transaction and re-check availability against the locked
+            // snapshot; the second request blocks until the first commits
+            // and then sees the asset as no longer available. Mirrors the
+            // pattern in Api\AssetsController::checkout and
+            // ConsumablesController::store (GHSA-x4g2-87xc-m5jm).
+            $checkedOut = DB::transaction(function () use ($asset, $target, $admin, $checkout_at, $expected_checkin, $request): bool {
+                $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                if (! $locked || ! $locked->availableForCheckout()) {
+                    return false;
+                }
+
+                return (bool) $asset->checkOut($target, $admin, $checkout_at, $expected_checkin, $request->input('note'), $request->input('name'), null, $request->boolean('sign_in_place'));
+            });
+
+            if ($checkedOut) {
 
                 // When sign_in_place is requested and the target is a user, redirect to the
                 // acceptance/signature page so the user can sign in person. The signature is
