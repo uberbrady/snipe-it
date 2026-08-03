@@ -38,6 +38,11 @@ return new class extends Migration
             $table->date('purchase_date')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->text('notes')->nullable();
+            // string(10) matches locations.currency / settings.default_currency.
+            // Order-level, not OrderItem-level: a single acquisition happens
+            // in one currency, and mixing per-line currencies would defeat
+            // the point of the Order aggregation.
+            $table->string('currency', 10)->nullable();
             $table->timestamps();
             $table->softDeletes();
 
@@ -61,7 +66,7 @@ return new class extends Migration
             $table->unsignedBigInteger('item_id');
             $table->integer('qty')->default(1);
             // (20,4) matches the widest precision already in use in the
-            // codebase (components.purchase_cost). Covers 3-decimal
+            // code (components.purchase_cost). Covers 3-decimal
             // currencies and low-per-unit fractional prices without
             // rounding drift on aggregate totals.
             $table->decimal('price', 20, 4)->nullable();
@@ -70,10 +75,24 @@ return new class extends Migration
             $table->index('order_id');
             $table->index(['item_type', 'item_id']);
         });
+
+        // FK from every action_log row that references an Order (today
+        // that's just QuantityAdjust events; other action types can
+        // adopt it as they grow acquisition semantics). Plain bigint +
+        // index — no DB-level FK constraint per Snipe-IT convention
+        // (schema shifts often enough that constraints cause churn).
+        Schema::table('action_logs', function (Blueprint $table) {
+            $table->unsignedBigInteger('order_id')->nullable()->after('quantity');
+            $table->index('order_id');
+        });
     }
 
     public function down(): void
     {
+        Schema::table('action_logs', function (Blueprint $table) {
+            $table->dropIndex(['order_id']);
+            $table->dropColumn('order_id');
+        });
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('orders');
     }
