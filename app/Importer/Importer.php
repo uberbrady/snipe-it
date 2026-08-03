@@ -139,13 +139,162 @@ abstract class Importer
             ini_set('auto_detect_line_endings', '1');
         }
         // By default the importer passes a url to the file.
-        // However, for testing we also support passing a string directly
+        // However, for testing we also support passing a string directly.
+        //
+        // Memory-conscious construction: this constructor runs once per JS-
+        // chunked slice against the same file (see ItemImportRequest::import,
+        // which builds a new Importer per POST from the Livewire importer's
+        // chunk loop). Buffering the whole file into a string here would
+        // multiply peak memory by the chunk count, which defeats the entire
+        // point of the chunked-import rework. Common case: sample the head
+        // of the file, if it's UTF-8 use Reader::createFromPath so the CSV
+        // reader streams from disk. Only fall back to full-file buffering
+        // when encoding conversion is actually needed.
         if (is_file($file)) {
-            $this->csv = Reader::createFromPath($file);
+            $sample = self::readSampleForEncodingProbe($file);
+            if ($sample !== null && ! mb_check_encoding($sample, 'UTF-8')) {
+                $contents = file_get_contents($file);
+                if ($contents !== false) {
+                    $contents = self::convertToUtf8IfNeeded($contents);
+                    $this->csv = Reader::createFromString($contents);
+                } else {
+                    $this->csv = Reader::createFromPath($file);
+                }
+            } else {
+                $this->csv = Reader::createFromPath($file);
+            }
         } else {
-            $this->csv = Reader::createFromString($file);
+            // Raw string input (tests, callers that build a CSV string
+            // in-process). Already in memory, so run the same encoding
+            // guard directly on the string.
+            $contents = mb_check_encoding($file, 'UTF-8') ? $file : self::convertToUtf8IfNeeded($file);
+            $this->csv = Reader::createFromString($contents);
         }
         $this->tempPassword = '*** NO PASSWORD - IMPORTED VIA CSV ***';
+    }
+
+    /**
+     * Read a small head-of-file sample cheaply for encoding detection. 8KB
+     * is enough to tell UTF-8 from GBK / Windows-1252 / Shift-JIS in
+     * practice (CSVs have uniform encoding throughout), and reading a
+     * sample this size stays in a single filesystem block on almost every
+     * modern deployment.
+     *
+     * Returns null if the file can't be opened, which callers should
+     * treat as "assume UTF-8 and let downstream errors surface".
+     */
+    private static function readSampleForEncodingProbe(string $path): ?string
+    {
+        $handle = @fopen($path, 'rb');
+        if ($handle === false) {
+            return null;
+        }
+        $sample = @fread($handle, 8192);
+        fclose($handle);
+
+        return $sample === false ? null : $sample;
+    }
+
+    /**
+     * Detect the source encoding of a non-UTF-8 string and convert it to
+     * UTF-8. Returns the source unchanged if the contents are already
+     * UTF-8, if no source encoding can be determined, or if conversion
+     * would drop more than half the source bytes (see
+     * conversionExceedsLossThreshold).
+     */
+    private static function convertToUtf8IfNeeded(string $contents): string
+    {
+        if (mb_check_encoding($contents, 'UTF-8')) {
+            return $contents;
+        }
+
+        $encoding = self::detectSourceEncoding($contents);
+        if ($encoding === null) {
+            return $contents;
+        }
+
+        $converted = self::runEncodingConversion($contents, $encoding);
+        if ($converted === null) {
+            return $contents;
+        }
+
+        if (self::conversionExceedsLossThreshold($contents, $converted, $encoding)) {
+            return $contents;
+        }
+
+        return $converted;
+    }
+
+    /**
+     * Try the Onnov detector first, falling back to mb_detect only when
+     * Onnov abstains. Onnov is usually more reliable when it commits to
+     * an answer, and overriding it with the CJK-leaning mb_detect list
+     * produces mojibake on short Cyrillic input. Returns null when no
+     * usable non-UTF-8 encoding was found.
+     */
+    private static function detectSourceEncoding(string $contents): ?string
+    {
+        $encoding = null;
+        if (class_exists('\Onnov\DetectEncoding\EncodingDetector')) {
+            $detector = new \Onnov\DetectEncoding\EncodingDetector;
+            $encoding = $detector->getEncoding($contents);
+        }
+
+        if (! $encoding || strcasecmp($encoding, 'UTF-8') === 0) {
+            $detected = mb_detect_encoding($contents, ['UTF-8', 'GBK', 'GB2312', 'GB18030', 'BIG5', 'SJIS', 'EUC-JP', 'EUC-KR', 'Windows-1252', 'Windows-1251', 'ISO-8859-1'], true);
+            if ($detected) {
+                $encoding = $detected;
+            }
+        }
+
+        if (! $encoding || strcasecmp($encoding, 'UTF-8') === 0) {
+            return null;
+        }
+
+        return $encoding;
+    }
+
+    /**
+     * Run the actual byte-level conversion. Prefers iconv with //IGNORE so
+     * real-world CSVs with a stray invalid byte still import successfully,
+     * falling back to mb_convert_encoding on hosts without iconv. Returns
+     * null when no converter is available or the converter refused the
+     * input entirely.
+     */
+    private static function runEncodingConversion(string $contents, string $encoding): ?string
+    {
+        $converted = null;
+        if (function_exists('iconv')) {
+            $result = @iconv(strtoupper($encoding), 'UTF-8//IGNORE', $contents);
+            $converted = $result === false ? null : $result;
+        } elseif (function_exists('mb_convert_encoding')) {
+            $converted = @mb_convert_encoding($contents, 'UTF-8', $encoding);
+        }
+
+        return ($converted === null || $converted === '') ? null : $converted;
+    }
+
+    /**
+     * Loss-ratio safety net for the //IGNORE flag on iconv. If the
+     * converted output is less than half the source size we treat that as
+     * "//IGNORE dropped most of the file", log a warning, and let the
+     * caller fall back to unconverted source so downstream sees the
+     * problem instead of an eerily-empty import.
+     */
+    private static function conversionExceedsLossThreshold(string $source, string $converted, string $encoding): bool
+    {
+        if (strlen($converted) >= intdiv(strlen($source), 2)) {
+            return false;
+        }
+
+        Log::warning(sprintf(
+            'CSV import: refusing lossy encoding conversion (%s -> UTF-8) that kept %d/%d bytes',
+            $encoding,
+            strlen($converted),
+            strlen($source),
+        ));
+
+        return true;
     }
 
     // Cached Values for import lookups
@@ -265,7 +414,12 @@ abstract class Importer
 
         // $this->log("Custom Key: ${key}");
         if (array_key_exists($key, $array)) {
-            $val = Encoding::toUTF8(trim($array[$key]));
+            $trimmed = trim($array[$key]);
+            if (mb_check_encoding($trimmed, 'UTF-8')) {
+                $val = $trimmed;
+            } else {
+                $val = Encoding::toUTF8($trimmed);
+            }
         }
 
         // $this->log("${key}: ${val}");
