@@ -1744,7 +1744,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             ->orWhere('users.employee_num', 'LIKE', '%'.$search.'%')
             ->orWhere('users.username', 'LIKE', '%'.$search.'%')
             ->orWhere('users.display_name', 'LIKE', '%'.$search.'%')
-            ->orwhereRaw('CONCAT(users.first_name," ",users.last_name) LIKE \''.$search.'%\'');
+            ->orWhereRaw('CONCAT(users.first_name," ",users.last_name) LIKE ?', [$search.'%']);
 
     }
 
