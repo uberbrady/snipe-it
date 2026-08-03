@@ -129,6 +129,33 @@ class ImportController extends Controller
                                 422
                             );
                         }
+                        // Loss-ratio safety net. iconv's //IGNORE flag lets a
+                        // mostly-valid file with a stray invalid byte still
+                        // import successfully, but a truly-corrupt file (random
+                        // binary, wrong-encoding guess) can silently //IGNORE
+                        // away most of its bytes and land a nearly-empty CSV
+                        // downstream. If more than half the source was dropped,
+                        // treat it the same as an iconv exception and 422 out
+                        // with the existing transliterate_failure message so
+                        // the caller sees a real error instead of an eerily-
+                        // empty import.
+                        if ($transliterated !== false && strlen($transliterated) < intdiv(strlen($file_contents), 2)) {
+                            \Log::warning(sprintf(
+                                'CSV import: refusing lossy encoding conversion (%s -> UTF-8) that kept %d/%d bytes',
+                                $encoding,
+                                strlen($transliterated),
+                                strlen($file_contents),
+                            ));
+
+                            return response()->json(
+                                Helper::formatStandardApiResponse(
+                                    'error',
+                                    null,
+                                    trans('admin/hardware/message.import.transliterate_failure', ['encoding' => $encoding])
+                                ),
+                                422
+                            );
+                        }
                         if ($transliterated !== false) {
                             $tmpname = tempnam(sys_get_temp_dir(), '');
                             $tmpresults = file_put_contents($tmpname, $transliterated);
