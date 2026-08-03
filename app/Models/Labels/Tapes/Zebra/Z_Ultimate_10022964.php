@@ -27,7 +27,7 @@ class Z_Ultimate_10022964 extends Z_Ultimate
 
     protected const FIELD_MARGIN = 0.15;
 
-    protected const LOGO_MAX_WIDTH = 18.00;
+    protected const LOGO_MAX_WIDTH = 15.00;
 
     protected const LOGO_MARGIN = 1.00;
 
