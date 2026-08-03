@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Acceptable;
 use App\Models\Traits\AdjustsQuantity;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasOrders;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Requestable;
@@ -29,6 +30,7 @@ class Accessory extends SnipeModel
     use AdjustsQuantity;
     use CompanyableTrait;
     use HasFactory;
+    use HasOrders;
     use HasUploads;
     use Loggable;
     use Presentable;
@@ -70,12 +72,12 @@ class Accessory extends SnipeModel
         'location' => ['name'],
         'manufacturer' => ['name'],
         'supplier' => ['name'],
-        // Historical order numbers moved to per-QuantityAdjust action_log
-        // rows when the parent column was renamed to legacy_order_number.
-        // Free-text search hits them through the AdjustsQuantity trait's
-        // quantityAdjustLogs relation so "PO-123" still surfaces any
-        // accessory replenished under that PO at any point in its life.
-        'quantityAdjustLogs' => ['order_number'],
+        // Order numbers moved to a dedicated Orders / OrderItems data
+        // model when the parent order_number column was removed. Free-text
+        // search on "PO-123" walks the HasOrders trait's orders() through
+        // relation into orders.order_number so any accessory that was
+        // ever purchased under that PO still surfaces.
+        'orders' => ['order_number'],
     ];
 
     protected $searchableCounts = [
@@ -115,7 +117,6 @@ class Accessory extends SnipeModel
         'company_id',
         'location_id',
         'name',
-        'legacy_order_number',
         'purchase_cost',
         'purchase_date',
         'model_number',

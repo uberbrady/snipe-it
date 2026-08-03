@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Acceptable;
 use App\Models\Traits\AdjustsQuantity;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasOrders;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
@@ -27,6 +28,7 @@ class Consumable extends SnipeModel
     use Acceptable;
     use AdjustsQuantity;
     use CompanyableTrait;
+    use HasOrders;
     use HasUploads;
     use Loggable, Presentable;
     use SoftDeletes;
@@ -81,7 +83,6 @@ class Consumable extends SnipeModel
         'manufacturer_id',
         'supplier_id',
         'name',
-        'legacy_order_number',
         'model_number',
         'purchase_cost',
         'purchase_date',
@@ -119,10 +120,10 @@ class Consumable extends SnipeModel
         'manufacturer' => ['name'],
         'supplier' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
-        // See Accessory::$searchableRelations for why order_number rides
-        // through the QuantityAdjust action_log rather than the parent's
-        // (now legacy_order_number) column.
-        'quantityAdjustLogs' => ['order_number'],
+        // See Accessory::$searchableRelations. Search hits order_number
+        // through the HasOrders trait's orders() HasManyThrough into
+        // the Orders table so historical PO references still match.
+        'orders' => ['order_number'],
     ];
 
     /**
