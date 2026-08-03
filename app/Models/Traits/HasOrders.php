@@ -23,6 +23,29 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 trait HasOrders
 {
+    /**
+     * Hook a model lifecycle listener so that force-deleting an
+     * inventory row (Accessory / Consumable / Component / Asset /
+     * License) soft-deletes every OrderItem pointing at it. Preserves
+     * the acquisition ledger — the Order row and its (now-trashed)
+     * OrderItem lines remain queryable via `withTrashed()` for
+     * historical reports, while ordinary `->orderItems()` reads exclude
+     * them. Soft-delete on the parent does not propagate; the Order
+     * data model treats a soft-deleted inventory row as still-existing.
+     */
+    protected static function bootHasOrders(): void
+    {
+        static::deleting(function ($model) {
+            if (! method_exists($model, 'isForceDeleting') || ! $model->isForceDeleting()) {
+                return;
+            }
+
+            OrderItem::where('item_type', static::class)
+                ->where('item_id', $model->id)
+                ->delete();
+        });
+    }
+
     public function orderItems(): MorphMany
     {
         return $this->morphMany(OrderItem::class, 'item');
