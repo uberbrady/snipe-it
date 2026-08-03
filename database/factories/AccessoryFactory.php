@@ -38,6 +38,9 @@ class AccessoryFactory extends Factory
             'category_id' => Category::factory()->forAccessories(),
             'model_number' => $this->faker->numberBetween(1000000, 50000000),
             'location_id' => Location::factory(),
+            'order_number' => $this->faker->regexify('[A-Z]{3}[0-9]{4}'),
+            'purchase_cost' => $this->faker->randomFloat(2, 5, 250),
+            'purchase_date' => $this->faker->dateTimeBetween('-1 years', 'now', date_default_timezone_get())->format('Y-m-d'),
             'qty' => 1,
         ];
     }

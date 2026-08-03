@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\Acceptable;
+use App\Models\Traits\AdjustsQuantity;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
@@ -24,6 +25,7 @@ class Consumable extends SnipeModel
     protected $presenter = ConsumablePresenter::class;
 
     use Acceptable;
+    use AdjustsQuantity;
     use CompanyableTrait;
     use HasUploads;
     use Loggable, Presentable;
@@ -337,6 +339,27 @@ class Consumable extends SnipeModel
     public function numCheckedOut()
     {
         return $this->consumables_users_count ?? $this->users()->count();
+    }
+
+    /**
+     * AdjustsQuantity trait hook: units currently distributed to users.
+     * The adjust-quantity modal uses this to reject decrements that
+     * would leave the on-hand qty below what's already handed out.
+     */
+    public function currentlyInUseCount(): int
+    {
+        return (int) $this->numCheckedOut();
+    }
+
+    /**
+     * See Accessory::getOrderNumberAttribute for the rationale. Column
+     * is hidden from every read and no longer editable via the edit
+     * form; the create-time value is captured onto the create action_log
+     * and after that adjustments carry their own order_number per event.
+     */
+    public function getOrderNumberAttribute(): ?string
+    {
+        return null;
     }
 
     /**

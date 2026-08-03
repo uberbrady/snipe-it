@@ -86,7 +86,9 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertNotNull($newConsumable->supplier_id);
         $this->assertFalse($newConsumable->requestable);
         $this->assertNull($newConsumable->image);
-        $this->assertEquals($row['orderNumber'], $newConsumable->order_number);
+        // Consumable::getOrderNumberAttribute hides the parent value from
+        // display; read the raw stored column to verify importer persistence.
+        $this->assertEquals($row['orderNumber'], $newConsumable->getRawOriginal('order_number'));
         $this->assertEquals($row['purchaseDate'], $newConsumable->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newConsumable->purchase_cost);
         $this->assertNull($newConsumable->min_amt);
@@ -230,7 +232,9 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['category'], $updatedConsumable->category->name);
         $this->assertEquals($row['location'], $updatedConsumable->location->name);
         $this->assertEquals($row['companyName'], $updatedConsumable->company->name);
-        $this->assertEquals($row['orderNumber'], $updatedConsumable->order_number);
+        // order_number does NOT persist on the parent through an update
+        // (see update_accessory_from_import for the same rationale;
+        // importer_qty_change_creates_quantity_adjust_log covers the log).
         $this->assertEquals($row['purchaseDate'], $updatedConsumable->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $updatedConsumable->purchase_cost);
 
@@ -242,6 +246,36 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($consumable->manufacturer_id, $updatedConsumable->manufacturer_id);
         $this->assertEquals($consumable->notes, $updatedConsumable->notes);
         $this->assertEquals($consumable->item_number, $updatedConsumable->item_number);
+    }
+
+    #[Test]
+    public function importer_qty_change_creates_quantity_adjust_log(): void
+    {
+        // Update path routes any qty delta through adjustQuantity so the
+        // change becomes a QuantityAdjust action_log entry rather than a
+        // silent overwrite. Same contract the API update path uses.
+        $consumable = Consumable::factory()->create(['name' => Str::random(), 'qty' => 5]);
+        $importFileBuilder = ImportFileBuilder::new([
+            'itemName' => $consumable->name,
+            'quantity' => 12,
+        ]);
+        $import = Import::factory()->consumable()->create([
+            'file_path' => $importFileBuilder->saveToImportsDirectory(),
+        ]);
+
+        $this->actingAsForApi(User::factory()->superuser()->create());
+        $this->importFileResponse(['import' => $import->id, 'import-update' => true])->assertOk();
+
+        $this->assertSame(12, (int) $consumable->fresh()->qty);
+
+        $log = ActivityLog::where('item_type', Consumable::class)
+            ->where('item_id', $consumable->id)
+            ->where('action_type', \App\Enums\ActionType::QuantityAdjust->value)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame(7, (int) $log->quantity);
+        $this->assertStringContainsString('Import: qty updated from 5 to 12', (string) $log->note);
     }
 
     #[Test]
@@ -328,8 +362,13 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
 
         $consumable = Consumable::query()->where('name', $initialRow['itemName'])->sole();
 
+        // Change `purchaseCost` (a plain fillable column that IS in the
+        // ConsumablesImportFileBuilder shape). orderNumber is intentionally
+        // NOT the trigger because ItemImporter::applyUpdateWithQtyAdjust
+        // strips order_number from the update payload, so a non-qty /
+        // non-order-number diff is what proves the update-log path fires.
         $updatedRow = array_merge($initialRow, [
-            'orderNumber' => (string) $initialRow['orderNumber'].'-UPD',
+            'purchaseCost' => ((int) $initialRow['purchaseCost']) + 1,
         ]);
 
         $updateFile = new ImportFileBuilder([$updatedRow]);
@@ -343,7 +382,7 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $consumable->refresh();
-        $this->assertEquals($updatedRow['orderNumber'], $consumable->order_number);
+        $this->assertEquals($updatedRow['purchaseCost'], $consumable->purchase_cost);
 
         $updateLog = ActivityLog::query()
             ->where('item_type', Consumable::class)
@@ -406,7 +445,8 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertNotNull($newConsumable->supplier_id);
         $this->assertFalse($newConsumable->requestable);
         $this->assertNull($newConsumable->image);
-        $this->assertEquals($row['orderNumber'], $newConsumable->order_number);
+        // Accessor hides the parent value; read the raw stored column.
+        $this->assertEquals($row['orderNumber'], $newConsumable->getRawOriginal('order_number'));
         $this->assertEquals($row['itemName'], $newConsumable->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newConsumable->purchase_cost);
         $this->assertNull($newConsumable->min_amt);

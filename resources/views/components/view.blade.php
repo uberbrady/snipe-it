@@ -67,6 +67,19 @@
                         <x-button.edit :item="$snipe_component" :route="route('components.edit', $snipe_component->id)"/>
                         <x-button.clone :item="$snipe_component" :route="route('components.clone.create', $snipe_component->id)"/>
                         <x-button.checkout :item="$snipe_component" :route="route('components.checkout.show', $snipe_component->id)" />
+                        @can('update', $snipe_component)
+                            <button type="button"
+                                class="btn btn-sm btn-primary adjust-quantity"
+                                data-tooltip="true"
+                                title="{{ trans('general.adjust_quantity') }}"
+                                data-adjust-url="{{ route('components.adjust-quantity', $snipe_component) }}"
+                                data-item-name="{{ e($snipe_component->name) }}"
+                                data-available="{{ (int) $snipe_component->numRemaining() }}"
+                            >
+                                <x-icon type="plus-minus" class="fa-fw" />
+                                <span class="sr-only">{{ trans('general.adjust_quantity') }}</span>
+                            </button>
+                        @endcan
                         <x-button.delete :item="$snipe_component" />
                     </x-slot:buttons>
 
@@ -83,5 +96,10 @@
     @can('files', $snipe_component)
         @include ('modals.upload-file', ['item_type' => 'components', 'item_id' => $snipe_component->id])
     @endcan
+
+    @can('update', $snipe_component)
+        <x-modals.adjust-quantity />
+    @endcan
+
     @include ('partials.bootstrap-table', ['exportFile' => 'component' . $snipe_component->name . '-export', 'search' => false])
 @endsection

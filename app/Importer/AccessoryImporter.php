@@ -114,8 +114,15 @@ class AccessoryImporter extends ItemImporter
             }
 
             $this->log('Updating Accessory');
-            $accessory->update($this->sanitizeItemForUpdating($accessory));
-            // update() already saves the model, no need to call save() again while Model::unguard() is active
+            $this->item['model_number'] = trim($this->findCsvMatch($row, 'model_number'));
+            // qty routes through adjustQuantity so a CSV qty change
+            // becomes a QuantityAdjust log entry, matching the API
+            // update contract. applyUpdateWithQtyAdjust calls
+            // $model->update() internally (already saves), so no
+            // additional save() is needed even with Model::unguard()
+            // active — supersedes the develop cleanup that dropped the
+            // redundant post-update save().
+            $this->applyUpdateWithQtyAdjust($accessory, $this->sanitizeItemForUpdating($accessory));
             $accessory->setImported(true);
             $this->recordUpdated();
 

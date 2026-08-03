@@ -97,13 +97,6 @@ class ConsumablePresenter extends Presenter
                 'visible' => false,
                 'formatter' => 'manufacturersLinkObjFormatter',
             ], [
-                'field' => 'order_number',
-                'scope' => 'col',
-                'searchable' => true,
-                'sortable' => true,
-                'title' => trans('general.order_number'),
-                'visible' => true,
-            ], [
                 'field' => 'purchase_date',
                 'scope' => 'col',
                 'searchable' => true,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\AdjustsQuantity;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
@@ -28,6 +29,7 @@ class Component extends SnipeModel
 
     protected $presenter = ComponentPresenter::class;
 
+    use AdjustsQuantity;
     use CompanyableTrait;
     use HasUploads;
     use Loggable, Presentable;
@@ -307,6 +309,29 @@ class Component extends SnipeModel
         }
 
         return $this->sum_unconstrained_assets ?? 0;
+    }
+
+    /**
+     * AdjustsQuantity trait hook: units currently assigned to assets.
+     * Passes true to numCheckedOut to force a fresh count instead of
+     * trusting the cached sum_unconstrained_assets attribute, since the
+     * adjust-quantity flow can be entered without withCount() priming
+     * that value.
+     */
+    public function currentlyInUseCount(): int
+    {
+        return (int) $this->numCheckedOut(true);
+    }
+
+    /**
+     * See Accessory::getOrderNumberAttribute for the rationale. Column
+     * is hidden from every read and no longer editable via the edit
+     * form; the create-time value is captured onto the create action_log
+     * and after that adjustments carry their own order_number per event.
+     */
+    public function getOrderNumberAttribute(): ?string
+    {
+        return null;
     }
 
     /**

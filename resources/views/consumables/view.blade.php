@@ -67,6 +67,19 @@
                     <x-slot:buttons>
                         <x-button.edit :item="$consumable" :route="route('consumables.edit', $consumable->id)"/>
                         <x-button.clone :item="$consumable" :route="route('consumables.clone.create', $consumable->id)"/>
+                        @can('update', $consumable)
+                            <button type="button"
+                                class="btn btn-sm btn-primary adjust-quantity"
+                                data-tooltip="true"
+                                title="{{ trans('general.adjust_quantity') }}"
+                                data-adjust-url="{{ route('consumables.adjust-quantity', $consumable) }}"
+                                data-item-name="{{ e($consumable->name) }}"
+                                data-available="{{ (int) $consumable->numRemaining() }}"
+                            >
+                                <x-icon type="plus-minus" class="fa-fw" />
+                                <span class="sr-only">{{ trans('general.adjust_quantity') }}</span>
+                            </button>
+                        @endcan
                         <x-button.delete :item="$consumable"/>
                         <x-button.checkout :item="$consumable" :route="route('consumables.checkout.show', $consumable->id)" />
                     </x-slot:buttons>
@@ -81,6 +94,10 @@
 @section('moar_scripts')
     @can('files', $consumable)
         @include ('modals.upload-file', ['item_type' => 'consumables', 'item_id' => $consumable->id])
+    @endcan
+
+    @can('update', $consumable)
+        <x-modals.adjust-quantity />
     @endcan
 
     @include ('partials.bootstrap-table', ['exportFile' => 'consumable-' . $consumable->name . '-export', 'search' => false])

@@ -6,7 +6,9 @@ use App\Events\CheckoutableCheckedIn;
 use App\Exceptions\MissingLogTarget;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\ImageUploadRequest;
+use App\Http\Requests\UploadFileRequest;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\ComponentsTransformer;
 use App\Models\Asset;
@@ -14,6 +16,7 @@ use App\Models\Company;
 use App\Models\Component;
 use App\Models\Setting;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -217,15 +220,72 @@ class ComponentsController extends Controller
     {
         $this->authorize('update', Component::class);
         $component = Component::findOrFail($id);
-        $component->fill($request->all());
+
+        // See Api\AccessoriesController::update for the qty / order_number
+        // / supplier_id contract. Same logic mirrored here.
+        $qtyBefore = (int) $component->qty;
+        $qtyRequested = $request->has('qty') ? (int) $request->input('qty') : $qtyBefore;
+        $qtyDelta = $qtyRequested - $qtyBefore;
+
+        $component->fill($request->except(['qty', 'order_number']));
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $component = $request->handleImages($component);
 
-        if ($component->save()) {
-            return response()->json(Helper::formatStandardApiResponse('success', $component, trans('admin/components/message.update.success')));
+        if (! $component->save()) {
+            return response()->json(Helper::formatStandardApiResponse('error', null, $component->getErrors()));
         }
 
-        return response()->json(Helper::formatStandardApiResponse('error', null, $component->getErrors()));
+        if ($qtyDelta !== 0) {
+            try {
+                $component->adjustQuantity(
+                    $qtyDelta,
+                    $request->input('note') ?: "API qty change: {$qtyBefore} → {$qtyRequested}",
+                    $request->input('order_number'),
+                );
+            } catch (DomainException) {
+                return response()->json(
+                    Helper::formatStandardApiResponse('error', null, trans('general.adjust_quantity_below_zero')),
+                    422,
+                );
+            }
+        }
+
+        return response()->json(Helper::formatStandardApiResponse('success', $component, trans('admin/components/message.update.success')));
+    }
+
+    /**
+     * See Api\AccessoriesController::adjustQuantity for the shape/contract.
+     */
+    public function adjustQuantity(AdjustQuantityRequest $request, Component $component): JsonResponse
+    {
+        $this->authorize('update', $component);
+
+        $filename = null;
+        if ($request->hasFile('file')) {
+            $filename = app(UploadFileRequest::class)->handleFile(
+                parent::getMapStoragePath()['components'],
+                parent::getMapFilePrefix()['components'].'-'.$component->id,
+                $request->file('file'),
+            );
+        }
+
+        try {
+            $component->adjustQuantity(
+                (int) $request->input('amount'),
+                $request->input('note'),
+                $request->input('order_number'),
+                $filename,
+            );
+        } catch (DomainException) {
+            return response()->json(
+                Helper::formatStandardApiResponse('error', null, trans('general.adjust_quantity_below_zero')),
+                422,
+            );
+        }
+
+        return response()->json(
+            Helper::formatStandardApiResponse('success', $component->fresh(), trans('general.adjust_quantity_success')),
+        );
     }
 
     /**

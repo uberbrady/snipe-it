@@ -48,6 +48,7 @@ class Actionlog extends SnipeModel
         'item_id',
         'action_type',
         'note',
+        'order_number',
         'target_id',
         'target_type',
         'stored_eula',
@@ -70,6 +71,7 @@ class Actionlog extends SnipeModel
     protected $searchableAttributes = [
         'action_type',
         'note',
+        'order_number',
         'log_meta',
         'created_by',
         'remote_ip',

@@ -74701,6 +74701,43 @@ $(function () {
     $('#completeMaintenanceModal').modal('show');
   });
 
+  // Adjust-quantity modal (plus-minus button on accessory/consumable/
+  // component list and view pages). Sets the modal form's action from
+  // the trigger's data-adjust-url and populates the header + current
+  // quantity display from the trigger's data attributes. Clears the
+  // signed amount + note + order every open so nothing bleeds between
+  // clicks.
+  $el.on('click', '.adjust-quantity', function () {
+    var $btn = $(this);
+    var $modal = $('#adjustQuantityModal');
+    var $amount = $modal.find('#adjustQuantityAmount');
+
+    // data-available is the trigger's authoritative floor for a decrement
+    // (available = qty - currentlyInUseCount). A delta smaller than
+    // -available would decrement the on-hand qty below what's already
+    // checked out, and AdjustsQuantity::adjustQuantity throws
+    // DomainException. Mirror that server-side floor on the input's min
+    // attribute so the browser stepper refuses to go below and the
+    // constraint-validation message surfaces before submit.
+    var available = parseInt($btn.data('available'), 10);
+    $('#adjustQuantityForm').attr('action', $btn.data('adjust-url'));
+    $modal.find('.adjust-quantity-item-name').text($btn.data('item-name') || '');
+    $modal.find('.adjust-quantity-available').text(!isNaN(available) ? available : '');
+    if (!isNaN(available)) {
+      $amount.attr('min', -available);
+    } else {
+      $amount.removeAttr('min');
+    }
+    $amount.val('');
+    $modal.find('#adjustQuantityOrder').val('');
+    $modal.find('#adjustQuantityNote').val('');
+    $modal.find('#adjustQuantityFile').val('');
+    // js-uploadFile paints selected filenames into #{id}-info; clear it too
+    // so stale filenames from a previous open don't linger in the new modal.
+    $modal.find('#adjustQuantityFile-info').empty();
+    $modal.modal('show');
+  });
+
   // confirm delete modal
   $el.on('click', '.delete-asset', function (evnt) {
     var $context = $(this);

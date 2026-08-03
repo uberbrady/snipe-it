@@ -113,8 +113,10 @@ class ComponentImporter extends ItemImporter
                 return;
             }
             $this->log('Updating Component');
-            $component->update($this->sanitizeItemForUpdating($component));
-            // update() already saves the model, no need to call save() again while Model::unguard() is active
+            // qty routes through adjustQuantity so a CSV qty change
+            // becomes a QuantityAdjust log entry, matching the API
+            // update contract.
+            $this->applyUpdateWithQtyAdjust($component, $this->sanitizeItemForUpdating($component));
             $component->setImported(true);
             $this->recordUpdated();
 

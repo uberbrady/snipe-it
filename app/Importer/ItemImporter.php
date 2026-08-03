@@ -164,6 +164,53 @@ class ItemImporter extends Importer
     }
 
     /**
+     * Apply a sanitized update payload to a model, routing any qty change
+     * through the AdjustsQuantity trait so it becomes a QuantityAdjust
+     * action_log entry rather than a silent update-log overwrite. Only
+     * kicks in for models that use the trait (Accessory, Consumable,
+     * Component). For everything else it's a plain $model->update().
+     *
+     * order_number rides on the QuantityAdjust log when qty also changed,
+     * matching the API update contract. A DomainException from
+     * adjustQuantity (would drop qty below the currently-in-use count)
+     * is logged and the row's non-qty updates still stick.
+     */
+    protected function applyUpdateWithQtyAdjust($model, array $sanitized): void
+    {
+        $qtyRequested = null;
+        $orderNumber = null;
+
+        if (method_exists($model, 'adjustQuantity')) {
+            if (array_key_exists('qty', $sanitized)) {
+                $qtyRequested = (int) $sanitized['qty'];
+                unset($sanitized['qty']);
+            }
+            if (array_key_exists('order_number', $sanitized)) {
+                $orderNumber = $sanitized['order_number'];
+                unset($sanitized['order_number']);
+            }
+        }
+
+        $qtyBefore = $qtyRequested !== null ? (int) $model->qty : null;
+
+        $model->update($sanitized);
+
+        if ($qtyRequested === null || $qtyRequested === $qtyBefore) {
+            return;
+        }
+
+        try {
+            $model->adjustQuantity(
+                $qtyRequested - $qtyBefore,
+                "Import: qty updated from {$qtyBefore} to {$qtyRequested}",
+                $orderNumber,
+            );
+        } catch (\DomainException) {
+            $this->log('Skipping qty change for '.($model->name ?? 'row').': would drop on-hand below the currently-checked-out count.');
+        }
+    }
+
+    /**
      * Determines if a field needs updating
      * Follows the following rules:
      * If we are not updating, we should update the field

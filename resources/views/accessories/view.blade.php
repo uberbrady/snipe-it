@@ -71,6 +71,19 @@
                         <x-button.edit :item="$accessory" :route="route('accessories.edit', $accessory->id)"/>
                         <x-button.clone :item="$accessory" :route="route('clone/accessories', $accessory->id)"/>
                         <x-button.checkout permission="checkout" :item="$accessory" :route="route('accessories.checkout.show', $accessory->id)" />
+                        @can('update', $accessory)
+                            <button type="button"
+                                class="btn btn-sm btn-primary adjust-quantity"
+                                data-tooltip="true"
+                                title="{{ trans('general.adjust_quantity') }}"
+                                data-adjust-url="{{ route('accessories.adjust-quantity', $accessory) }}"
+                                data-item-name="{{ e($accessory->name) }}"
+                                data-available="{{ (int) $accessory->numRemaining() }}"
+                            >
+                                <x-icon type="plus-minus" class="fa-fw" />
+                                <span class="sr-only">{{ trans('general.adjust_quantity') }}</span>
+                            </button>
+                        @endcan
                         <x-button.delete :item="$accessory" />
                     </x-slot:buttons>
                 </x-info-panel>
@@ -86,6 +99,10 @@
 @section('moar_scripts')
     @can('files', $accessory)
         @include ('modals.upload-file', ['item_type' => 'accessories', 'item_id' => $accessory->id])
+    @endcan
+
+    @can('update', $accessory)
+        <x-modals.adjust-quantity />
     @endcan
 
 @include ('partials.bootstrap-table')

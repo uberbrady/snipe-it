@@ -90,6 +90,13 @@ class UpdateAccessoryTest extends TestCase
                 'qty' => 5,
             ]);
 
+        // qty and order_number are still ignored by the web edit form
+        // (qty flows through the adjust-quantity modal, order_number
+        // stays hidden by the model accessor). supplier_id is now
+        // editable again — imperfect single-value semantics accepted
+        // for the info-panel display.
+        $originalOrderNumber = $accessory->getRawOriginal('order_number');
+
         $this->actingAs(User::factory()->editAccessories()->create())
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
@@ -117,10 +124,10 @@ class UpdateAccessoryTest extends TestCase
             'manufacturer_id' => $manufacturerB->id,
             'location_id' => $locationB->id,
             'model_number' => 'changed 1234',
-            'order_number' => 'changed 5678',
+            'order_number' => $originalOrderNumber, // untouched by update
             'purchase_date' => '2024-10-11',
             'purchase_cost' => '83.52',
-            'qty' => '7',
+            'qty' => '5', // unchanged from factory value; edit ignores qty
             'min_amt' => '10',
             'notes' => 'A new note',
         ]);
@@ -139,7 +146,6 @@ class UpdateAccessoryTest extends TestCase
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
                 'name' => 'New Name',
-                'qty' => '10',
                 'category_id' => (string) $accessory->category_id,
             ]);
 
@@ -152,9 +158,10 @@ class UpdateAccessoryTest extends TestCase
         $this->assertNotNull($log, 'No update log entry was created');
         $this->assertNotNull($log->log_meta, 'log_meta was not stored');
 
+        // qty is no longer editable via update; log_meta captures only
+        // the fields the edit form can actually change.
         $meta = json_decode($log->log_meta, true);
-        $this->assertEquals('5', $meta['qty']['old']);
-        $this->assertEquals('10', $meta['qty']['new']);
+        $this->assertArrayNotHasKey('qty', $meta);
         $this->assertEquals('Old Name', $meta['name']['old']);
         $this->assertEquals('New Name', $meta['name']['new']);
     }
@@ -173,12 +180,19 @@ class UpdateAccessoryTest extends TestCase
             ->where('action_type', 'update')
             ->count();
 
+        // Echo persisted values back for every field the controller sets
+        // unconditionally from the request. A missing key on the payload
+        // coerces to null server-side and marks the model dirty, which
+        // trips the update-log observer. Pre-existing quirk in the web
+        // update, not introduced by these tests.
         $this->actingAs(User::factory()->editAccessories()->create())
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
                 'name' => 'Same Name',
                 'qty' => '5',
                 'category_id' => (string) $accessory->category_id,
+                'purchase_date' => $accessory->purchase_date?->format('Y-m-d'),
+                'purchase_cost' => $accessory->purchase_cost,
             ]);
 
         $after = Actionlog::where('item_type', Accessory::class)

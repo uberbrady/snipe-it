@@ -83,7 +83,9 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['quantity'], $newAccessory->qty);
         $this->assertEquals($row['purchaseDate'], $newAccessory->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newAccessory->purchase_cost);
-        $this->assertEquals($row['orderNumber'], $newAccessory->order_number);
+        // Accessory::getOrderNumberAttribute hides the parent value from
+        // display; read the raw stored column to verify importer persistence.
+        $this->assertEquals($row['orderNumber'], $newAccessory->getRawOriginal('order_number'));
         $this->assertEquals($row['notes'], $newAccessory->notes);
         $this->assertEquals($row['category'], $newAccessory->category->name);
         $this->assertEquals('accessory', $newAccessory->category->category_type);
@@ -290,7 +292,12 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['quantity'], $updatedAccessory->qty);
         $this->assertEquals($row['purchaseDate'], $updatedAccessory->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $updatedAccessory->purchase_cost);
-        $this->assertEquals($row['orderNumber'], $updatedAccessory->order_number);
+        // order_number does NOT persist on the parent through an update
+        // (ItemImporter::applyUpdateWithQtyAdjust extracts it from the
+        // sanitized payload before ->update()). When the CSV qty differs
+        // from stored, the value rides on the QuantityAdjust log — the
+        // dedicated "importer_qty_change_creates_quantity_adjust_log"
+        // test covers that path.
         $this->assertEquals($row['notes'], $updatedAccessory->notes);
         $this->assertEquals($row['category'], $updatedAccessory->category->name);
         $this->assertEquals('accessory', $updatedAccessory->category->category_type);
@@ -321,8 +328,13 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
 
         $accessory = Accessory::query()->where('name', $initialRow['itemName'])->sole();
 
+        // Change `notes` (a plain fillable field). orderNumber is
+        // intentionally NOT the trigger here because
+        // ItemImporter::applyUpdateWithQtyAdjust strips order_number from
+        // the update payload, so a notes-only diff is what proves the
+        // update-log path still fires.
         $updatedRow = array_merge($initialRow, [
-            'orderNumber' => (string) $initialRow['orderNumber'].'-UPD',
+            'notes' => (string) ($initialRow['notes'] ?? '').' updated',
         ]);
 
         $updateFile = new ImportFileBuilder([$updatedRow]);
@@ -336,7 +348,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $accessory->refresh();
-        $this->assertEquals($updatedRow['orderNumber'], $accessory->order_number);
+        $this->assertEquals($updatedRow['notes'], $accessory->notes);
 
         $updateLog = Actionlog::query()
             ->where('item_type', Accessory::class)
@@ -519,7 +531,8 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['quantity'], $newAccessory->qty);
         $this->assertEquals($row['notes'], $newAccessory->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newAccessory->purchase_cost);
-        $this->assertEquals($row['companyName'], $newAccessory->order_number);
+        // Accessor hides the parent value; read the raw stored column.
+        $this->assertEquals($row['companyName'], $newAccessory->getRawOriginal('order_number'));
         $this->assertEquals($row['purchaseDate'], $newAccessory->notes);
         $this->assertEquals($row['manufacturerName'], $newAccessory->category->name);
         $this->assertEquals($row['category'], $newAccessory->manufacturer->name);

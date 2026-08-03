@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\Acceptable;
+use App\Models\Traits\AdjustsQuantity;
 use App\Models\Traits\CompanyableTrait;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
@@ -25,6 +26,7 @@ use Watson\Validating\ValidatingTrait;
 class Accessory extends SnipeModel
 {
     use Acceptable;
+    use AdjustsQuantity;
     use CompanyableTrait;
     use HasFactory;
     use HasUploads;
@@ -389,6 +391,39 @@ class Accessory extends SnipeModel
     public function numCheckedOut()
     {
         return $this->checkouts_count ?? $this->checkouts()->count();
+    }
+
+    /**
+     * AdjustsQuantity trait hook: units currently checked out to users.
+     * The adjust-quantity modal uses this to reject decrements that
+     * would leave the on-hand qty below what's already assigned out.
+     */
+    public function currentlyInUseCount(): int
+    {
+        return (int) $this->numCheckedOut();
+    }
+
+    /**
+     * Hide the parent-level order_number from every read (info panel,
+     * API output, forms). A single order_number on inventory that gets
+     * replenished across many POs misrepresents current state — each
+     * replenishment carries its own on the QuantityAdjust action_log.
+     *
+     * The column is also intentionally NOT editable via the edit form
+     * (form field removed, controller ignores the input). Correction of
+     * a create-time typo isn't supported today; the plan for that is a
+     * dedicated Orders model built out from the action_log history if
+     * customers ask for it. Until then, action_logs are the source of
+     * truth for order references on these inventory-style models.
+     *
+     * Anything that needs the raw stored value must read it via
+     * getRawOriginal('order_number') or getAttributes()['order_number'].
+     * Asset is intentionally NOT given this accessor because assets are
+     * per-unit; a single order_number is genuinely a real property there.
+     */
+    public function getOrderNumberAttribute(): ?string
+    {
+        return null;
     }
 
     /**

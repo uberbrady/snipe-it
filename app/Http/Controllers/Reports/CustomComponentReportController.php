@@ -187,7 +187,11 @@ class CustomComponentReportController extends Controller
             ],
             'order' => [
                 'headers' => [trans('admin/hardware/form.order')],
-                'values' => fn ($component, $i) => [$component->order_number],
+                // Component::getOrderNumberAttribute hides the parent value from
+                // display; read the raw column so the export carries the actual
+                // stored value. The by_order_number filter above does raw SQL
+                // against the same column, so filter+export stay consistent.
+                'values' => fn ($component, $i) => [$component->getRawOriginal('order_number')],
             ],
             'supplier' => [
                 'headers' => [trans('general.supplier')],

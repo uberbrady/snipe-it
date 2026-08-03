@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Components;
 
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\StoreComponentRequest;
 use App\Http\Requests\UpdateComponentRequest;
+use App\Http\Requests\UploadFileRequest;
 use App\Models\Company;
 use App\Models\Component;
+use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -152,20 +155,21 @@ class ComponentsController extends Controller
     {
         $this->authorize('update', $component);
 
-        // Update the component data
+        // qty and order_number are intentionally NOT accepted on update.
+        // See AccessoriesController::update for rationale. supplier_id is
+        // editable again (imperfect single-value semantics accepted for
+        // the info-panel display).
         $component->name = $request->input('name');
         $component->category_id = $request->input('category_id');
-        $component->supplier_id = $request->input('supplier_id');
         $component->manufacturer_id = $request->input('manufacturer_id');
         $component->model_number = $request->input('model_number');
         $component->location_id = $request->input('location_id');
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-        $component->order_number = $request->input('order_number');
         $component->min_amt = $request->input('min_amt');
+        $component->supplier_id = $request->input('supplier_id');
         $component->serial = $request->input('serial');
         $component->purchase_date = $request->input('purchase_date');
         $component->purchase_cost = request('purchase_cost');
-        $component->qty = $request->input('qty');
         $component->notes = $request->input('notes');
 
         $component = $request->handleImages($component);
@@ -246,5 +250,38 @@ class ComponentsController extends Controller
         return view('components/edit')
             ->with('item', $cloned_component)
             ->with('component', $cloned_component);
+    }
+
+    /**
+     * Apply an on-hand quantity delta (+/-) and log the change.
+     * Direction + amount from the form are converted to a signed delta
+     * for the AdjustsQuantity trait. Below-zero attempts surface as a
+     * flash error rather than a 500.
+     */
+    public function adjustQuantity(AdjustQuantityRequest $request, Component $component): RedirectResponse
+    {
+        $this->authorize('update', $component);
+
+        $filename = null;
+        if ($request->hasFile('file')) {
+            $filename = app(UploadFileRequest::class)->handleFile(
+                parent::getMapStoragePath()['components'],
+                parent::getMapFilePrefix()['components'].'-'.$component->id,
+                $request->file('file'),
+            );
+        }
+
+        try {
+            $component->adjustQuantity(
+                (int) $request->input('amount'),
+                $request->input('note'),
+                $request->input('order_number'),
+                $filename,
+            );
+        } catch (DomainException) {
+            return redirect()->back()->with('error', trans('general.adjust_quantity_below_zero'));
+        }
+
+        return redirect()->back()->with('success', trans('general.adjust_quantity_success'));
     }
 }

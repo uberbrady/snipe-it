@@ -201,6 +201,11 @@
 
         @endif
 
+        {{-- Accessory/Consumable/Component override getOrderNumberAttribute
+             to return null so this guard skips — a single order_number
+             on many-batches inventory is misleading; per-adjustment order
+             numbers live on QuantityAdjust action_log entries. Assets
+             are unaffected; a single order_number per unit is real. --}}
         @if ($infoPanelObj->order_number)
             <x-info-element icon_type="order" title="{{ trans('general.order_number') }}">
                 <x-copy-to-clipboard copy_what="order_number" class="pull-right">

@@ -111,6 +111,12 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
             'supplier_id' => $supplierA->id,
         ]);
 
+        // Payload shape preserved: qty / order_number / supplier_id are
+        // all accepted on update again. supplier_id writes through to
+        // the model. qty change routes through adjustQuantity (asserted
+        // in the dedicated test below). order_number rides on the
+        // QuantityAdjust log but stays hidden on the parent by the
+        // model accessor.
         $this->actingAsForApi(User::factory()->editAccessories()->create())
             ->patchJson(route('api.accessories.update', $accessory), [
                 'name' => 'A New Name',
@@ -129,14 +135,14 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $accessory = $accessory->fresh();
         $this->assertEquals('A New Name', $accessory->name);
         $this->assertEquals(10, $accessory->qty);
-        $this->assertEquals('B54321', $accessory->order_number);
+        $this->assertEquals('A12345', $accessory->getRawOriginal('order_number')); // create-time value; QuantityAdjust log carries the new one
+        $this->assertEquals($supplierB->id, $accessory->supplier_id);
         $this->assertEquals(199.99, $accessory->purchase_cost);
         $this->assertEquals('XYZ123', $accessory->model_number);
         $this->assertEquals($categoryB->id, $accessory->category_id);
         $this->assertEquals($companyB->id, $accessory->company_id);
         $this->assertEquals($locationB->id, $accessory->location_id);
         $this->assertEquals($manufacturerB->id, $accessory->manufacturer_id);
-        $this->assertEquals($supplierB->id, $accessory->supplier_id);
     }
 
     public function test_update_logs_changed_fields_in_log_meta()
@@ -155,11 +161,77 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $this->assertNotNull($log, 'No update log entry was created');
         $this->assertNotNull($log->log_meta, 'log_meta was not stored');
 
+        // qty change writes its own QuantityAdjust log (asserted below);
+        // it does not appear in the update log_meta because the fill()
+        // deliberately excludes qty to route it through adjustQuantity.
         $meta = json_decode($log->log_meta, true);
-        $this->assertEquals('5', $meta['qty']['old']);
-        $this->assertEquals('10', $meta['qty']['new']);
+        $this->assertArrayNotHasKey('qty', $meta);
         $this->assertEquals('Old Name', $meta['name']['old']);
         $this->assertEquals('New Name', $meta['name']['new']);
+    }
+
+    public function test_qty_change_via_api_creates_quantity_adjust_log()
+    {
+        $accessory = Accessory::factory()->create(['qty' => 5]);
+
+        $this->actingAsForApi(User::factory()->editAccessories()->create())
+            ->patchJson(route('api.accessories.update', $accessory), ['qty' => 12, 'order_number' => 'PO-API'])
+            ->assertOk();
+
+        $this->assertSame(12, (int) $accessory->fresh()->qty);
+
+        $log = Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', \App\Enums\ActionType::QuantityAdjust->value)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame(7, (int) $log->quantity);
+        $this->assertSame('PO-API', $log->order_number);
+        $this->assertNotEmpty($log->note, 'Adjustment note must be synthesized when the API caller omits one');
+    }
+
+    public function test_qty_only_change_via_api_creates_no_update_log_entry()
+    {
+        $accessory = Accessory::factory()->create(['qty' => 5, 'name' => 'Same Name']);
+
+        $updateLogsBefore = Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', 'update')
+            ->count();
+
+        $this->actingAsForApi(User::factory()->editAccessories()->create())
+            ->patchJson(route('api.accessories.update', $accessory), ['qty' => 8, 'name' => 'Same Name'])
+            ->assertOk();
+
+        $updateLogsAfter = Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', 'update')
+            ->count();
+
+        // Only qty changed. The QuantityAdjust log captures that change;
+        // no separate 'update' log should exist because nothing else was dirty.
+        $this->assertSame($updateLogsBefore, $updateLogsAfter);
+        $this->assertSame(1, Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', \App\Enums\ActionType::QuantityAdjust->value)
+            ->count());
+    }
+
+    public function test_qty_change_below_in_use_returns_422()
+    {
+        $accessory = Accessory::factory()->create(['qty' => 10]);
+        \App\Models\AccessoryCheckout::factory()->count(4)->create([
+            'accessory_id' => $accessory->id,
+            'assigned_type' => User::class,
+            'assigned_to' => User::factory()->create()->id,
+        ]);
+
+        $this->actingAsForApi(User::factory()->editAccessories()->create())
+            ->patchJson(route('api.accessories.update', $accessory), ['qty' => 3]) // below the 4 in use
+            ->assertStatus(422);
+
+        $this->assertSame(10, (int) $accessory->fresh()->qty);
     }
 
     public function test_no_op_update_does_not_create_log_entry()
@@ -168,7 +240,6 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
 
         $before = Actionlog::where('item_type', Accessory::class)
             ->where('item_id', $accessory->id)
-            ->where('action_type', 'update')
             ->count();
 
         $this->actingAsForApi(User::factory()->editAccessories()->create())
@@ -176,7 +247,6 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
 
         $after = Actionlog::where('item_type', Accessory::class)
             ->where('item_id', $accessory->id)
-            ->where('action_type', 'update')
             ->count();
 
         $this->assertEquals($before, $after, 'A spurious log entry was created for a no-op update');

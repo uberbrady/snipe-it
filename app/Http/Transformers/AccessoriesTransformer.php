@@ -78,6 +78,7 @@ class AccessoriesTransformer
             'checkout' => Gate::allows('checkout', Accessory::class),
             'checkin' => false,
             'update' => Gate::allows('update', Accessory::class),
+            'adjust_quantity' => Gate::allows('update', Accessory::class),
             'delete' => $accessory->checkouts_count === 0 && Gate::allows('delete', Accessory::class),
             'clone' => Gate::allows('create', Accessory::class),
             'bulk_selectable' => [

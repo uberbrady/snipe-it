@@ -40,7 +40,7 @@
 
                     <!-- start history tab pane -->
                     <x-tabs.pane name="history">
-                        <x-table.history :model="$model" :route="route('api.models.history', $model)"/>
+                        <x-table.history :model="$model" :route="route('api.models.history', $model)" :hide_fields="['order_number']"/>
                     </x-tabs.pane>
                     <!-- end history tab pane -->
 

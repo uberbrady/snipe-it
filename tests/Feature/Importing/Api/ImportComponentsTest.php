@@ -87,7 +87,9 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['location'], $newComponent->location->name);
         $this->assertNull($newComponent->supplier_id);
         $this->assertEquals($row['quantity'], $newComponent->qty);
-        $this->assertEquals($row['orderNumber'], $newComponent->order_number);
+        // Component::getOrderNumberAttribute hides the parent value from
+        // display; read the raw stored column to verify importer persistence.
+        $this->assertEquals($row['orderNumber'], $newComponent->getRawOriginal('order_number'));
         $this->assertEquals($row['purchaseDate'], $newComponent->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newComponent->purchase_cost);
         $this->assertNull($newComponent->min_amt);
@@ -242,7 +244,9 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['location'], $updatedComponent->location->name);
         $this->assertEquals($component->supplier_id, $updatedComponent->supplier_id);
         $this->assertEquals($row['quantity'], $updatedComponent->qty);
-        $this->assertEquals($row['orderNumber'], $updatedComponent->order_number);
+        // order_number does NOT persist on the parent through an update
+        // (see update_accessory_from_import for the same rationale;
+        // importer_qty_change_creates_quantity_adjust_log covers the log).
         $this->assertEquals($row['purchaseDate'], $updatedComponent->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $updatedComponent->purchase_cost);
         $this->assertEquals($component->min_amt, $updatedComponent->min_amt);
@@ -340,8 +344,13 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
             ->where('serial', $initialRow['serialNumber'])
             ->sole();
 
+        // Change `purchaseCost` (a plain fillable column that IS in the
+        // ComponentsImportFileBuilder shape). orderNumber is intentionally
+        // NOT the trigger because ItemImporter::applyUpdateWithQtyAdjust
+        // strips order_number from the update payload, so a non-qty /
+        // non-order-number diff is what proves the update-log path fires.
         $updatedRow = array_merge($initialRow, [
-            'orderNumber' => (string) $initialRow['orderNumber'].'-UPD',
+            'purchaseCost' => ((int) $initialRow['purchaseCost']) + 1,
         ]);
 
         $updateFile = new ImportFileBuilder([$updatedRow]);
@@ -355,7 +364,7 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         ])->assertOk();
 
         $component->refresh();
-        $this->assertEquals($updatedRow['orderNumber'], $component->order_number);
+        $this->assertEquals($updatedRow['purchaseCost'], $component->purchase_cost);
 
         $updateLog = ActionLog::query()
             ->where('item_type', Component::class)
@@ -413,7 +422,8 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['serialNumber'], $newComponent->location->name);
         $this->assertNull($newComponent->supplier_id);
         $this->assertEquals($row['companyName'], $newComponent->qty);
-        $this->assertEquals($row['orderNumber'], $newComponent->order_number);
+        // Accessor hides the parent value; read the raw stored column.
+        $this->assertEquals($row['orderNumber'], $newComponent->getRawOriginal('order_number'));
         $this->assertEquals($row['itemName'], $newComponent->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newComponent->purchase_cost);
         $this->assertNull($newComponent->min_amt);

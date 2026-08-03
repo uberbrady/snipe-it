@@ -201,6 +201,7 @@ class ActionlogsTransformer
                 'type' => e($actionlog->targetType()),
             ] : null,
             'quantity' => $this->getQuantity($actionlog),
+            'order_number' => ($actionlog->order_number) ? e($actionlog->order_number) : null,
             'note' => ($actionlog->note) ? Helper::parseEscapedMarkedownInline($actionlog->note) : null,
             'signature_file' => (($actionlog->accept_signature) && Storage::exists('private_uploads/signatures/'.$actionlog->accept_signature)) ? route('log.signature.view', ['filename' => $actionlog->accept_signature]) : null,
             'log_meta' => ((isset($clean_meta)) && (is_array($clean_meta))) ? $clean_meta : null,
@@ -399,6 +400,8 @@ class ActionlogsTransformer
             ActionType::CheckinFrom->value,
             ActionType::AddSeats->value,
             ActionType::DeleteSeats->value,
+            ActionType::QuantityAdjust->value,
+            ActionType::Create->value,
         ])) {
             return null;
         }

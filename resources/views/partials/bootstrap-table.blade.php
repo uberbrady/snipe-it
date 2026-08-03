@@ -2286,6 +2286,19 @@
                 }
             }
 
+            // Plus-minus button opens the shared adjust-quantity modal.
+            // Only rendered when the row's transformer set
+            // available_actions.adjust_quantity (accessories, consumables,
+            // components). The click handler in snipeit.js reads the
+            // data-* attrs and shows blade/modals/adjust-quantity.
+            if ((row.available_actions) && (row.available_actions.adjust_quantity === true)) {
+                actions += '<button type="button" class="actions btn btn-sm btn-primary hidden-print adjust-quantity" data-tooltip="true" title="{{ trans('general.adjust_quantity') }}"'
+                    + ' data-adjust-url="{{ config('app.url') }}/' + dest + '/' + row.id + '/adjust-quantity"'
+                    + ' data-item-name="' + (row.name || '') + '"'
+                    + ' data-available="' + (row.remaining != null ? row.remaining : '') + '">'
+                    + '<x-icon type="plus-minus" class="fa-fw" /><span class="sr-only">{{ trans('general.adjust_quantity') }}</span></button>&nbsp;';
+            }
+
             if ((row.available_actions) && (row.available_actions.delete === true)) {
 
                 // use the asset tag if no name is provided

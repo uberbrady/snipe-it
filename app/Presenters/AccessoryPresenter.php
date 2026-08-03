@@ -165,13 +165,6 @@ class AccessoryPresenter extends Presenter
                 'footerFormatter' => 'sumFormatterQuantity',
                 'class' => 'text-right text-padding-number-cell',
             ], [
-                'field' => 'order_number',
-                'scope' => 'col',
-                'searchable' => true,
-                'sortable' => true,
-                'visible' => false,
-                'title' => trans('general.order_number'),
-            ], [
                 'field' => 'notes',
                 'scope' => 'col',
                 'searchable' => true,

@@ -111,8 +111,10 @@ class ConsumableImporter extends ItemImporter
                 return;
             }
             $this->log('Updating Consumable');
-            $consumable->update($this->sanitizeItemForUpdating($consumable));
-            // update() already saves the model, no need to call save() again while Model::unguard() is active
+            // qty routes through adjustQuantity so a CSV qty change
+            // becomes a QuantityAdjust log entry, matching the API
+            // update contract.
+            $this->applyUpdateWithQtyAdjust($consumable, $this->sanitizeItemForUpdating($consumable));
             $consumable->setImported(true);
             $this->recordUpdated();
 
