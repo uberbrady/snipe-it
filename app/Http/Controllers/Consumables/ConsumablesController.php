@@ -7,10 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreConsumableRequest;
-use App\Http\Requests\UploadFileRequest;
+use App\Http\Traits\HandlesAdjustQuantity;
 use App\Models\Company;
 use App\Models\Consumable;
-use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +23,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class ConsumablesController extends Controller
 {
+    use HandlesAdjustQuantity;
+
     /**
      * Return a view to display component information.
      *
@@ -254,35 +255,16 @@ class ConsumablesController extends Controller
     }
 
     /**
-     * Apply an on-hand quantity delta (+/-) and log the change.
-     * Direction + amount from the form are converted to a signed delta
-     * for the AdjustsQuantity trait. Below-zero attempts surface as a
-     * flash error rather than a 500.
+     * Apply an on-hand quantity delta (+/-) and log the change. The
+     * shared body lives on the HandlesAdjustQuantity trait; this method
+     * only owns the redirect-response shape.
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Consumable $consumable): RedirectResponse
     {
-        $this->authorize('update', $consumable);
+        $error = $this->runAdjustQuantity($request, $consumable, 'consumables');
 
-        $filename = null;
-        if ($request->hasFile('file')) {
-            $filename = app(UploadFileRequest::class)->handleFile(
-                parent::getMapStoragePath()['consumables'],
-                parent::getMapFilePrefix()['consumables'].'-'.$consumable->id,
-                $request->file('file'),
-            );
-        }
-
-        try {
-            $consumable->adjustQuantity(
-                (int) $request->input('amount'),
-                $request->input('note'),
-                $request->input('order_number'),
-                $filename,
-            );
-        } catch (DomainException) {
-            return redirect()->back()->with('error', trans('general.adjust_quantity_below_zero'));
-        }
-
-        return redirect()->back()->with('success', trans('general.adjust_quantity_success'));
+        return $error
+            ? redirect()->back()->with('error', $error)
+            : redirect()->back()->with('success', trans('general.adjust_quantity_success'));
     }
 }

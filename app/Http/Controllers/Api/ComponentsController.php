@@ -8,7 +8,7 @@ use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\ImageUploadRequest;
-use App\Http\Requests\UploadFileRequest;
+use App\Http\Traits\HandlesAdjustQuantity;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\ComponentsTransformer;
 use App\Models\Asset;
@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Validator;
 
 class ComponentsController extends Controller
 {
+    use HandlesAdjustQuantity;
+
     /**
      * Display a listing of the resource.
      *
@@ -258,27 +260,11 @@ class ComponentsController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Component $component): JsonResponse
     {
-        $this->authorize('update', $component);
+        $error = $this->runAdjustQuantity($request, $component, 'components');
 
-        $filename = null;
-        if ($request->hasFile('file')) {
-            $filename = app(UploadFileRequest::class)->handleFile(
-                parent::getMapStoragePath()['components'],
-                parent::getMapFilePrefix()['components'].'-'.$component->id,
-                $request->file('file'),
-            );
-        }
-
-        try {
-            $component->adjustQuantity(
-                (int) $request->input('amount'),
-                $request->input('note'),
-                $request->input('order_number'),
-                $filename,
-            );
-        } catch (DomainException) {
+        if ($error !== null) {
             return response()->json(
-                Helper::formatStandardApiResponse('error', null, trans('general.adjust_quantity_below_zero')),
+                Helper::formatStandardApiResponse('error', null, $error),
                 422,
             );
         }

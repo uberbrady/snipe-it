@@ -9,8 +9,8 @@ use App\Http\Requests\AccessoryCheckoutRequest;
 use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreAccessoryRequest;
-use App\Http\Requests\UploadFileRequest;
 use App\Http\Traits\CheckInOutTrait;
+use App\Http\Traits\HandlesAdjustQuantity;
 use App\Http\Transformers\AccessoriesTransformer;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\SelectlistTransformer;
@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\DB;
 class AccessoriesController extends Controller
 {
     use CheckInOutTrait;
+    use HandlesAdjustQuantity;
 
     /**
      * Display a listing of the resource.
@@ -324,27 +325,11 @@ class AccessoriesController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Accessory $accessory): JsonResponse
     {
-        $this->authorize('update', $accessory);
+        $error = $this->runAdjustQuantity($request, $accessory, 'accessories');
 
-        $filename = null;
-        if ($request->hasFile('file')) {
-            $filename = app(UploadFileRequest::class)->handleFile(
-                parent::getMapStoragePath()['accessories'],
-                parent::getMapFilePrefix()['accessories'].'-'.$accessory->id,
-                $request->file('file'),
-            );
-        }
-
-        try {
-            $accessory->adjustQuantity(
-                (int) $request->input('amount'),
-                $request->input('note'),
-                $request->input('order_number'),
-                $filename,
-            );
-        } catch (DomainException) {
+        if ($error !== null) {
             return response()->json(
-                Helper::formatStandardApiResponse('error', null, trans('general.adjust_quantity_below_zero')),
+                Helper::formatStandardApiResponse('error', null, $error),
                 422,
             );
         }

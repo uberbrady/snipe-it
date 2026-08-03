@@ -7,10 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\StoreComponentRequest;
 use App\Http\Requests\UpdateComponentRequest;
-use App\Http\Requests\UploadFileRequest;
+use App\Http\Traits\HandlesAdjustQuantity;
 use App\Models\Company;
 use App\Models\Component;
-use DomainException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +22,8 @@ use Illuminate\Http\RedirectResponse;
  */
 class ComponentsController extends Controller
 {
+    use HandlesAdjustQuantity;
+
     /**
      * Returns a view that invokes the ajax tables which actually contains
      * the content for the components listing, which is generated in getDatatable.
@@ -253,35 +254,16 @@ class ComponentsController extends Controller
     }
 
     /**
-     * Apply an on-hand quantity delta (+/-) and log the change.
-     * Direction + amount from the form are converted to a signed delta
-     * for the AdjustsQuantity trait. Below-zero attempts surface as a
-     * flash error rather than a 500.
+     * Apply an on-hand quantity delta (+/-) and log the change. The
+     * shared body lives on the HandlesAdjustQuantity trait; this method
+     * only owns the redirect-response shape.
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Component $component): RedirectResponse
     {
-        $this->authorize('update', $component);
+        $error = $this->runAdjustQuantity($request, $component, 'components');
 
-        $filename = null;
-        if ($request->hasFile('file')) {
-            $filename = app(UploadFileRequest::class)->handleFile(
-                parent::getMapStoragePath()['components'],
-                parent::getMapFilePrefix()['components'].'-'.$component->id,
-                $request->file('file'),
-            );
-        }
-
-        try {
-            $component->adjustQuantity(
-                (int) $request->input('amount'),
-                $request->input('note'),
-                $request->input('order_number'),
-                $filename,
-            );
-        } catch (DomainException) {
-            return redirect()->back()->with('error', trans('general.adjust_quantity_below_zero'));
-        }
-
-        return redirect()->back()->with('success', trans('general.adjust_quantity_success'));
+        return $error
+            ? redirect()->back()->with('error', $error)
+            : redirect()->back()->with('success', trans('general.adjust_quantity_success'));
     }
 }

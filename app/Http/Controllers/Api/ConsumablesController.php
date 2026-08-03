@@ -9,7 +9,7 @@ use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\StoreConsumableRequest;
-use App\Http\Requests\UploadFileRequest;
+use App\Http\Traits\HandlesAdjustQuantity;
 use App\Http\Transformers\ActionlogsTransformer;
 use App\Http\Transformers\ConsumablesTransformer;
 use App\Http\Transformers\SelectlistTransformer;
@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\DB;
 
 class ConsumablesController extends Controller
 {
+    use HandlesAdjustQuantity;
+
     /**
      * Display a listing of the resource.
      *
@@ -246,27 +248,11 @@ class ConsumablesController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Consumable $consumable): JsonResponse
     {
-        $this->authorize('update', $consumable);
+        $error = $this->runAdjustQuantity($request, $consumable, 'consumables');
 
-        $filename = null;
-        if ($request->hasFile('file')) {
-            $filename = app(UploadFileRequest::class)->handleFile(
-                parent::getMapStoragePath()['consumables'],
-                parent::getMapFilePrefix()['consumables'].'-'.$consumable->id,
-                $request->file('file'),
-            );
-        }
-
-        try {
-            $consumable->adjustQuantity(
-                (int) $request->input('amount'),
-                $request->input('note'),
-                $request->input('order_number'),
-                $filename,
-            );
-        } catch (DomainException) {
+        if ($error !== null) {
             return response()->json(
-                Helper::formatStandardApiResponse('error', null, trans('general.adjust_quantity_below_zero')),
+                Helper::formatStandardApiResponse('error', null, $error),
                 422,
             );
         }
