@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * One line on an Order. Polymorphic to the inventory model that was
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class OrderItem extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'order_items';
 

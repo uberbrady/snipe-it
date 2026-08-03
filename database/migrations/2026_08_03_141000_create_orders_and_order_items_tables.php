@@ -71,6 +71,12 @@ return new class extends Migration
             // rounding drift on aggregate totals.
             $table->decimal('price', 20, 4)->nullable();
             $table->timestamps();
+            // SoftDeletes so a force-delete on a referenced inventory
+            // row (Accessory / Consumable / Component / Asset / License)
+            // can trash the OrderItem line without losing the
+            // acquisition ledger. HasOrders::bootHasOrders() wires the
+            // observer that flips this flag on parent force-delete.
+            $table->softDeletes();
 
             $table->index('order_id');
             $table->index(['item_type', 'item_id']);
