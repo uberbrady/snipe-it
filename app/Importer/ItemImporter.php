@@ -249,6 +249,14 @@ class ItemImporter extends Importer
         $purchaseCost = $model->purchase_cost ?? null;
         $qty = (int) ($model->qty ?? 1);
 
+        // Only stamp Order.currency when the CSV actually carries it in
+        // a `currency` column. Falling back to the system default here
+        // would assert info we don't have — a row's purchase_date can
+        // be historical (from when the install's currency was
+        // different), so imports leave currency null unless the CSV is
+        // explicit about it.
+        $currency = trim((string) $this->findCsvMatch($row, 'currency'));
+
         $order = \App\Models\Order::firstOrCreate(
             [
                 'order_number' => $orderNumber,
@@ -257,6 +265,7 @@ class ItemImporter extends Importer
             ],
             [
                 'purchase_date' => $purchaseDate,
+                'currency' => $currency !== '' ? $currency : null,
                 'created_by' => $this->created_by,
             ],
         );

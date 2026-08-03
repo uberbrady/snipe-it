@@ -34,6 +34,72 @@
                         <input type="text" class="form-control" id="adjustQuantityOrder" name="order_number" maxlength="191">
                     </div>
 
+                    {{-- Inlined js-data-ajax select instead of <x-input.supplier-select>
+                         for the same reason the file-upload input is inlined below: the
+                         shared component uses a Bootstrap 3 horizontal-form scaffold
+                         (col-md-3 label + col-md-7 input) that collides with the
+                         modal-footer top border. snipeit.js auto-initializes any
+                         .js-data-ajax select. --}}
+                    <div class="form-group">
+                        <label for="adjustQuantitySupplier">{{ trans('general.supplier') }}</label>
+                        <select
+                            class="js-data-ajax form-control"
+                            data-endpoint="suppliers"
+                            data-placeholder="{{ trans('general.select_supplier') }}"
+                            name="supplier_id"
+                            id="adjustQuantitySupplier"
+                            style="width: 100%"
+                            aria-label="{{ trans('general.supplier') }}"
+                        >
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adjustQuantityPurchaseDate">{{ trans('general.purchase_date') }}</label>
+                        <x-input.datepicker
+                            id="adjustQuantityPurchaseDate"
+                            name="purchase_date"
+                            :end_date="'0d'"
+                        />
+                    </div>
+
+                    {{-- Unit cost + currency side by side. Bootstrap 3
+                         input-group doesn't handle a form-control addon
+                         cleanly (the addon slot expects a span, not a
+                         second input), so this uses a plain row / col
+                         split instead. Currency is editable and left
+                         blank on open — pre-filling with the system
+                         default would assert info we don't have per
+                         event (Snipe-IT's historical currency handling
+                         is squishy already). Placeholder hints at the
+                         system default without stamping it. --}}
+                    <div class="row">
+                        <div class="col-md-8 form-group" style="padding-right: 5px;">
+                            <label for="adjustQuantityUnitCost">{{ trans('general.unit_cost') }}</label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="adjustQuantityUnitCost"
+                                name="unit_cost"
+                                step="0.0001"
+                                min="0"
+                                inputmode="decimal"
+                            >
+                        </div>
+                        <div class="col-md-4 form-group" style="padding-left: 5px;">
+                            <label for="adjustQuantityCurrency">{{ trans('general.currency') }}</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="adjustQuantityCurrency"
+                                name="currency"
+                                maxlength="10"
+                                placeholder="{{ $snipeSettings->default_currency }}"
+                            >
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label for="adjustQuantityNote">{{ trans('general.notes') }}</label>
                         <textarea class="form-control" id="adjustQuantityNote" name="note" rows="3" maxlength="65535" required></textarea>

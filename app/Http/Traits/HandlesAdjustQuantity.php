@@ -89,12 +89,18 @@ trait HandlesAdjustQuantity
         $orderNumber = trim((string) $request->input('order_number', ''));
         $supplierId = $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null;
         $purchaseDate = $request->filled('purchase_date') ? $request->input('purchase_date') : null;
+        $unitCost = $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null;
+        $currency = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
 
         // No acquisition context in the request means don't create an
         // Order. Audit-only submissions (zero delta with no supplier /
-        // order number / date) fall through here so we don't accrete
-        // meaningless Order rows for pure inventory counts.
-        if ($orderNumber === '' && $supplierId === null && $purchaseDate === null) {
+        // order number / date / cost) fall through here so we don't
+        // accrete meaningless Order rows for pure inventory counts.
+        if ($orderNumber === ''
+            && $supplierId === null
+            && $purchaseDate === null
+            && $unitCost === null
+            && ($currency === null || $currency === '')) {
             return null;
         }
 
@@ -108,6 +114,7 @@ trait HandlesAdjustQuantity
             ],
             [
                 'purchase_date' => $purchaseDate,
+                'currency' => $currency !== '' ? $currency : null,
                 'created_by' => auth()->id(),
             ],
         );
@@ -120,7 +127,7 @@ trait HandlesAdjustQuantity
             // records the absolute number of units the line represents,
             // and the delta sign lives on the sibling action_log.
             'qty' => max(1, abs($delta)),
-            'price' => null,
+            'price' => $unitCost,
         ]);
 
         return $order->id;

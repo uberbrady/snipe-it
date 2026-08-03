@@ -31,6 +31,22 @@ class AdjustQuantityRequest extends FormRequest
             'amount' => ['required', 'integer'],
             'note' => ['required', 'string', 'max:65535'],
             'order_number' => ['nullable', 'string', 'max:191'],
+            // Acquisition metadata that feeds Order / OrderItem creation
+            // via HandlesAdjustQuantity::resolveOrderForAdjustment. All
+            // optional — audit-only submissions leave them blank and no
+            // Order row is generated. supplier_id lookup goes through
+            // resolveOrderForAdjustment (not a direct exists rule here)
+            // so the caller sees a clean error instead of the
+            // hard-coded validation message.
+            'supplier_id' => ['nullable', 'integer', 'exists:suppliers,id'],
+            'purchase_date' => ['nullable', 'date_format:Y-m-d'],
+            // Per-unit cost — matches Snipe-IT's existing purchase_cost
+            // semantic. Lands on OrderItem.price. gte:0 protects against
+            // negative-value posts; max mirrors the widest decimal(20,4).
+            'unit_cost' => ['nullable', 'numeric', 'gte:0', 'max:9999999999999999.9999'],
+            // Currency free-text (matches locations.currency /
+            // settings.default_currency shape). Lands on Order.currency.
+            'currency' => ['nullable', 'string', 'max:10'],
             // Optional receipt/invoice/PO scan. Attaches to the same
             // QuantityAdjust action_log row via its filename column,
             // not a separate 'uploaded' entry, so the download surfaces

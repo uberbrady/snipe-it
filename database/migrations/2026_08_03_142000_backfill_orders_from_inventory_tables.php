@@ -46,6 +46,16 @@ return new class extends Migration
         // Keeps us from hitting the DB with a lookup per source row.
         $orderIndex = [];
 
+        // Order.currency stays NULL for backfilled rows. The source
+        // inventory tables didn't have their own currency column, and
+        // stamping every historical Order with today's system
+        // default_currency would fabricate information we don't
+        // actually have — orders placed years ago may have been in a
+        // different currency than the install's current setting.
+        // Downstream display code can fall back to
+        // $snipeSettings->default_currency at render time (matching how
+        // the pre-Orders info panels rendered purchase_cost anyway).
+
         foreach (self::SOURCES as $modelClass => $table) {
             // Defensive skip: if a source table has already had its
             // order_number column dropped (partial rerun, hand rollback,
