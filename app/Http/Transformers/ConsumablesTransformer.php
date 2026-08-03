@@ -56,7 +56,8 @@ class ConsumablesTransformer
             'model_number' => ($consumable->model_number != '') ? e($consumable->model_number) : null,
             'remaining' => $consumable->numRemaining(),
             'percent_remaining' => round($consumable->percentRemaining()),
-            'order_number' => e($consumable->order_number),
+            // See AccessoriesTransformer for why order_number is no longer
+            // in the parent-level output.
             'purchase_cost' => Helper::formatCurrencyOutput($consumable->purchase_cost),
             'total_cost' => Helper::formatCurrencyOutput($consumable->totalCostSum()),
             'purchase_date' => Helper::getFormattedDateObject($consumable->purchase_date, 'date'),

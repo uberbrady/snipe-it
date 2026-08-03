@@ -55,7 +55,6 @@ class Accessory extends SnipeModel
         'model_number',
         'name',
         'notes',
-        'order_number',
         'purchase_cost',
         'purchase_date',
     ];
@@ -71,6 +70,12 @@ class Accessory extends SnipeModel
         'location' => ['name'],
         'manufacturer' => ['name'],
         'supplier' => ['name'],
+        // Historical order numbers moved to per-QuantityAdjust action_log
+        // rows when the parent column was renamed to legacy_order_number.
+        // Free-text search hits them through the AdjustsQuantity trait's
+        // quantityAdjustLogs relation so "PO-123" still surfaces any
+        // accessory replenished under that PO at any point in its life.
+        'quantityAdjustLogs' => ['order_number'],
     ];
 
     protected $searchableCounts = [
@@ -110,7 +115,7 @@ class Accessory extends SnipeModel
         'company_id',
         'location_id',
         'name',
-        'order_number',
+        'legacy_order_number',
         'purchase_cost',
         'purchase_date',
         'model_number',
@@ -401,29 +406,6 @@ class Accessory extends SnipeModel
     public function currentlyInUseCount(): int
     {
         return (int) $this->numCheckedOut();
-    }
-
-    /**
-     * Hide the parent-level order_number from every read (info panel,
-     * API output, forms). A single order_number on inventory that gets
-     * replenished across many POs misrepresents current state — each
-     * replenishment carries its own on the QuantityAdjust action_log.
-     *
-     * The column is also intentionally NOT editable via the edit form
-     * (form field removed, controller ignores the input). Correction of
-     * a create-time typo isn't supported today; the plan for that is a
-     * dedicated Orders model built out from the action_log history if
-     * customers ask for it. Until then, action_logs are the source of
-     * truth for order references on these inventory-style models.
-     *
-     * Anything that needs the raw stored value must read it via
-     * getRawOriginal('order_number') or getAttributes()['order_number'].
-     * Asset is intentionally NOT given this accessor because assets are
-     * per-unit; a single order_number is genuinely a real property there.
-     */
-    public function getOrderNumberAttribute(): ?string
-    {
-        return null;
     }
 
     /**

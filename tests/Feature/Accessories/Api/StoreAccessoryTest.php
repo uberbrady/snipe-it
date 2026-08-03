@@ -49,11 +49,14 @@ class StoreAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
         $manufacturer = Manufacturer::factory()->create();
         $supplier = Supplier::factory()->create();
 
+        // order_number in the request body silently drops here — the parent
+        // column was renamed to legacy_order_number and taken out of the
+        // fillable set. Real order-number tracking lives on QuantityAdjust
+        // action_log rows created via the adjust-quantity endpoint.
         $this->actingAsForApi(User::factory()->createAccessories()->create())
             ->postJson(route('api.accessories.store'), [
                 'name' => 'My Awesome Accessory',
                 'qty' => 2,
-                'order_number' => '12345',
                 'purchase_cost' => 100.00,
                 'purchase_date' => '2024-09-18',
                 'model_number' => '98765',
@@ -67,7 +70,6 @@ class StoreAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
         $this->assertDatabaseHas('accessories', [
             'name' => 'My Awesome Accessory',
             'qty' => 2,
-            'order_number' => '12345',
             'purchase_cost' => 100.00,
             'purchase_date' => '2024-09-18',
             'model_number' => '98765',

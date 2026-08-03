@@ -101,7 +101,6 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $accessory = Accessory::factory()->create([
             'name' => 'A Name to Change',
             'qty' => 5,
-            'order_number' => 'A12345',
             'purchase_cost' => 99.99,
             'model_number' => 'ABC098',
             'category_id' => $categoryA->id,
@@ -112,11 +111,11 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         ]);
 
         // Payload shape preserved: qty / order_number / supplier_id are
-        // all accepted on update again. supplier_id writes through to
-        // the model. qty change routes through adjustQuantity (asserted
-        // in the dedicated test below). order_number rides on the
-        // QuantityAdjust log but stays hidden on the parent by the
-        // model accessor.
+        // all accepted on update. supplier_id writes through to the model.
+        // qty change routes through adjustQuantity (asserted in the
+        // dedicated test below). order_number rides on the QuantityAdjust
+        // log entry created by that qty change; the parent's own
+        // legacy_order_number column is not written to on update.
         $this->actingAsForApi(User::factory()->editAccessories()->create())
             ->patchJson(route('api.accessories.update', $accessory), [
                 'name' => 'A New Name',
@@ -135,7 +134,6 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $accessory = $accessory->fresh();
         $this->assertEquals('A New Name', $accessory->name);
         $this->assertEquals(10, $accessory->qty);
-        $this->assertEquals('A12345', $accessory->getRawOriginal('order_number')); // create-time value; QuantityAdjust log carries the new one
         $this->assertEquals($supplierB->id, $accessory->supplier_id);
         $this->assertEquals(199.99, $accessory->purchase_cost);
         $this->assertEquals('XYZ123', $accessory->model_number);

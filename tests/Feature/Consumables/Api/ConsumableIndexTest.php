@@ -102,7 +102,6 @@ class ConsumableIndexTest extends TestCase
         $targetConsumable = Consumable::factory()->create([
             'name' => 'Target Consumable',
             'company_id' => $targetCompany->id,
-            'order_number' => 'CONS-ORDER-A',
             'category_id' => $targetCategory->id,
             'model_number' => 'CONS-MODEL-A',
             'manufacturer_id' => $targetManufacturer->id,
@@ -114,7 +113,6 @@ class ConsumableIndexTest extends TestCase
         $otherConsumable = Consumable::factory()->create([
             'name' => 'Other Consumable',
             'company_id' => $otherCompany->id,
-            'order_number' => 'CONS-ORDER-B',
             'category_id' => $otherCategory->id,
             'model_number' => 'CONS-MODEL-B',
             'manufacturer_id' => $otherManufacturer->id,
@@ -123,10 +121,12 @@ class ConsumableIndexTest extends TestCase
             'notes' => 'CONS-NOTES-B',
         ]);
 
+        // order_number was dropped from the filters list when the parent
+        // column was renamed to legacy_order_number and current order
+        // numbers moved to the QuantityAdjust action_log per event.
         $filters = [
             'name' => 'Target Consumable',
             'company_id' => $targetCompany->id,
-            'order_number' => 'CONS-ORDER-A',
             'category_id' => $targetCategory->id,
             'model_number' => 'CONS-MODEL-A',
             'manufacturer_id' => $targetManufacturer->id,

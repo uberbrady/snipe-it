@@ -54,6 +54,10 @@ class CreateAccessoriesTest extends TestCase
         $manufacturer = Manufacturer::factory()->create();
         $supplier = Supplier::factory()->create();
 
+        // order_number was dropped from the create payload when the parent
+        // column was renamed to legacy_order_number and taken out of
+        // fillable. Order-number tracking lives on QuantityAdjust action_log
+        // rows now.
         $data = [
             'category_id' => $category->id,
             'company_id' => $company->id,
@@ -63,7 +67,6 @@ class CreateAccessoriesTest extends TestCase
             'model_number' => '12345',
             'name' => 'My Accessory Name',
             'notes' => 'Some notes here',
-            'order_number' => '9876',
             'purchase_cost' => '99.98',
             'purchase_date' => '2024-09-04',
             'qty' => '3',

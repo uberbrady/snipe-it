@@ -38,7 +38,6 @@ class ComponentFactory extends Factory
             'min_amt' => $this->faker->numberBetween($min = 1, $max = 2),
             'model_number' => $this->faker->numberBetween(1000000, 50000000),
             'name' => $this->faker->text(20),
-            'order_number' => $this->faker->regexify('[A-Z]{3}[0-9]{4}'),
             'purchase_cost' => $this->faker->randomFloat(2),
             'purchase_date' => $this->faker->dateTime()->format('Y-m-d'),
             'qty' => $this->faker->numberBetween(3, 10),

@@ -77,7 +77,6 @@ class ComponentIndexTest extends TestCase
         $targetComponent = Component::factory()->create([
             'name' => 'Target Component',
             'company_id' => $targetCompany->id,
-            'order_number' => 'COMP-ORDER-A',
             'category_id' => $targetCategory->id,
             'supplier_id' => $targetSupplier->id,
             'manufacturer_id' => $targetManufacturer->id,
@@ -89,7 +88,6 @@ class ComponentIndexTest extends TestCase
         $otherComponent = Component::factory()->create([
             'name' => 'Other Component',
             'company_id' => $otherCompany->id,
-            'order_number' => 'COMP-ORDER-B',
             'category_id' => $otherCategory->id,
             'supplier_id' => $otherSupplier->id,
             'manufacturer_id' => $otherManufacturer->id,
@@ -98,10 +96,12 @@ class ComponentIndexTest extends TestCase
             'notes' => 'COMP-NOTES-B',
         ]);
 
+        // order_number was dropped from the filters list when the parent
+        // column was renamed to legacy_order_number and current order
+        // numbers moved to the QuantityAdjust action_log per event.
         $filters = [
             'name' => 'Target Component',
             'company_id' => $targetCompany->id,
-            'order_number' => 'COMP-ORDER-A',
             'category_id' => $targetCategory->id,
             'supplier_id' => $targetSupplier->id,
             'manufacturer_id' => $targetManufacturer->id,

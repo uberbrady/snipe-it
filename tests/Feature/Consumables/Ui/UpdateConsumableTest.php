@@ -61,14 +61,12 @@ class UpdateConsumableTest extends TestCase
     {
         $consumable = Consumable::factory()->create();
         $originalQty = (int) $consumable->qty;
-        $originalOrderNumber = $consumable->getRawOriginal('order_number');
         $newSupplier = Supplier::factory()->create();
 
-        // qty and order_number are still ignored by the web edit form
-        // (qty flows through the adjust-quantity modal, order_number
-        // stays hidden by the model accessor). supplier_id is editable
-        // again — imperfect single-value semantics accepted for the
-        // info-panel display.
+        // qty is still ignored by the web edit form (flows through the
+        // adjust-quantity modal). order_number in the POST body silently
+        // drops because the parent column was renamed to legacy_order_number
+        // and taken out of fillable. supplier_id is editable again.
         $editable = [
             'company_id' => Company::factory()->create()->id,
             'name' => 'My Consumable',
@@ -95,7 +93,6 @@ class UpdateConsumableTest extends TestCase
 
         $this->assertDatabaseHas('consumables', $editable + [
             'qty' => $originalQty,
-            'order_number' => $originalOrderNumber,
             'supplier_id' => $newSupplier->id,
         ]);
     }

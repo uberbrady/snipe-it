@@ -81,7 +81,7 @@ class Consumable extends SnipeModel
         'manufacturer_id',
         'supplier_id',
         'name',
-        'order_number',
+        'legacy_order_number',
         'model_number',
         'purchase_cost',
         'purchase_date',
@@ -100,7 +100,6 @@ class Consumable extends SnipeModel
      */
     protected $searchableAttributes = [
         'name',
-        'order_number',
         'purchase_cost',
         'purchase_date',
         'item_no',
@@ -120,6 +119,10 @@ class Consumable extends SnipeModel
         'manufacturer' => ['name'],
         'supplier' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
+        // See Accessory::$searchableRelations for why order_number rides
+        // through the QuantityAdjust action_log rather than the parent's
+        // (now legacy_order_number) column.
+        'quantityAdjustLogs' => ['order_number'],
     ];
 
     /**
@@ -349,17 +352,6 @@ class Consumable extends SnipeModel
     public function currentlyInUseCount(): int
     {
         return (int) $this->numCheckedOut();
-    }
-
-    /**
-     * See Accessory::getOrderNumberAttribute for the rationale. Column
-     * is hidden from every read and no longer editable via the edit
-     * form; the create-time value is captured onto the create action_log
-     * and after that adjustments carry their own order_number per event.
-     */
-    public function getOrderNumberAttribute(): ?string
-    {
-        return null;
     }
 
     /**

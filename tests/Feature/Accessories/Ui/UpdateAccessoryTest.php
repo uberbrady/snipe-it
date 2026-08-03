@@ -60,7 +60,6 @@ class UpdateAccessoryTest extends TestCase
                 'manufacturer_id' => (string) $accessory->manufacturer_id,
                 'location_id' => (string) $accessory->location_id,
                 'model_number' => $accessory->model_number,
-                'order_number' => $accessory->order_number,
                 'purchase_date' => $accessory->purchase_date,
                 'purchase_cost' => $accessory->purchase_cost,
                 'min_amt' => $accessory->min_amt,
@@ -90,13 +89,10 @@ class UpdateAccessoryTest extends TestCase
                 'qty' => 5,
             ]);
 
-        // qty and order_number are still ignored by the web edit form
-        // (qty flows through the adjust-quantity modal, order_number
-        // stays hidden by the model accessor). supplier_id is now
-        // editable again — imperfect single-value semantics accepted
-        // for the info-panel display.
-        $originalOrderNumber = $accessory->getRawOriginal('order_number');
-
+        // qty is still ignored by the web edit form (flows through the
+        // adjust-quantity modal). order_number in the POST body silently
+        // drops because the parent column was renamed to legacy_order_number
+        // and taken out of fillable. supplier_id is editable again.
         $this->actingAs(User::factory()->editAccessories()->create())
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
@@ -107,7 +103,6 @@ class UpdateAccessoryTest extends TestCase
                 'manufacturer_id' => (string) $manufacturerB->id,
                 'location_id' => (string) $locationB->id,
                 'model_number' => 'changed 1234',
-                'order_number' => 'changed 5678',
                 'purchase_date' => '2024-10-11',
                 'purchase_cost' => '83.52',
                 'qty' => '7',
@@ -124,7 +119,6 @@ class UpdateAccessoryTest extends TestCase
             'manufacturer_id' => $manufacturerB->id,
             'location_id' => $locationB->id,
             'model_number' => 'changed 1234',
-            'order_number' => $originalOrderNumber, // untouched by update
             'purchase_date' => '2024-10-11',
             'purchase_cost' => '83.52',
             'qty' => '5', // unchanged from factory value; edit ignores qty

@@ -30,6 +30,10 @@ class CreateConsumableTest extends TestCase implements TestsPermissionsRequireme
 
     public function test_can_create_consumable()
     {
+        // order_number was dropped from the create payload when the parent
+        // column was renamed to legacy_order_number and taken out of
+        // fillable. Order-number tracking lives on QuantityAdjust action_log
+        // rows now.
         $data = [
             'company_id' => Company::factory()->create()->id,
             'name' => 'My Consumable',
@@ -39,7 +43,6 @@ class CreateConsumableTest extends TestCase implements TestsPermissionsRequireme
             'location_id' => Location::factory()->create()->id,
             'model_number' => '1234',
             'item_no' => '5678',
-            'order_number' => '908',
             'purchase_date' => '2024-12-05',
             'purchase_cost' => '89.45',
             'qty' => '10',

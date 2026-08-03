@@ -5,6 +5,7 @@ namespace App\Models\Traits;
 use App\Enums\ActionType;
 use App\Models\Actionlog;
 use DomainException;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -44,6 +45,19 @@ trait AdjustsQuantity
     public function currentlyInUseCount(): int
     {
         return 0;
+    }
+
+    /**
+     * Every QuantityAdjust action_log row for this model. Exposed as a
+     * relation so free-text search on inventory-style models can hit
+     * historical order_number values through $searchableRelations even
+     * though the parent's own order_number column is gone. Also useful
+     * for the history-tab display and any per-item PO lookup.
+     */
+    public function quantityAdjustLogs(): MorphMany
+    {
+        return $this->morphMany(Actionlog::class, 'item')
+            ->where('action_type', ActionType::QuantityAdjust->value);
     }
 
     /**

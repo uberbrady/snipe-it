@@ -51,7 +51,8 @@ class ComponentsTransformer
                 'tag_color' => $component->manufacturer->tag_color ? e($component->manufacturer->tag_color) : null,
             ] : null,
             'model_number' => ($component->model_number) ? e($component->model_number) : null,
-            'order_number' => e($component->order_number),
+            // See AccessoriesTransformer for why order_number is no longer
+            // in the parent-level output.
             'purchase_date' => Helper::getFormattedDateObject($component->purchase_date, 'date'),
             'purchase_cost' => Helper::formatCurrencyOutput($component->purchase_cost),
             'total_cost' => Helper::formatCurrencyOutput($component->totalCostSum()),
