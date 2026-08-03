@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 /**
  * Shared body of the adjust-quantity controller action. Web and API
@@ -73,9 +74,15 @@ trait HandlesAdjustQuantity
      * single Order row. Never dedupes the OrderItem side — each
      * adjustment is its own line, matching the "one line per
      * acquisition event" semantic.
+     *
+     * Accepts the base Request rather than AdjustQuantityRequest
+     * specifically so the legacy Api\{Accessory,Consumable,Component}
+     * Controller::update paths — which run through ImageUploadRequest
+     * for their qty-inside-PATCH shape — can call it with the same
+     * shape as the dedicated adjust-quantity endpoint.
      */
     protected function resolveOrderForAdjustment(
-        AdjustQuantityRequest $request,
+        Request $request,
         Model $model,
         int $delta,
     ): ?int {

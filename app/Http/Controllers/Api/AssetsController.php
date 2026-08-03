@@ -104,7 +104,6 @@ class AssetsController extends Controller
             'last_checkin',
             'notes',
             'expected_checkin',
-            'order_number',
             'image',
             'assigned_to',
             'created_at',
@@ -375,7 +374,10 @@ class AssetsController extends Controller
         }
 
         if ($request->filled('order_number')) {
-            $assets->where('assets.order_number', '=', strval($request->input('order_number')));
+            $orderNumber = strval($request->input('order_number'));
+            $assets->whereHas('orders', function ($query) use ($orderNumber) {
+                $query->where('orders.order_number', '=', $orderNumber);
+            });
         }
 
         foreach ($all_custom_fields as $field) {
@@ -422,6 +424,12 @@ class AssetsController extends Controller
                 break;
             case 'supplier':
                 $assets->OrderSupplier($order);
+                break;
+            case 'order_number':
+                // Handled through the HasOrders scope rather than a raw
+                // assets.order_number sort — that column moved off Asset
+                // when Orders became the acquisition data model.
+                $assets->orderByOrderNumber($order);
                 break;
             case 'assigned_to':
                 $assets->OrderAssigned($order);

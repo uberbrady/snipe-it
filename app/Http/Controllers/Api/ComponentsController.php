@@ -101,7 +101,12 @@ class ComponentsController extends Controller
         }
 
         if ($request->filled('order_number')) {
-            $components->where('components.order_number', '=', $request->input('order_number'));
+            // Reroute through the HasOrders orders() HasManyThrough since
+            // the parent components.order_number column no longer exists.
+            $orderNumber = $request->input('order_number');
+            $components->whereHas('orders', function ($query) use ($orderNumber) {
+                $query->where('orders.order_number', '=', $orderNumber);
+            });
         }
 
         if ($request->filled('category_id')) {
@@ -238,11 +243,12 @@ class ComponentsController extends Controller
         }
 
         if ($qtyDelta !== 0) {
+            $orderId = $this->resolveOrderForAdjustment($request, $component, $qtyDelta);
             try {
                 $component->adjustQuantity(
                     $qtyDelta,
                     $request->input('note') ?: "API qty change: {$qtyBefore} → {$qtyRequested}",
-                    $request->input('order_number'),
+                    $orderId,
                 );
             } catch (DomainException) {
                 return response()->json(

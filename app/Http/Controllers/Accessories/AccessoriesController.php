@@ -70,7 +70,10 @@ class AccessoriesController extends Controller
         $accessory->location_id = request('location_id');
         $accessory->min_amt = request('min_amt');
         $accessory->company_id = Company::getIdForCurrentUser(request('company_id'));
-        $accessory->order_number = request('order_number');
+        // order_number moved off the parent Accessory column to the Orders /
+        // OrderItems data model. A create-time order_number in the request
+        // body silently drops here; acquisition tracking happens through
+        // the adjust-quantity flow or the importer's Order helper.
         $accessory->manufacturer_id = request('manufacturer_id');
         $accessory->model_number = request('model_number');
         $accessory->purchase_date = request('purchase_date');

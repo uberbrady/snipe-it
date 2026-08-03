@@ -45,7 +45,6 @@ class ConsumablesController extends Controller
         $allowed_columns = [
             'id',
             'name',
-            'order_number',
             'min_amt',
             'purchase_date',
             'purchase_cost',
@@ -88,7 +87,12 @@ class ConsumablesController extends Controller
         }
 
         if ($request->filled('order_number')) {
-            $consumables->where('consumables.order_number', '=', $request->input('order_number'));
+            // Reroute through the HasOrders orders() HasManyThrough since
+            // the parent consumables.order_number column no longer exists.
+            $orderNumber = $request->input('order_number');
+            $consumables->whereHas('orders', function ($query) use ($orderNumber) {
+                $query->where('orders.order_number', '=', $orderNumber);
+            });
         }
 
         if ($request->filled('category_id')) {
@@ -226,11 +230,12 @@ class ConsumablesController extends Controller
         }
 
         if ($qtyDelta !== 0) {
+            $orderId = $this->resolveOrderForAdjustment($request, $consumable, $qtyDelta);
             try {
                 $consumable->adjustQuantity(
                     $qtyDelta,
                     $request->input('note') ?: "API qty change: {$qtyBefore} → {$qtyRequested}",
-                    $request->input('order_number'),
+                    $orderId,
                 );
             } catch (DomainException) {
                 return response()->json(

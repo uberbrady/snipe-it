@@ -64,7 +64,6 @@ class AccessoriesController extends Controller
                 'notes',
                 'checkouts_count',
                 'image',
-                'order_number',
                 'qty',
                 // These are *relationships* so we wouldn't normally include them in this array,
                 // since they would normally create a `column not found` error,
@@ -97,7 +96,12 @@ class AccessoriesController extends Controller
         }
 
         if ($request->filled('order_number')) {
-            $accessories->where('accessories.order_number', '=', $request->input('order_number'));
+            // Reroute through the HasOrders orders() HasManyThrough since
+            // the parent accessories.order_number column no longer exists.
+            $orderNumber = $request->input('order_number');
+            $accessories->whereHas('orders', function ($query) use ($orderNumber) {
+                $query->where('orders.order_number', '=', $orderNumber);
+            });
         }
 
         if ($request->filled('category_id')) {
@@ -278,12 +282,12 @@ class AccessoriesController extends Controller
 
         // Payload shape is preserved for API back-compat: `qty`,
         // `order_number`, and `supplier_id` all remain accepted keys.
-        // supplier_id flows through fill() like any other field now that
-        // the model accessor is gone. `qty` gets pulled off the fill and
-        // routed through adjustQuantity() below so any change writes a
-        // QuantityAdjust action_log entry rather than silently overwriting.
-        // `order_number` on the parent stays hidden by the accessor, but
-        // rides along on the QuantityAdjust log when the qty also changed.
+        // supplier_id flows through fill() like any other field. `qty` gets
+        // pulled off the fill and routed through adjustQuantity() below so
+        // any change writes a QuantityAdjust action_log entry rather than
+        // silently overwriting. `order_number` no longer lives on the
+        // parent — resolveOrderForAdjustment turns it into an Order +
+        // OrderItem pair and passes the Order's id to the trait.
         $qtyBefore = (int) $accessory->qty;
         $qtyRequested = $request->has('qty') ? (int) $request->input('qty') : $qtyBefore;
         $qtyDelta = $qtyRequested - $qtyBefore;
@@ -297,11 +301,12 @@ class AccessoriesController extends Controller
         }
 
         if ($qtyDelta !== 0) {
+            $orderId = $this->resolveOrderForAdjustment($request, $accessory, $qtyDelta);
             try {
                 $accessory->adjustQuantity(
                     $qtyDelta,
                     $request->input('note') ?: "API qty change: {$qtyBefore} → {$qtyRequested}",
-                    $request->input('order_number'),
+                    $orderId,
                 );
             } catch (DomainException) {
                 return response()->json(
