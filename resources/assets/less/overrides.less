@@ -2555,10 +2555,35 @@ table rows
 .snipe-top-scrollbar {
     overflow-x: auto;
     overflow-y: hidden;
-    // Slightly taller than the OS scrollbar so the thumb is always
-    // reachable even on platforms that render fatter scrollbars.
-    height: 15px;
+    // Sized to match the WebKit thumb below so the scrollbar reads as a
+    // deliberate chrome element rather than an OS-native accident.
+    height: 10px;
     margin-bottom: 4px;
+    // Firefox scrollbar styling — spec-standard. `thin` gives us a
+    // ~thin-thumb, `color` is `thumb track` order.
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.06);
+
+    // WebKit / Blink scrollbar pseudo-elements. Both the track and the
+    // thumb get border-radius so the container reads as rounded even
+    // when the thumb is at the edge of the track (the previous
+    // container-level border-radius was invisible because the container
+    // had no visible background to round). Track carries a subtle tint
+    // so the rounded shape is actually visible rather than shape-of-nothing.
+    &::-webkit-scrollbar {
+        height: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.06);
+        border-radius: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.35);
+        border-radius: 6px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 }
 
 .snipe-top-scrollbar-inner {

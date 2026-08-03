@@ -86,35 +86,21 @@ trait HandlesAdjustQuantity
         Model $model,
         int $delta,
     ): ?int {
-        $orderNumber = trim((string) $request->input('order_number', ''));
-        $supplierId = $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null;
-        $purchaseDate = $request->filled('purchase_date') ? $request->input('purchase_date') : null;
-        $unitCost = $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null;
-        $currency = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
+        $payload = $this->extractOrderPayloadFromRequest($request);
 
-        // No acquisition context in the request means don't create an
-        // Order. Audit-only submissions (zero delta with no supplier /
-        // order number / date / cost) fall through here so we don't
-        // accrete meaningless Order rows for pure inventory counts.
-        if ($orderNumber === ''
-            && $supplierId === null
-            && $purchaseDate === null
-            && $unitCost === null
-            && ($currency === null || $currency === '')) {
+        if ($this->orderPayloadIsEmpty($payload)) {
             return null;
         }
 
-        $companyId = $model->company_id ?? null;
-
         $order = Order::firstOrCreate(
             [
-                'order_number' => $orderNumber !== '' ? $orderNumber : null,
-                'supplier_id' => $supplierId,
-                'company_id' => $companyId,
+                'order_number' => $payload['order_number'],
+                'supplier_id' => $payload['supplier_id'],
+                'company_id' => $model->company_id ?? null,
             ],
             [
-                'purchase_date' => $purchaseDate,
-                'currency' => $currency !== '' ? $currency : null,
+                'purchase_date' => $payload['purchase_date'],
+                'currency' => $payload['currency'],
                 'created_by' => auth()->id(),
             ],
         );
@@ -127,9 +113,49 @@ trait HandlesAdjustQuantity
             // records the absolute number of units the line represents,
             // and the delta sign lives on the sibling action_log.
             'qty' => max(1, abs($delta)),
-            'price' => $unitCost,
+            'price' => $payload['unit_cost'],
         ]);
 
         return $order->id;
+    }
+
+    /**
+     * Pull the five acquisition-metadata fields off the request and
+     * normalize each into the shape Order::firstOrCreate wants. Split
+     * from resolveOrderForAdjustment so the orchestrator stays small
+     * and each field's read-and-normalize logic can move independently.
+     *
+     * @return array{order_number: ?string, supplier_id: ?int, purchase_date: ?string, unit_cost: ?float, currency: ?string}
+     */
+    private function extractOrderPayloadFromRequest(Request $request): array
+    {
+        $orderNumberRaw = trim((string) $request->input('order_number', ''));
+        $currencyRaw = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
+
+        return [
+            'order_number' => $orderNumberRaw !== '' ? $orderNumberRaw : null,
+            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
+            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
+            'unit_cost' => $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null,
+            'currency' => ($currencyRaw !== null && $currencyRaw !== '') ? $currencyRaw : null,
+        ];
+    }
+
+    /**
+     * True when the request carried no acquisition context (all five
+     * order-metadata fields blank). Audit-only submissions (zero delta
+     * with no supplier / order number / date / cost / currency) fall
+     * through here so we don't accrete meaningless Order rows for
+     * pure inventory counts.
+     *
+     * @param  array{order_number: ?string, supplier_id: ?int, purchase_date: ?string, unit_cost: ?float, currency: ?string}  $payload
+     */
+    private function orderPayloadIsEmpty(array $payload): bool
+    {
+        return $payload['order_number'] === null
+            && $payload['supplier_id'] === null
+            && $payload['purchase_date'] === null
+            && $payload['unit_cost'] === null
+            && $payload['currency'] === null;
     }
 }

@@ -74730,6 +74730,17 @@ $(function () {
     }
     $amount.val('');
     $modal.find('#adjustQuantityOrder').val('');
+    // Reset the acquisition-metadata fields between opens so an
+    // order left half-filled by one operator doesn't bleed into the
+    // next click. Supplier is a select2, so use .val('').trigger('change')
+    // rather than setting the raw <select>; currency reverts to
+    // whatever the modal was originally rendered with (its DOM value
+    // attribute, i.e. the system default_currency).
+    $modal.find('#adjustQuantitySupplier').val('').trigger('change');
+    $modal.find('#adjustQuantityPurchaseDate').val('');
+    $modal.find('#adjustQuantityUnitCost').val('');
+    var $currency = $modal.find('#adjustQuantityCurrency');
+    $currency.val($currency.prop('defaultValue') || '');
     $modal.find('#adjustQuantityNote').val('');
     $modal.find('#adjustQuantityFile').val('');
     // js-uploadFile paints selected filenames into #{id}-info; clear it too

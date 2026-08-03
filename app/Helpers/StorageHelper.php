@@ -4,6 +4,9 @@ namespace App\Helpers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\EscapeFormula;
+use League\Csv\Reader;
+use League\Csv\Writer;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,6 +26,18 @@ class StorageHelper
             'X-Content-Type-Options' => 'nosniff',
         ];
 
+        // Formula-injection guard for CSV attachments. Every CSV going
+        // out gets its cells run through EscapeFormula so `=cmd|...`,
+        // `+HYPERLINK(...)`, `@SUM(...)`, etc. are treated as literal
+        // text by Excel / LibreOffice / Google Sheets rather than live
+        // formulas. Same backtick prefix and config gate the CSV
+        // exporters in ReportsController / SettingsController use.
+        // Skipped when app.escape_formulas is explicitly false.
+        if (str_ends_with(strtolower((string) $filename), '.csv')
+            && config('app.escape_formulas') !== false) {
+            return self::downloadSanitizedCsv($filename, $disk, $safeHeaders);
+        }
+
         switch (config("filesystems.disks.$disk.driver")) {
             case 'local':
                 return response()->download(Storage::disk($disk)->path($filename), null, $safeHeaders);
@@ -40,6 +55,53 @@ class StorageHelper
             default:
                 return Storage::disk($disk)->download($filename, null, $safeHeaders);
         }
+    }
+
+    /**
+     * Read a stored CSV, escape every cell that could act as a formula
+     * on open, and stream the sanitized bytes back with the original
+     * filename. Runs against any driver (local / S3 / whatever) since
+     * we pull bytes through the Storage facade rather than the on-disk
+     * path — costs one round-trip through the app for S3 CSV downloads,
+     * which is the price of the safety guarantee.
+     */
+    private static function downloadSanitizedCsv(string $filename, string $disk, array $headers): StreamedResponse
+    {
+        $bytes = Storage::disk($disk)->get($filename) ?? '';
+        $downloadName = basename($filename);
+        $sanitized = self::sanitizeCsvBytes($bytes);
+
+        return response()->streamDownload(
+            function () use ($sanitized): void {
+                echo $sanitized;
+            },
+            $downloadName,
+            $headers,
+        );
+    }
+
+    /**
+     * Escape every cell in a CSV string using the same backtick prefix
+     * that Snipe-IT's own CSV exporters use. Preserves row / column
+     * shape and does nothing to genuinely-safe content — cells that
+     * don't start with `=`, `+`, `-`, `@`, tab, or carriage-return pass
+     * through unchanged.
+     */
+    private static function sanitizeCsvBytes(string $bytes): string
+    {
+        if ($bytes === '') {
+            return $bytes;
+        }
+
+        $reader = Reader::createFromString($bytes);
+        $writer = Writer::createFromString('');
+        $formatter = new EscapeFormula('`');
+
+        foreach ($reader->getRecords() as $record) {
+            $writer->insertOne($formatter->escapeRecord($record));
+        }
+
+        return $writer->toString();
     }
 
     public static function getMediaType($file_with_path)
