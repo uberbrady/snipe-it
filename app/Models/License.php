@@ -136,8 +136,8 @@ class License extends Depreciable
         'adminuser' => ['first_name', 'last_name', 'display_name'],
         // Historical order_number lives on the Orders table via
         // order_items now (see HasOrders trait). Search hits it through
-        // the orders() HasManyThrough so "PO-123" still surfaces every
-        // license ordered under that PO.
+        // the orders() HasManyThrough so an order-number string still
+        // surfaces every license ever acquired under that order.
         'orders' => ['order_number'],
     ];
 

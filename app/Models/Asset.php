@@ -238,8 +238,8 @@ class Asset extends Depreciable
         'assigned_to' => ['name'],
         // Historical order_number lives on the Orders table via
         // order_items now (see HasOrders trait). Search hits it through
-        // the orders() HasManyThrough so "PO-123" still surfaces every
-        // asset ordered under that PO.
+        // the orders() HasManyThrough so an order-number string still
+        // surfaces every asset ever acquired under that order.
         'orders' => ['order_number'],
     ];
 

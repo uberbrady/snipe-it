@@ -73,10 +73,10 @@ class Accessory extends SnipeModel
         'manufacturer' => ['name'],
         'supplier' => ['name'],
         // Order numbers moved to a dedicated Orders / OrderItems data
-        // model when the parent order_number column was removed. Free-text
-        // search on "PO-123" walks the HasOrders trait's orders() through
-        // relation into orders.order_number so any accessory that was
-        // ever purchased under that PO still surfaces.
+        // model when the parent order_number column was removed.
+        // Free-text search on an order-number string walks the HasOrders
+        // trait's orders() HasManyThrough into orders.order_number so
+        // any accessory ever acquired under that order still surfaces.
         'orders' => ['order_number'],
     ];
 

@@ -121,7 +121,7 @@ class Component extends SnipeModel
         'adminuser' => ['first_name', 'last_name', 'display_name'],
         // See Accessory::$searchableRelations. Search hits order_number
         // through the HasOrders trait's orders() HasManyThrough into
-        // the Orders table so historical PO references still match.
+        // the Orders table so historical order references still match.
         'orders' => ['order_number'],
     ];
 
