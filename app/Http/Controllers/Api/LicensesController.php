@@ -196,7 +196,6 @@ class LicensesController extends Controller
                         'min_amt',
                         'name',
                         'notes',
-                        'order_number',
                         'purchase_cost',
                         'purchase_date',
                         'purchase_order',

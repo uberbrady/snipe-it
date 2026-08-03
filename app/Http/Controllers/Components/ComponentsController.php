@@ -87,7 +87,7 @@ class ComponentsController extends Controller
         $component->model_number = $request->input('model_number');
         $component->location_id = $request->input('location_id');
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-        $component->order_number = $request->input('order_number', null);
+        // order_number moved off the parent Component column to Orders / OrderItems.
         $component->min_amt = $request->input('min_amt', null);
         $component->serial = $request->input('serial', null);
         $component->purchase_date = $request->input('purchase_date', null);
