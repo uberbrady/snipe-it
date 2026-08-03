@@ -182,7 +182,14 @@ class ItemImporter extends Importer
 
         if (method_exists($model, 'adjustQuantity')) {
             if (array_key_exists('qty', $sanitized)) {
-                $qtyRequested = (int) $sanitized['qty'];
+                // Empty CSV cell (present but blank) means "don't touch qty"
+                // on update — not "set qty to 0". Casting '' straight to (int)
+                // 0 produced a delta of -currentQty and silently drained
+                // inventory on any import row that included an empty
+                // quantity column.
+                if ($sanitized['qty'] !== '' && $sanitized['qty'] !== null) {
+                    $qtyRequested = (int) $sanitized['qty'];
+                }
                 unset($sanitized['qty']);
             }
             if (array_key_exists('order_number', $sanitized)) {

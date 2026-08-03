@@ -17,6 +17,7 @@ return new class extends Migration
     {
         Schema::table('action_logs', function (Blueprint $table) {
             $table->index('order_number');
+            $table->index(['item_type', 'item_id', 'quantity']);
         });
     }
 

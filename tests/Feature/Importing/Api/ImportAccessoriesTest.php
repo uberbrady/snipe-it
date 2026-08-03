@@ -408,10 +408,15 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
 
         // Import a CSV that only has the identity field (name) plus one
         // updated column. All other Accessory fields are absent from the
-        // CSV, so their DB values must be preserved on update.
+        // CSV, so their DB values must be preserved on update. We update
+        // model_number here as the "one changed field" proxy instead of
+        // order_number, because Accessory (like Consumable/Component)
+        // hides its parent-level order_number behind an accessor that
+        // returns null — reads via $accessory->order_number can't verify
+        // the write. model_number is a plain readable column.
         $partialFile = new ImportFileBuilder([[
             'itemName' => $accessory->name,
-            'orderNumber' => 'UPDATED-ORDER',
+            'modelNumber' => 'UPDATED-MODEL-NUMBER',
         ]]);
         $partialImport = Import::factory()->accessory()->create([
             'file_path' => $partialFile->saveToImportsDirectory(),
@@ -423,7 +428,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $accessory->refresh();
-        $this->assertEquals('UPDATED-ORDER', $accessory->order_number);
+        $this->assertEquals('UPDATED-MODEL-NUMBER', $accessory->model_number);
         $this->assertEquals($originalNotes, $accessory->notes);
         $this->assertEquals($originalPurchaseDate, $accessory->purchase_date?->toDateString());
     }

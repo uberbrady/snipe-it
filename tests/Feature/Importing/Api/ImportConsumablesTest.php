@@ -283,17 +283,21 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
     {
         $this->actingAsForApi(User::factory()->superuser()->create());
 
+        // purchase_date is the sole proxy for the "empty CSV cell clears
+        // the DB column" behavior here. order_number is not exercised
+        // because Consumable / Accessory / Component all hide the
+        // parent-level order_number behind an accessor that returns null
+        // (see Consumable::getOrderNumberAttribute) — reads via
+        // $consumable->order_number would be null regardless of the DB
+        // state and would give a false green for this test.
         $consumable = Consumable::factory()->create([
-            'order_number' => 'PRE-EXISTING-ORDER',
             'purchase_date' => '2022-01-01',
         ])->refresh();
 
         $this->assertNotNull($consumable->purchase_date);
-        $this->assertNotEmpty($consumable->order_number);
 
         $row = ImportFileBuilder::new()->definition();
         $row['itemName'] = $consumable->name;
-        $row['orderNumber'] = '';
         $row['purchaseDate'] = '';
 
         $importFileBuilder = new ImportFileBuilder([$row]);
@@ -307,7 +311,6 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $consumable->refresh();
-        $this->assertNull($consumable->order_number);
         $this->assertNull($consumable->purchase_date);
     }
 
