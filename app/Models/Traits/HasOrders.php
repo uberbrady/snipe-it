@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -67,5 +68,35 @@ trait HasOrders
             'id',        // local key on this model
             'order_id',  // FK on order_items pointing at orders
         )->where('order_items.item_type', static::class);
+    }
+
+    /**
+     * Sort scope that lets the bootstrap-table sortable header for an
+     * order-number column keep working after the parent order_number
+     * column moved to Orders. Attaches a correlated subquery selecting
+     * the latest Order.order_number for each row (matched via the
+     * polymorphic order_items pivot), then orders by that alias.
+     *
+     * "Latest" is defined as the Order with the most recent created_at
+     * among all OrderItems that reference this row. Rows with no Order
+     * history sort last on `asc` / first on `desc` (natural NULL sort
+     * behavior on both MySQL and SQLite).
+     *
+     * Uses addSelect so preceding withCount subqueries survive — a
+     * plain select() would wipe them and re-introduce N+1 downstream.
+     */
+    public function scopeOrderByOrderNumber(Builder $query, string $direction = 'asc'): Builder
+    {
+        $modelTable = (new static)->getTable();
+
+        return $query->addSelect([
+            'sort_order_number' => OrderItem::query()
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereColumn('order_items.item_id', $modelTable.'.id')
+                ->where('order_items.item_type', static::class)
+                ->orderByDesc('orders.created_at')
+                ->limit(1)
+                ->select('orders.order_number'),
+        ])->orderBy('sort_order_number', $direction);
     }
 }
