@@ -10,15 +10,16 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /**
  * Wires an inventory model up to the polymorphic Orders + OrderItems
  * data model. Consumed by Accessory / Consumable / Component (via the
- * AdjustsQuantity flow) and by Asset / License (for historical PO
+ * AdjustsQuantity flow) and by Asset / License (for historical order
  * lookups even though they don't get replenished per-event).
  *
  * `orderItems()` is the direct polymorphic relation — one row per line
- * on a PO that referenced this model. `orders()` is a HasManyThrough
- * convenience that surfaces the underlying Order rows so free-text
- * search on `$searchableRelations = ['orders' => ['order_number']]`
- * lands on the joined column without the caller having to walk through
- * order_items manually.
+ * on an Order that referenced this model. `orders()` is a
+ * HasManyThrough convenience that surfaces the underlying Order rows
+ * so free-text search on
+ * `$searchableRelations = ['orders' => ['order_number']]` lands on the
+ * joined column without the caller having to walk through order_items
+ * manually.
  */
 trait HasOrders
 {

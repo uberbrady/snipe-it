@@ -76,7 +76,12 @@ class ItemImporter extends Importer
 
         $this->item['name'] = $this->findCsvMatch($row, 'item_name');
         $this->item['notes'] = $this->findCsvMatch($row, 'notes');
-        $this->item['order_number'] = $this->findCsvMatch($row, 'order_number');
+        // order_number is no longer a column on the inventory tables —
+        // it moved to the Orders / OrderItems data model. Sub-importers
+        // call ItemImporter::recordOrderForImportedRow() after the row
+        // saves to record the acquisition. Reading the value straight
+        // off the row inside that helper (rather than staging into
+        // $this->item['order_number']) avoids a fillable-drop no-op.
         $this->item['purchase_cost'] = $this->findCsvMatch($row, 'purchase_cost');
         $this->item['model_number'] = trim($this->findCsvMatch($row, 'model_number'));
         $this->item['min_amt'] = $this->findCsvMatch($row, 'min_amt');
@@ -170,32 +175,28 @@ class ItemImporter extends Importer
      * kicks in for models that use the trait (Accessory, Consumable,
      * Component). For everything else it's a plain $model->update().
      *
-     * order_number rides on the QuantityAdjust log when qty also changed,
-     * matching the API update contract. A DomainException from
-     * adjustQuantity (would drop qty below the currently-in-use count)
-     * is logged and the row's non-qty updates still stick.
+     * A DomainException from adjustQuantity (would drop qty below the
+     * currently-in-use count) is logged and the row's non-qty updates
+     * still stick. The AdjustsQuantity trait's `$orderNumber` argument
+     * is passed as null here because the Orders / OrderItems data model
+     * now owns the acquisition record; wiring the importer to also
+     * create an Order for the qty delta is a separate follow-up under
+     * the adjust-quantity flow rework.
      */
     protected function applyUpdateWithQtyAdjust($model, array $sanitized): void
     {
         $qtyRequested = null;
-        $orderNumber = null;
 
-        if (method_exists($model, 'adjustQuantity')) {
-            if (array_key_exists('qty', $sanitized)) {
-                // Empty CSV cell (present but blank) means "don't touch qty"
-                // on update — not "set qty to 0". Casting '' straight to (int)
-                // 0 produced a delta of -currentQty and silently drained
-                // inventory on any import row that included an empty
-                // quantity column.
-                if ($sanitized['qty'] !== '' && $sanitized['qty'] !== null) {
-                    $qtyRequested = (int) $sanitized['qty'];
-                }
-                unset($sanitized['qty']);
+        if (method_exists($model, 'adjustQuantity') && array_key_exists('qty', $sanitized)) {
+            // Empty CSV cell (present but blank) means "don't touch qty"
+            // on update — not "set qty to 0". Casting '' straight to (int)
+            // 0 produced a delta of -currentQty and silently drained
+            // inventory on any import row that included an empty
+            // quantity column.
+            if ($sanitized['qty'] !== '' && $sanitized['qty'] !== null) {
+                $qtyRequested = (int) $sanitized['qty'];
             }
-            if (array_key_exists('order_number', $sanitized)) {
-                $orderNumber = $sanitized['order_number'];
-                unset($sanitized['order_number']);
-            }
+            unset($sanitized['qty']);
         }
 
         $qtyBefore = $qtyRequested !== null ? (int) $model->qty : null;
@@ -210,11 +211,63 @@ class ItemImporter extends Importer
             $model->adjustQuantity(
                 $qtyRequested - $qtyBefore,
                 "Import: qty updated from {$qtyBefore} to {$qtyRequested}",
-                $orderNumber,
+                null,
             );
         } catch (\DomainException) {
             $this->log('Skipping qty change for '.($model->name ?? 'row').': would drop on-hand below the currently-checked-out count.');
         }
+    }
+
+    /**
+     * Record the CSV row's order_number (if any) as an Order + OrderItem
+     * pair against the freshly-saved model. Called from the CREATE
+     * branch of every sub-importer that participates in the Orders data
+     * model (Accessory, Consumable, Component, Asset, License).
+     *
+     * Dedupes on the Order side via (order_number, supplier_id, company_id)
+     * so multiple items in the same CSV that share an order_number all
+     * land under a single Order row. Never dedupes on the OrderItem
+     * side — each imported row is its own line, matching the "one line
+     * per item purchased" semantic.
+     *
+     * Deliberately does not run on UPDATE imports: importer update mode
+     * means "the CSV has a corrected version of an existing row", not
+     * "a new purchase happened". The adjust-quantity flow is the path
+     * that records replenishment events for existing rows and will
+     * grow its own Order-creation wiring when that flow is reworked.
+     */
+    protected function recordOrderForImportedRow($model, array $row): void
+    {
+        $orderNumber = trim((string) $this->findCsvMatch($row, 'order_number'));
+        if ($orderNumber === '') {
+            return;
+        }
+
+        $supplierId = $model->supplier_id ?? null;
+        $companyId = $model->company_id ?? null;
+        $purchaseDate = $model->purchase_date ?? null;
+        $purchaseCost = $model->purchase_cost ?? null;
+        $qty = (int) ($model->qty ?? 1);
+
+        $order = \App\Models\Order::firstOrCreate(
+            [
+                'order_number' => $orderNumber,
+                'supplier_id' => $supplierId,
+                'company_id' => $companyId,
+            ],
+            [
+                'purchase_date' => $purchaseDate,
+                'created_by' => $this->created_by,
+            ],
+        );
+
+        \App\Models\OrderItem::create([
+            'order_id' => $order->id,
+            'item_type' => $model::class,
+            'item_id' => $model->id,
+            'qty' => max(1, $qty),
+            'price' => $purchaseCost,
+        ]);
     }
 
     /**

@@ -50,7 +50,9 @@ class AccessoryImporter extends ItemImporter
 
         $this->setItemFromCsvIfPresent($row, 'name', 'item_name');
         $this->setItemFromCsvIfPresent($row, 'notes');
-        $this->setItemFromCsvIfPresent($row, 'order_number');
+        // order_number is not on the Accessory model any more — recorded
+        // as an Order + OrderItem via recordOrderForImportedRow() after
+        // the create-branch save below.
         $this->setItemFromCsvIfPresent($row, 'purchase_cost');
         $this->setItemFromCsvIfPresent($row, 'model_number');
         $this->setItemFromCsvIfPresent($row, 'min_amt');
@@ -140,6 +142,7 @@ class AccessoryImporter extends ItemImporter
         if ($accessory->save()) {
             $this->log('Accessory '.$name.' was created');
             $this->recordCreated();
+            $this->recordOrderForImportedRow($accessory, $row);
 
             $this->maybeCheckoutAccessory($accessory);
 
