@@ -33,9 +33,8 @@ class ConsumableObserver
             $logAction->item_id = $consumable->id;
             $logAction->created_at = date('Y-m-d H:i:s');
             $logAction->created_by = auth()->id();
-            // Accessor on Consumable returns null for order_number; read
-            // the raw stored value so the log captures the actual value.
-            $logAction->order_number = $consumable->getRawOriginal('order_number');
+            // order_number moved off Consumable to the Orders / OrderItems
+            // data model — nothing to capture on the update log anymore.
             $logAction->log_meta = json_encode($changed);
             $logAction->logaction('update');
         }
@@ -54,11 +53,9 @@ class ConsumableObserver
         $logAction->item_id = $consumable->id;
         $logAction->created_at = date('Y-m-d H:i:s');
         $logAction->created_by = auth()->id();
-        // See AccessoryObserver::created for the getAttributes() rationale
-        // (getRawOriginal is empty during the `created` event because
-        // syncOriginal hasn't run yet on a fresh model).
         $attrs = $consumable->getAttributes();
-        $logAction->order_number = $attrs['order_number'] ?? null;
+        // order_number moved off Consumable to the Orders / OrderItems
+        // data model — the create log no longer captures it directly.
         // Capture the initial on-hand qty so the create log gives auditors
         // a "started with N units" anchor point. Subsequent QuantityAdjust
         // logs record deltas, not running totals.

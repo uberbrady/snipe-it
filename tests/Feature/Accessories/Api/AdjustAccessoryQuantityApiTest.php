@@ -48,7 +48,10 @@ class AdjustAccessoryQuantityApiTest extends TestCase
 
         $this->assertSame(3, (int) $log->quantity);
         $this->assertSame('restock from PO', $log->note);
-        $this->assertSame('PO-API-1', $log->order_number);
+        // order_number moved off the log row to the Orders table — the
+        // log carries order_id pointing at the newly-created Order.
+        $order = \App\Models\Order::findOrFail($log->order_id);
+        $this->assertSame('PO-API-1', $order->order_number);
         $this->assertSame($actor->id, (int) $log->created_by);
     }
 

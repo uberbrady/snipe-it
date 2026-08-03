@@ -159,7 +159,7 @@ class AssetsController extends Controller
 
                 $asset->company_id = $companyId;
                 $asset->model_id = $request->input('model_id');
-                $asset->order_number = $request->input('order_number');
+                // order_number moved off Asset to Orders / OrderItems.
                 $asset->notes = $request->input('notes');
                 $asset->created_by = auth()->id();
                 $asset->status_id = request('status_id');
@@ -489,7 +489,7 @@ class AssetsController extends Controller
         $asset->name = $request->input('name');
         $asset->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $asset->model_id = $request->input('model_id');
-        $asset->order_number = $request->input('order_number');
+        // order_number moved off Asset to Orders / OrderItems.
 
         $asset_tags = $request->input('asset_tags');
         $asset->asset_tag = $request->input('asset_tags');

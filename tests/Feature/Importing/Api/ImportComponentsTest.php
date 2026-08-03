@@ -87,9 +87,12 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['location'], $newComponent->location->name);
         $this->assertNull($newComponent->supplier_id);
         $this->assertEquals($row['quantity'], $newComponent->qty);
-        // Component::getOrderNumberAttribute hides the parent value from
-        // display; read the raw stored column to verify importer persistence.
-        $this->assertEquals($row['orderNumber'], $newComponent->getRawOriginal('order_number'));
+        // order_number moved off the parent Component column to the
+        // Orders / OrderItems polymorphic pair. Verify the importer's
+        // recordOrderForImportedRow helper wrote a matching Order and
+        // linked it to the new component via an OrderItem.
+        $orderItem = $newComponent->orderItems()->firstOrFail();
+        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
         $this->assertEquals($row['purchaseDate'], $newComponent->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newComponent->purchase_cost);
         $this->assertNull($newComponent->min_amt);
@@ -298,16 +301,17 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->actingAsForApi(User::factory()->superuser()->create());
 
         $component = Component::factory()->create([
-            'order_number' => 'DO-NOT-LOSE-THIS',
             'purchase_date' => '2022-01-01',
         ])->refresh();
 
-        $originalOrderNumber = $component->order_number;
         $originalPurchaseDate = $component->purchase_date?->toDateString();
 
         // Import a CSV that only has the identity fields (name+serial) plus
         // quantity (required by Component validation). All other Component
         // fields are absent from the CSV, so their DB values must be preserved.
+        // order_number moved off the parent Component column to the Orders
+        // data model, so we can't use it as a preservation proxy here;
+        // purchase_date is the remaining stand-in.
         $partialFile = new ImportFileBuilder([[
             'itemName' => $component->name,
             'serialNumber' => $component->serial,
@@ -324,7 +328,6 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
 
         $component->refresh();
         $this->assertEquals(42, $component->qty);
-        $this->assertEquals($originalOrderNumber, $component->order_number);
         $this->assertEquals($originalPurchaseDate, $component->purchase_date?->toDateString());
     }
 
@@ -425,8 +428,10 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['serialNumber'], $newComponent->location->name);
         $this->assertNull($newComponent->supplier_id);
         $this->assertEquals($row['companyName'], $newComponent->qty);
-        // Accessor hides the parent value; read the raw stored column.
-        $this->assertEquals($row['orderNumber'], $newComponent->getRawOriginal('order_number'));
+        // See the import_components test above for why order_number now
+        // lives on Orders / OrderItems rather than the parent column.
+        $orderItem = $newComponent->orderItems()->firstOrFail();
+        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
         $this->assertEquals($row['itemName'], $newComponent->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newComponent->purchase_cost);
         $this->assertNull($newComponent->min_amt);

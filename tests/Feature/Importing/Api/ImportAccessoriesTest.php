@@ -83,9 +83,12 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['quantity'], $newAccessory->qty);
         $this->assertEquals($row['purchaseDate'], $newAccessory->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newAccessory->purchase_cost);
-        // Accessory::getOrderNumberAttribute hides the parent value from
-        // display; read the raw stored column to verify importer persistence.
-        $this->assertEquals($row['orderNumber'], $newAccessory->getRawOriginal('order_number'));
+        // order_number moved off the parent Accessory column to the
+        // Orders / OrderItems polymorphic pair. Verify the importer's
+        // recordOrderForImportedRow helper wrote a matching Order and
+        // linked it to the new accessory via an OrderItem.
+        $orderItem = $newAccessory->orderItems()->firstOrFail();
+        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
         $this->assertEquals($row['notes'], $newAccessory->notes);
         $this->assertEquals($row['category'], $newAccessory->category->name);
         $this->assertEquals('accessory', $newAccessory->category->category_type);
@@ -536,8 +539,14 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['quantity'], $newAccessory->qty);
         $this->assertEquals($row['notes'], $newAccessory->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newAccessory->purchase_cost);
-        // Accessor hides the parent value; read the raw stored column.
-        $this->assertEquals($row['companyName'], $newAccessory->getRawOriginal('order_number'));
+        // See the import_accessory test above for why order_number now
+        // lives on Orders / OrderItems rather than the parent column.
+        // Note this custom-mapping test intentionally maps companyName
+        // to the orderNumber CSV column, verifying that whatever value
+        // that column carries lands on the OrderItem's Order regardless
+        // of what the source column was called.
+        $orderItem = $newAccessory->orderItems()->firstOrFail();
+        $this->assertEquals($row['companyName'], $orderItem->order->order_number);
         $this->assertEquals($row['purchaseDate'], $newAccessory->notes);
         $this->assertEquals($row['manufacturerName'], $newAccessory->category->name);
         $this->assertEquals($row['category'], $newAccessory->manufacturer->name);

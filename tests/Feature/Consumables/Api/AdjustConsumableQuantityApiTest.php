@@ -46,7 +46,7 @@ class AdjustConsumableQuantityApiTest extends TestCase
             ->firstOrFail();
 
         $this->assertSame(3, (int) $log->quantity);
-        $this->assertSame('PO-CON', $log->order_number);
+        $this->assertSame('PO-CON', \App\Models\Order::findOrFail($log->order_id)->order_number);
     }
 
     public function test_note_is_required()

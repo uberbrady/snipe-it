@@ -51,7 +51,7 @@ class AdjustAccessoryQuantityTest extends TestCase
         $this->assertNotNull($log);
         $this->assertSame(3, (int) $log->quantity);
         $this->assertSame('restock from PO', $log->note);
-        $this->assertSame('PO-42', $log->order_number);
+        $this->assertSame('PO-42', \App\Models\Order::findOrFail($log->order_id)->order_number);
         $this->assertSame($actor->id, (int) $log->created_by);
     }
 
@@ -76,7 +76,7 @@ class AdjustAccessoryQuantityTest extends TestCase
             ->first();
 
         $this->assertSame(-4, (int) $log->quantity);
-        $this->assertNull($log->order_number);
+        $this->assertNull($log->order_id);
     }
 
     public function test_decrement_below_zero_is_rejected()

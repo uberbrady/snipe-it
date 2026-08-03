@@ -104,7 +104,7 @@ trait AdjustsQuantity
             );
         }
 
-        DB::transaction(function () use ($delta, $column, $note, $filename) {
+        DB::transaction(function () use ($delta, $column, $current, $note, $orderId, $filename) {
             // Use the query builder directly (not $this->increment) so
             // the model's `updated` event doesn't fire. Firing it would
             // write a second "update" action_log entry (with log_meta of
@@ -130,6 +130,18 @@ trait AdjustsQuantity
             $log->note = $note;
             $log->order_id = $orderId;
             $log->quantity = $delta;
+            // Feed the history-tab's "changed" column so QuantityAdjust
+            // entries render "qty: 5 → 8" the same way an update-type
+            // log renders a name change. Only populated on non-zero
+            // deltas — audit-only (delta = 0) submissions carry their
+            // reason in `note` and leaving log_meta null keeps the
+            // "changed" column empty for them (no field actually
+            // changed, so nothing to diff).
+            if ($delta !== 0) {
+                $log->log_meta = json_encode([
+                    $column => ['old' => $current, 'new' => $current + $delta],
+                ]);
+            }
             // Receipt/invoice attaches to the same log row rather than a
             // separate 'uploaded' entry, so the history table shows one
             // consolidated line per replenishment. The caller handles the

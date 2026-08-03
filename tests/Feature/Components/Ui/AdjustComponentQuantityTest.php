@@ -48,7 +48,7 @@ class AdjustComponentQuantityTest extends TestCase
             ->first();
 
         $this->assertSame(8, (int) $log->quantity);
-        $this->assertSame('PO-88', $log->order_number);
+        $this->assertSame('PO-88', \App\Models\Order::findOrFail($log->order_id)->order_number);
     }
 
     public function test_decrement_below_zero_is_rejected()

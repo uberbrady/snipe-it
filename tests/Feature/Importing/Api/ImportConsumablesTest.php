@@ -86,9 +86,12 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertNotNull($newConsumable->supplier_id);
         $this->assertFalse($newConsumable->requestable);
         $this->assertNull($newConsumable->image);
-        // Consumable::getOrderNumberAttribute hides the parent value from
-        // display; read the raw stored column to verify importer persistence.
-        $this->assertEquals($row['orderNumber'], $newConsumable->getRawOriginal('order_number'));
+        // order_number moved off the parent Consumable column to the
+        // Orders / OrderItems polymorphic pair. Verify the importer's
+        // recordOrderForImportedRow helper wrote a matching Order and
+        // linked it to the new consumable via an OrderItem.
+        $orderItem = $newConsumable->orderItems()->firstOrFail();
+        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
         $this->assertEquals($row['purchaseDate'], $newConsumable->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newConsumable->purchase_cost);
         $this->assertNull($newConsumable->min_amt);
@@ -320,16 +323,17 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->actingAsForApi(User::factory()->superuser()->create());
 
         $consumable = Consumable::factory()->create([
-            'order_number' => 'DO-NOT-LOSE-THIS',
             'purchase_date' => '2022-01-01',
         ])->refresh();
 
-        $originalOrderNumber = $consumable->order_number;
         $originalPurchaseDate = $consumable->purchase_date?->toDateString();
 
         // Import a CSV that only has the identity field (name) plus quantity
         // (required by Consumable validation). All other Consumable fields
         // are absent from the CSV, so their DB values must be preserved.
+        // order_number moved off the parent Consumable column to the Orders
+        // data model, so we can't use it as a preservation proxy here;
+        // purchase_date is the remaining stand-in.
         $partialFile = new ImportFileBuilder([[
             'itemName' => $consumable->name,
             'quantity' => 42,
@@ -345,7 +349,6 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
 
         $consumable->refresh();
         $this->assertEquals(42, $consumable->qty);
-        $this->assertEquals($originalOrderNumber, $consumable->order_number);
         $this->assertEquals($originalPurchaseDate, $consumable->purchase_date?->toDateString());
     }
 
@@ -448,8 +451,10 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertNotNull($newConsumable->supplier_id);
         $this->assertFalse($newConsumable->requestable);
         $this->assertNull($newConsumable->image);
-        // Accessor hides the parent value; read the raw stored column.
-        $this->assertEquals($row['orderNumber'], $newConsumable->getRawOriginal('order_number'));
+        // See the import_consumables test above for why order_number now
+        // lives on Orders / OrderItems rather than the parent column.
+        $orderItem = $newConsumable->orderItems()->firstOrFail();
+        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
         $this->assertEquals($row['itemName'], $newConsumable->purchase_date->toDateString());
         $this->assertEquals($row['location'], $newConsumable->purchase_cost);
         $this->assertNull($newConsumable->min_amt);

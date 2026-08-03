@@ -86,7 +86,7 @@ class ConsumablesController extends Controller
         $consumable->supplier_id = $request->input('supplier_id');
         $consumable->location_id = $request->input('location_id');
         $consumable->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-        $consumable->order_number = $request->input('order_number');
+        // order_number moved off the parent Consumable column to Orders / OrderItems.
         $consumable->min_amt = $request->input('min_amt');
         $consumable->manufacturer_id = $request->input('manufacturer_id');
         $consumable->model_number = $request->input('model_number');

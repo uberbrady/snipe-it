@@ -32,9 +32,8 @@ class AccessoryObserver
             $logAction->item_id = $accessory->id;
             $logAction->created_at = date('Y-m-d H:i:s');
             $logAction->created_by = auth()->id();
-            // Accessor on Accessory returns null for order_number; read
-            // the raw stored value so the log captures the actual value.
-            $logAction->order_number = $accessory->getRawOriginal('order_number');
+            // order_number moved off Accessory to the Orders / OrderItems
+            // data model — nothing to capture on the update log anymore.
             $logAction->log_meta = json_encode($changed);
             $logAction->logaction('update');
         }
@@ -53,14 +52,9 @@ class AccessoryObserver
         $logAction->item_id = $accessory->id;
         $logAction->created_at = date('Y-m-d H:i:s');
         $logAction->created_by = auth()->id();
-        // getAttributes() reads the live attribute array without routing
-        // through the null-returning accessor. getRawOriginal() would be
-        // wrong here: Laravel fires the `created` event BEFORE syncOriginal
-        // runs on a new model, so getRawOriginal returns null. On the
-        // `updated` observer above getRawOriginal is fine because syncOriginal
-        // already ran on the model's prior save.
         $attrs = $accessory->getAttributes();
-        $logAction->order_number = $attrs['order_number'] ?? null;
+        // order_number moved off Accessory to the Orders / OrderItems
+        // data model — the create log no longer captures it directly.
         // Capture the initial on-hand qty so the create log gives auditors
         // a "started with N units" anchor point. Subsequent QuantityAdjust
         // logs record deltas, not running totals.
