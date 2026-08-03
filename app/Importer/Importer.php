@@ -197,19 +197,10 @@ abstract class Importer
 
     /**
      * Detect the source encoding of a non-UTF-8 string and convert it to
-     * UTF-8. Uses the Onnov detector first, falling back to mb_detect only
-     * when Onnov abstains (Onnov is usually more reliable when it commits
-     * to an answer, and overriding it with the CJK-leaning mb_detect list
-     * produces mojibake on short Cyrillic input).
-     *
-     * The iconv //IGNORE flag lets real-world CSVs with a stray invalid
-     * byte in an otherwise valid file import successfully. To keep that
-     * from turning into "silently accept entirely-corrupt input", the
-     * result is length-checked against the source: if the converted
-     * output is less than half the source size (rough proxy for
-     * "//IGNORE dropped most of the file"), we return the source
-     * unchanged rather than a nearly-empty buffer, so downstream sees the
-     * problem instead of an eerily-empty import.
+     * UTF-8. Returns the source unchanged if the contents are already
+     * UTF-8, if no source encoding can be determined, or if conversion
+     * would drop more than half the source bytes (see
+     * conversionExceedsLossThreshold).
      */
     private static function convertToUtf8IfNeeded(string $contents): string
     {
@@ -217,47 +208,93 @@ abstract class Importer
             return $contents;
         }
 
+        $encoding = self::detectSourceEncoding($contents);
+        if ($encoding === null) {
+            return $contents;
+        }
+
+        $converted = self::runEncodingConversion($contents, $encoding);
+        if ($converted === null) {
+            return $contents;
+        }
+
+        if (self::conversionExceedsLossThreshold($contents, $converted, $encoding)) {
+            return $contents;
+        }
+
+        return $converted;
+    }
+
+    /**
+     * Try the Onnov detector first, falling back to mb_detect only when
+     * Onnov abstains. Onnov is usually more reliable when it commits to
+     * an answer, and overriding it with the CJK-leaning mb_detect list
+     * produces mojibake on short Cyrillic input. Returns null when no
+     * usable non-UTF-8 encoding was found.
+     */
+    private static function detectSourceEncoding(string $contents): ?string
+    {
         $encoding = null;
         if (class_exists('\Onnov\DetectEncoding\EncodingDetector')) {
             $detector = new \Onnov\DetectEncoding\EncodingDetector;
             $encoding = $detector->getEncoding($contents);
         }
+
         if (! $encoding || strcasecmp($encoding, 'UTF-8') === 0) {
             $detected = mb_detect_encoding($contents, ['UTF-8', 'GBK', 'GB2312', 'GB18030', 'BIG5', 'SJIS', 'EUC-JP', 'EUC-KR', 'Windows-1252', 'Windows-1251', 'ISO-8859-1'], true);
             if ($detected) {
                 $encoding = $detected;
             }
         }
+
         if (! $encoding || strcasecmp($encoding, 'UTF-8') === 0) {
-            return $contents;
+            return null;
         }
 
+        return $encoding;
+    }
+
+    /**
+     * Run the actual byte-level conversion. Prefers iconv with //IGNORE so
+     * real-world CSVs with a stray invalid byte still import successfully,
+     * falling back to mb_convert_encoding on hosts without iconv. Returns
+     * null when no converter is available or the converter refused the
+     * input entirely.
+     */
+    private static function runEncodingConversion(string $contents, string $encoding): ?string
+    {
         $converted = null;
         if (function_exists('iconv')) {
-            $converted = @iconv(strtoupper($encoding), 'UTF-8//IGNORE', $contents);
-            if ($converted === false) {
-                $converted = null;
-            }
+            $result = @iconv(strtoupper($encoding), 'UTF-8//IGNORE', $contents);
+            $converted = $result === false ? null : $result;
         } elseif (function_exists('mb_convert_encoding')) {
             $converted = @mb_convert_encoding($contents, 'UTF-8', $encoding);
         }
 
-        if ($converted === null || $converted === '') {
-            return $contents;
+        return ($converted === null || $converted === '') ? null : $converted;
+    }
+
+    /**
+     * Loss-ratio safety net for the //IGNORE flag on iconv. If the
+     * converted output is less than half the source size we treat that as
+     * "//IGNORE dropped most of the file", log a warning, and let the
+     * caller fall back to unconverted source so downstream sees the
+     * problem instead of an eerily-empty import.
+     */
+    private static function conversionExceedsLossThreshold(string $source, string $converted, string $encoding): bool
+    {
+        if (strlen($converted) >= intdiv(strlen($source), 2)) {
+            return false;
         }
 
-        if (strlen($converted) < intdiv(strlen($contents), 2)) {
-            Log::warning(sprintf(
-                'CSV import: refusing lossy encoding conversion (%s -> UTF-8) that kept %d/%d bytes',
-                $encoding,
-                strlen($converted),
-                strlen($contents),
-            ));
+        Log::warning(sprintf(
+            'CSV import: refusing lossy encoding conversion (%s -> UTF-8) that kept %d/%d bytes',
+            $encoding,
+            strlen($converted),
+            strlen($source),
+        ));
 
-            return $contents;
-        }
-
-        return $converted;
+        return true;
     }
 
     // Cached Values for import lookups
