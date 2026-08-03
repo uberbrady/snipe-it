@@ -135,6 +135,7 @@ class ConsumableImporter extends ItemImporter
         if ($consumable->save()) {
             $this->log('Consumable '.$name.' was created');
             $this->recordCreated();
+            $this->recordOrderForImportedRow($consumable, $row);
 
             $this->maybeCheckoutConsumable($consumable);
 
