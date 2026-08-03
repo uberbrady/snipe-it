@@ -138,7 +138,9 @@ class LicenseImporter extends ItemImporter
         $this->setItemFromCsvIfPresent($row, 'license_name');
         $this->setItemFromCsvIfPresent($row, 'maintained');
         $this->setItemFromCsvIfPresent($row, 'purchase_order');
-        $this->setItemFromCsvIfPresent($row, 'order_number');
+        // order_number is not on the License model any more — recorded
+        // as an Order + OrderItem via recordOrderForImportedRow() after
+        // the create-branch save below.
         $this->setItemFromCsvIfPresent($row, 'reassignable');
         $this->setItemFromCsvIfPresent($row, 'min_amt');
         $this->setItemFromCsvIfPresent($row, 'seats');
@@ -177,6 +179,7 @@ class LicenseImporter extends ItemImporter
                 $this->recordUpdated();
             } else {
                 $this->recordCreated();
+                $this->recordOrderForImportedRow($license, $row);
             }
 
             // Lets try to checkout seats if the fields exist and we have seats.

@@ -50,7 +50,9 @@ class ComponentImporter extends ItemImporter
 
         $this->setItemFromCsvIfPresent($row, 'name', 'item_name');
         $this->setItemFromCsvIfPresent($row, 'notes');
-        $this->setItemFromCsvIfPresent($row, 'order_number');
+        // order_number is not on the Component model any more — recorded
+        // as an Order + OrderItem via recordOrderForImportedRow() after
+        // the create-branch save below.
         $this->setItemFromCsvIfPresent($row, 'purchase_cost');
         $this->setItemFromCsvIfPresent($row, 'model_number');
         $this->setItemFromCsvIfPresent($row, 'min_amt');
@@ -73,7 +75,7 @@ class ComponentImporter extends ItemImporter
 
         $this->item['created_by'] = $this->created_by;
 
-        $this->createComponentIfNotExists();
+        $this->createComponentIfNotExists($row);
     }
 
     /**
@@ -94,7 +96,7 @@ class ComponentImporter extends ItemImporter
      *
      * @since 3.0
      */
-    public function createComponentIfNotExists()
+    public function createComponentIfNotExists($row = null)
     {
         $name = trim($this->item['name'] ?? '');
         $serial = trim($this->item['serial'] ?? '');
@@ -132,6 +134,9 @@ class ComponentImporter extends ItemImporter
         if ($component->save()) {
             $this->log('Component '.$name.' was created');
             $this->recordCreated();
+            if ($row !== null) {
+                $this->recordOrderForImportedRow($component, $row);
+            }
 
             // If we have an asset tag, checkout to that asset.
             if (! empty($this->item['asset_tag']) && ($asset = Asset::where('asset_tag', $this->item['asset_tag'])->first())) {

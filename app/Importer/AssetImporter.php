@@ -87,7 +87,9 @@ class AssetImporter extends ItemImporter
         // avoid the ItemImporter's shared 'notes' handling.
         $this->setItemFromCsvIfPresent($row, 'name', 'item_name');
         $this->setItemFromCsvIfPresent($row, 'notes', 'asset_notes');
-        $this->setItemFromCsvIfPresent($row, 'order_number');
+        // order_number is not on the Asset model any more — recorded as
+        // an Order + OrderItem via recordOrderForImportedRow() after
+        // the create-branch save below.
         $this->setItemFromCsvIfPresent($row, 'purchase_cost');
         $this->setItemFromCsvIfPresent($row, 'serial');
 
@@ -323,6 +325,7 @@ class AssetImporter extends ItemImporter
                 $this->recordUpdated();
             } else {
                 $this->recordCreated();
+                $this->recordOrderForImportedRow($asset, $row);
             }
 
             // If we have a target to checkout to, lets do so.
