@@ -32,7 +32,6 @@ class LicenseFactory extends Factory
             'license_email' => $this->faker->safeEmail(),
             'name' => $this->faker->name(),
             'notes' => 'Created by DB seeder',
-            'order_number' => $this->faker->numberBetween(1000000, 50000000),
             'purchase_date' => $this->faker->dateTimeBetween('-1 years', 'now', date_default_timezone_get())->format('Y-m-d'),
             'reassignable' => $this->faker->boolean(),
             'seats' => $this->faker->numberBetween(1, 10),
