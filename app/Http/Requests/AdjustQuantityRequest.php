@@ -23,9 +23,12 @@ class AdjustQuantityRequest extends FormRequest
     {
         return [
             // Signed delta: positive to replenish, negative to decrement.
-            // The trait rejects the actual below-in-use case; here we
-            // just guard against zero (nothing to do) and non-integer.
-            'amount' => ['required', 'integer', 'not_in:0'],
+            // Zero is intentionally allowed so users can record an audit
+            // (physical count against the current DB qty). The trait
+            // writes a QuantityAdjust log entry with quantity=0 in that
+            // case without touching the on-hand column. The trait itself
+            // rejects the actual below-in-use case.
+            'amount' => ['required', 'integer'],
             'note' => ['required', 'string', 'max:65535'],
             'order_number' => ['nullable', 'string', 'max:191'],
             // Optional receipt/invoice/PO scan. Attaches to the same

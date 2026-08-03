@@ -83,17 +83,32 @@ class AdjustAccessoryQuantityApiTest extends TestCase
             ->assertJsonPath('messages.note.0', 'The note field is required.');
     }
 
-    public function test_zero_amount_is_rejected()
+    public function test_zero_amount_writes_audit_log_without_changing_qty()
     {
+        // Zero delta is an audit-only submission: user counted the shelf
+        // and confirmed it still matches the DB, so we record the
+        // QuantityAdjust log entry (with quantity=0) for provenance but
+        // do not touch the on-hand column.
         $accessory = Accessory::factory()->create(['qty' => 5]);
 
         $this->actingAsForApi(User::factory()->editAccessories()->create())
             ->postJson(route('api.accessories.adjust-quantity', $accessory), [
                 'amount' => 0,
-                'note' => 'nope',
+                'note' => 'shelf count matches',
             ])
             ->assertOk()
-            ->assertJsonPath('status', 'error');
+            ->assertJsonPath('status', 'success');
+
+        $this->assertSame(5, (int) $accessory->fresh()->qty);
+
+        $log = Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', ActionType::QuantityAdjust->value)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame(0, (int) $log->quantity);
+        $this->assertSame('shelf count matches', $log->note);
     }
 
     public function test_decrement_below_currently_checked_out_returns_422()

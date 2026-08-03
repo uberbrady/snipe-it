@@ -136,17 +136,33 @@ class AdjustAccessoryQuantityTest extends TestCase
         $this->assertSame(5, (int) $accessory->fresh()->qty);
     }
 
-    public function test_amount_cannot_be_zero()
+    public function test_zero_amount_writes_audit_log_without_changing_qty()
     {
+        // Zero delta is an audit-only submission: the user counted the
+        // shelf, it matches the DB, and they recorded that fact. We
+        // write a QuantityAdjust log entry (with quantity=0) for
+        // provenance but do not touch the on-hand column.
         $actor = User::factory()->editAccessories()->create();
         $accessory = Accessory::factory()->create(['qty' => 5]);
 
         $this->actingAs($actor)
             ->post(route('accessories.adjust-quantity', $accessory), [
                 'amount' => 0,
-                'note' => 'nope',
+                'note' => 'shelf count matches',
             ])
-            ->assertSessionHasErrors('amount');
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success');
+
+        $this->assertSame(5, (int) $accessory->fresh()->qty);
+
+        $log = \App\Models\Actionlog::where('item_type', Accessory::class)
+            ->where('item_id', $accessory->id)
+            ->where('action_type', \App\Enums\ActionType::QuantityAdjust->value)
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame(0, (int) $log->quantity);
+        $this->assertSame('shelf count matches', $log->note);
     }
 
     public function test_uploaded_receipt_attaches_to_the_same_log_row_and_surfaces_in_files_tab()

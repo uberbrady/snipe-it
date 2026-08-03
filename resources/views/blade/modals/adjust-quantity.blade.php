@@ -21,8 +21,11 @@
                         <label for="adjustQuantityAmount">{{ trans('general.adjust_quantity_amount') }}</label>
                         {{-- min is populated by snipeit.js when the modal opens (–available). The
                              browser stepper then refuses to go below and the built-in
-                             constraint-validation message surfaces if a user types past it. --}}
-                        <input type="number" class="form-control" id="adjustQuantityAmount" name="amount" step="1" data-rule-notzero="true" required>
+                             constraint-validation message surfaces if a user types past it.
+                             Zero is a valid input: it produces an audit-only QuantityAdjust
+                             log entry with no qty change so users can record a physical
+                             count against the current DB value. --}}
+                        <input type="number" class="form-control" id="adjustQuantityAmount" name="amount" step="1" required>
                         <p class="help-block">{{ trans('general.adjust_quantity_amount_help') }}</p>
                     </div>
 

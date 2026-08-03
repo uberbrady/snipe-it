@@ -1138,17 +1138,6 @@
                 return param.test(value);
             }, '{{ trans('validation.generic.invalid_value_in_field') }}');
 
-            // Opt-in via data-rule-not-zero="true" on any numeric input.
-            // Used by the adjust-quantity modal: the server-side rule is
-            // not_in:0 (zero delta = nothing to adjust), and HTML5 has no
-            // native way to exclude a single value from a numeric range.
-            $.validator.addMethod('notZero', function (value, element) {
-                if (this.optional(element)) {
-                    return true;
-                }
-                return parseFloat(value) !== 0;
-            }, '{{ trans('general.adjust_quantity_amount_help') }}');
-
             // Generic radio-toggles-required-select handler. Any form pattern
             // where a radio group hides/shows sibling <select>s (checkout-to
             // type in checkout forms today; any future similar toggle) can

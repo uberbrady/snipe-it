@@ -16,7 +16,7 @@ return [
     'adjust_quantity' => 'Adjust Quantity',
     'adjust_quantity_success' => 'Quantity adjusted successfully.',
     'adjust_quantity_amount' => 'Amount to add or remove',
-    'adjust_quantity_amount_help' => 'Positive to replenish (e.g. 5), negative to decrease (e.g. -3). Must not be zero.',
+    'adjust_quantity_amount_help' => 'Positive to replenish (e.g. 5), negative to decrease (e.g. -3). Zero records an audit entry without changing the on-hand quantity.',
     'adjust_quantity_note' => 'Reason / note',
     'adjust_quantity_below_zero' => 'That adjustment would take the on-hand quantity below what is currently checked out.',
     'adjusted_quantity' => 'adjusted quantity',

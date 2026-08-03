@@ -54,6 +54,11 @@ trait AdjustsQuantity
      * PHP-side read-modify-write). Wrapped in a transaction so the log
      * entry and the quantity change either both happen or both roll back.
      *
+     * A delta of zero is a valid audit-only submission: no qty change
+     * happens but the log entry still writes, so a user can record a
+     * physical count that confirms the DB value without also logging a
+     * spurious increment or decrement.
+     *
      * Rejects any adjustment that would leave the on-hand quantity below
      * the number of units currently in use — decrementing below what's
      * already checked out to users/assets would leave the DB inconsistent
@@ -69,10 +74,6 @@ trait AdjustsQuantity
      */
     public function adjustQuantity(int $delta, string $note, ?string $orderNumber = null, ?string $filename = null): void
     {
-        if ($delta === 0) {
-            return;
-        }
-
         $column = $this->getAdjustableQuantityColumn();
         $current = (int) ($this->{$column} ?? 0);
         $inUse = max(0, (int) $this->currentlyInUseCount());
@@ -91,12 +92,17 @@ trait AdjustsQuantity
             // {qty:{old,new}}) alongside our QuantityAdjust log. Keep
             // the in-memory attribute in sync so any downstream code
             // reading $this->qty after the call sees the new value.
-            $delta > 0
-                ? $this->newQuery()->where('id', $this->id)->increment($column, $delta)
-                : $this->newQuery()->where('id', $this->id)->decrement($column, abs($delta));
-
-            $this->{$column} = (int) $this->{$column} + $delta;
-            $this->syncOriginalAttribute($column);
+            // Gate the actual UPDATE on delta !== 0 so audit-only
+            // submissions (delta = 0) skip the round-trip.
+            if ($delta > 0) {
+                $this->newQuery()->where('id', $this->id)->increment($column, $delta);
+                $this->{$column} = (int) $this->{$column} + $delta;
+                $this->syncOriginalAttribute($column);
+            } elseif ($delta < 0) {
+                $this->newQuery()->where('id', $this->id)->decrement($column, abs($delta));
+                $this->{$column} = (int) $this->{$column} + $delta;
+                $this->syncOriginalAttribute($column);
+            }
 
             $log = new Actionlog;
             $log->item_type = static::class;
