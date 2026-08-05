@@ -19,6 +19,7 @@ return [
     'adjust_quantity_amount_help' => 'Positive to replenish (e.g. 5), negative to decrease (e.g. -3). Zero records an audit entry without changing the on-hand quantity.',
     'adjust_quantity_note' => 'Reason / note',
     'adjust_quantity_below_zero' => 'That adjustment would take the on-hand quantity below what is currently checked out.',
+    'adjust_quantity_prefilled_from_last_order' => 'Pre-populated from the last order.',
     'adjusted_quantity' => 'adjusted quantity',
     'confirmed_quantity' => 'confirmed quantity',
     'admin' => 'Admin Settings',
@@ -124,6 +125,8 @@ return [
     'created_plain' => 'Created',
     'currency' => '$', // this is deprecated
     'currency_text' => 'Currency', //
+    'currencies' => 'currencies',
+    'currency_prefilled_hint' => 'Pre-populated from location or system default — edit if this acquisition used a different currency.',
     'current' => 'Current',
     'current_password' => 'Current Password',
     'customize_report' => 'Customize Report',
@@ -266,6 +269,7 @@ return [
     'note_deleted' => 'Note Deleted',
     'delete_note' => 'Delete Note',
     'order_number' => 'Order Number',
+    'orders' => 'Orders',
     'only_deleted' => 'Only Deleted Assets',
     'page_menu' => 'Showing _MENU_ items',
     'page_error' => 'Could not determine previous page. Redirected to homepage.',
@@ -360,6 +364,7 @@ return [
     'total_accessories' => 'total accessories',
     'total_consumables' => 'total consumables',
     'total_cost' => 'Total Cost',
+    'total_orders' => 'Total Orders',
     'type' => 'Type',
     'undeployable' => 'Un-deployable',
     'unknown_admin' => 'Unknown Admin',
