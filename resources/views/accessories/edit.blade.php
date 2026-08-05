@@ -115,6 +115,12 @@
                 <x-input.quantity :item="$item" min="0" />
             @endif
 
+            <x-input.supplier-select
+                :label="trans('general.default_supplier')"
+                name="default_supplier_id"
+                :selected="old('default_supplier_id', $item->default_supplier_id)"
+            />
+
             <x-input.minimum-quantity :item="$item" />
 
             <x-form.row

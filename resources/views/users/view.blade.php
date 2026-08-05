@@ -452,8 +452,7 @@
                                         <td>{{ Helper::getFormattedDateObject($accessory->pivot->created_at, 'datetime',  false) }}</td>
                                         <td>{{ $accessory->pivot->note }}</td>
                                         <td>
-                                            {{-- Prefer the last OrderItem's price so this table matches the accessory info-panel's "last unit cost". Falls back to parent for legacy rows. --}}
-                                            {!! Helper::formatCurrencyOutput($accessory->lastOrderDefaults()['unit_cost'] ?? $accessory->purchase_cost) !!}
+                                            {!! Helper::formatCurrencyOutput($accessory->lastOrderDefaults()['unit_cost'] ?? null) !!}
                                         </td>
                                         <td class="hidden-print">
                                             @can('checkin', $accessory)
@@ -496,8 +495,7 @@
                                     <tr>
                                         <td>{!! $consumable->present()->nameUrl() !!}</td>
                                         <td>
-                                            {{-- Same "last order unit cost" preference as the accessories table above. --}}
-                                            {!! Helper::formatCurrencyOutput($consumable->lastOrderDefaults()['unit_cost'] ?? $consumable->purchase_cost) !!}
+                                            {!! Helper::formatCurrencyOutput($consumable->lastOrderDefaults()['unit_cost'] ?? null) !!}
                                         </td>
                                         <td>{{ Helper::getFormattedDateObject($consumable->pivot->created_at, 'datetime',  false) }}</td>
                                         <td>{{ $consumable->pivot->note }}</td>

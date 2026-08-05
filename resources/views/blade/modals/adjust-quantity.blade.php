@@ -29,34 +29,49 @@
                         <p class="help-block">{{ trans('general.adjust_quantity_amount_help') }}</p>
                     </div>
 
-                    <div class="form-group">
-                        <label for="adjustQuantityOrder">{{ trans('general.order_number') }}</label>
-                        <input type="text" class="form-control" id="adjustQuantityOrder" name="order_number" maxlength="191">
+                    {{-- Acquisition-only fields (order_number, supplier,
+                         unit cost, currency). Shown for positive qty
+                         changes and hidden by snipeit.js when the amount
+                         is 0 or negative — those cases are corrections
+                         or losses rather than purchases, so purchase
+                         metadata doesn't apply. --}}
+                    <div id="adjustQuantityAcquisitionFields">
+                        <div class="form-group">
+                            <label for="adjustQuantityOrder">{{ trans('general.order_number') }}</label>
+                            <input type="text" class="form-control" id="adjustQuantityOrder" name="order_number" maxlength="191">
+                        </div>
+
+                        {{-- Inlined js-data-ajax select instead of <x-input.supplier-select>
+                             for the same reason the file-upload input is inlined below: the
+                             shared component uses a Bootstrap 3 horizontal-form scaffold
+                             (col-md-3 label + col-md-7 input) that collides with the
+                             modal-footer top border. snipeit.js auto-initializes any
+                             .js-data-ajax select. --}}
+                        <div class="form-group">
+                            <label for="adjustQuantitySupplier">{{ trans('general.supplier') }}</label>
+                            <select
+                                class="js-data-ajax form-control"
+                                data-endpoint="suppliers"
+                                data-placeholder="{{ trans('general.select_supplier') }}"
+                                name="supplier_id"
+                                id="adjustQuantitySupplier"
+                                style="width: 100%"
+                                aria-label="{{ trans('general.supplier') }}"
+                            >
+                                <option value=""></option>
+                            </select>
+                        </div>
                     </div>
 
-                    {{-- Inlined js-data-ajax select instead of <x-input.supplier-select>
-                         for the same reason the file-upload input is inlined below: the
-                         shared component uses a Bootstrap 3 horizontal-form scaffold
-                         (col-md-3 label + col-md-7 input) that collides with the
-                         modal-footer top border. snipeit.js auto-initializes any
-                         .js-data-ajax select. --}}
                     <div class="form-group">
-                        <label for="adjustQuantitySupplier">{{ trans('general.supplier') }}</label>
-                        <select
-                            class="js-data-ajax form-control"
-                            data-endpoint="suppliers"
-                            data-placeholder="{{ trans('general.select_supplier') }}"
-                            name="supplier_id"
-                            id="adjustQuantitySupplier"
-                            style="width: 100%"
-                            aria-label="{{ trans('general.supplier') }}"
-                        >
-                            <option value=""></option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="adjustQuantityPurchaseDate">{{ trans('general.purchase_date') }}</label>
+                        {{-- Label swaps between "Purchase Date" (positive qty)
+                             and "Date" (0 or negative) via snipeit.js. --}}
+                        <label
+                            for="adjustQuantityPurchaseDate"
+                            id="adjustQuantityPurchaseDateLabel"
+                            data-label-purchase="{{ trans('general.purchase_date') }}"
+                            data-label-generic="{{ trans('general.date') }}"
+                        >{{ trans('general.purchase_date') }}</label>
                         {{-- Pre-populated with today's date because most --}}
                         {{-- adjust events happen the day they are recorded. --}}
                         {{-- Editable, and snipeit.js resets to today on --}}
@@ -80,7 +95,7 @@
                          event (Snipe-IT's historical currency handling
                          is squishy already). Placeholder hints at the
                          system default without stamping it. --}}
-                    <div class="row">
+                    <div class="row" id="adjustQuantityCostRow">
                         <div class="col-md-8 form-group" style="padding-right: 5px;">
                             <label for="adjustQuantityUnitCost">{{ trans('general.unit_cost') }}</label>
                             <input

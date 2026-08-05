@@ -121,6 +121,12 @@
                 <x-input.quantity :item="$item" />
             @endif
 
+            <x-input.supplier-select
+                :label="trans('general.default_supplier')"
+                name="default_supplier_id"
+                :selected="old('default_supplier_id', $item->default_supplier_id)"
+            />
+
             <x-form.row
                 :label="trans('general.notes')"
                 :$item
