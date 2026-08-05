@@ -79,6 +79,16 @@ trait HandlesAdjustQuantity
         Model $model,
         int $delta,
     ): ?int {
+        // Orders / OrderItems record purchases only. A negative delta is
+        // a correction / consumption / loss and a zero delta is a
+        // physical-count audit — neither is a purchase, so neither
+        // writes to the Orders ledger. Both still write an action_log
+        // entry (that's the QuantityAdjust source of truth), just
+        // without an order_item_id link.
+        if ($delta <= 0) {
+            return null;
+        }
+
         $payload = $this->extractOrderPayloadFromRequest($request);
 
         if ($this->orderPayloadIsEmpty($payload)) {
@@ -101,6 +111,7 @@ trait HandlesAdjustQuantity
                 [
                     'purchase_date' => $payload['purchase_date'],
                     'currency' => $payload['currency'],
+                    'notes' => $payload['notes'],
                 ],
             );
             if (! $order->exists) {
@@ -114,6 +125,7 @@ trait HandlesAdjustQuantity
                 'company_id' => $model->company_id ?? null,
                 'purchase_date' => $payload['purchase_date'],
                 'currency' => $payload['currency'],
+                'notes' => $payload['notes'],
             ]);
             $order->created_by = auth()->id();
             $order->save();
@@ -135,38 +147,65 @@ trait HandlesAdjustQuantity
     }
 
     /**
-     * Update the observer-created initial Order for a freshly-saved
-     * inventory item with the form-supplied order_number and currency.
-     * These two fields don't live on the parent (Accessory / Consumable
-     * / Component) column, so the observer can't capture them at
-     * create time — the controller has to enrich the resulting Order
-     * with what the user typed. No-op when neither field is filled or
-     * when no OrderItem was created (defensive, shouldn't happen).
+     * Update the observer-created initial Order + OrderItem for a
+     * freshly-saved inventory item with the form-supplied transaction
+     * fields. None of these fields live on the accessory / consumable /
+     * component parent column any more — they moved to Orders /
+     * OrderItems, so the observer writes placeholders and the
+     * controller enriches with the form values right after save.
+     *
+     * Order fields:    order_number, supplier_id, purchase_date, currency
+     * OrderItem field: price (from request `purchase_cost`)
+     *
+     * No-op when the request carried none of them.
      */
     protected function enrichInitialOrderFromRequest(Request $request, Model $item): void
     {
         $orderNumber = trim((string) $request->input('order_number', ''));
         $currency = trim((string) $request->input('currency', ''));
+        $supplierId = $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null;
+        $purchaseDate = $request->filled('purchase_date') ? $request->input('purchase_date') : null;
+        $purchaseCost = $request->filled('purchase_cost') ? (float) $request->input('purchase_cost') : null;
+        // The create form doesn't have a per-order note field yet, but
+        // accept `notes` if the caller (importer / API) passes one so the
+        // initial Order carries acquisition context matching the modal.
+        $notes = $request->filled('notes') ? trim((string) $request->input('notes')) : null;
 
-        if ($orderNumber === '' && $currency === '') {
+        if ($orderNumber === '' && $currency === '' && $supplierId === null && $purchaseDate === null && $purchaseCost === null && $notes === null) {
             return;
         }
 
-        $initialOrder = $item->orderItems()->latest('id')->first()?->order;
+        $initialLine = $item->orderItems()->latest('id')->first();
+        if (! $initialLine) {
+            return;
+        }
+        $initialOrder = $initialLine->order;
         if (! $initialOrder) {
             return;
         }
 
-        $updates = [];
+        $orderUpdates = [];
         if ($orderNumber !== '' && $initialOrder->order_number !== $orderNumber) {
-            $updates['order_number'] = $orderNumber;
+            $orderUpdates['order_number'] = $orderNumber;
         }
         if ($currency !== '' && $initialOrder->currency !== $currency) {
-            $updates['currency'] = $currency;
+            $orderUpdates['currency'] = $currency;
+        }
+        if ($supplierId !== null && (int) $initialOrder->supplier_id !== $supplierId) {
+            $orderUpdates['supplier_id'] = $supplierId;
+        }
+        if ($purchaseDate !== null && optional($initialOrder->purchase_date)->toDateString() !== $purchaseDate) {
+            $orderUpdates['purchase_date'] = $purchaseDate;
+        }
+        if ($notes !== null && $initialOrder->notes !== $notes) {
+            $orderUpdates['notes'] = $notes;
+        }
+        if ($orderUpdates !== []) {
+            $initialOrder->update($orderUpdates);
         }
 
-        if ($updates !== []) {
-            $initialOrder->update($updates);
+        if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
+            $initialLine->update(['price' => $purchaseCost]);
         }
     }
 
@@ -180,6 +219,7 @@ trait HandlesAdjustQuantity
     {
         $orderNumberRaw = trim((string) $request->input('order_number', ''));
         $currencyRaw = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
+        $noteRaw = $request->filled('note') ? trim((string) $request->input('note')) : null;
 
         return [
             'order_number' => $orderNumberRaw !== '' ? $orderNumberRaw : null,
@@ -187,6 +227,7 @@ trait HandlesAdjustQuantity
             'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
             'unit_cost' => $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null,
             'currency' => ($currencyRaw !== null && $currencyRaw !== '') ? $currencyRaw : null,
+            'notes' => ($noteRaw !== null && $noteRaw !== '') ? $noteRaw : null,
         ];
     }
 
