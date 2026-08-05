@@ -81,11 +81,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         $this->assertEquals($row['serialNumber'], $newLicense->serial);
         $this->assertEquals($row['purchaseDate'], $newLicense->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $newLicense->purchase_cost);
-        // order_number moved off the parent License column to the Orders /
-        // OrderItems polymorphic pair. Verify the importer's helper wrote
-        // a matching Order and linked it to the new license via OrderItem.
-        $orderItem = $newLicense->orderItems()->firstOrFail();
-        $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
+        $this->assertEquals($row['orderNumber'], $newLicense->order_number);
         $this->assertEquals($row['seats'], $newLicense->seats);
         $this->assertEquals($row['notes'], $newLicense->notes);
         $this->assertEquals($row['licensedToName'], $newLicense->license_name);
@@ -265,11 +261,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         $this->assertEquals($row['serialNumber'], $updatedLicense->serial);
         $this->assertEquals($row['purchaseDate'], $updatedLicense->purchase_date->toDateString());
         $this->assertEquals($row['purchaseCost'], $updatedLicense->purchase_cost);
-        // order_number moved off the parent License column to Orders. The
-        // importer's recordOrderForImportedRow helper only runs on the
-        // CREATE branch (update mode means "correction to an existing
-        // row", not "new acquisition"), so an update-mode import doesn't
-        // manufacture an Order for the row.
+        $this->assertEquals($row['orderNumber'], $updatedLicense->order_number);
         $this->assertEquals($row['seats'], $updatedLicense->seats);
         $this->assertEquals($row['notes'], $updatedLicense->notes);
         $this->assertEquals($row['licensedToName'], $updatedLicense->license_name);
@@ -350,21 +342,22 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
             ->where('serial', $initialRow['serialNumber'])
             ->sole();
 
+        $originalEmail = $license->license_email;
         $originalNotes = $license->notes;
         $originalExpirationDate = $license->expiration_date?->toDateString();
 
         // Re-import with a CSV that only has the identity fields plus one
         // updated field. All other columns are absent from the CSV, so
-        // their DB values must be preserved. license_email fills the "one
-        // updated field" slot that order_number used to hold — the latter
-        // moved off the parent License column to Orders / OrderItems, and
-        // the importer's Order helper doesn't fire on update-mode.
-        $newEmail = 'updated-email@example.com';
+        // their DB values must be preserved.
+        // A short static order number keeps the assertion within License's
+        // order_number varchar(50) limit regardless of what the initial row
+        // faker produced. Prefixing the faker value overflowed on some seeds.
+        $newOrderNumber = 'UPDATED-ORDER-123';
 
         $partialRow = [
             'licenseName' => $initialRow['licenseName'],
             'serialNumber' => $initialRow['serialNumber'],
-            'licensedToEmail' => $newEmail,
+            'orderNumber' => $newOrderNumber,
         ];
         $partialFile = new ImportFileBuilder([$partialRow]);
         $partialImport = Import::factory()->license()->create([
@@ -376,7 +369,8 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         ])->assertOk();
 
         $license->refresh();
-        $this->assertEquals($newEmail, $license->license_email);
+        $this->assertEquals($newOrderNumber, $license->order_number);
+        $this->assertEquals($originalEmail, $license->license_email);
         $this->assertEquals($originalNotes, $license->notes);
         $this->assertEquals($originalExpirationDate, $license->expiration_date?->toDateString());
     }
@@ -400,12 +394,8 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
             ->where('serial', $initialRow['serialNumber'])
             ->sole();
 
-        // Update the license_email field on the row rather than
-        // order_number, since order_number moved off the parent License
-        // column to Orders and the importer's Order helper doesn't fire
-        // on update-mode.
         $updatedRow = array_merge($initialRow, [
-            'licensedToEmail' => 'updated-'.$initialRow['licensedToEmail'],
+            'orderNumber' => (string) $initialRow['orderNumber'].'-UPD',
         ]);
 
         $updateFile = new ImportFileBuilder([$updatedRow]);
@@ -419,7 +409,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         ])->assertOk();
 
         $license->refresh();
-        $this->assertEquals($updatedRow['licensedToEmail'], $license->license_email);
+        $this->assertEquals($updatedRow['orderNumber'], $license->order_number);
 
         $updateLog = ActivityLog::query()
             ->where('item_type', License::class)
@@ -490,13 +480,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         $this->assertEquals($row['companyName'], $newLicense->serial);
         $this->assertEquals($row['isMaintained'], $newLicense->purchase_date->toDateString());
         $this->assertEquals($row['isReassignAble'], $newLicense->purchase_cost);
-        // See the import_licenses test above for why order_number now
-        // lives on Orders / OrderItems rather than the parent column.
-        // The custom mapping above routes the licensedToName CSV column
-        // to the internal order_number field, which recordOrderForImportedRow
-        // then turns into a matching Order on the polymorphic side.
-        $orderItem = $newLicense->orderItems()->firstOrFail();
-        $this->assertEquals($row['licensedToName'], $orderItem->order->order_number);
+        $this->assertEquals($row['licensedToName'], $newLicense->order_number);
         $this->assertEquals($row['expirationDate'], $newLicense->seats);
         $this->assertEquals($row['licensedToEmail'], $newLicense->notes);
         $this->assertEquals($row['seats'], $newLicense->license_name);

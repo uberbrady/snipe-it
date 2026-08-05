@@ -213,6 +213,7 @@ class UpdateLicenseTest extends TestCase
             'seats' => 5,
             'license_email' => null,
             'notes' => null,
+            'order_number' => null,
             'purchase_date' => null,
             'reassignable' => 0,
             'serial' => null,

@@ -368,16 +368,41 @@ class CustomComponentReportTest extends TestCase
 
     public function test_limiting_by_order_number()
     {
-        // order_number moved off the parent Component column to the
-        // Orders / OrderItems data model. CustomComponentReportController
-        // still has a legacy `by_order_number` filter that raw-SQLs
-        // `components.order_number` (no longer a real column) and a
-        // report column that reads $component->getRawOriginal('order_number').
-        // Both need reworking to walk the Orders relation before this
-        // test can be reinstated.
-        $this->markTestIncomplete(
-            'CustomComponentReport still references the parent order_number column; needs rework to walk Orders relation.'
-        );
+        // Under the new Orders / OrderItems model, order_number lives on
+        // the Order and each Component links via a polymorphic OrderItem.
+        // The report's `by_order_number` filter now walks that relation
+        // (whereHas('orders')) instead of the removed
+        // components.order_number column, and the export's `order`
+        // column plucks distinct order numbers from the eager-loaded
+        // relation.
+        $componentA = Component::factory()->create(['name' => 'Component A']);
+        $componentB = Component::factory()->create(['name' => 'Component B']);
+
+        $orderA = \App\Models\Order::create(['order_number' => 'ORD-001']);
+        $orderB = \App\Models\Order::create(['order_number' => 'ORD-002']);
+        \App\Models\OrderItem::create([
+            'order_id' => $orderA->id,
+            'item_type' => Component::class,
+            'item_id' => $componentA->id,
+            'qty' => 1,
+        ]);
+        \App\Models\OrderItem::create([
+            'order_id' => $orderB->id,
+            'item_type' => Component::class,
+            'item_id' => $componentB->id,
+            'qty' => 1,
+        ]);
+
+        $this->sendRequest([
+            'component_name' => '1',
+            'order' => '1',
+            'by_order_number' => 'ORD-001',
+        ])
+            ->assertOk()
+            ->assertCsvHeader()
+            ->assertSeePairsInStreamedResponse(['Order Number' => 'ORD-001', 'Component Name' => 'Component A'])
+            ->assertDontSeeTextInStreamedResponse('ORD-002')
+            ->assertDontSeeTextInStreamedResponse('Component B');
     }
 
     public function test_limiting_by_purchase_date_range()

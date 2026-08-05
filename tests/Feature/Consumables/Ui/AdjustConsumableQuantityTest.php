@@ -49,7 +49,7 @@ class AdjustConsumableQuantityTest extends TestCase
 
         $this->assertSame(15, (int) $log->quantity);
         $this->assertSame('PO arrived', $log->note);
-        $this->assertSame('PO-77', \App\Models\Order::findOrFail($log->order_id)->order_number);
+        $this->assertSame('PO-77', $log->orderItem->order->order_number);
     }
 
     public function test_decrement_below_zero_is_rejected()
