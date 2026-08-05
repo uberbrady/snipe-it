@@ -156,6 +156,7 @@ class Asset extends Depreciable
         'asset_eol_date' => ['nullable', 'date'],
         'eol_explicit' => ['nullable', 'boolean'],
         'byod' => ['nullable', 'boolean'],
+        'order_number' => ['nullable', 'string', 'max:191'],
         'notes' => ['nullable', 'string', 'max:65535'],
         'assigned_to' => ['nullable', 'integer', 'required_with:assigned_type'],
         'assigned_type' => ['nullable', 'required_with:assigned_to', 'in:'.User::class.','.Location::class.','.Asset::class],
@@ -178,6 +179,7 @@ class Asset extends Depreciable
         'model_id',
         'name',
         'notes',
+        'order_number',
         'purchase_cost',
         'purchase_date',
         'rtd_location_id',
@@ -208,6 +210,7 @@ class Asset extends Depreciable
         'name',
         'asset_tag',
         'serial',
+        'order_number',
         'purchase_cost',
         'notes',
         'created_at',
@@ -236,11 +239,6 @@ class Asset extends Depreciable
         'category' => ['name'],
         'manufacturer' => ['name'],
         'assigned_to' => ['name'],
-        // Historical order_number lives on the Orders table via
-        // order_items now (see HasOrders trait). Search hits it through
-        // the orders() HasManyThrough so an order-number string still
-        // surfaces every asset ever acquired under that order.
-        'orders' => ['order_number'],
     ];
 
     /**
@@ -1953,12 +1951,7 @@ class Asset extends Depreciable
                     )->orWhere('assets.name', 'LIKE', '%'.$search.'%')
                         ->orWhere('assets.asset_tag', 'LIKE', '%'.$search.'%')
                         ->orWhere('assets.serial', 'LIKE', '%'.$search.'%')
-                        // Historical order_number lives on the Orders
-                        // table via order_items now; free-text search on
-                        // it goes through $searchableRelations['orders'].
-                        // Dropped from this raw-SQL fallback to avoid a
-                        // reference to the removed assets.order_number
-                        // column.
+                        ->orWhere('assets.order_number', 'LIKE', '%'.$search.'%')
                         ->orWhere('assets.notes', 'LIKE', '%'.$search.'%');
                 }
 

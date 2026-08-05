@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Models\Actionlog;
 use App\Models\Asset;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Setting;
 use Carbon\Carbon;
 
@@ -111,6 +113,48 @@ class AssetObserver
             $logAction->setActionSource('importer');
         }
         $logAction->logaction('create');
+
+        // Every new asset is a transaction: supplier, price, currency,
+        // date. Record it as Order + OrderItem regardless of whether
+        // the operator typed an order_number. Only dedupe on the tuple
+        // when a real order_number label is present. A blank label is a
+        // distinct transaction each time. Skip if the AssetImporter
+        // already wrote the OrderItem for this row.
+        $existingLine = OrderItem::where('item_type', Asset::class)
+            ->where('item_id', $asset->id)
+            ->exists();
+
+        if (! $existingLine) {
+            $orderNumber = trim((string) ($asset->order_number ?? '')) ?: null;
+
+            $order = $orderNumber !== null
+                ? Order::firstOrCreate(
+                    [
+                        'order_number' => $orderNumber,
+                        'supplier_id' => $asset->supplier_id,
+                        'company_id' => $asset->company_id,
+                    ],
+                    [
+                        'purchase_date' => $asset->purchase_date,
+                        'created_by' => auth()->id(),
+                    ],
+                )
+                : Order::create([
+                    'order_number' => null,
+                    'supplier_id' => $asset->supplier_id,
+                    'company_id' => $asset->company_id,
+                    'purchase_date' => $asset->purchase_date,
+                    'created_by' => auth()->id(),
+                ]);
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'item_type' => Asset::class,
+                'item_id' => $asset->id,
+                'qty' => 1,
+                'price' => $asset->purchase_cost,
+            ]);
+        }
     }
 
     /**

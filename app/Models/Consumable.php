@@ -373,10 +373,54 @@ class Consumable extends SnipeModel
         return $remaining;
     }
 
+    /**
+     * Sum every OrderItem's line total (qty × price) grouped by the
+     * parent Order's currency, so mixed-currency acquisitions render
+     * as a per-currency breakdown instead of a single misleading total.
+     *
+     * Falls back to `qty × parent.purchase_cost` under the system's
+     * default_currency when the item has no OrderItems yet (legacy
+     * rows uncaught by backfill, or brand-new items with a purchase
+     * cost set but no acquisitions recorded).
+     *
+     * Returns [] when both paths are empty. The info-panel skips the
+     * "Total cost" line entirely in that case rather than showing 0.
+     *
+     * @return array<string, float> currency code => sum in that currency
+     */
+    public function totalCostSumByCurrency(): array
+    {
+        $totals = $this->orderItems()
+            ->with('order:id,currency')
+            ->get()
+            ->reduce(function (array $carry, OrderItem $line) {
+                if ($line->price === null) {
+                    return $carry;
+                }
+                $currency = $line->order?->currency
+                    ?? Setting::getSettings()?->default_currency
+                    ?? '';
+                $carry[$currency] = ($carry[$currency] ?? 0) + ($line->qty * (float) $line->price);
+
+                return $carry;
+            }, []);
+
+        if ($totals === [] && $this->purchase_cost !== null) {
+            $default = Setting::getSettings()?->default_currency ?? '';
+            $totals[$default] = $this->qty * (float) $this->purchase_cost;
+        }
+
+        return $totals;
+    }
+
+    /**
+     * Naive cross-currency sum, kept for backwards compatibility with
+     * external callers. New code should prefer totalCostSumByCurrency()
+     * so mixed-currency totals stay disambiguated.
+     */
     public function totalCostSum()
     {
-
-        return $this->purchase_cost !== null ? $this->qty * $this->purchase_cost : null;
+        return array_sum($this->totalCostSumByCurrency()) ?: null;
     }
 
     /**

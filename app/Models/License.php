@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Console\Commands\SendExpiringLicenseNotifications;
 use App\Helpers\Helper;
 use App\Models\Traits\CompanyableTrait;
-use App\Models\Traits\HasOrders;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
@@ -29,7 +28,6 @@ class License extends Depreciable
     protected $presenter = LicensePresenter::class;
 
     use CompanyableTrait;
-    use HasOrders;
     use HasUploads;
     use Loggable, Presentable;
     use SoftDeletes;
@@ -92,6 +90,7 @@ class License extends Depreciable
         'category_id',
         'name',
         'notes',
+        'order_number',
         'purchase_cost',
         'purchase_date',
         'purchase_order',
@@ -114,6 +113,7 @@ class License extends Depreciable
         'name',
         'serial',
         'notes',
+        'order_number',
         'purchase_order',
         'purchase_cost',
         'purchase_date',
@@ -134,11 +134,6 @@ class License extends Depreciable
         'depreciation' => ['name'],
         'supplier' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
-        // Historical order_number lives on the Orders table via
-        // order_items now (see HasOrders trait). Search hits it through
-        // the orders() HasManyThrough so an order-number string still
-        // surfaces every license ever acquired under that order.
-        'orders' => ['order_number'],
     ];
 
     protected $appends = ['free_seat_count'];

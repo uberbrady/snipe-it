@@ -48,7 +48,7 @@ class Actionlog extends SnipeModel
         'item_id',
         'action_type',
         'note',
-        'order_id',
+        'order_item_id',
         'target_id',
         'target_type',
         'stored_eula',
@@ -92,6 +92,11 @@ class Actionlog extends SnipeModel
         'location' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'username', 'email', 'employee_num'],
         'user' => ['first_name', 'last_name', 'username', 'email', 'employee_num'],
+        // Free-text search on QuantityAdjust logs walks through the
+        // OrderItem line to its parent Order so an order-number
+        // string still finds the right log rows after the parent
+        // action_logs.order_number column moved to Orders.
+        'orderItem.order' => ['order_number'],
         'assets' => ['asset_tag', 'name', 'serial', 'notes', 'purchase_date'],
         'assets.model' => ['name', 'model_number', 'eol', 'notes'],
         'assets.model.category' => ['name', 'notes'],
@@ -365,6 +370,21 @@ class Actionlog extends SnipeModel
     {
         return $this->belongsTo(User::class, 'created_by')
             ->withTrashed();
+    }
+
+    /**
+     * QuantityAdjust log rows carry the specific OrderItem line this
+     * replenishment produced via the order_item_id column. The parent
+     * Order (with order_number, purchase_order, supplier, currency,
+     * purchase_date) is reachable via `$log->orderItem->order`.
+     *
+     * Points at order_items rather than orders because a single Order
+     * deduped across staggered receipts carries multiple lines, and the
+     * log entry has to identify the exact line for its event.
+     */
+    public function orderItem()
+    {
+        return $this->belongsTo(OrderItem::class, 'order_item_id');
     }
 
     /**
