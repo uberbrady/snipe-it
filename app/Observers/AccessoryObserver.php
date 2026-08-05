@@ -51,39 +51,46 @@ class AccessoryObserver
     public function created(Accessory $accessory)
     {
         $attrs = $accessory->getAttributes();
-        $qty = max(1, (int) ($attrs['qty'] ?? 0));
+        $initialQty = (int) ($attrs['qty'] ?? 0);
 
-        // Every accessory creation IS an acquisition transaction. Write
-        // the initial Order + OrderItem using what's on the model. The
-        // order_number stays null since the parent has no column for it
-        // any more — controllers doing form-driven creates enrich the
-        // Order with the form-supplied order_number / currency after
-        // save. Factories, seeders, importers, and any other callers
-        // just get the parent-attribute defaults, which keeps their
-        // rows discoverable via the Orders ledger.
-        $currency = ($accessory->location && $accessory->location->currency !== '' && $accessory->location->currency !== null)
-            ? $accessory->location->currency
-            : Setting::getSettings()?->default_currency;
+        // Only write an Order + OrderItem when the create carried real
+        // stock (qty > 0). qty=0/null means "container-only" — a bare
+        // accessory row without an initial acquisition — and there's no
+        // transaction to record. Later adjust-quantity events write
+        // their own Order + OrderItem when stock actually arrives.
+        //
+        // For qty > 0, the Order + OrderItem written here are
+        // placeholders. Transaction metadata (supplier_id, purchase_date,
+        // purchase_cost, currency, order_number) only lives on Orders /
+        // OrderItems now — form-driven creates enrich it via the
+        // controller's enrichInitialOrderFromRequest(), and factory /
+        // seeder paths fill it via an afterCreating hook.
+        $orderItem = null;
+        if ($initialQty > 0) {
+            $currency = ($accessory->location && $accessory->location->currency !== '' && $accessory->location->currency !== null)
+                ? $accessory->location->currency
+                : Setting::getSettings()?->default_currency;
 
-        $order = new Order([
-            'order_number' => null,
-            'supplier_id' => $accessory->supplier_id,
-            'company_id' => $accessory->company_id,
-            'purchase_date' => $accessory->purchase_date,
-            'currency' => $currency,
-        ]);
-        $order->created_by = $accessory->created_by ?? auth()->id();
-        $order->save();
+            $order = new Order([
+                'order_number' => null,
+                'supplier_id' => null,
+                'company_id' => $accessory->company_id,
+                'purchase_date' => null,
+                'currency' => $currency,
+            ]);
+            $order->created_by = $accessory->created_by ?? auth()->id();
+            $order->save();
 
-        $orderItem = new OrderItem([
-            'order_id' => $order->id,
-            'item_type' => Accessory::class,
-            'item_id' => $accessory->id,
-            'qty' => $qty,
-            'price' => $accessory->purchase_cost,
-        ]);
-        $orderItem->created_by = $accessory->created_by ?? auth()->id();
-        $orderItem->save();
+            $orderItem = new OrderItem([
+                'order_id' => $order->id,
+                'item_type' => Accessory::class,
+                'item_id' => $accessory->id,
+                'qty' => $initialQty,
+                'price' => null,
+            ]);
+            $orderItem->created_by = $accessory->created_by ?? auth()->id();
+            $orderItem->save();
+        }
 
         $logAction = new Actionlog;
         $logAction->item_type = Accessory::class;
@@ -93,11 +100,11 @@ class AccessoryObserver
         // Capture the initial on-hand qty so the create log gives auditors
         // a "started with N units" anchor point. Subsequent QuantityAdjust
         // logs record deltas, not running totals.
-        $logAction->quantity = (int) ($attrs['qty'] ?? 0);
-        // Link the create log to the OrderItem so the history-tab
-        // order-number column resolves to the initial Order (matches
-        // how QuantityAdjust logs surface later replenishments).
-        $logAction->order_item_id = $orderItem->id;
+        $logAction->quantity = $initialQty;
+        // Link the create log to the OrderItem when one exists. For
+        // container-only creates (qty=0) the log has no OrderItem to
+        // point at.
+        $logAction->order_item_id = $orderItem?->id;
         if ($accessory->imported) {
             $logAction->setActionSource('importer');
         }
