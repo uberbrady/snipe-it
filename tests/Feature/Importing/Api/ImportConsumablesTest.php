@@ -83,17 +83,19 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['category'], $newConsumable->category->name);
         $this->assertEquals($row['location'], $newConsumable->location->name);
         $this->assertEquals($row['companyName'], $newConsumable->company->name);
-        $this->assertNotNull($newConsumable->supplier_id);
+        // supplier + purchase_date + purchase_cost all moved off the
+        // parent to the Orders / OrderItems polymorphic pair. The
+        // importer's recordOrderForImportedRow helper puts them on the
+        // OrderItem's Order (supplier / purchase_date) and on the
+        // OrderItem itself (price). default_supplier_id gets seeded on
+        // the parent so future orders pre-populate.
+        $this->assertNotNull($newConsumable->default_supplier_id);
         $this->assertFalse($newConsumable->requestable);
         $this->assertNull($newConsumable->image);
-        // order_number moved off the parent Consumable column to the
-        // Orders / OrderItems polymorphic pair. Verify the importer's
-        // recordOrderForImportedRow helper wrote a matching Order and
-        // linked it to the new consumable via an OrderItem.
         $orderItem = $newConsumable->orderItems()->firstOrFail();
         $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
-        $this->assertEquals($row['purchaseDate'], $newConsumable->purchase_date->toDateString());
-        $this->assertEquals($row['purchaseCost'], $newConsumable->purchase_cost);
+        $this->assertEquals($row['purchaseDate'], $orderItem->order->purchase_date->toDateString());
+        $this->assertEquals((float) $row['purchaseCost'], (float) $orderItem->price);
         $this->assertNull($newConsumable->min_amt);
         $this->assertEquals('', $newConsumable->model_number);
         $this->assertNull($newConsumable->item_number);
@@ -235,13 +237,14 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['category'], $updatedConsumable->category->name);
         $this->assertEquals($row['location'], $updatedConsumable->location->name);
         $this->assertEquals($row['companyName'], $updatedConsumable->company->name);
-        // order_number does NOT persist on the parent through an update
-        // (see update_accessory_from_import for the same rationale;
-        // importer_qty_change_creates_quantity_adjust_log covers the log).
-        $this->assertEquals($row['purchaseDate'], $updatedConsumable->purchase_date->toDateString());
-        $this->assertEquals($row['purchaseCost'], $updatedConsumable->purchase_cost);
+        // Acquisition metadata lives on the latest OrderItem's Order —
+        // the update path writes a new Order + OrderItem when the CSV
+        // carries acquisition columns, per recordOrderForImportedRow.
+        $latestOrderItem = $updatedConsumable->orderItems()->latest('id')->firstOrFail();
+        $this->assertEquals($row['purchaseDate'], $latestOrderItem->order->purchase_date->toDateString());
+        $this->assertEquals((float) $row['purchaseCost'], (float) $latestOrderItem->price);
+        $this->assertEquals($row['supplier'], $latestOrderItem->order->supplier->name);
 
-        $this->assertEquals($row['supplier'], $updatedConsumable->supplier->name);
         $this->assertEquals($consumable->requestable, $updatedConsumable->requestable);
         $this->assertEquals($consumable->min_amt, $updatedConsumable->min_amt);
         $this->assertEquals($consumable->model_number, $updatedConsumable->model_number);
