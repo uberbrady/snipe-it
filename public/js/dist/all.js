@@ -74774,6 +74774,58 @@ $(function () {
     // js-uploadFile paints selected filenames into #{id}-info; clear it too
     // so stale filenames from a previous open don't linger in the new modal.
     $modal.find('#adjustQuantityFile-info').empty();
+
+    // Acquisition-metadata fields (order number, supplier, unit cost,
+    // currency) only make sense when the qty change is a positive
+    // addition (a purchase). Zero or negative amounts represent
+    // corrections / consumption / losses, not acquisitions, so hide
+    // those fields — and blank their values so a submit from that
+    // state doesn't ship stale purchase metadata alongside the log
+    // entry. Show them again the moment the operator types a
+    // positive number. The date label swaps to a generic "Date"
+    // when the event isn't a purchase.
+    //
+    // On modal open the amount is empty ("we don't know yet"), so
+    // stay in the default acquisition-visible state — prefilled
+    // supplier / cost / currency from the last order are preserved
+    // and the hint stays visible if it was shown. We only clear
+    // when the operator actually commits to a 0/negative value.
+    var $acquisitionFields = $modal.find('#adjustQuantityAcquisitionFields');
+    var $costRow = $modal.find('#adjustQuantityCostRow');
+    var $dateLabel = $modal.find('#adjustQuantityPurchaseDateLabel');
+    var purchaseLabel = $dateLabel.data('label-purchase');
+    var genericLabel = $dateLabel.data('label-generic');
+    var syncAcquisitionFieldsVisibility = function syncAcquisitionFieldsVisibility() {
+      var raw = $amount.val();
+      // Treat "no value yet" as still-a-purchase for the visibility
+      // toggle: prefilled acquisition metadata stays intact until
+      // the operator explicitly types a non-positive number.
+      if (raw === '' || raw === null || raw === undefined) {
+        $acquisitionFields.show();
+        $costRow.show();
+        $dateLabel.text(purchaseLabel);
+        return;
+      }
+      var num = parseFloat(raw);
+      var isPurchase = !isNaN(num) && num > 0;
+      $acquisitionFields.toggle(isPurchase);
+      $costRow.toggle(isPurchase);
+      $costHint.toggle(isPurchase && $costHint.data('has-prefill') === true);
+      $dateLabel.text(isPurchase ? purchaseLabel : genericLabel);
+      if (!isPurchase) {
+        $modal.find('#adjustQuantityOrder').val('');
+        $modal.find('#adjustQuantitySupplier').val('').trigger('change');
+        $modal.find('#adjustQuantityUnitCost').val('');
+        $modal.find('#adjustQuantityCurrency').val('');
+      }
+    };
+    // Track the prefill state on the hint so the visibility toggle
+    // can restore it correctly when qty flips positive again.
+    $costHint.data('has-prefill', $costHint.is(':visible'));
+    $amount.off('input.adjustAcquisition').on('input.adjustAcquisition', syncAcquisitionFieldsVisibility);
+    // Initial call keeps everything in the default "purchase" state
+    // (empty amount) so the prefill logic above stays authoritative.
+    syncAcquisitionFieldsVisibility();
     $modal.modal('show');
   });
 
