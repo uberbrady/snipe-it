@@ -105,6 +105,8 @@ class ComponentsController extends Controller
         }
 
         if ($component->save()) {
+            $this->enrichInitialOrderFromRequest($request, $component);
+
             return Helper::getRedirectOption($request, $component->id, 'Components')
                 ->with('success', trans('admin/components/message.create.success'));
         }
@@ -170,7 +172,7 @@ class ComponentsController extends Controller
         $component->supplier_id = $request->input('supplier_id');
         $component->serial = $request->input('serial');
         $component->purchase_date = $request->input('purchase_date');
-        $component->purchase_cost = request('purchase_cost');
+        // purchase_cost is create-only. Edits go through Orders.
         $component->notes = $request->input('notes');
 
         $component = $request->handleImages($component);

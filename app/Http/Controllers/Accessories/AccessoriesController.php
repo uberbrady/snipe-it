@@ -70,10 +70,10 @@ class AccessoriesController extends Controller
         $accessory->location_id = request('location_id');
         $accessory->min_amt = request('min_amt');
         $accessory->company_id = Company::getIdForCurrentUser(request('company_id'));
-        // order_number moved off the parent Accessory column to the Orders /
-        // OrderItems data model. A create-time order_number in the request
-        // body silently drops here; acquisition tracking happens through
-        // the adjust-quantity flow or the importer's Order helper.
+        // order_number + currency don't live on the Accessory parent
+        // column any more — the AccessoryObserver::created hook writes
+        // the initial Order + OrderItem, and we enrich that Order below
+        // (after save) with the form-supplied order_number / currency.
         $accessory->manufacturer_id = request('manufacturer_id');
         $accessory->model_number = request('model_number');
         $accessory->purchase_date = request('purchase_date');
@@ -105,6 +105,8 @@ class AccessoriesController extends Controller
 
         // Was the accessory created?
         if ($accessory->save()) {
+            $this->enrichInitialOrderFromRequest($request, $accessory);
+
             // Redirect to the new accessory  page
             return Helper::getRedirectOption($request, $accessory->id, 'Accessories')
                 ->with('success', trans('admin/accessories/message.create.success'));
@@ -186,7 +188,10 @@ class AccessoriesController extends Controller
             $accessory->supplier_id = request('supplier_id');
             $accessory->model_number = request('model_number');
             $accessory->purchase_date = request('purchase_date');
-            $accessory->purchase_cost = request('purchase_cost');
+            // purchase_cost is create-only on the parent — post-create
+            // acquisitions record their own price on the OrderItem, so
+            // the edit form no longer exposes purchase_cost and this
+            // controller stops overwriting it on update.
             $accessory->notes = request('notes');
             $accessory->requestable = request('requestable', 0);
 

@@ -117,6 +117,8 @@ class ConsumablesController extends Controller
         }
 
         if ($consumable->save()) {
+            $this->enrichInitialOrderFromRequest($request, $consumable);
+
             return Helper::getRedirectOption($request, $consumable->id, 'Consumables')
                 ->with('success', trans('admin/consumables/message.create.success'));
         }
@@ -179,7 +181,7 @@ class ConsumablesController extends Controller
         $consumable->model_number = $request->input('model_number');
         $consumable->item_no = $request->input('item_no');
         $consumable->purchase_date = $request->input('purchase_date');
-        $consumable->purchase_cost = $request->input('purchase_cost');
+        // purchase_cost is create-only. Edits go through Orders.
         $consumable->notes = $request->input('notes');
 
         $consumable = $request->handleImages($consumable);

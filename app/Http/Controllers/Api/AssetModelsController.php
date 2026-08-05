@@ -355,4 +355,34 @@ class AssetModelsController extends Controller
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);
     }
+
+    /**
+     * Orders tab datatable for an AssetModel: aggregate every OrderItem
+     * ever recorded against any Asset of this model. Since each Asset
+     * gets its own OrderItem via AssetObserver::created, one AssetModel
+     * accumulates one line per asset instance. Useful for "how many of
+     * this model have we bought over time, from whom, at what price".
+     */
+    public function orders(Request $request, AssetModel $model): JsonResponse|array
+    {
+        $this->authorize('view', $model);
+
+        $ordersQuery = \App\Models\OrderItem::query()
+            ->where('item_type', \App\Models\Asset::class)
+            ->whereIn('item_id', $model->assets()->select('id'))
+            ->with(['order:id,order_number,supplier_id,currency,purchase_date', 'order.supplier:id,name'])
+            ->orderByDesc('id');
+
+        $total = (clone $ordersQuery)->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
+        $limit = app('api_limit_value');
+        $lines = (clone $ordersQuery)->skip($offset)->take($limit)->get();
+
+        return response()->json(
+            (new \App\Http\Transformers\OrderItemsTransformer)->transformOrderItems($lines, $total),
+            200,
+            ['Content-Type' => 'application/json;charset=utf8'],
+            JSON_UNESCAPED_UNICODE,
+        );
+    }
 }
