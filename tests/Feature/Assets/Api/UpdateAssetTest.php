@@ -95,8 +95,7 @@ class UpdateAssetTest extends TestCase
         $this->assertTrue($updatedAsset->model->is($model));
         $this->assertEquals('A New Asset', $updatedAsset->name);
         $this->assertEquals('Some notes', $updatedAsset->notes);
-        // See StoreAssetTest for why order_number is no longer on the
-        // parent Asset column.
+        $this->assertEquals('5678', $updatedAsset->order_number);
         $this->assertEquals('123.45', $updatedAsset->purchase_cost);
         $this->assertTrue($updatedAsset->purchase_date->is('2023-09-02'));
         $this->assertEquals('1', $updatedAsset->requestable);

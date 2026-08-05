@@ -185,7 +185,7 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
             ->firstOrFail();
 
         $this->assertSame(7, (int) $log->quantity);
-        $this->assertSame('PO-API', \App\Models\Order::findOrFail($log->order_id)->order_number);
+        $this->assertSame('PO-API', $log->orderItem->order->order_number);
         $this->assertNotEmpty($log->note, 'Adjustment note must be synthesized when the API caller omits one');
     }
 

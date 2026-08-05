@@ -74,10 +74,7 @@ class StoreAssetTest extends TestCase
         $this->assertTrue($asset->model->is($model));
         $this->assertEquals('A New Asset', $asset->name);
         $this->assertEquals('Some notes', $asset->notes);
-        // order_number moved off the parent Asset column to the Orders /
-        // OrderItems data model. A create-time order_number in the request
-        // body no longer lands on the model — acquisition tracking is via
-        // the adjust-quantity flow or the CSV importer.
+        $this->assertEquals('5678', $asset->order_number);
         $this->assertEquals('123.45', $asset->purchase_cost);
         $this->assertTrue($asset->purchase_date->is('2023-09-02'));
         $this->assertEquals('1', $asset->requestable);
