@@ -29,12 +29,15 @@ class Order extends SnipeModel
 
     protected $table = 'orders';
 
+    // NOTE: `created_by` is deliberately NOT fillable — accepting it via
+    // mass-assignment would let a request attribute an Order to any
+    // user_id the caller writes. All internal writers set it via
+    // explicit `$order->created_by = auth()->id()`.
     protected $fillable = [
         'order_number',
         'supplier_id',
         'company_id',
         'purchase_date',
-        'created_by',
         'notes',
         'currency',
     ];

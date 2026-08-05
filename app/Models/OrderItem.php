@@ -28,6 +28,7 @@ class OrderItem extends Model
         'item_id',
         'qty',
         'price',
+        'created_by',
     ];
 
     protected $casts = [
@@ -43,5 +44,15 @@ class OrderItem extends Model
     public function item(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * User who added this specific line. Distinct from Order.admin
+     * because staggered receipts under one order_number can accumulate
+     * lines from multiple operators.
+     */
+    public function admin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
