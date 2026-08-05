@@ -71,6 +71,47 @@ trait HasOrders
     }
 
     /**
+     * Count of distinct Orders this item has appeared on. Useful for
+     * the info-panel's "how many times has this been ordered" hint.
+     * DISTINCT is required because HasManyThrough joins through
+     * order_items and one Order can carry multiple lines for the same
+     * item under staggered receipts.
+     */
+    public function ordersCount(): int
+    {
+        return (int) $this->orders()->distinct()->count('orders.id');
+    }
+
+    /**
+     * Last acquisition context for pre-populating the adjust-quantity
+     * modal and driving the info-panel's "last" fields (unit cost,
+     * currency, purchase date). Returns the most recent OrderItem's
+     * price and its parent Order's currency + purchase_date, or null
+     * when the item has no OrderItems yet. One query per invocation.
+     * Cheap on the view page (1 model per page); needs eager-loading
+     * for the index page.
+     *
+     * @return array{unit_cost: ?string, currency: ?string, purchase_date: ?string}|null
+     */
+    public function lastOrderDefaults(): ?array
+    {
+        $line = $this->orderItems()
+            ->with('order:id,currency,purchase_date')
+            ->latest('id')
+            ->first();
+
+        if (! $line) {
+            return null;
+        }
+
+        return [
+            'unit_cost' => $line->price !== null ? (string) $line->price : null,
+            'currency' => $line->order?->currency ?: null,
+            'purchase_date' => $line->order?->purchase_date?->toDateString(),
+        ];
+    }
+
+    /**
      * Sort scope that lets the bootstrap-table sortable header for an
      * order-number column keep working after the parent order_number
      * column moved to Orders. Attaches a correlated subquery selecting
