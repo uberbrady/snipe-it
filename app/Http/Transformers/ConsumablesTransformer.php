@@ -21,6 +21,11 @@ class ConsumablesTransformer
 
     public function transformConsumable(Consumable $consumable)
     {
+        // See AccessoriesTransformer for the last-acquisition-with-fallback
+        // resolution pattern for supplier / purchase_date / purchase_cost.
+        $lastDefaults = $consumable->lastOrderDefaults();
+        $lastSupplier = $consumable->lastAcquisitionSupplier();
+
         $array = [
             'id' => (int) $consumable->id,
             'name' => e($consumable->name),
@@ -47,10 +52,10 @@ class ConsumablesTransformer
                 'name' => e($consumable->manufacturer->name),
                 'tag_color' => $consumable->manufacturer->tag_color ? e($consumable->manufacturer->tag_color) : null,
             ] : null,
-            'supplier' => ($consumable->supplier) ? [
-                'id' => $consumable->supplier->id,
-                'name' => e($consumable->supplier->name),
-                'tag_color' => $consumable->supplier->tag_color ? e($consumable->supplier->tag_color) : null,
+            'supplier' => $lastSupplier ? [
+                'id' => $lastSupplier->id,
+                'name' => e($lastSupplier->name),
+                'tag_color' => $lastSupplier->tag_color ? e($lastSupplier->tag_color) : null,
             ] : null,
             'min_amt' => (int) $consumable->min_amt,
             'model_number' => ($consumable->model_number != '') ? e($consumable->model_number) : null,
@@ -58,9 +63,9 @@ class ConsumablesTransformer
             'percent_remaining' => round($consumable->percentRemaining()),
             // See AccessoriesTransformer for why order_number is no longer
             // in the parent-level output.
-            'purchase_cost' => Helper::formatCurrencyOutput($consumable->purchase_cost),
+            'purchase_cost' => Helper::formatCurrencyOutput($lastDefaults['unit_cost'] ?? null),
             'total_cost' => Helper::formatCurrencyOutput($consumable->totalCostSum()),
-            'purchase_date' => Helper::getFormattedDateObject($consumable->purchase_date, 'date'),
+            'purchase_date' => ($lastDefaults['purchase_date'] ?? null) ? Helper::getFormattedDateObject($lastDefaults['purchase_date'], 'date') : null,
             'qty' => (int) $consumable->qty,
             'notes' => ($consumable->notes) ? Helper::parseEscapedMarkedownInline($consumable->notes) : null,
             'created_by' => ($consumable->adminuser) ? [

@@ -22,6 +22,13 @@ class AccessoriesTransformer
 
     public function transformAccessory(Accessory $accessory)
     {
+        // Supplier / purchase_date / purchase_cost no longer live on the
+        // parent column. Resolve them from the last acquisition (with
+        // fallback to the parent's default_* template values) so the
+        // public API surface still returns something meaningful per row.
+        $lastDefaults = $accessory->lastOrderDefaults();
+        $lastSupplier = $accessory->lastAcquisitionSupplier();
+
         $array = [
             'id' => $accessory->id,
             'name' => e($accessory->name),
@@ -37,10 +44,10 @@ class AccessoriesTransformer
                 'name' => e($accessory->manufacturer->name),
                 'tag_color' => ($accessory->manufacturer->tag_color) ? e($accessory->manufacturer->tag_color) : null,
             ] : null,
-            'supplier' => ($accessory->supplier) ? [
-                'id' => $accessory->supplier->id,
-                'name' => e($accessory->supplier->name),
-                'tag_color' => ($accessory->supplier->tag_color) ? e($accessory->supplier->tag_color) : null,
+            'supplier' => $lastSupplier ? [
+                'id' => $lastSupplier->id,
+                'name' => e($lastSupplier->name),
+                'tag_color' => $lastSupplier->tag_color ? e($lastSupplier->tag_color) : null,
             ] : null,
             'model_number' => ($accessory->model_number) ? e($accessory->model_number) : null,
             'category' => ($accessory->category) ? [
@@ -56,8 +63,8 @@ class AccessoriesTransformer
             'notes' => ($accessory->notes) ? Helper::parseEscapedMarkedownInline($accessory->notes) : null,
             'qty' => ($accessory->qty) ? (int) $accessory->qty : null,
             'percent_remaining' => round($accessory->percentRemaining()),
-            'purchase_date' => ($accessory->purchase_date) ? Helper::getFormattedDateObject($accessory->purchase_date, 'date') : null,
-            'purchase_cost' => Helper::formatCurrencyOutput($accessory->purchase_cost),
+            'purchase_date' => ($lastDefaults['purchase_date'] ?? null) ? Helper::getFormattedDateObject($lastDefaults['purchase_date'], 'date') : null,
+            'purchase_cost' => Helper::formatCurrencyOutput($lastDefaults['unit_cost'] ?? null),
             'total_cost' => Helper::formatCurrencyOutput($accessory->totalCostSum()),
             // Parent-level order_number was renamed to legacy_order_number
             // and dropped from the transformer output. Historical order

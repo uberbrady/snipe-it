@@ -36,6 +36,7 @@ class OrderItemsTransformer
             'unit_cost' => $price !== null ? Helper::formatCurrencyOutput($price) : null,
             'currency' => $order?->currency ? e($order->currency) : null,
             'total_cost' => $price !== null ? Helper::formatCurrencyOutput($qty * $price) : null,
+            'notes' => $order?->notes ? Helper::parseEscapedMarkedownInline($order->notes) : null,
             // Prefer the OrderItem's own creator (per-line authorship).
             // Falls back to the parent Order's created_by so pre-146000
             // rows with a null order_items.created_by still show a name.
