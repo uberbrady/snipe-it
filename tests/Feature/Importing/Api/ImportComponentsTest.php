@@ -97,7 +97,7 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertNull($newComponent->min_amt);
         $this->assertEquals($row['serialNumber'], $newComponent->serial);
         $this->assertNull($newComponent->image);
-        $this->assertNull($newComponent->notes);
+        $this->assertEquals($row['notes'], $newComponent->notes);
     }
 
     #[Test]
@@ -244,18 +244,18 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['itemName'], $updatedComponent->name);
         $this->assertEquals($row['category'], $updatedComponent->category->name);
         $this->assertEquals($row['location'], $updatedComponent->location->name);
-        $this->assertEquals($component->default_supplier_id, $updatedComponent->default_supplier_id);
         $this->assertEquals($row['quantity'], $updatedComponent->qty);
-        // Acquisition metadata lives on the latest OrderItem's Order —
-        // the update path writes a new Order + OrderItem when the CSV
-        // carries acquisition columns, per recordOrderForImportedRow.
-        $latestOrderItem = $updatedComponent->orderItems()->latest('id')->firstOrFail();
-        $this->assertEquals($row['purchaseDate'], $latestOrderItem->order->purchase_date->toDateString());
-        $this->assertEquals((float) $row['purchaseCost'], (float) $latestOrderItem->price);
+        // Update mode does NOT rewrite historical Orders. purchase_cost
+        // maps to the parent's default_purchase_cost template;
+        // purchase_date has no parent equivalent and is dropped on
+        // update.
+        $this->assertEquals((float) $row['purchaseCost'], (float) $updatedComponent->default_purchase_cost);
         $this->assertEquals($component->min_amt, $updatedComponent->min_amt);
         $this->assertEquals($row['serialNumber'], $updatedComponent->serial);
         $this->assertEquals($component->image, $updatedComponent->image);
-        $this->assertEquals($component->notes, $updatedComponent->notes);
+        // notes IS present in the CSV (see ComponentsImportFileBuilder
+        // definition), so update mode overwrites the seeded value.
+        $this->assertEquals($row['notes'], $updatedComponent->notes);
     }
 
     #[Test]
@@ -364,9 +364,10 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         ])->assertOk();
 
         $component->refresh();
-        // purchase_cost moved to the OrderItem's price column.
-        $latestOrderItem = $component->orderItems()->latest('id')->firstOrFail();
-        $this->assertEquals((float) $updatedRow['purchaseCost'], (float) $latestOrderItem->price);
+        // Update path maps CSV purchase_cost to the parent's template
+        // field (see update_component_from_import); historical Orders
+        // aren't rewritten on update mode.
+        $this->assertEquals((float) $updatedRow['purchaseCost'], (float) $component->default_purchase_cost);
 
         $updateLog = ActionLog::query()
             ->where('item_type', Component::class)

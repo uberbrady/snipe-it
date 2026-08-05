@@ -100,7 +100,7 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals('', $newConsumable->model_number);
         $this->assertNull($newConsumable->item_number);
         $this->assertNull($newConsumable->manufacturer_id);
-        $this->assertNull($newConsumable->notes);
+        $this->assertEquals($row['notes'], $newConsumable->notes);
     }
 
     #[Test]
@@ -237,20 +237,22 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['category'], $updatedConsumable->category->name);
         $this->assertEquals($row['location'], $updatedConsumable->location->name);
         $this->assertEquals($row['companyName'], $updatedConsumable->company->name);
-        // Acquisition metadata lives on the latest OrderItem's Order —
-        // the update path writes a new Order + OrderItem when the CSV
-        // carries acquisition columns, per recordOrderForImportedRow.
-        $latestOrderItem = $updatedConsumable->orderItems()->latest('id')->firstOrFail();
-        $this->assertEquals($row['purchaseDate'], $latestOrderItem->order->purchase_date->toDateString());
-        $this->assertEquals((float) $row['purchaseCost'], (float) $latestOrderItem->price);
-        $this->assertEquals($row['supplier'], $latestOrderItem->order->supplier->name);
+        // Update mode does NOT rewrite historical Orders — a CSV
+        // "update" corrects the parent, it doesn't stamp a new purchase.
+        // purchase_cost / supplier on the CSV map to the parent's
+        // default_* template fields; purchase_date has no forward-use
+        // equivalent on the parent and is silently dropped on update.
+        $this->assertEquals((float) $row['purchaseCost'], (float) $updatedConsumable->default_purchase_cost);
+        $this->assertEquals($row['supplier'], $updatedConsumable->defaultSupplier->name);
 
         $this->assertEquals($consumable->requestable, $updatedConsumable->requestable);
         $this->assertEquals($consumable->min_amt, $updatedConsumable->min_amt);
         $this->assertEquals($consumable->model_number, $updatedConsumable->model_number);
         $this->assertEquals($consumable->item_number, $updatedConsumable->item_number);
         $this->assertEquals($consumable->manufacturer_id, $updatedConsumable->manufacturer_id);
-        $this->assertEquals($consumable->notes, $updatedConsumable->notes);
+        // notes IS present in the CSV (see ConsumablesImportFileBuilder
+        // definition), so update mode overwrites the seeded value.
+        $this->assertEquals($row['notes'], $updatedConsumable->notes);
         $this->assertEquals($consumable->item_number, $updatedConsumable->item_number);
     }
 
@@ -388,9 +390,10 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $consumable->refresh();
-        // purchase_cost moved to the OrderItem's price column.
-        $latestOrderItem = $consumable->orderItems()->latest('id')->firstOrFail();
-        $this->assertEquals((float) $updatedRow['purchaseCost'], (float) $latestOrderItem->price);
+        // Update path maps CSV purchase_cost to the parent's template
+        // field (see update_consumable_from_import); historical Orders
+        // aren't rewritten on update mode.
+        $this->assertEquals((float) $updatedRow['purchaseCost'], (float) $consumable->default_purchase_cost);
 
         $updateLog = ActivityLog::query()
             ->where('item_type', Consumable::class)

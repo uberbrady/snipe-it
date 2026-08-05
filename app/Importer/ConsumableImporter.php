@@ -69,6 +69,20 @@ class ConsumableImporter extends ItemImporter
             }
         }
 
+        // Mirror supplier_id / purchase_cost into the parent's
+        // default_* template fields so future orders pre-populate from
+        // the last-known-good CSV import. See Consumable::$fillable and
+        // ItemImporter::recordOrderForImportedRow for the split — Order
+        // rows still receive supplier_id / purchase_cost via that helper
+        // (that's the per-acquisition record); default_* here is the
+        // per-parent template.
+        if (array_key_exists('supplier_id', $this->item)) {
+            $this->item['default_supplier_id'] = $this->item['supplier_id'];
+        }
+        if (array_key_exists('purchase_cost', $this->item)) {
+            $this->item['default_purchase_cost'] = $this->item['purchase_cost'];
+        }
+
         // Internal signals for the checkout logic; neither is fillable on
         // Consumable so sanitize's fillable filter drops them.
         $this->item['checkout_class'] = $this->findCsvMatch($row, 'checkout_class');

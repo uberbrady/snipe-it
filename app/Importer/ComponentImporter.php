@@ -73,6 +73,14 @@ class ComponentImporter extends ItemImporter
             }
         }
 
+        // See ConsumableImporter::handle for the default_* mirror rationale.
+        if (array_key_exists('supplier_id', $this->item)) {
+            $this->item['default_supplier_id'] = $this->item['supplier_id'];
+        }
+        if (array_key_exists('purchase_cost', $this->item)) {
+            $this->item['default_purchase_cost'] = $this->item['purchase_cost'];
+        }
+
         $this->item['created_by'] = $this->created_by;
 
         $this->createComponentIfNotExists($row);

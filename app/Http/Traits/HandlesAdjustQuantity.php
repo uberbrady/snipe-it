@@ -98,18 +98,22 @@ trait HandlesAdjustQuantity
         // Only dedupe when there's a real order_number label to match
         // on. A blank order_number is a distinct transaction each time
         // (own timestamp, supplier, cost, currency), not a bucket to
-        // pool anonymous acquisitions into. created_by is set via
-        // property assignment rather than mass-fill because it's
-        // guarded on both Order and OrderItem to prevent forgery.
+        // pool anonymous acquisitions into. purchase_date is part of
+        // the dedup key because Snipe-IT has no partial-receipt concept
+        // — every Order is a completed receipt-in-hand, so "same
+        // order_number on a different receipt date" is a distinct
+        // event, not a staggered delivery of one order. created_by is
+        // set via property assignment rather than mass-fill because
+        // it's guarded on both Order and OrderItem to prevent forgery.
         if ($payload['order_number'] !== null) {
             $order = Order::firstOrNew(
                 [
                     'order_number' => $payload['order_number'],
                     'supplier_id' => $payload['supplier_id'],
                     'company_id' => $model->company_id ?? null,
+                    'purchase_date' => $payload['purchase_date'],
                 ],
                 [
-                    'purchase_date' => $payload['purchase_date'],
                     'currency' => $payload['currency'],
                     'notes' => $payload['notes'],
                 ],

@@ -230,8 +230,8 @@ class AdjustAccessoryQuantityApiTest extends TestCase
     {
         // Repeated qty adjusts referencing the same order_number should
         // reuse the existing Order row (dedupe on order_number +
-        // supplier + company), while each adjust still produces its own
-        // OrderItem line (one line per event).
+        // supplier + company + purchase_date), while each adjust still
+        // produces its own OrderItem line (one line per event).
         $accessory = Accessory::factory()->create(['qty' => 0]);
         $supplier = \App\Models\Supplier::factory()->create();
         $actor = User::factory()->editAccessories()->create();
@@ -240,19 +240,50 @@ class AdjustAccessoryQuantityApiTest extends TestCase
             $this->actingAsForApi($actor)
                 ->postJson(route('api.accessories.adjust-quantity', $accessory), [
                     'amount' => $delta,
-                    'note' => 'staggered receipt',
-                    'order_number' => 'PO-DEDUPE',
+                    'note' => 'same receipt, split line',
+                    'order_number' => 'ORD-DEDUPE',
                     'supplier_id' => $supplier->id,
+                    'purchase_date' => '2026-04-01',
                 ])
                 ->assertOk();
         }
 
-        $orders = \App\Models\Order::where('order_number', 'PO-DEDUPE')->get();
-        $this->assertCount(1, $orders, 'Same order_number should reuse the existing Order row.');
+        $orders = \App\Models\Order::where('order_number', 'ORD-DEDUPE')->get();
+        $this->assertCount(1, $orders, 'Same order_number + supplier + date should reuse the existing Order row.');
 
         $items = $orders->first()->orderItems;
         $this->assertCount(2, $items, 'Each adjust event should have its own OrderItem line.');
         $this->assertEqualsCanonicalizing([3, 4], $items->pluck('qty')->map(fn ($q) => (int) $q)->all());
+    }
+
+    public function test_same_order_number_on_different_purchase_dates_creates_distinct_orders()
+    {
+        // Snipe-IT has no partial-receipt concept — every Order is a
+        // completed receipt-in-hand. Same order_number appearing with
+        // two different purchase_dates therefore represents two
+        // distinct events, not staggered delivery, so each gets its
+        // own Order row.
+        $accessory = Accessory::factory()->create(['qty' => 0]);
+        $supplier = \App\Models\Supplier::factory()->create();
+        $actor = User::factory()->editAccessories()->create();
+
+        foreach (['2026-04-01', '2026-04-15'] as $date) {
+            $this->actingAsForApi($actor)
+                ->postJson(route('api.accessories.adjust-quantity', $accessory), [
+                    'amount' => 5,
+                    'note' => 'later receipt on same order number',
+                    'order_number' => 'ORD-SPLIT-DATE',
+                    'supplier_id' => $supplier->id,
+                    'purchase_date' => $date,
+                ])
+                ->assertOk();
+        }
+
+        $this->assertSame(
+            2,
+            \App\Models\Order::where('order_number', 'ORD-SPLIT-DATE')->count(),
+            'Different purchase_dates under the same order_number should be distinct Orders.',
+        );
     }
 
     public function test_blank_order_number_creates_a_distinct_order_per_event()

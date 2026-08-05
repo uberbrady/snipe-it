@@ -66,7 +66,7 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
             ]);
 
         $newAccessory = Accessory::query()
-            ->with(['location', 'category', 'manufacturer', 'supplier', 'company'])
+            ->with(['location', 'category', 'manufacturer', 'defaultSupplier', 'company'])
             ->where('name', $row['itemName'])
             ->sole();
 
@@ -308,17 +308,13 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($row['itemName'], $updatedAccessory->name);
         $this->assertEquals($row['companyName'], $updatedAccessory->company->name);
         $this->assertEquals($row['quantity'], $updatedAccessory->qty);
-        // Acquisition metadata (order_number / purchase_date /
-        // purchase_cost / supplier) lives on the latest OrderItem's
-        // Order, not the parent. Update mode writes a fresh Order +
-        // OrderItem via recordOrderForImportedRow when the CSV carries
-        // acquisition columns. (When qty differs, the value also rides
-        // on the QuantityAdjust log — see the sibling test
-        // importer_qty_change_creates_quantity_adjust_log.)
-        $latestOrderItem = $updatedAccessory->orderItems()->latest('id')->firstOrFail();
-        $this->assertEquals($row['purchaseDate'], $latestOrderItem->order->purchase_date->toDateString());
-        $this->assertEquals((float) $row['purchaseCost'], (float) $latestOrderItem->price);
-        $this->assertEquals($row['supplierName'], $latestOrderItem->order->supplier->name);
+        // Update mode does NOT rewrite historical Orders — the CSV's
+        // purchase_cost / supplier map to the parent's default_*
+        // template fields; purchase_date has no forward-use equivalent
+        // and is silently dropped. When qty differs the value rides on
+        // the QuantityAdjust log (see importer_qty_change_creates_...).
+        $this->assertEquals((float) $row['purchaseCost'], (float) $updatedAccessory->default_purchase_cost);
+        $this->assertEquals($row['supplierName'], $updatedAccessory->defaultSupplier->name);
         $this->assertEquals($row['notes'], $updatedAccessory->notes);
         $this->assertEquals($row['category'], $updatedAccessory->category->name);
         $this->assertEquals('accessory', $updatedAccessory->category->category_type);

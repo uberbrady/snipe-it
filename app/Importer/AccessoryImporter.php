@@ -74,6 +74,14 @@ class AccessoryImporter extends ItemImporter
             }
         }
 
+        // See ConsumableImporter::handle for the default_* mirror rationale.
+        if (array_key_exists('supplier_id', $this->item)) {
+            $this->item['default_supplier_id'] = $this->item['supplier_id'];
+        }
+        if (array_key_exists('purchase_cost', $this->item)) {
+            $this->item['default_purchase_cost'] = $this->item['purchase_cost'];
+        }
+
         // Internal signals used by the checkout logic below; neither is
         // fillable on Accessory so sanitize's fillable filter drops them.
         $this->item['checkout_class'] = $this->findCsvMatch($row, 'checkout_class');
