@@ -22,13 +22,16 @@ class OrderItem extends Model
 
     protected $table = 'order_items';
 
+    // NOTE: `created_by` is deliberately NOT fillable — accepting it via
+    // mass-assignment would let a request attribute a line to any
+    // user_id the caller writes. All internal writers set it via
+    // explicit `$line->created_by = auth()->id()`.
     protected $fillable = [
         'order_id',
         'item_type',
         'item_id',
         'qty',
         'price',
-        'created_by',
     ];
 
     protected $casts = [
