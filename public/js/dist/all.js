@@ -74737,10 +74737,38 @@ $(function () {
     // whatever the modal was originally rendered with (its DOM value
     // attribute, i.e. the system default_currency).
     $modal.find('#adjustQuantitySupplier').val('').trigger('change');
-    $modal.find('#adjustQuantityPurchaseDate').val('');
-    $modal.find('#adjustQuantityUnitCost').val('');
+    // Reset purchase_date to today on every open (server-rendered
+    // default is today too). Prevents an operator's earlier
+    // backdate from bleeding into the next event.
+    var todayIso = new Date().toISOString().slice(0, 10);
+    $modal.find('#adjustQuantityPurchaseDate').val(todayIso);
+
+    // Pre-populate unit_cost + currency from the trigger's data-last-*
+    // attrs (server-rendered from the item's most recent OrderItem).
+    // When both are present the "pre-populated from last order" hint
+    // shows underneath the row; the hint gets hidden as soon as the
+    // operator edits either field so it disappears the moment they
+    // override the pre-fill.
+    var lastUnitCost = $btn.data('last-unit-cost');
+    var lastCurrency = $btn.data('last-currency');
+    var $unitCost = $modal.find('#adjustQuantityUnitCost');
     var $currency = $modal.find('#adjustQuantityCurrency');
-    $currency.val($currency.prop('defaultValue') || '');
+    var $costHint = $modal.find('#adjustQuantityCostHint');
+    $unitCost.val(lastUnitCost !== undefined && lastUnitCost !== '' ? lastUnitCost : '');
+    $currency.val(lastCurrency !== undefined && lastCurrency !== '' ? lastCurrency : $currency.prop('defaultValue') || '');
+    if (lastUnitCost !== undefined && lastUnitCost !== '' || lastCurrency !== undefined && lastCurrency !== '') {
+      $costHint.show();
+    } else {
+      $costHint.hide();
+    }
+
+    // Rebind on every open so multiple modal opens don't stack listeners.
+    $unitCost.off('input.adjustCostHint').on('input.adjustCostHint', function () {
+      $costHint.hide();
+    });
+    $currency.off('input.adjustCostHint').on('input.adjustCostHint', function () {
+      $costHint.hide();
+    });
     $modal.find('#adjustQuantityNote').val('');
     $modal.find('#adjustQuantityFile').val('');
     // js-uploadFile paints selected filenames into #{id}-info; clear it too
