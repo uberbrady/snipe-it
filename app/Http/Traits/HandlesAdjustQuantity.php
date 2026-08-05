@@ -88,9 +88,11 @@ trait HandlesAdjustQuantity
         // Only dedupe when there's a real order_number label to match
         // on. A blank order_number is a distinct transaction each time
         // (own timestamp, supplier, cost, currency), not a bucket to
-        // pool anonymous acquisitions into.
-        $order = $payload['order_number'] !== null
-            ? Order::firstOrCreate(
+        // pool anonymous acquisitions into. created_by is set via
+        // property assignment rather than mass-fill because it's
+        // guarded on both Order and OrderItem to prevent forgery.
+        if ($payload['order_number'] !== null) {
+            $order = Order::firstOrNew(
                 [
                     'order_number' => $payload['order_number'],
                     'supplier_id' => $payload['supplier_id'],
@@ -99,19 +101,25 @@ trait HandlesAdjustQuantity
                 [
                     'purchase_date' => $payload['purchase_date'],
                     'currency' => $payload['currency'],
-                    'created_by' => auth()->id(),
                 ],
-            )
-            : Order::create([
+            );
+            if (! $order->exists) {
+                $order->created_by = auth()->id();
+                $order->save();
+            }
+        } else {
+            $order = new Order([
                 'order_number' => null,
                 'supplier_id' => $payload['supplier_id'],
                 'company_id' => $model->company_id ?? null,
                 'purchase_date' => $payload['purchase_date'],
                 'currency' => $payload['currency'],
-                'created_by' => auth()->id(),
             ]);
+            $order->created_by = auth()->id();
+            $order->save();
+        }
 
-        $orderItem = OrderItem::create([
+        $orderItem = new OrderItem([
             'order_id' => $order->id,
             'item_type' => $model::class,
             'item_id' => $model->id,
@@ -120,6 +128,8 @@ trait HandlesAdjustQuantity
             'qty' => max(1, abs($delta)),
             'price' => $payload['unit_cost'],
         ]);
+        $orderItem->created_by = auth()->id();
+        $orderItem->save();
 
         return $orderItem->id;
     }
