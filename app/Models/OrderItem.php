@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * One line on an Order. Polymorphic to the inventory model that was
  * acquired (Accessory / Consumable / Component / Asset / License) so a
  * single Order can span multiple item types. qty is the number of units
- * on this line; price is the per-unit cost (matches the semantic that
+ * on this line. Price is the per-unit cost (matches the semantic that
  * the existing purchase_cost columns use across the codebase).
  */
 class OrderItem extends Model

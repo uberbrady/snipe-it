@@ -31,7 +31,7 @@ trait HasOrders
      * the acquisition ledger — the Order row and its (now-trashed)
      * OrderItem lines remain queryable via `withTrashed()` for
      * historical reports, while ordinary `->orderItems()` reads exclude
-     * them. Soft-delete on the parent does not propagate; the Order
+     * them. Soft-delete on the parent does not propagate. The Order
      * data model treats a soft-deleted inventory row as still-existing.
      */
     protected static function bootHasOrders(): void

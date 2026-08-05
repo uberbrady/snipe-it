@@ -20,9 +20,10 @@ use Illuminate\Support\Facades\DB;
  * action_logs with:
  *   - quantity = signed delta (positive for replenish, negative for decrement)
  *   - note = the operator's reason (required by the controller)
- *   - order_id = optional FK to the Order row this replenishment
- *     belongs to. The caller creates / looks up the Order and passes
- *     the id; the trait does not touch the Orders table itself.
+ *   - order_item_id = optional FK to the specific OrderItem line this
+ *     event produced. The parent Order is reachable via the OrderItem.
+ *     The caller creates / looks up the OrderItem and passes the id;
+ *     the trait does not touch the Orders / OrderItems tables itself.
  *
  * License overrides adjustQuantity() so that adding or removing
  * seats also creates or destroys the matching LicenseSeat pivot rows.
@@ -91,7 +92,7 @@ trait AdjustsQuantity
      *                         (which extends RuntimeException) as a
      *                         below-floor violation.
      */
-    public function adjustQuantity(int $delta, string $note, ?int $orderId = null, ?string $filename = null): void
+    public function adjustQuantity(int $delta, string $note, ?int $orderItemId = null, ?string $filename = null): void
     {
         $column = $this->getAdjustableQuantityColumn();
         $current = (int) ($this->{$column} ?? 0);
@@ -104,7 +105,7 @@ trait AdjustsQuantity
             );
         }
 
-        DB::transaction(function () use ($delta, $column, $current, $note, $orderId, $filename) {
+        DB::transaction(function () use ($delta, $column, $current, $note, $orderItemId, $filename) {
             // Use the query builder directly (not $this->increment) so
             // the model's `updated` event doesn't fire. Firing it would
             // write a second "update" action_log entry (with log_meta of
@@ -128,7 +129,7 @@ trait AdjustsQuantity
             $log->item_id = $this->id;
             $log->created_by = auth()->id();
             $log->note = $note;
-            $log->order_id = $orderId;
+            $log->order_item_id = $orderItemId;
             $log->quantity = $delta;
             // Feed the history-tab's "changed" column so QuantityAdjust
             // entries render "qty: 5 → 8" the same way an update-type
