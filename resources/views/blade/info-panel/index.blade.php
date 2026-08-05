@@ -176,35 +176,79 @@
             </x-info-element>
         @endif
 
-        @if ($infoPanelObj->purchase_cost)
+        @php
+            // Prefer the most recent OrderItem's price + currency so the
+            // Unit Cost row reflects the last acquisition, not the
+            // initial-create parent value. Falls back to parent
+            // purchase_cost + location.currency for legacy rows that
+            // never got an OrderItem written.
+            $lastOrderInfoPanel = method_exists($infoPanelObj, 'lastOrderDefaults')
+                ? $infoPanelObj->lastOrderDefaults()
+                : null;
+            $unitCost = $lastOrderInfoPanel['unit_cost'] ?? $infoPanelObj->purchase_cost ?? null;
+            $unitCostCurrency = $lastOrderInfoPanel['currency']
+                ?? ($infoPanelObj->location->currency ?? null)
+                ?: $snipeSettings->default_currency;
+        @endphp
+        @if ($unitCost !== null && $unitCost !== '')
             <x-info-element>
                 <x-icon type="cost" class="fa-fw" title="{{ trans('general.unit_cost') }}" />
                 {{ trans('general.unit_cost') }}
-
-                @if ((isset($infoPanelObj->location)) && ($infoPanelObj->location->currency!=''))
-                    {{ $infoPanelObj->location->currency }}
-                @else
-                    {{ $snipeSettings->default_currency }}
-                @endif
-
+                {{ $unitCostCurrency }}
                 <x-copy-to-clipboard copy_what="purchase_cost" class="pull-right">
-                    {{ Helper::formatCurrencyOutput($infoPanelObj->purchase_cost) }}
+                    {{ Helper::formatCurrencyOutput($unitCost) }}
                 </x-copy-to-clipboard>
             </x-info-element>
 
-            @if (isset($infoPanelObj->qty))
-                <x-info-element>
-                    <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}" />
-                    {{ trans('general.total_cost') }}
+            @if (isset($infoPanelObj->qty) && method_exists($infoPanelObj, 'totalCostSumByCurrency'))
+                @php $totalsByCurrency = $infoPanelObj->totalCostSumByCurrency(); @endphp
+                @if (count($totalsByCurrency) === 1)
+                    @php $currency = array_key_first($totalsByCurrency); @endphp
+                    <x-info-element>
+                        <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
+                        {{ trans('general.total_cost') }}
+                        <span class="pull-right">
+                            {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
+                            {{ Helper::formatCurrencyOutput($totalsByCurrency[$currency]) }}
+                        </span>
+                    </x-info-element>
+                @elseif (count($totalsByCurrency) > 1)
+                    <x-info-element>
+                        <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
+                        {{ trans('general.total_cost') }}
+                        {{ count($totalsByCurrency) }} {{ trans('general.currencies') }}
+                        <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#totalCostBreakdown" aria-expanded="false" aria-controls="totalCostBreakdown">
+                            <x-icon type="plus" class="fa-fw"/>
+                        </a>
+                    </x-info-element>
+                    <span class="collapse" id="totalCostBreakdown">
+                        <x-info-element class="subitem well well-sm">
+                            @foreach ($totalsByCurrency as $currency => $amount)
+                                <div>
+                                    {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
+                                    {{ Helper::formatCurrencyOutput($amount) }}
+                                </div>
+                            @endforeach
+                        </x-info-element>
+                    </span>
+                @endif
+            @endif
 
-                    @if ((isset($infoPanelObj->location)) && ($infoPanelObj->location->currency!=''))
-                        {{ $infoPanelObj->location->currency }}
-                    @else
-                        {{ $snipeSettings->default_currency }}
-                    @endif
-
-                    {{ Helper::formatCurrencyOutput($infoPanelObj->totalCostSum()) }}
-                </x-info-element>
+            {{-- Skip on Asset instances. An asset is 1:1 with a --}}
+            {{-- transaction, so "ordered N times" is always 1 and --}}
+            {{-- the Orders table IS the record of the acquisition. --}}
+            {{-- Applies to Accessory/Consumable/Component (multi-order --}}
+            {{-- inventory) and to AssetModel (asset TYPE, aggregating --}}
+            {{-- distinct orders across all its Asset instances). --}}
+            @if (method_exists($infoPanelObj, 'ordersCount') && ! ($infoPanelObj instanceof \App\Models\Asset))
+                @php $ordersCount = $infoPanelObj->ordersCount(); @endphp
+                @if ($ordersCount > 0)
+                    <x-info-element>
+                        <x-icon type="order" class="fa-fw" title="{{ trans('general.total_orders') }}"/>
+                        {{ trans('general.total_orders') }}
+                        <span class="pull-right">{{ $ordersCount }}</span>
+                    </x-info-element>
+                @endif
             @endif
 
         @endif
@@ -500,12 +544,20 @@
 
 
 
-        @if ($infoPanelObj->purchase_date)
+        @php
+            // Prefer the most recent OrderItem's parent Order.purchase_date
+            // so the info-panel reflects the LAST acquisition, not the
+            // initial-create parent value. Falls back to parent
+            // purchase_date for legacy rows without an OrderItem.
+            $displayPurchaseDate = ($lastOrderInfoPanel['purchase_date'] ?? null)
+                ?: $infoPanelObj->purchase_date;
+        @endphp
+        @if ($displayPurchaseDate)
             <x-info-element>
                 <x-icon type="calendar" class="fa-fw" title="{{ trans('general.purchase_date') }}" />
                 {{ trans('general.purchased_plain') }}
-                {{ Helper::getFormattedDateObject($infoPanelObj->purchase_date, 'date', false) }} -
-                <span class="text-muted">{{ Carbon::parse($infoPanelObj->purchase_date)->diffForHumans(['parts' => 2]) }}</span>
+                {{ Helper::getFormattedDateObject($displayPurchaseDate, 'date', false) }} -
+                <span class="text-muted">{{ Carbon::parse($displayPurchaseDate)->diffForHumans(['parts' => 2]) }}</span>
             </x-info-element>
         @endif
 
