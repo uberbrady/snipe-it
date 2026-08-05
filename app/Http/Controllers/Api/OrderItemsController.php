@@ -64,6 +64,11 @@ class OrderItemsController extends Controller
                 ->where('order_items.item_id', $itemId);
         }
 
+        // Orders tab shows purchases only. Corrections / consumption
+        // events (zero or negative-qty OrderItems) belong in the item's
+        // history tab, not on the "Orders" list — they aren't purchases.
+        $query->where('order_items.qty', '>', 0);
+
         // leftJoin onto orders + suppliers so cross-table sort / search
         // can hit those columns. Select order_items.* so the model
         // hydrates cleanly and the joined columns don't leak into the
@@ -76,7 +81,8 @@ class OrderItemsController extends Controller
             $needle = '%'.$request->input('search').'%';
             $query->where(function ($q) use ($needle) {
                 $q->where('orders.order_number', 'like', $needle)
-                    ->orWhere('suppliers.name', 'like', $needle);
+                    ->orWhere('suppliers.name', 'like', $needle)
+                    ->orWhere('orders.notes', 'like', $needle);
             });
         }
 

@@ -76,8 +76,9 @@ class AccessoriesController extends Controller
                 'manufacturer',
             ];
 
+        // See ComponentsController for the orderItems.order.supplier eager-load rationale.
         $accessories = Accessory::select('accessories.*')
-            ->with('category', 'company', 'manufacturer', 'checkouts', 'location', 'supplier', 'adminuser')
+            ->with('category', 'company', 'manufacturer', 'checkouts', 'location', 'defaultSupplier', 'adminuser', 'orderItems.order.supplier')
             ->withCount('checkouts as checkouts_count');
 
         // This invokes the Searchable model trait scopeTextSearch and will handle input by search or by advanced search filter
@@ -113,7 +114,7 @@ class AccessoriesController extends Controller
         }
 
         if ($request->filled('supplier_id')) {
-            $accessories->where('accessories.supplier_id', '=', $request->input('supplier_id'));
+            $accessories->where('accessories.default_supplier_id', '=', $request->input('supplier_id'));
         }
 
         if ($request->filled('location_id')) {
@@ -183,6 +184,12 @@ class AccessoriesController extends Controller
         $accessory = new Accessory;
         $accessory->fill($request->all());
         $accessory->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+        // Seed the parent's "typical supplier" template from the initial
+        // acquisition supplier on create; editable afterwards. See the
+        // UI store method for the parent-as-template rationale.
+        if (! $request->filled('default_supplier_id') && $request->filled('supplier_id')) {
+            $accessory->default_supplier_id = $request->input('supplier_id');
+        }
         $accessory = $request->handleImages($accessory);
 
         if ($accessory->save()) {

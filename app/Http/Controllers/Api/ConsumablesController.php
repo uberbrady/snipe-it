@@ -37,7 +37,8 @@ class ConsumablesController extends Controller
     {
         $this->authorize('index', Consumable::class);
 
-        $consumables = Consumable::with('company', 'location', 'category', 'supplier', 'manufacturer')
+        // See ComponentsController for the orderItems.order.supplier eager-load rationale.
+        $consumables = Consumable::with('company', 'location', 'category', 'defaultSupplier', 'manufacturer', 'orderItems.order.supplier')
             ->withCount('users as consumables_users_count');
 
         // This array is what determines which fields should be allowed to be sorted on ON the table itself.
@@ -108,7 +109,7 @@ class ConsumablesController extends Controller
         }
 
         if ($request->filled('supplier_id')) {
-            $consumables->where('consumables.supplier_id', '=', $request->input('supplier_id'));
+            $consumables->where('consumables.default_supplier_id', '=', $request->input('supplier_id'));
         }
 
         if ($request->filled('location_id')) {
@@ -176,6 +177,10 @@ class ConsumablesController extends Controller
         $consumable = new Consumable;
         $consumable->fill($request->all());
         $consumable->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+        // See AccessoriesController::store for the default-supplier seeding rationale.
+        if (! $request->filled('default_supplier_id') && $request->filled('supplier_id')) {
+            $consumable->default_supplier_id = $request->input('supplier_id');
+        }
         $consumable = $request->handleImages($consumable);
 
         if ($consumable->save()) {

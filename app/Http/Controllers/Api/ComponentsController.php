@@ -66,8 +66,11 @@ class ComponentsController extends Controller
 
             ];
 
+        // Eager-load orderItems.order.supplier so lastAcquisitionSupplier()
+        // walks the relation cache in the transformer instead of firing a
+        // Supplier::find() per row.
         $components = Component::select('components.*')
-            ->with('company', 'location', 'category', 'supplier', 'adminuser', 'manufacturer')
+            ->with('company', 'location', 'category', 'defaultSupplier', 'adminuser', 'manufacturer', 'orderItems.order.supplier')
             ->withSum('unconstrainedAssets as sum_unconstrained_assets', 'components_assets.assigned_qty');
 
         $filter = [];
@@ -114,7 +117,7 @@ class ComponentsController extends Controller
         }
 
         if ($request->filled('supplier_id')) {
-            $components->where('components.supplier_id', '=', $request->input('supplier_id'));
+            $components->where('components.default_supplier_id', '=', $request->input('supplier_id'));
         }
 
         if ($request->filled('manufacturer_id')) {
@@ -188,6 +191,10 @@ class ComponentsController extends Controller
         $component = new Component;
         $component->fill($request->all());
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
+        // See AccessoriesController::store for the default-supplier seeding rationale.
+        if (! $request->filled('default_supplier_id') && $request->filled('supplier_id')) {
+            $component->default_supplier_id = $request->input('supplier_id');
+        }
         $component = $request->handleImages($component);
 
         if ($component->save()) {

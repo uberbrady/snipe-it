@@ -82,19 +82,20 @@ class ComponentsController extends Controller
         $component = new Component;
         $component->name = $request->input('name');
         $component->category_id = $request->input('category_id');
-        $component->supplier_id = $request->input('supplier_id');
         $component->manufacturer_id = $request->input('manufacturer_id');
         $component->model_number = $request->input('model_number');
         $component->location_id = $request->input('location_id');
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-        // order_number moved off the parent Component column to Orders / OrderItems.
+        // order_number / supplier_id / purchase_date / purchase_cost all
+        // moved off the parent column to Orders / OrderItems.
         $component->min_amt = $request->input('min_amt', null);
         $component->serial = $request->input('serial', null);
-        $component->purchase_date = $request->input('purchase_date', null);
-        $component->purchase_cost = $request->input('purchase_cost', null);
         $component->qty = $request->input('qty');
         $component->created_by = auth()->id();
         $component->notes = $request->input('notes');
+        // Seed the template supplier from the initial-acquisition
+        // supplier on the create form; editable afterwards.
+        $component->default_supplier_id = $request->input('default_supplier_id', $request->input('supplier_id'));
 
         $component = $request->handleImages($component);
 
@@ -172,8 +173,9 @@ class ComponentsController extends Controller
         $component->serial = $request->input('serial');
         // supplier_id, purchase_date, purchase_cost are create-only on
         // the parent. Post-create acquisitions live as Orders +
-        // OrderItems, so the edit form drops them and the controller
-        // stops overwriting the parent values.
+        // OrderItems. default_supplier_id remains editable as the
+        // parent's "typical supplier" template.
+        $component->default_supplier_id = $request->input('default_supplier_id');
         $component->notes = $request->input('notes');
 
         $component = $request->handleImages($component);

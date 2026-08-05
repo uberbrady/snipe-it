@@ -171,7 +171,9 @@ class CustomComponentReportController extends Controller
             ],
             'purchase_date' => [
                 'headers' => [trans('general.purchase_date')],
-                'values' => fn ($component, $i) => [$component->purchase_date ? Carbon::make($component->purchase_date)->format('Y-m-d') : ''],
+                'values' => fn ($component, $i) => [
+                    ($d = $component->lastOrderDefaults()['purchase_date'] ?? null) ? Carbon::make($d)->format('Y-m-d') : '',
+                ],
             ],
             'quantity' => [
                 'headers' => [trans('general.quantity')],
@@ -183,7 +185,7 @@ class CustomComponentReportController extends Controller
             ],
             'unit_cost' => [
                 'headers' => [trans('general.unit_cost')],
-                'values' => fn ($component, $i) => [$component->purchase_cost],
+                'values' => fn ($component, $i) => [$component->lastOrderDefaults()['unit_cost'] ?? ''],
             ],
             'order' => [
                 'headers' => [trans('admin/hardware/form.order')],
@@ -204,7 +206,7 @@ class CustomComponentReportController extends Controller
             ],
             'supplier' => [
                 'headers' => [trans('general.supplier')],
-                'values' => fn ($component, $i) => [$component->supplier?->name],
+                'values' => fn ($component, $i) => [$component->lastAcquisitionSupplier()?->name],
             ],
             'location' => [
                 'headers' => [trans('general.location')],
@@ -268,11 +270,14 @@ class CustomComponentReportController extends Controller
                 'company',
                 'location',
                 'manufacturer',
-                'supplier',
+                'defaultSupplier',
                 // Eager-loaded so the 'order' report column can pluck
                 // Order.order_number per row without firing N+1 queries
                 // through the HasManyThrough relation on every render.
+                // orderItems.order.supplier feeds the "supplier" column's
+                // lastAcquisitionSupplier() lookup.
                 'orders',
+                'orderItems.order.supplier',
             ]);
 
         $request->whenFilled('include_assignments', fn () => $query->with('assets.company'));
@@ -299,7 +304,7 @@ class CustomComponentReportController extends Controller
             'by_company_id' => 'components.company_id',
             'by_location_id' => 'components.location_id',
             'by_manufacturer_id' => 'components.manufacturer_id',
-            'by_supplier_id' => 'components.supplier_id',
+            'by_supplier_id' => 'components.default_supplier_id',
         ]);
 
         $query = $this->appendNumericalBoundaries($query, $request, [

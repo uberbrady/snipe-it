@@ -76,13 +76,14 @@ class AccessoriesController extends Controller
         // (after save) with the form-supplied order_number / currency.
         $accessory->manufacturer_id = request('manufacturer_id');
         $accessory->model_number = request('model_number');
-        $accessory->purchase_date = request('purchase_date');
-        $accessory->purchase_cost = request('purchase_cost');
         $accessory->qty = request('qty');
         $accessory->created_by = auth()->id();
-        $accessory->supplier_id = request('supplier_id');
         $accessory->notes = request('notes');
         $accessory->requestable = request('requestable', 0);
+        // Seed the template supplier from the initial-acquisition
+        // supplier on the create form so newly-created items already
+        // have a "typical" supplier pre-populated. Editable afterwards.
+        $accessory->default_supplier_id = request('default_supplier_id', request('supplier_id'));
 
         if ($request->has('use_cloned_image')) {
             $cloned_model_img = Accessory::select('image')->find($request->input('clone_image_from_id'));
@@ -188,9 +189,11 @@ class AccessoriesController extends Controller
             $accessory->model_number = request('model_number');
             // supplier_id, purchase_date, purchase_cost are create-only
             // on the parent. Post-create acquisitions live as Orders +
-            // OrderItems (each with its own supplier / date / price), so
-            // the edit form no longer exposes any of them and the
-            // controller stops overwriting the parent values.
+            // OrderItems (each with its own supplier / date / price).
+            // default_supplier_id remains editable — it's the parent's
+            // "typical supplier" template that seeds new Orders when
+            // the item has no order history yet.
+            $accessory->default_supplier_id = request('default_supplier_id');
             $accessory->notes = request('notes');
             $accessory->requestable = request('requestable', 0);
 

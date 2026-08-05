@@ -83,19 +83,20 @@ class ConsumablesController extends Controller
         $consumable = new Consumable;
         $consumable->name = $request->input('name');
         $consumable->category_id = $request->input('category_id');
-        $consumable->supplier_id = $request->input('supplier_id');
         $consumable->location_id = $request->input('location_id');
         $consumable->company_id = Company::getIdForCurrentUser($request->input('company_id'));
-        // order_number moved off the parent Consumable column to Orders / OrderItems.
+        // order_number / supplier_id / purchase_date / purchase_cost all
+        // moved off the parent column to Orders / OrderItems.
         $consumable->min_amt = $request->input('min_amt');
         $consumable->manufacturer_id = $request->input('manufacturer_id');
         $consumable->model_number = $request->input('model_number');
         $consumable->item_no = $request->input('item_no');
-        $consumable->purchase_date = $request->input('purchase_date');
-        $consumable->purchase_cost = $request->input('purchase_cost');
         $consumable->qty = $request->input('qty');
         $consumable->created_by = auth()->id();
         $consumable->notes = $request->input('notes');
+        // Seed the template supplier from the initial-acquisition
+        // supplier on the create form; editable afterwards.
+        $consumable->default_supplier_id = $request->input('default_supplier_id', $request->input('supplier_id'));
 
         if ($request->has('use_cloned_image')) {
             $cloned_model_img = Consumable::select('image')->find($request->input('clone_image_from_id'));
@@ -181,8 +182,10 @@ class ConsumablesController extends Controller
         $consumable->item_no = $request->input('item_no');
         // supplier_id, purchase_date, purchase_cost are create-only on
         // the parent. Post-create acquisitions live as Orders +
-        // OrderItems, so the edit form drops them and the controller
-        // stops overwriting the parent values.
+        // OrderItems (each with its own supplier / date / price).
+        // default_supplier_id remains editable — see accessory update
+        // controller for the parent-as-template rationale.
+        $consumable->default_supplier_id = $request->input('default_supplier_id');
         $consumable->notes = $request->input('notes');
 
         $consumable = $request->handleImages($consumable);
