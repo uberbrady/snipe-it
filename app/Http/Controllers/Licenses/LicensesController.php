@@ -99,10 +99,7 @@ class LicensesController extends Controller
         $license->manufacturer_id = $request->input('manufacturer_id');
         $license->name = $request->input('name');
         $license->notes = $request->input('notes');
-        // order_number moved off the parent License column to the Orders /
-        // OrderItems data model. Requests carrying an order_number on
-        // create silently drop here; acquisition tracking happens via
-        // the adjust-quantity flow or the CSV importer.
+        $license->order_number = $request->input('order_number');
         $license->purchase_cost = $request->input('purchase_cost');
         $license->purchase_date = $request->input('purchase_date');
         $license->purchase_order = $request->input('purchase_order');
@@ -189,7 +186,7 @@ class LicensesController extends Controller
         $license->maintained = $request->input('maintained', 0);
         $license->name = $request->input('name');
         $license->notes = $request->input('notes');
-        // order_number moved off the parent License column to Orders / OrderItems.
+        $license->order_number = $request->input('order_number');
         $license->purchase_cost = $request->input('purchase_cost');
         $license->purchase_date = $request->input('purchase_date');
         $license->purchase_order = $request->input('purchase_order');

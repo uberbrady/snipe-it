@@ -75,12 +75,7 @@ class LicensesController extends Controller
         }
 
         if ($request->filled('order_number')) {
-            // Reroute through the HasOrders orders() HasManyThrough since
-            // the parent licenses.order_number column no longer exists.
-            $orderNumber = $request->input('order_number');
-            $licenses->whereHas('orders', function ($query) use ($orderNumber) {
-                $query->where('orders.order_number', '=', $orderNumber);
-            });
+            $licenses->where('order_number', '=', $request->input('order_number'));
         }
 
         if ($request->filled('purchase_order')) {
@@ -174,12 +169,6 @@ class LicensesController extends Controller
             case 'percent_remaining':
                 $licenses = $licenses->OrderPercentRemaining($order);
                 break;
-            case 'order_number':
-                // Handled through the HasOrders scope rather than a raw
-                // licenses.order_number sort — that column moved off
-                // License when Orders became the acquisition data model.
-                $licenses = $licenses->orderByOrderNumber($order);
-                break;
             default:
                 $allowed_columns =
                     [
@@ -196,6 +185,7 @@ class LicensesController extends Controller
                         'min_amt',
                         'name',
                         'notes',
+                        'order_number',
                         'purchase_cost',
                         'purchase_date',
                         'purchase_order',
