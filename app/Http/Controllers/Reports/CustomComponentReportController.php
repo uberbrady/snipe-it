@@ -187,11 +187,20 @@ class CustomComponentReportController extends Controller
             ],
             'order' => [
                 'headers' => [trans('admin/hardware/form.order')],
-                // Component::getOrderNumberAttribute hides the parent value from
-                // display; read the raw column so the export carries the actual
-                // stored value. The by_order_number filter above does raw SQL
-                // against the same column, so filter+export stay consistent.
-                'values' => fn ($component, $i) => [$component->getRawOriginal('order_number')],
+                // order_number moved off the parent Component column to
+                // the Orders / OrderItems polymorphic pair. A component
+                // can now have multiple orders across its history;
+                // render them as a comma-separated list so a
+                // single-column CSV cell stays readable while still
+                // surfacing every historical order the report caller
+                // might be looking for.
+                'values' => fn ($component, $i) => [
+                    $component->orders
+                        ->pluck('order_number')
+                        ->filter()
+                        ->unique()
+                        ->implode(', '),
+                ],
             ],
             'supplier' => [
                 'headers' => [trans('general.supplier')],
@@ -260,6 +269,10 @@ class CustomComponentReportController extends Controller
                 'location',
                 'manufacturer',
                 'supplier',
+                // Eager-loaded so the 'order' report column can pluck
+                // Order.order_number per row without firing N+1 queries
+                // through the HasManyThrough relation on every render.
+                'orders',
             ]);
 
         $request->whenFilled('include_assignments', fn () => $query->with('assets.company'));
@@ -267,8 +280,19 @@ class CustomComponentReportController extends Controller
         $query = $this->appendLocalConstraints($query, $request, [
             'by_model_number' => 'components.model_number',
             'by_name' => 'components.name',
-            'by_order_number' => 'components.order_number',
         ]);
+
+        // Filter by order_number walks through the Orders relation now
+        // that components.order_number is gone. Any Component that has an
+        // OrderItem line under an Order matching the requested string
+        // gets returned. Applied here rather than through the shared
+        // appendLocalConstraints helper because it needs relation-aware
+        // SQL (whereHas), not a bare column comparison.
+        $request->whenFilled('by_order_number', function ($value) use ($query) {
+            $query->whereHas('orders', function ($q) use ($value) {
+                $q->where('orders.order_number', $value);
+            });
+        });
 
         $query = $this->appendForeignConstraints($query, $request, [
             'by_category_id' => 'components.category_id',

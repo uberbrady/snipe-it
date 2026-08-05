@@ -263,8 +263,13 @@ class ConsumablesController extends Controller
     {
         $error = $this->runAdjustQuantity($request, $consumable, 'consumables');
 
-        return $error
-            ? redirect()->back()->with('error', $error)
-            : redirect()->back()->with('success', trans('general.adjust_quantity_success'));
+        if ($error) {
+            return redirect()->back()->with('error', $error);
+        }
+
+        return redirect()
+            ->route('consumables.show', $consumable)
+            ->withFragment('history')
+            ->with('success', trans('general.adjust_quantity_success'));
     }
 }

@@ -262,8 +262,13 @@ class ComponentsController extends Controller
     {
         $error = $this->runAdjustQuantity($request, $component, 'components');
 
-        return $error
-            ? redirect()->back()->with('error', $error)
-            : redirect()->back()->with('success', trans('general.adjust_quantity_success'));
+        if ($error) {
+            return redirect()->back()->with('error', $error);
+        }
+
+        return redirect()
+            ->route('components.show', $component)
+            ->withFragment('history')
+            ->with('success', trans('general.adjust_quantity_success'));
     }
 }
