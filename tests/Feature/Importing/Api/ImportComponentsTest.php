@@ -85,16 +85,15 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['companyName'], $newComponent->company->name);
         $this->assertEquals($row['category'], $newComponent->category->name);
         $this->assertEquals($row['location'], $newComponent->location->name);
-        $this->assertNull($newComponent->supplier_id);
+        $this->assertNull($newComponent->default_supplier_id);
         $this->assertEquals($row['quantity'], $newComponent->qty);
-        // order_number moved off the parent Component column to the
-        // Orders / OrderItems polymorphic pair. Verify the importer's
-        // recordOrderForImportedRow helper wrote a matching Order and
-        // linked it to the new component via an OrderItem.
+        // order_number / purchase_date / purchase_cost all live on the
+        // Orders / OrderItems polymorphic pair now — the importer's
+        // recordOrderForImportedRow helper writes them there.
         $orderItem = $newComponent->orderItems()->firstOrFail();
         $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
-        $this->assertEquals($row['purchaseDate'], $newComponent->purchase_date->toDateString());
-        $this->assertEquals($row['purchaseCost'], $newComponent->purchase_cost);
+        $this->assertEquals($row['purchaseDate'], $orderItem->order->purchase_date->toDateString());
+        $this->assertEquals((float) $row['purchaseCost'], (float) $orderItem->price);
         $this->assertNull($newComponent->min_amt);
         $this->assertEquals($row['serialNumber'], $newComponent->serial);
         $this->assertNull($newComponent->image);
@@ -245,13 +244,14 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['itemName'], $updatedComponent->name);
         $this->assertEquals($row['category'], $updatedComponent->category->name);
         $this->assertEquals($row['location'], $updatedComponent->location->name);
-        $this->assertEquals($component->supplier_id, $updatedComponent->supplier_id);
+        $this->assertEquals($component->default_supplier_id, $updatedComponent->default_supplier_id);
         $this->assertEquals($row['quantity'], $updatedComponent->qty);
-        // order_number does NOT persist on the parent through an update
-        // (see update_accessory_from_import for the same rationale;
-        // importer_qty_change_creates_quantity_adjust_log covers the log).
-        $this->assertEquals($row['purchaseDate'], $updatedComponent->purchase_date->toDateString());
-        $this->assertEquals($row['purchaseCost'], $updatedComponent->purchase_cost);
+        // Acquisition metadata lives on the latest OrderItem's Order —
+        // the update path writes a new Order + OrderItem when the CSV
+        // carries acquisition columns, per recordOrderForImportedRow.
+        $latestOrderItem = $updatedComponent->orderItems()->latest('id')->firstOrFail();
+        $this->assertEquals($row['purchaseDate'], $latestOrderItem->order->purchase_date->toDateString());
+        $this->assertEquals((float) $row['purchaseCost'], (float) $latestOrderItem->price);
         $this->assertEquals($component->min_amt, $updatedComponent->min_amt);
         $this->assertEquals($row['serialNumber'], $updatedComponent->serial);
         $this->assertEquals($component->image, $updatedComponent->image);
@@ -263,23 +263,19 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
     {
         $this->actingAsForApi(User::factory()->superuser()->create());
 
-        // purchase_date is the sole proxy for the "empty CSV cell clears
-        // the DB column" behavior here. order_number is not exercised
-        // because Component / Accessory / Consumable all hide the
-        // parent-level order_number behind an accessor that returns null
-        // (see Component::getOrderNumberAttribute) — reads via
-        // $component->order_number would be null regardless of the DB
-        // state and would give a false green for this test.
+        // notes is the parent-column proxy for the generic
+        // "empty CSV cell clears the DB column" behavior — see the
+        // consumables import tests for the full rationale.
         $component = Component::factory()->create([
-            'purchase_date' => '2022-01-01',
+            'notes' => 'seeded note',
         ])->refresh();
 
-        $this->assertNotNull($component->purchase_date);
+        $this->assertEquals('seeded note', $component->notes);
 
         $row = ImportFileBuilder::new()->definition();
         $row['itemName'] = $component->name;
         $row['serialNumber'] = $component->serial;
-        $row['purchaseDate'] = '';
+        $row['notes'] = '';
 
         $importFileBuilder = new ImportFileBuilder([$row]);
         $import = Import::factory()->component()->create([
@@ -292,7 +288,7 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         ])->assertOk();
 
         $component->refresh();
-        $this->assertNull($component->purchase_date);
+        $this->assertNull($component->notes);
     }
 
     #[Test]
@@ -301,17 +297,15 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->actingAsForApi(User::factory()->superuser()->create());
 
         $component = Component::factory()->create([
-            'purchase_date' => '2022-01-01',
+            'notes' => 'seeded note',
         ])->refresh();
 
-        $originalPurchaseDate = $component->purchase_date?->toDateString();
+        $originalNotes = $component->notes;
 
         // Import a CSV that only has the identity fields (name+serial) plus
         // quantity (required by Component validation). All other Component
         // fields are absent from the CSV, so their DB values must be preserved.
-        // order_number moved off the parent Component column to the Orders
-        // data model, so we can't use it as a preservation proxy here;
-        // purchase_date is the remaining stand-in.
+        // notes is the proxy — see the sibling test above.
         $partialFile = new ImportFileBuilder([[
             'itemName' => $component->name,
             'serialNumber' => $component->serial,
@@ -328,7 +322,7 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
 
         $component->refresh();
         $this->assertEquals(42, $component->qty);
-        $this->assertEquals($originalPurchaseDate, $component->purchase_date?->toDateString());
+        $this->assertEquals($originalNotes, $component->notes);
     }
 
     #[Test]
@@ -370,7 +364,9 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         ])->assertOk();
 
         $component->refresh();
-        $this->assertEquals($updatedRow['purchaseCost'], $component->purchase_cost);
+        // purchase_cost moved to the OrderItem's price column.
+        $latestOrderItem = $component->orderItems()->latest('id')->firstOrFail();
+        $this->assertEquals((float) $updatedRow['purchaseCost'], (float) $latestOrderItem->price);
 
         $updateLog = ActionLog::query()
             ->where('item_type', Component::class)
@@ -426,14 +422,14 @@ class ImportComponentsTest extends ImportDataTestCase implements TestsPermission
         $this->assertEquals($row['quantity'], $newComponent->name);
         $this->assertEquals($row['purchaseCost'], $newComponent->category->name);
         $this->assertEquals($row['serialNumber'], $newComponent->location->name);
-        $this->assertNull($newComponent->supplier_id);
+        $this->assertNull($newComponent->default_supplier_id);
         $this->assertEquals($row['companyName'], $newComponent->qty);
-        // See the import_components test above for why order_number now
-        // lives on Orders / OrderItems rather than the parent column.
+        // See the import_components test above for why order_number,
+        // purchase_date, and purchase_cost live on Orders / OrderItems.
         $orderItem = $newComponent->orderItems()->firstOrFail();
         $this->assertEquals($row['orderNumber'], $orderItem->order->order_number);
-        $this->assertEquals($row['itemName'], $newComponent->purchase_date->toDateString());
-        $this->assertEquals($row['location'], $newComponent->purchase_cost);
+        $this->assertEquals($row['itemName'], $orderItem->order->purchase_date->toDateString());
+        $this->assertEquals((float) $row['location'], (float) $orderItem->price);
         $this->assertNull($newComponent->min_amt);
         $this->assertNull($newComponent->image);
         $this->assertNull($newComponent->notes);

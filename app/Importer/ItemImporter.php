@@ -240,19 +240,32 @@ class ItemImporter extends Importer
     {
         $orderNumber = trim((string) $this->findCsvMatch($row, 'order_number'));
         $currency = trim((string) $this->findCsvMatch($row, 'currency'));
+        // Supplier / purchase_date / purchase_cost live on the Order
+        // and OrderItem now — the parent inventory row no longer holds
+        // them. Pull them off the sub-importer's already-normalized
+        // $this->item so createOrFetchSupplier / parseOrNullDate work
+        // just like they used to when the values were being written
+        // straight onto the parent.
+        $supplierId = $this->item['supplier_id'] ?? null;
+        $purchaseDate = $this->item['purchase_date'] ?? null;
+        $purchaseCost = array_key_exists('purchase_cost', $this->item) && $this->item['purchase_cost'] !== '' && $this->item['purchase_cost'] !== null
+            ? (float) $this->item['purchase_cost']
+            : null;
 
-        if ($orderNumber === '' && $currency === '') {
+        if ($orderNumber === '' && $currency === '' && $supplierId === null && $purchaseDate === null && $purchaseCost === null) {
             return;
         }
 
         // Every accessory / consumable / component / asset create fires
         // its observer which writes an initial Order + OrderItem from
-        // parent attributes (with a null order_number since parents
-        // don't carry that column any more). The importer's job here is
-        // to enrich that observer-created Order with the CSV's
-        // order_number and currency, not to write a duplicate Order or
-        // duplicate OrderItem line.
-        $initialOrder = $model->orderItems()->latest('id')->first()?->order;
+        // parent attributes (with null acquisition metadata — parents
+        // don't carry those columns any more). The importer's job here
+        // is to enrich the observer-created rows with the CSV's values.
+        $initialLine = $model->orderItems()->latest('id')->first();
+        if (! $initialLine) {
+            return;
+        }
+        $initialOrder = $initialLine->order;
         if (! $initialOrder) {
             return;
         }
@@ -264,9 +277,19 @@ class ItemImporter extends Importer
         if ($currency !== '' && $initialOrder->currency !== $currency) {
             $updates['currency'] = $currency;
         }
+        if ($supplierId !== null && (int) $initialOrder->supplier_id !== (int) $supplierId) {
+            $updates['supplier_id'] = (int) $supplierId;
+        }
+        if ($purchaseDate !== null && optional($initialOrder->purchase_date)->toDateString() !== (string) $purchaseDate) {
+            $updates['purchase_date'] = $purchaseDate;
+        }
 
         if ($updates !== []) {
             $initialOrder->update($updates);
+        }
+
+        if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
+            $initialLine->update(['price' => $purchaseCost]);
         }
     }
 
