@@ -135,7 +135,11 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $this->assertEquals('A New Name', $accessory->name);
         $this->assertEquals(10, $accessory->qty);
         $this->assertEquals($supplierB->id, $accessory->supplier_id);
-        $this->assertEquals(199.99, $accessory->purchase_cost);
+        // purchase_cost is now create-only on the parent — the PATCH
+        // payload's 199.99 rides onto the OrderItem created by the
+        // qty-change adjustQuantity call (asserted in the dedicated
+        // qty test below) rather than overwriting the parent column.
+        $this->assertEquals(99.99, $accessory->purchase_cost);
         $this->assertEquals('XYZ123', $accessory->model_number);
         $this->assertEquals($categoryB->id, $accessory->category_id);
         $this->assertEquals($companyB->id, $accessory->company_id);

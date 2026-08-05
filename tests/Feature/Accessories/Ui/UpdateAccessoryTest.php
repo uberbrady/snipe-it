@@ -87,12 +87,15 @@ class UpdateAccessoryTest extends TestCase
             ->create([
                 'min_amt' => 1,
                 'qty' => 5,
+                'purchase_cost' => 42.00,
             ]);
 
-        // qty is still ignored by the web edit form (flows through the
-        // adjust-quantity modal). order_number in the POST body silently
-        // drops because the parent column was renamed to legacy_order_number
-        // and taken out of fillable. supplier_id is editable again.
+        // qty, order_number, and purchase_cost are all create-only for
+        // accessories now. qty flows through the adjust-quantity modal
+        // instead; order_number and purchase_cost ride on OrderItems
+        // rather than the parent column. The edit form drops all three
+        // silently, so a POST body carrying them shouldn't overwrite
+        // the corresponding parent columns.
         $this->actingAs(User::factory()->editAccessories()->create())
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
@@ -120,8 +123,8 @@ class UpdateAccessoryTest extends TestCase
             'location_id' => $locationB->id,
             'model_number' => 'changed 1234',
             'purchase_date' => '2024-10-11',
-            'purchase_cost' => '83.52',
-            'qty' => '5', // unchanged from factory value; edit ignores qty
+            'purchase_cost' => '42.00', // unchanged from create; edit ignores purchase_cost
+            'qty' => '5',                // unchanged from create; edit ignores qty
             'min_amt' => '10',
             'notes' => 'A new note',
         ]);
