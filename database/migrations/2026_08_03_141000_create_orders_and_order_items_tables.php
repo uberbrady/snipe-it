@@ -5,22 +5,32 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Purchase-order data model. `orders` is one row per real-world PO (a
- * supplier + date + optional PO number). `order_items` is the line-items
- * on that PO, polymorphic to the inventory model so a single PO can carry
- * accessories, consumables, components, assets, and license seats.
+ * Acquisition-transaction data model. `orders` is one row per
+ * transaction (a supplier, a date, an optional supplier-issued
+ * `order_number`, a currency). `order_items` is the polymorphic line
+ * items on that transaction so a single acquisition can carry
+ * accessories, consumables, components, and assets side by side.
  *
  * Replaces the parent-level `order_number` column that used to live on
  * each inventory table. The old column misrepresented current state on
- * models that get replenished across many POs (accessories / consumables
- * / components); consolidating into a dedicated Order model + polymorphic
- * line-items lets each purchase event be recorded independently, and
- * lets action_logs point at the Order (per-event PO context) rather than
- * carrying a raw string.
+ * models that get replenished across many transactions (accessories,
+ * consumables, components). The dedicated Order model + polymorphic
+ * line items records each transaction independently and lets
+ * action_logs point at the Order for per-event acquisition context
+ * rather than carrying a raw string.
  *
- * No UI or permission model is included yet — this migration only handles
- * the storage. Rows arrive via the adjust-quantity flow, the importer,
- * and the backfill migrations that follow this one.
+ * Explicitly NOT a purchase-order workflow (no state machine, no
+ * approvals, no receiving). Just the "what was acquired, when, from
+ * whom" record that the adjust-quantity flow, the AssetObserver, and
+ * the CSV importers write to.
+ *
+ * Licenses are intentionally out of scope for this migration —
+ * per-seat product-key semantics need their own design pass before
+ * the License model can join the Orders flow cleanly.
+ *
+ * No UI or permission model is included yet. Rows arrive via the
+ * adjust-quantity flow, the importer, and the backfill migrations that
+ * follow this one.
  */
 return new class extends Migration
 {
@@ -82,22 +92,27 @@ return new class extends Migration
             $table->index(['item_type', 'item_id']);
         });
 
-        // FK from every action_log row that references an Order (today
-        // that's just QuantityAdjust events; other action types can
-        // adopt it as they grow acquisition semantics). Plain bigint +
-        // index — no DB-level FK constraint per Snipe-IT convention
-        // (schema shifts often enough that constraints cause churn).
+        // FK from every action_log row that references a specific
+        // acquisition line (today that's just QuantityAdjust events;
+        // other action types can adopt it as they grow acquisition
+        // semantics). Points at order_items, not orders — a single
+        // Order deduped across staggered receipts under one order_number
+        // carries multiple lines, and the log entry has to reach the
+        // exact line for its event, not just the shared Order header.
+        // Plain bigint + index, no DB-level FK constraint per Snipe-IT
+        // convention (schema shifts often enough that constraints cause
+        // churn).
         Schema::table('action_logs', function (Blueprint $table) {
-            $table->unsignedBigInteger('order_id')->nullable()->after('quantity');
-            $table->index('order_id');
+            $table->unsignedBigInteger('order_item_id')->nullable()->after('quantity');
+            $table->index('order_item_id');
         });
     }
 
     public function down(): void
     {
         Schema::table('action_logs', function (Blueprint $table) {
-            $table->dropIndex(['order_id']);
-            $table->dropColumn('order_id');
+            $table->dropIndex(['order_item_id']);
+            $table->dropColumn('order_item_id');
         });
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('orders');

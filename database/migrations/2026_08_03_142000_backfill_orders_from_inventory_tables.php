@@ -6,11 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Backfill the Orders / OrderItems tables from the pre-existing
- * order_number columns on accessories, consumables, components, assets,
- * and licenses. One Order row is created per unique
- * (order_number, supplier_id, company_id) tuple across all five tables,
- * and each source inventory row becomes an OrderItem line under that
- * Order.
+ * order_number columns on accessories, consumables, components, and
+ * assets. One Order row is created per unique (order_number,
+ * supplier_id, company_id) tuple across all four tables, and each
+ * source inventory row becomes an OrderItem line under that Order.
+ *
+ * Licenses are intentionally out of scope. Per-seat product-key
+ * semantics need their own design pass before License can join the
+ * Orders flow cleanly.
  *
  * The dedupe key is intentionally (order_number, supplier_id, company_id)
  * rather than just order_number: a raw string like "PO-42" can legitimately
@@ -21,8 +24,8 @@ use Illuminate\Support\Facades\Schema;
  * inventory rows never associated with any order, and there's nothing
  * for the Orders table to record.
  *
- * The follow-up migration (`drop_order_number_from_inventory_tables`)
- * removes the source columns once this backfill has run.
+ * The follow-up rename migration (`2026_08_03_143000_...`) renames the
+ * source columns to `legacy_*` names once this backfill has run.
  */
 return new class extends Migration
 {
@@ -37,7 +40,6 @@ return new class extends Migration
         \App\Models\Consumable::class => 'consumables',
         \App\Models\Component::class => 'components',
         \App\Models\Asset::class => 'assets',
-        \App\Models\License::class => 'licenses',
     ];
 
     public function up(): void
@@ -65,8 +67,7 @@ return new class extends Migration
                 continue;
             }
 
-            $qtyColumn = ($table === 'licenses') ? 'seats' : 'qty';
-            $hasQtyColumn = Schema::hasColumn($table, $qtyColumn);
+            $hasQtyColumn = Schema::hasColumn($table, 'qty');
 
             DB::table($table)
                 ->select([
@@ -82,14 +83,15 @@ return new class extends Migration
                 ->whereNotNull('order_number')
                 ->where('order_number', '!=', '')
                 ->orderBy('id')
-                ->chunkById(500, function ($rows) use ($modelClass, $table, $hasQtyColumn, $qtyColumn, &$orderIndex) {
-                    // Chunked pull grabs qty separately since not every
-                    // source table has the same qty-column name and we
-                    // want the primary select above to stay portable.
+                ->chunkById(500, function ($rows) use ($modelClass, $table, $hasQtyColumn, &$orderIndex) {
+                    // Chunked pull grabs qty separately since assets
+                    // don't have a qty column (1:1 with the asset row)
+                    // and the primary select stays portable across the
+                    // four source tables.
                     $qtyMap = $hasQtyColumn
                         ? DB::table($table)
                             ->whereIn('id', $rows->pluck('id'))
-                            ->pluck($qtyColumn, 'id')
+                            ->pluck('qty', 'id')
                             ->all()
                         : [];
 
