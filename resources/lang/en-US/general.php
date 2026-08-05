@@ -20,6 +20,7 @@ return [
     'adjust_quantity_note' => 'Reason / note',
     'adjust_quantity_below_zero' => 'That adjustment would take the on-hand quantity below what is currently checked out.',
     'adjusted_quantity' => 'adjusted quantity',
+    'confirmed_quantity' => 'confirmed quantity',
     'admin' => 'Admin Settings',
     'admin_user' => 'Admin User',
     'admin_tooltip' => 'This user has admin privileges',
