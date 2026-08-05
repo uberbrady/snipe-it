@@ -118,6 +118,7 @@ return new class extends Migration
                             'item_id' => $row->id,
                             'qty' => max(1, (int) ($qtyMap[$row->id] ?? 1)),
                             'price' => $row->purchase_cost,
+                            'created_by' => $row->created_by,
                             'created_at' => $row->created_at ?? now(),
                             'updated_at' => $row->created_at ?? now(),
                         ]);
