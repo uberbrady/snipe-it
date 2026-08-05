@@ -1,0 +1,82 @@
+<?php
+
+use App\Enums\ActionType;
+use App\Models\Accessory;
+use App\Models\Component;
+use App\Models\Consumable;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * One-shot reconciliation of parent `qty` against the action_logs
+ * ledger for the three inventory models with qty adjustments
+ * (Accessory, Consumable, Component). Runs the invariant:
+ *
+ *   parent.qty = SUM(action_logs.quantity WHERE item = parent
+ *                    AND action_type IN ('create', 'qty_adjust'))
+ *
+ * Any row where the parent column disagrees with the ledger sum gets
+ * corrected to the ledger value. The AdjustsQuantity trait wraps its
+ * qty writes in a DB transaction so from this migration forward the
+ * two stay in sync. This migration catches historical drift that
+ * pre-dates the trait (direct `$model->qty = ...` writes that skipped
+ * the log).
+ *
+ * License is deliberately excluded. License.seats reconciliation
+ * would also need to create or destroy LicenseSeat pivot rows to keep
+ * the seat-tracking invariants, which is beyond a data-only fix.
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        foreach ([Accessory::class, Consumable::class, Component::class] as $modelClass) {
+            $this->reconcileFor($modelClass);
+        }
+    }
+
+    public function down(): void
+    {
+        // No-op. We can't restore whatever drift existed before the
+        // reconciliation because the ledger IS the correct value.
+    }
+
+    private function reconcileFor(string $modelClass): void
+    {
+        $qtyAdjust = ActionType::QuantityAdjust->value;
+
+        $modelClass::query()->chunkById(500, function ($rows) use ($modelClass, $qtyAdjust) {
+            foreach ($rows as $model) {
+                $expected = (int) DB::table('action_logs')
+                    ->where('item_type', $modelClass)
+                    ->where('item_id', $model->id)
+                    ->whereIn('action_type', ['create', $qtyAdjust])
+                    ->whereNull('deleted_at')
+                    ->sum('quantity');
+
+                $actual = (int) $model->qty;
+
+                if ($expected === $actual) {
+                    continue;
+                }
+
+                Log::info(sprintf(
+                    'Reconciling %s#%d qty: %d -> %d (ledger sum)',
+                    $modelClass,
+                    $model->id,
+                    $actual,
+                    $expected,
+                ));
+
+                // Direct DB update to bypass observers and events. The
+                // AdjustsQuantity trait would try to write another
+                // action_log entry, which would defeat the "sum equals
+                // the ledger" invariant we just calculated.
+                DB::table((new $modelClass)->getTable())
+                    ->where('id', $model->id)
+                    ->update(['qty' => $expected]);
+            }
+        });
+    }
+};
