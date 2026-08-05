@@ -239,44 +239,35 @@ class ItemImporter extends Importer
     protected function recordOrderForImportedRow($model, array $row): void
     {
         $orderNumber = trim((string) $this->findCsvMatch($row, 'order_number'));
-        if ($orderNumber === '') {
+        $currency = trim((string) $this->findCsvMatch($row, 'currency'));
+
+        if ($orderNumber === '' && $currency === '') {
             return;
         }
 
-        $supplierId = $model->supplier_id ?? null;
-        $companyId = $model->company_id ?? null;
-        $purchaseDate = $model->purchase_date ?? null;
-        $purchaseCost = $model->purchase_cost ?? null;
-        $qty = (int) ($model->qty ?? 1);
+        // Every accessory / consumable / component / asset create fires
+        // its observer which writes an initial Order + OrderItem from
+        // parent attributes (with a null order_number since parents
+        // don't carry that column any more). The importer's job here is
+        // to enrich that observer-created Order with the CSV's
+        // order_number and currency, not to write a duplicate Order or
+        // duplicate OrderItem line.
+        $initialOrder = $model->orderItems()->latest('id')->first()?->order;
+        if (! $initialOrder) {
+            return;
+        }
 
-        // Only stamp Order.currency when the CSV actually carries it in
-        // a `currency` column. Falling back to the system default here
-        // would assert info we don't have — a row's purchase_date can
-        // be historical (from when the install's currency was
-        // different), so imports leave currency null unless the CSV is
-        // explicit about it.
-        $currency = trim((string) $this->findCsvMatch($row, 'currency'));
+        $updates = [];
+        if ($orderNumber !== '' && $initialOrder->order_number !== $orderNumber) {
+            $updates['order_number'] = $orderNumber;
+        }
+        if ($currency !== '' && $initialOrder->currency !== $currency) {
+            $updates['currency'] = $currency;
+        }
 
-        $order = \App\Models\Order::firstOrCreate(
-            [
-                'order_number' => $orderNumber,
-                'supplier_id' => $supplierId,
-                'company_id' => $companyId,
-            ],
-            [
-                'purchase_date' => $purchaseDate,
-                'currency' => $currency !== '' ? $currency : null,
-                'created_by' => $this->created_by,
-            ],
-        );
-
-        \App\Models\OrderItem::create([
-            'order_id' => $order->id,
-            'item_type' => $model::class,
-            'item_id' => $model->id,
-            'qty' => max(1, $qty),
-            'price' => $purchaseCost,
-        ]);
+        if ($updates !== []) {
+            $initialOrder->update($updates);
+        }
     }
 
     /**
