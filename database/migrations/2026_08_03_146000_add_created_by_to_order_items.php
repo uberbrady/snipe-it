@@ -27,12 +27,17 @@ return new class extends Migration
 
         // Backfill existing rows from the parent Order.created_by so
         // history-tab renders and reports don't show a null column for
-        // every pre-migration line.
+        // every pre-migration line. Subquery form is portable across
+        // MariaDB (prod) and SQLite (tests) — UPDATE...JOIN differs
+        // between the two.
         DB::statement('
             UPDATE order_items
-            JOIN orders ON orders.id = order_items.order_id
-            SET order_items.created_by = orders.created_by
-            WHERE order_items.created_by IS NULL
+            SET created_by = (
+                SELECT orders.created_by
+                FROM orders
+                WHERE orders.id = order_items.order_id
+            )
+            WHERE created_by IS NULL
         ');
     }
 
