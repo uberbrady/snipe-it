@@ -210,6 +210,10 @@
                                             {{ Helper::formatCurrencyOutput($user->getUserTotalCost()->accessory_cost)}}
                                         </x-data-row>
 
+                                        <x-data-row icon_type="consumables" label="{{ trans('general.consumables') }}" align="right">
+                                            {{ Helper::formatCurrencyOutput($user->getUserTotalCost()->consumable_cost) }}
+                                        </x-data-row>
+
                                         {{-- Sum across complete + active maintenances tied
                                              to this user — used to surface "which users
                                              cost the most maintenance over time" as a glance.
@@ -448,7 +452,8 @@
                                         <td>{{ Helper::getFormattedDateObject($accessory->pivot->created_at, 'datetime',  false) }}</td>
                                         <td>{{ $accessory->pivot->note }}</td>
                                         <td>
-                                            {!! Helper::formatCurrencyOutput($accessory->purchase_cost) !!}
+                                            {{-- Prefer the last OrderItem's price so this table matches the accessory info-panel's "last unit cost". Falls back to parent for legacy rows. --}}
+                                            {!! Helper::formatCurrencyOutput($accessory->lastOrderDefaults()['unit_cost'] ?? $accessory->purchase_cost) !!}
                                         </td>
                                         <td class="hidden-print">
                                             @can('checkin', $accessory)
@@ -491,7 +496,8 @@
                                     <tr>
                                         <td>{!! $consumable->present()->nameUrl() !!}</td>
                                         <td>
-                                            {!! Helper::formatCurrencyOutput($consumable->purchase_cost) !!}
+                                            {{-- Same "last order unit cost" preference as the accessories table above. --}}
+                                            {!! Helper::formatCurrencyOutput($consumable->lastOrderDefaults()['unit_cost'] ?? $consumable->purchase_cost) !!}
                                         </td>
                                         <td>{{ Helper::getFormattedDateObject($consumable->pivot->created_at, 'datetime',  false) }}</td>
                                         <td>{{ $consumable->pivot->note }}</td>
