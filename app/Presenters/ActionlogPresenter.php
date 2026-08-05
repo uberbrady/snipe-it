@@ -57,10 +57,6 @@ class ActionlogPresenter extends Presenter
                 return 'fa-solid fa-user-minus';
             }
 
-            if ($this->action_type == 'delete') {
-                return 'fa-solid fa-user-minus';
-            }
-
             if ($this->action_type == 'upload deleted') {
                 return 'fa-solid fa-trash';
             }
@@ -144,10 +140,10 @@ class ActionlogPresenter extends Presenter
 
     public function actionType()
     {
-        // Zero-delta QuantityAdjust entries are audit-only submissions —
-        // the operator counted the shelf and confirmed the on-hand qty
+        // Zero-delta QuantityAdjust entries are audit-only submissions.
+        // The operator counted the shelf and confirmed the on-hand qty
         // matches the DB. Rendering these as "adjusted quantity" with a
-        // blank change column is confusing; surface them as "confirmed
+        // blank change column is confusing. Surface them as "confirmed
         // quantity" instead. The underlying action_type value stays
         // 'adjusted quantity' so filters and reports keep working.
         if ($this->action_type === 'adjusted quantity' && (int) $this->quantity === 0) {
