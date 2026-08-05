@@ -109,12 +109,51 @@ class ActionlogPresenter extends Presenter
             return 'fas fa-clipboard-check';
         }
 
+        // QuantityAdjust splits three ways by delta sign. Zero-delta is
+        // an audit-only confirmation (matches actionType()'s "confirmed
+        // quantity" label swap), so it shares the audit icon. Positive
+        // and negative deltas get plus / minus so the history row's
+        // icon telegraphs whether qty went up or down at a glance.
+        if ($this->action_type == 'adjusted quantity') {
+            $delta = (int) $this->quantity;
+            if ($delta > 0) {
+                return 'fa-solid fa-plus';
+            }
+            if ($delta < 0) {
+                return 'fa-solid fa-minus';
+            }
+
+            return 'fas fa-clipboard-check';
+        }
+
+        // License seat-count changes from the edit-form path (not the
+        // adjust-quantity flow) also want +/- icons so the history tab
+        // reads consistently regardless of which path added / removed
+        // the seats.
+        if ($this->action_type == 'add seats') {
+            return 'fa-solid fa-plus';
+        }
+
+        if ($this->action_type == 'delete seats') {
+            return 'fa-solid fa-minus';
+        }
+
         return 'fa-solid fa-rotate-right';
 
     }
 
     public function actionType()
     {
+        // Zero-delta QuantityAdjust entries are audit-only submissions —
+        // the operator counted the shelf and confirmed the on-hand qty
+        // matches the DB. Rendering these as "adjusted quantity" with a
+        // blank change column is confusing; surface them as "confirmed
+        // quantity" instead. The underlying action_type value stays
+        // 'adjusted quantity' so filters and reports keep working.
+        if ($this->action_type === 'adjusted quantity' && (int) $this->quantity === 0) {
+            return mb_strtolower(trans('general.confirmed_quantity'));
+        }
+
         return mb_strtolower(trans('general.'.str_replace(' ', '_', $this->action_type)));
     }
 
