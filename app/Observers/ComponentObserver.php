@@ -4,6 +4,9 @@ namespace App\Observers;
 
 use App\Models\Actionlog;
 use App\Models\Component;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Setting;
 
 class ComponentObserver
 {
@@ -51,19 +54,45 @@ class ComponentObserver
      */
     public function created(Component $component)
     {
+        $attrs = $component->getAttributes();
+        $qty = max(1, (int) ($attrs['qty'] ?? 0));
+
+        // Every component creation IS an acquisition transaction.
+        // See AccessoryObserver::created for the full rationale — same
+        // pattern: initial Order + OrderItem from parent attributes,
+        // controllers enrich with form-supplied fields after save.
+        $currency = ($component->location && $component->location->currency !== '' && $component->location->currency !== null)
+            ? $component->location->currency
+            : Setting::getSettings()?->default_currency;
+
+        $order = Order::create([
+            'order_number' => null,
+            'supplier_id' => $component->supplier_id,
+            'company_id' => $component->company_id,
+            'purchase_date' => $component->purchase_date,
+            'currency' => $currency,
+            'created_by' => $component->created_by ?? auth()->id(),
+        ]);
+
+        $orderItem = OrderItem::create([
+            'order_id' => $order->id,
+            'item_type' => Component::class,
+            'item_id' => $component->id,
+            'qty' => $qty,
+            'price' => $component->purchase_cost,
+        ]);
+
         $logAction = new Actionlog;
         $logAction->item_type = Component::class;
         $logAction->item_id = $component->id;
         $logAction->created_at = date('Y-m-d H:i:s');
         $logAction->action_date = date('Y-m-d H:i:s');
         $logAction->created_by = auth()->id();
-        $attrs = $component->getAttributes();
-        // order_number moved off Component to the Orders / OrderItems
-        // data model — the create log no longer captures it directly.
         // Capture the initial on-hand qty so the create log gives auditors
         // a "started with N units" anchor point. Subsequent QuantityAdjust
         // logs record deltas, not running totals.
         $logAction->quantity = (int) ($attrs['qty'] ?? 0);
+        $logAction->order_item_id = $orderItem->id;
         if ($component->imported) {
             $logAction->setActionSource('importer');
         }
