@@ -185,13 +185,12 @@ class AccessoriesController extends Controller
             $accessory->category_id = request('category_id');
             $accessory->company_id = Company::getIdForCurrentUser(request('company_id'));
             $accessory->manufacturer_id = request('manufacturer_id');
-            $accessory->supplier_id = request('supplier_id');
             $accessory->model_number = request('model_number');
-            $accessory->purchase_date = request('purchase_date');
-            // purchase_cost is create-only on the parent — post-create
-            // acquisitions record their own price on the OrderItem, so
-            // the edit form no longer exposes purchase_cost and this
-            // controller stops overwriting it on update.
+            // supplier_id, purchase_date, purchase_cost are create-only
+            // on the parent. Post-create acquisitions live as Orders +
+            // OrderItems (each with its own supplier / date / price), so
+            // the edit form no longer exposes any of them and the
+            // controller stops overwriting the parent values.
             $accessory->notes = request('notes');
             $accessory->requestable = request('requestable', 0);
 

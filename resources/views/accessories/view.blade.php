@@ -27,6 +27,7 @@
                     <x-tabs.checkedout-tab :item="$accessory" count="{{ $accessory->checkouts_count }}" />
                     <x-tabs.files-tab :item="$accessory" count="{{ $accessory->uploads()->count() }}"/>
                     <x-tabs.history-tab count="{{ $accessory->history()->count() }}" :model="$accessory"/>
+                    <x-tabs.orders-tab count="{{ $accessory->ordersCount() }}"/>
                     <x-tabs.upload-tab :item="$accessory"/>
                 </x-slot:tabnav>
 
@@ -49,9 +50,15 @@
 
                     <!-- start history tab pane -->
                     <x-tabs.pane name="history">
-                        <x-table.history :model="$accessory" :route="route('api.accessories.history', $accessory)"/>
+                        <x-table.history :model="$accessory" :route="route('api.accessories.history', $accessory)" :hide_fields="['serial']"/>
                     </x-tabs.pane>
                     <!-- end history tab pane -->
+
+                    <!-- start orders tab pane -->
+                    <x-tabs.pane name="orders">
+                        <x-table.orders :route="route('api.order-items.index', ['item_type' => \App\Models\Accessory::class, 'item_id' => $accessory->id])"/>
+                    </x-tabs.pane>
+                    <!-- end orders tab pane -->
 
                     <!-- start files tab pane -->
                     <x-tabs.pane name="files">
@@ -72,6 +79,7 @@
                         <x-button.clone :item="$accessory" :route="route('clone/accessories', $accessory->id)"/>
                         <x-button.checkout permission="checkout" :item="$accessory" :route="route('accessories.checkout.show', $accessory->id)" />
                         @can('update', $accessory)
+                            @php $lastOrder = $accessory->lastOrderDefaults(); @endphp
                             <button type="button"
                                 class="btn btn-sm btn-primary adjust-quantity"
                                 data-tooltip="true"
@@ -79,6 +87,8 @@
                                 data-adjust-url="{{ route('accessories.adjust-quantity', $accessory) }}"
                                 data-item-name="{{ e($accessory->name) }}"
                                 data-available="{{ (int) $accessory->numRemaining() }}"
+                                @if ($lastOrder && $lastOrder['unit_cost'] !== null) data-last-unit-cost="{{ $lastOrder['unit_cost'] }}" @endif
+                                @if ($lastOrder && $lastOrder['currency'] !== null) data-last-currency="{{ e($lastOrder['currency']) }}" @endif
                             >
                                 <x-icon type="plus-minus" class="fa-fw" />
                                 <span class="sr-only">{{ trans('general.adjust_quantity') }}</span>

@@ -42,12 +42,6 @@
                 categoryType="accessory"
             />
 
-            <x-input.supplier-select
-                :label="trans('general.supplier')"
-                name="supplier_id"
-                :selected="old('supplier_id', $item->supplier_id)"
-            />
-
             <x-input.manufacturer-select
                 :label="trans('general.manufacturer')"
                 name="manufacturer_id"
@@ -66,37 +60,58 @@
                 name="model_number"
             />
 
-            {{-- order_number and qty are create-only. After creation,
-                 on-hand qty is managed via the adjust-quantity modal so
-                 every change becomes a QuantityAdjust action_log entry
-                 (with its own note + order_number) instead of a silent
-                 overwrite. Correcting a create-time order_number typo
-                 isn't supported today; a dedicated Orders model built
-                 out from action_log history is the plan if it's asked
-                 for. --}}
+            {{-- Acquisition metadata is create-only. Post-create qty
+                 changes flow through the adjust-quantity modal so each
+                 change becomes a QuantityAdjust action_log entry (with
+                 its own note / order_number / supplier / date / price)
+                 instead of a silent parent-column overwrite. Every
+                 later acquisition lives on its own Order + OrderItem. --}}
             @if (! $item->id)
+                <x-input.supplier-select
+                    :label="trans('general.supplier')"
+                    name="supplier_id"
+                    :selected="old('supplier_id', $item->supplier_id)"
+                />
+
                 <x-form.row
                     :label="trans('general.order_number')"
                     :$item
                     name="order_number"
                 />
-            @endif
 
-            <x-form.row
-                :label="trans('general.purchase_date')"
-                name="purchase_date"
-                type="datepicker"
-                :item="$item"
-                input_div_class="col-md-4"
-            />
+                <x-form.row
+                    :label="trans('general.purchase_date')"
+                    name="purchase_date"
+                    type="datepicker"
+                    :item="$item"
+                    input_div_class="col-md-4"
+                />
 
-            <x-input.purchase-cost
-                :label="trans('general.unit_cost')"
-                :item="$item"
-                :currencyType="$item->location->currency ?? null"
-            />
+                <x-input.purchase-cost
+                    :label="trans('general.unit_cost')"
+                    :item="$item"
+                    :currencyType="$item->location->currency ?? null"
+                />
 
-            @if (! $item->id)
+                <x-form.row
+                    :label="trans('general.currency')"
+                    name="currency"
+                    input_div_class="col-md-3"
+                    :help_text="trans('general.currency_prefilled_hint')"
+                >
+                    <x-slot:input>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="currency"
+                            name="currency"
+                            maxlength="10"
+                            value="{{ old('currency', $item->location->currency ?? $snipeSettings->default_currency) }}"
+                            aria-label="{{ trans('general.currency') }}"
+                        />
+                    </x-slot:input>
+                </x-form.row>
+
                 <x-input.quantity :item="$item" min="0" />
             @endif
 

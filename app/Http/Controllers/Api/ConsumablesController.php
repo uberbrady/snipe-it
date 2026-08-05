@@ -223,9 +223,16 @@ class ConsumablesController extends Controller
         $qtyRequested = $request->has('qty') ? (int) $request->input('qty') : $qtyBefore;
         $qtyDelta = $qtyRequested - $qtyBefore;
 
-        // purchase_cost is create-only on the parent — post-create
-        // acquisitions record their own price on the OrderItem.
-        $consumable->fill($request->except(['qty', 'order_number', 'purchase_cost']));
+        // supplier_id, purchase_date, purchase_cost, and order_number
+        // are create-only on the parent. Post-create acquisitions live
+        // as Orders + OrderItems, so update-mode drops all four.
+        $consumable->fill($request->except([
+            'qty',
+            'order_number',
+            'purchase_cost',
+            'purchase_date',
+            'supplier_id',
+        ]));
         $consumable->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $consumable = $request->handleImages($consumable);
 
@@ -483,31 +490,5 @@ class ConsumablesController extends Controller
         $history = (clone $historyQuery)->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);
-    }
-
-    /**
-     * Orders tab datatable: every OrderItem line ever recorded against
-     * this consumable, with its parent Order's supplier / currency /
-     * purchase date joined in via eager load.
-     */
-    public function orders(Request $request, Consumable $consumable): JsonResponse|array
-    {
-        $this->authorize('view', $consumable);
-
-        $ordersQuery = $consumable->orderItems()
-            ->with(['order:id,order_number,supplier_id,currency,purchase_date', 'order.supplier:id,name'])
-            ->orderByDesc('id');
-
-        $total = (clone $ordersQuery)->count();
-        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
-        $limit = app('api_limit_value');
-        $lines = (clone $ordersQuery)->skip($offset)->take($limit)->get();
-
-        return response()->json(
-            (new \App\Http\Transformers\OrderItemsTransformer)->transformOrderItems($lines, $total),
-            200,
-            ['Content-Type' => 'application/json;charset=utf8'],
-            JSON_UNESCAPED_UNICODE,
-        );
     }
 }

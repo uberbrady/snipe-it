@@ -57,9 +57,15 @@
 
                     <div class="form-group">
                         <label for="adjustQuantityPurchaseDate">{{ trans('general.purchase_date') }}</label>
+                        {{-- Pre-populated with today's date because most --}}
+                        {{-- adjust events happen the day they are recorded. --}}
+                        {{-- Editable, and snipeit.js resets to today on --}}
+                        {{-- every modal open so a stale date can't bleed --}}
+                        {{-- across sessions. --}}
                         <x-input.datepicker
                             id="adjustQuantityPurchaseDate"
                             name="purchase_date"
+                            :value="now()->toDateString()"
                             :end_date="'0d'"
                         />
                     </div>
@@ -99,6 +105,14 @@
                             >
                         </div>
                     </div>
+                    {{-- Shown by snipeit.js when the modal opens with --}}
+                    {{-- pre-populated cost/currency from the trigger's --}}
+                    {{-- data-last-* attrs. Hidden as soon as the user --}}
+                    {{-- edits either field, so it disappears the moment --}}
+                    {{-- the pre-fill stops being authoritative. --}}
+                    <p class="help-block" id="adjustQuantityCostHint" style="display: none; margin-top: -5px;">
+                        {{ trans('general.adjust_quantity_prefilled_from_last_order') }}
+                    </p>
 
                     <div class="form-group">
                         <label for="adjustQuantityNote">{{ trans('general.notes') }}</label>

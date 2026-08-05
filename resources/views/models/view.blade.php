@@ -29,6 +29,7 @@
                     <x-tabs.asset-tab count="{{ $model->assets()->AssetsForShow()->count() }}" />
                     <x-tabs.files-tab :item="$model" count="{{ $model->uploads()->count() }}"/>
                     <x-tabs.history-tab count="{{ $model->history()->count() }}" :model="$model"/>
+                    <x-tabs.orders-tab count="{{ $model->ordersCount() }}"/>
                     <x-tabs.upload-tab :item="$model"/>
                 </x-slot:tabnav>
 
@@ -43,6 +44,12 @@
                         <x-table.history :model="$model" :route="route('api.models.history', $model)" :hide_fields="['order_number']"/>
                     </x-tabs.pane>
                     <!-- end history tab pane -->
+
+                    <!-- start orders tab pane -->
+                    <x-tabs.pane name="orders">
+                        <x-table.orders :route="route('api.order-items.index', ['asset_model_id' => $model->id])"/>
+                    </x-tabs.pane>
+                    <!-- end orders tab pane -->
 
                     <x-tabs.pane name="files">
                         <x-table.files :object="$model" object_type="models" />

@@ -44,6 +44,15 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     });
 
     /**
+     * OrderItems (acquisition line-items). Standard REST index, filter
+     * by item_type + item_id for a specific parent, or asset_model_id
+     * for the AssetModel aggregate.
+     */
+    Route::get('order-items',
+        [Api\OrderItemsController::class, 'index']
+    )->name('api.order-items.index');
+
+    /**
      * Account routes
      */
     Route::group(['prefix' => 'account'], function () {
