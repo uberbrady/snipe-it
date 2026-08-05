@@ -1704,28 +1704,44 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         $asset_cost = 0;
         $license_cost = 0;
         $accessory_cost = 0;
+        $consumable_cost = 0;
         $maintenance_cost = 0;
+
         foreach ($this->assets as $asset) {
-            $asset_cost += $asset->purchase_cost;
-            $this->asset_cost = $asset_cost;
+            $asset_cost += (float) $asset->purchase_cost;
         }
+        $this->asset_cost = $asset_cost;
+
         foreach ($this->licenses as $license) {
-            $license_cost += $license->purchase_cost;
-            $this->license_cost = $license_cost;
+            $license_cost += (float) $license->purchase_cost;
         }
+        $this->license_cost = $license_cost;
+
+        // For accessory / consumable unit cost, prefer the last
+        // OrderItem's price so this tally matches what the accessory /
+        // consumable rows in the tab tables show (both switched to
+        // lastOrderDefaults for the "last unit cost" info-panel parity).
+        // Falls back to parent.purchase_cost for legacy rows without
+        // an OrderItem.
         foreach ($this->accessories as $accessory) {
-            $accessory_cost += $accessory->purchase_cost;
-            $this->accessory_cost = $accessory_cost;
+            $accessory_cost += (float) ($accessory->lastOrderDefaults()['unit_cost'] ?? $accessory->purchase_cost);
         }
+        $this->accessory_cost = $accessory_cost;
+
+        foreach ($this->consumables as $consumable) {
+            $consumable_cost += (float) ($consumable->lastOrderDefaults()['unit_cost'] ?? $consumable->purchase_cost);
+        }
+        $this->consumable_cost = $consumable_cost;
+
         // Maintenances tied to this user as the polymorphic checked_out_to
-        // target. Summed across open + completed records — the user
-        // "caused" both.
+        // target. Summed across open + completed records because the
+        // user "caused" both.
         foreach ($this->assignedMaintenances as $maintenance) {
-            $maintenance_cost += $maintenance->cost;
+            $maintenance_cost += (float) $maintenance->cost;
         }
         $this->maintenance_cost = $maintenance_cost;
 
-        $this->total_user_cost = ($asset_cost + $accessory_cost + $license_cost + $maintenance_cost);
+        $this->total_user_cost = $asset_cost + $accessory_cost + $consumable_cost + $license_cost + $maintenance_cost;
 
         return $this;
     }
