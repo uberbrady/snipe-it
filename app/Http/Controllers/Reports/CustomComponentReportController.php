@@ -313,17 +313,49 @@ class CustomComponentReportController extends Controller
             // ie: quantity_start|quantity_end => qty
             'quantity' => 'qty',
             'min_quantity' => 'min_amt',
-            'unit_cost' => 'purchase_cost',
+            // unit_cost filters against the parent's "typical" cost
+            // (default_purchase_cost). Per-acquisition cost lives on
+            // OrderItem.price — a report filter that walks Orders would
+            // return components that were EVER purchased in the range,
+            // which is a different question. Filter here targets
+            // parent-level "what does this cost per unit today".
+            'unit_cost' => 'default_purchase_cost',
         ]);
 
         $query = $this->appendDateWindowBoundaries($query, $request, [
             // formKey => column
             // _start and _end will be appended to the key
-            // ie: purchase_start|purchase_end => purchase_date
-            'purchase' => 'purchase_date',
             'created' => 'created_at',
             'last_updated' => 'updated_at',
         ]);
+
+        // purchase_start / purchase_end walk the Orders ledger — parent
+        // no longer holds purchase_date, and "was this component ever
+        // acquired between X and Y" is the correct question for a
+        // purchase-date filter. EXISTS lets a component match if any
+        // of its OrderItems point at an Order with purchase_date in
+        // range, without duplicating rows via a join.
+        if ($request->filled('purchase_start') || $request->filled('purchase_end')) {
+            $start = $request->filled('purchase_start')
+                ? Carbon::parse($request->input('purchase_start'))->startOfDay()
+                : null;
+            $end = $request->filled('purchase_end')
+                ? Carbon::parse($request->input('purchase_end'))->endOfDay()
+                : null;
+
+            $query->whereExists(function ($sub) use ($start, $end) {
+                $sub->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.item_id', 'components.id')
+                    ->where('order_items.item_type', Component::class);
+                if ($start) {
+                    $sub->where('orders.purchase_date', '>=', $start);
+                }
+                if ($end) {
+                    $sub->where('orders.purchase_date', '<=', $end);
+                }
+            });
+        }
 
         $query = $this->appendBeforeDateBoundaries($query, $request, [
             // formKey => column

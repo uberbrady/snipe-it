@@ -285,8 +285,8 @@ class CustomComponentReportTest extends TestCase
         Component::factory()
             ->count(2)
             ->sequence(
-                ['supplier_id' => $supplierA->id, 'name' => 'Component for Supplier A'],
-                ['supplier_id' => $supplierB->id, 'name' => 'Component for Supplier B'],
+                ['default_supplier_id' => $supplierA->id, 'name' => 'Component for Supplier A'],
+                ['default_supplier_id' => $supplierB->id, 'name' => 'Component for Supplier B'],
             )
             ->create();
 
@@ -407,8 +407,11 @@ class CustomComponentReportTest extends TestCase
 
     public function test_limiting_by_purchase_date_range()
     {
-        Component::factory()->create(['name' => 'Component A', 'purchase_date' => '2024-01-15']);
-        Component::factory()->create(['name' => 'Component B', 'purchase_date' => '2024-06-15']);
+        // purchase_date lives on the initial OrderItem's Order now;
+        // withInitialAcquisition seeds that Order's date so the report's
+        // Orders-EXISTS subquery matches Component A but not Component B.
+        Component::factory()->withInitialAcquisition(null, null, '2024-01-15')->create(['name' => 'Component A']);
+        Component::factory()->withInitialAcquisition(null, null, '2024-06-15')->create(['name' => 'Component B']);
 
         $this->sendRequest([
             'component_name' => '1',
@@ -455,8 +458,11 @@ class CustomComponentReportTest extends TestCase
 
     public function test_limiting_by_unit_cost_range()
     {
-        Component::factory()->create(['name' => 'Component A', 'purchase_cost' => 10.00]);
-        Component::factory()->create(['name' => 'Component B', 'purchase_cost' => 500.00]);
+        // unit_cost filters against the parent's default_purchase_cost
+        // template (see CustomComponentReportController::buildQuery for
+        // the rationale on why we don't walk OrderItems here).
+        Component::factory()->create(['name' => 'Component A', 'default_purchase_cost' => 10.00]);
+        Component::factory()->create(['name' => 'Component B', 'default_purchase_cost' => 500.00]);
 
         $this->sendRequest([
             'component_name' => '1',
