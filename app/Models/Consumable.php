@@ -11,7 +11,9 @@ use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\ConsumablePresenter;
 use App\Presenters\Presentable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder;
@@ -36,11 +38,9 @@ class Consumable extends SnipeModel
     protected $table = 'consumables';
 
     protected $casts = [
-        'purchase_date' => 'datetime',
         'requestable' => 'boolean',
         'category_id' => 'integer',
         'company_id' => 'integer',
-        'supplier_id',
         'qty' => 'integer',
         'min_amt' => 'integer',
     ];
@@ -57,6 +57,8 @@ class Consumable extends SnipeModel
         'min_amt' => 'integer|min:0|max:99999|nullable',
         'purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
         'purchase_date' => 'date_format:Y-m-d|nullable',
+        'default_supplier_id' => 'nullable|integer|exists:suppliers,id',
+        'default_purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
     ];
 
     /**
@@ -75,21 +77,24 @@ class Consumable extends SnipeModel
      *
      * @var array
      */
+    // supplier_id / purchase_date / purchase_cost are intentionally
+    // absent. See Accessory::$fillable for the full rationale.
+    // default_supplier_id / default_purchase_cost are parent-level
+    // "template" values that seed the adjust-quantity modal.
     protected $fillable = [
         'category_id',
         'company_id',
         'item_no',
         'location_id',
         'manufacturer_id',
-        'supplier_id',
         'name',
         'model_number',
-        'purchase_cost',
-        'purchase_date',
         'qty',
         'min_amt',
         'requestable',
         'notes',
+        'default_supplier_id',
+        'default_purchase_cost',
     ];
 
     use Searchable;
@@ -101,8 +106,6 @@ class Consumable extends SnipeModel
      */
     protected $searchableAttributes = [
         'name',
-        'purchase_cost',
-        'purchase_date',
         'item_no',
         'model_number',
         'notes',
@@ -118,7 +121,9 @@ class Consumable extends SnipeModel
         'company' => ['name'],
         'location' => ['name'],
         'manufacturer' => ['name'],
-        'supplier' => ['name'],
+        // Search by the parent's "typical supplier" template — see the
+        // Accessory model for the rationale.
+        'defaultSupplier' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
         // See Accessory::$searchableRelations. Search hits order_number
         // through the HasOrders trait's orders() HasManyThrough into
@@ -297,9 +302,16 @@ class Consumable extends SnipeModel
      *
      * @return Relation
      */
-    public function supplier()
+    // No `supplier()` relation, no `supplier_id` / `purchase_date` /
+    // `purchase_cost` accessors — see Accessory model for rationale.
+    // Callers use `$consumable->orders` or `$consumable->lastOrderDefaults()`.
+
+    /**
+     * Parent-level "typical supplier" template — see Accessory model.
+     */
+    public function defaultSupplier(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class, 'supplier_id');
+        return $this->belongsTo(Supplier::class, 'default_supplier_id');
     }
 
     /**
@@ -404,20 +416,9 @@ class Consumable extends SnipeModel
             return $carry;
         }, []);
 
-        // Account for units created before the Orders flow. Consumable
-        // creation doesn't write an OrderItem (unlike Asset::created),
-        // so the initial N units at parent.purchase_cost never land in
-        // the OrderItem ledger. Add them here under location.currency
-        // (or default_currency if the location has none) so this line's
-        // currency matches how unit_cost is rendered in the info-panel.
-        $allocatedQty = (int) $lines->sum('qty');
-        $unaccountedQty = max(0, (int) $this->qty - $allocatedQty);
-        if ($unaccountedQty > 0 && $this->purchase_cost !== null) {
-            $fallbackCurrency = ($this->location && $this->location->currency !== '' && $this->location->currency !== null)
-                ? $this->location->currency
-                : (Setting::getSettings()?->default_currency ?? '');
-            $totals[$fallbackCurrency] = ($totals[$fallbackCurrency] ?? 0) + ($unaccountedQty * (float) $this->purchase_cost);
-        }
+        // Orders / OrderItems is the single source of truth. No
+        // fallback to legacy_* columns (those will be dropped in a
+        // later version). See Accessory::totalCostSumByCurrency.
 
         return $totals;
     }
@@ -439,21 +440,13 @@ class Consumable extends SnipeModel
      */
     public function hasConsistentSupplier(): bool
     {
-        $orderSupplierIds = $this->orderItems()
+        return $this->orderItems()
             ->with('order:id,supplier_id')
             ->get()
             ->map(fn (OrderItem $line) => $line->order?->supplier_id)
             ->filter()
             ->unique()
-            ->values()
-            ->all();
-
-        $known = array_values(array_unique(array_filter(array_merge(
-            [$this->supplier_id],
-            $orderSupplierIds,
-        ))));
-
-        return count($known) <= 1;
+            ->count() <= 1;
     }
 
     /**
@@ -581,7 +574,7 @@ class Consumable extends SnipeModel
      */
     public function scopeOrderSupplier($query, $order)
     {
-        return $query->leftJoin('suppliers', 'consumables.supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
+        return $query->leftJoin('suppliers', 'consumables.default_supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
     }
 
     public function scopeOrderByCreatedBy($query, $order)

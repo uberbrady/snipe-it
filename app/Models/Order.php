@@ -46,6 +46,23 @@ class Order extends SnipeModel
         'purchase_date' => 'date',
     ];
 
+    /**
+     * FKs use `exists` so bad IDs from a request never persist. Every
+     * write path already runs through the ValidatingTrait via SnipeModel;
+     * a validation failure blocks the save() and surfaces the error to
+     * the caller.
+     */
+    public $rules = [
+        'order_number' => 'nullable|string|max:255',
+        'supplier_id' => 'nullable|integer|exists:suppliers,id',
+        'company_id' => 'nullable|integer|exists:companies,id',
+        'purchase_date' => 'nullable|date',
+        'notes' => 'nullable|string|max:1000',
+        'currency' => 'nullable|string|max:10',
+    ];
+
+    protected $injectUniqueIdentifier = true;
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);

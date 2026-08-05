@@ -1337,7 +1337,13 @@ class Asset extends Depreciable
 
     public function getAccessoryCost()
     {
-        return (float) $this->accessories()->sum('purchase_cost');
+        // purchase_cost no longer lives on the accessories parent —
+        // per-unit cost is on the last OrderItem's price, with the
+        // parent's default_purchase_cost as fallback. lastOrderDefaults()
+        // encapsulates that fallback ladder.
+        return (float) $this->accessories()
+            ->get()
+            ->sum(fn ($accessory) => (float) ($accessory->lastOrderDefaults()['unit_cost'] ?? 0));
     }
 
     /**

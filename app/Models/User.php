@@ -1717,19 +1717,18 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         }
         $this->license_cost = $license_cost;
 
-        // For accessory / consumable unit cost, prefer the last
-        // OrderItem's price so this tally matches what the accessory /
-        // consumable rows in the tab tables show (both switched to
-        // lastOrderDefaults for the "last unit cost" info-panel parity).
-        // Falls back to parent.purchase_cost for legacy rows without
-        // an OrderItem.
+        // Accessory / consumable unit cost tracks the info-panel's "last
+        // unit cost" so this tally matches the per-item rows in the tab
+        // tables. lastOrderDefaults() already merges last-Order price
+        // with the parent's `default_purchase_cost` template value when
+        // an item has no order history, so nothing to fall back to here.
         foreach ($this->accessories as $accessory) {
-            $accessory_cost += (float) ($accessory->lastOrderDefaults()['unit_cost'] ?? $accessory->purchase_cost);
+            $accessory_cost += (float) ($accessory->lastOrderDefaults()['unit_cost'] ?? 0);
         }
         $this->accessory_cost = $accessory_cost;
 
         foreach ($this->consumables as $consumable) {
-            $consumable_cost += (float) ($consumable->lastOrderDefaults()['unit_cost'] ?? $consumable->purchase_cost);
+            $consumable_cost += (float) ($consumable->lastOrderDefaults()['unit_cost'] ?? 0);
         }
         $this->consumable_cost = $consumable_cost;
 

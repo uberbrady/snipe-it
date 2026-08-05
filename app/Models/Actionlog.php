@@ -106,18 +106,23 @@ class Actionlog extends SnipeModel
         'licenses' => ['name', 'serial', 'notes', 'license_email', 'license_name', 'purchase_order', 'purchase_date'],
         'licenses.category' => ['name', 'notes'],
         'licenses.supplier' => ['name'],
-        'consumables' => ['name', 'notes', 'model_number', 'item_no', 'purchase_date'],
+        // consumables / components / accessories no longer expose a
+        // supplier() or purchase_date accessor on the parent — those
+        // moved to the Orders / OrderItems polymorphic data model per
+        // acquisition event. The "default_supplier" template lives on
+        // defaultSupplier() and is safe to walk for search.
+        'consumables' => ['name', 'notes', 'model_number', 'item_no'],
         'consumables.category' => ['name', 'notes'],
         'consumables.location' => ['name', 'notes'],
-        'consumables.supplier' => ['name', 'notes'],
-        'components' => ['name', 'notes', 'purchase_date'],
+        'consumables.defaultSupplier' => ['name', 'notes'],
+        'components' => ['name', 'notes'],
         'components.category' => ['name', 'notes'],
         'components.location' => ['name', 'notes'],
-        'components.supplier' => ['name', 'notes'],
-        'accessories' => ['name', 'purchase_date'],
+        'components.defaultSupplier' => ['name', 'notes'],
+        'accessories' => ['name'],
         'accessories.category' => ['name'],
         'accessories.location' => ['name', 'notes'],
-        'accessories.supplier' => ['name', 'notes'],
+        'accessories.defaultSupplier' => ['name', 'notes'],
     ];
 
     /**

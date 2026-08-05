@@ -163,9 +163,12 @@ class AssetModel extends SnipeModel
      */
     public function ordersCount(): int
     {
+        // Purchases only (positive qty) — see HasOrders::ordersCount for
+        // the rationale on filtering out corrections/consumption events.
         return (int) OrderItem::query()
             ->where('item_type', Asset::class)
             ->whereIn('item_id', $this->assets()->select('id'))
+            ->where('qty', '>', 0)
             ->distinct()
             ->count('order_id');
     }

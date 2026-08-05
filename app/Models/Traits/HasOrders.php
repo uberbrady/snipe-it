@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -71,44 +72,104 @@ trait HasOrders
     }
 
     /**
-     * Count of distinct Orders this item has appeared on. Useful for
-     * the info-panel's "how many times has this been ordered" hint.
-     * DISTINCT is required because HasManyThrough joins through
-     * order_items and one Order can carry multiple lines for the same
-     * item under staggered receipts.
+     * Count of distinct Orders this item has been *purchased* on. Feeds
+     * the info-panel's "Total Orders" row and the Orders-tab badge.
+     * Filters to lines with positive qty so corrections / consumption
+     * events (0- or negative-qty OrderItems) don't inflate the count —
+     * those aren't purchases, and treating them as such was misleading
+     * when a lifecycle had more corrections than actual acquisitions.
+     * DISTINCT because one Order can carry multiple positive lines for
+     * the same item under staggered receipts.
      */
     public function ordersCount(): int
     {
-        return (int) $this->orders()->distinct()->count('orders.id');
+        return (int) $this->orders()
+            ->where('order_items.qty', '>', 0)
+            ->distinct()
+            ->count('orders.id');
     }
 
     /**
-     * Last acquisition context for pre-populating the adjust-quantity
-     * modal and driving the info-panel's "last" fields (unit cost,
-     * currency, purchase date). Returns the most recent OrderItem's
-     * price and its parent Order's currency + purchase_date, or null
-     * when the item has no OrderItems yet. One query per invocation.
-     * Cheap on the view page (1 model per page); needs eager-loading
-     * for the index page.
+     * Prefill context for the adjust-quantity modal and the info-panel's
+     * "last" fields. Prefers the most recent Order/OrderItem when one
+     * exists (companies drift — the last supplier they actually bought
+     * from beats a stale parent "default" field), and falls back to the
+     * parent's `default_*` template values on items that have never been
+     * ordered yet.
      *
-     * @return array{unit_cost: ?string, currency: ?string, purchase_date: ?string}|null
+     * Returns null only when there is no last-order data AND no template
+     * defaults on the parent — a brand-new item with no history to seed
+     * from.
+     *
+     * One query per invocation. Cheap on the view page (1 model per
+     * page); eager-load on index pages.
+     *
+     * @return array{unit_cost: ?string, currency: ?string, purchase_date: ?string, supplier_id: ?int}|null
      */
     public function lastOrderDefaults(): ?array
     {
         $line = $this->orderItems()
-            ->with('order:id,currency,purchase_date')
+            ->with('order:id,currency,purchase_date,supplier_id')
             ->latest('id')
             ->first();
 
-        if (! $line) {
+        if ($line) {
+            return [
+                'unit_cost' => $line->price !== null ? (string) $line->price : null,
+                'currency' => $line->order?->currency ?: null,
+                'purchase_date' => $line->order?->purchase_date?->toDateString(),
+                'supplier_id' => $line->order?->supplier_id,
+            ];
+        }
+
+        $defaultSupplier = $this->getAttribute('default_supplier_id');
+        $defaultCost = $this->getAttribute('default_purchase_cost');
+
+        if ($defaultSupplier === null && $defaultCost === null) {
             return null;
         }
 
         return [
-            'unit_cost' => $line->price !== null ? (string) $line->price : null,
-            'currency' => $line->order?->currency ?: null,
-            'purchase_date' => $line->order?->purchase_date?->toDateString(),
+            'unit_cost' => $defaultCost !== null ? (string) $defaultCost : null,
+            'currency' => null,
+            'purchase_date' => null,
+            'supplier_id' => $defaultSupplier !== null ? (int) $defaultSupplier : null,
         ];
+    }
+
+    /**
+     * Resolve a Supplier for the "last acquisition" view (transformers,
+     * info-panel, report callbacks). Same fallback ladder as
+     * lastOrderDefaults(): last Order.supplier_id wins, falls back to
+     * the parent's default_supplier_id template value on items with no
+     * order history. Returns null when both are unset.
+     *
+     * Prefers walking eager-loaded relations (orderItems.order.supplier)
+     * when the caller pre-loaded them; otherwise issues one query for
+     * the latest OrderItem's Order.supplier_id and then hydrates the
+     * Supplier. Callers rendering a list should always eager-load to
+     * avoid N+1.
+     */
+    public function lastAcquisitionSupplier(): ?Supplier
+    {
+        if ($this->relationLoaded('orderItems')) {
+            $line = $this->orderItems->sortByDesc('id')->first();
+            $order = $line?->order;
+            if ($order && $order->relationLoaded('supplier') && $order->supplier) {
+                return $order->supplier;
+            }
+            $supplierId = $order?->supplier_id;
+        } else {
+            $line = $this->orderItems()
+                ->with('order:id,supplier_id')
+                ->latest('id')
+                ->first();
+            $supplierId = $line?->order?->supplier_id;
+        }
+
+        $supplierId = $supplierId ?? $this->getAttribute('default_supplier_id');
+
+        return $supplierId ? Supplier::find($supplierId) : null;
     }
 
     /**

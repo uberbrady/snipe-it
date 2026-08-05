@@ -13,6 +13,7 @@ use App\Models\Traits\Searchable;
 use App\Presenters\AccessoryPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Builder;
@@ -57,8 +58,6 @@ class Accessory extends SnipeModel
         'model_number',
         'name',
         'notes',
-        'purchase_cost',
-        'purchase_date',
     ];
 
     /**
@@ -71,7 +70,10 @@ class Accessory extends SnipeModel
         'company' => ['name'],
         'location' => ['name'],
         'manufacturer' => ['name'],
-        'supplier' => ['name'],
+        // Search by the parent's "typical supplier" template. Historical
+        // per-order supplier lookups belong on the Orders tab; this join
+        // keeps parent-level list-page search predictable.
+        'defaultSupplier' => ['name'],
         // Order numbers moved to a dedicated Orders / OrderItems data
         // model when the parent order_number column was removed.
         // Free-text search on an order-number string walks the HasOrders
@@ -96,6 +98,8 @@ class Accessory extends SnipeModel
         'min_amt' => 'integer|min:0|nullable',
         'purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
         'purchase_date' => 'date_format:Y-m-d|nullable',
+        'default_supplier_id' => 'nullable|integer|exists:suppliers,id',
+        'default_purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
     ];
 
     /**
@@ -112,35 +116,48 @@ class Accessory extends SnipeModel
      *
      * @var array
      */
+    // supplier_id / purchase_date / purchase_cost are intentionally
+    // absent. Post-Orders acquisitions record their own values per event
+    // on Order + OrderItem; writing to the old names hard-fails at the
+    // DB (column renamed) which is the intended guard against divergent
+    // parent-vs-Orders state.
+    //
+    // default_supplier_id / default_purchase_cost are parent-level
+    // "template" values that pre-populate the adjust-quantity modal for
+    // items with no order history yet. See lastOrderDefaults() on the
+    // HasOrders trait for the merge behavior.
     protected $fillable = [
         'category_id',
         'company_id',
         'location_id',
         'name',
-        'purchase_cost',
-        'purchase_date',
         'model_number',
         'manufacturer_id',
-        'supplier_id',
         'image',
         'qty',
         'min_amt',
         'requestable',
         'notes',
+        'default_supplier_id',
+        'default_purchase_cost',
     ];
 
+    // No `supplier()` relation, no `supplier_id` / `purchase_date` /
+    // `purchase_cost` accessors on the parent. Those concepts are
+    // per-transaction now. Callers use `$accessory->orders` (all Orders
+    // over the lifetime) or `$accessory->lastOrderDefaults()` (most
+    // recent acquisition context, falling back to the parent's
+    // default_* template fields on items with no order history yet).
+
     /**
-     * Establishes the accessory -> supplier relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     *
-     * @since  [v3.0]
-     *
-     * @return Relation
+     * Parent-level "typical supplier" template. Distinct from
+     * per-acquisition supplier (which lives on Order.supplier_id).
+     * Used by the searchable-relation join for list-page search and by
+     * lastOrderDefaults() as the fallback for items with no orders yet.
      */
-    public function supplier()
+    public function defaultSupplier(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class, 'supplier_id');
+        return $this->belongsTo(Supplier::class, 'default_supplier_id');
     }
 
     public function isDeletable()
@@ -478,22 +495,10 @@ class Accessory extends SnipeModel
             return $carry;
         }, []);
 
-        // Account for units that predate the Orders flow. Only
-        // Asset::created writes an OrderItem on creation — accessory /
-        // consumable / component observers don't, so the "10 units
-        // created at purchase_cost" pre-adjust history has no matching
-        // OrderItem line. Add the unaccounted qty * parent.purchase_cost
-        // under location.currency (or default_currency if the location
-        // has none) so this line's currency matches how unit_cost is
-        // rendered in the info-panel.
-        $allocatedQty = (int) $lines->sum('qty');
-        $unaccountedQty = max(0, (int) $this->qty - $allocatedQty);
-        if ($unaccountedQty > 0 && $this->purchase_cost !== null) {
-            $fallbackCurrency = ($this->location && $this->location->currency !== '' && $this->location->currency !== null)
-                ? $this->location->currency
-                : (Setting::getSettings()?->default_currency ?? '');
-            $totals[$fallbackCurrency] = ($totals[$fallbackCurrency] ?? 0) + ($unaccountedQty * (float) $this->purchase_cost);
-        }
+        // No fallback for unaccounted qty. Orders / OrderItems is the
+        // single source of truth for acquisition cost. If lines don't
+        // cover the current on-hand qty, the display honestly shows
+        // "we don't know the cost of those units" (empty totals).
 
         return $totals;
     }
@@ -510,28 +515,20 @@ class Accessory extends SnipeModel
 
     /**
      * True when every recorded acquisition for this item came from the
-     * same supplier — parent.supplier_id plus every Order linked via
-     * OrderItems. The info-panel's supplier row hides itself when this
-     * returns false: displaying a single supplier name would misrepresent
-     * an item that was replenished from multiple suppliers over time.
+     * same supplier. Compares distinct supplier_ids across every Order
+     * linked via OrderItems. The info-panel's supplier row hides itself
+     * when this returns false so a single supplier name doesn't
+     * misrepresent multi-supplier history.
      */
     public function hasConsistentSupplier(): bool
     {
-        $orderSupplierIds = $this->orderItems()
+        return $this->orderItems()
             ->with('order:id,supplier_id')
             ->get()
             ->map(fn (OrderItem $line) => $line->order?->supplier_id)
             ->filter()
             ->unique()
-            ->values()
-            ->all();
-
-        $known = array_values(array_unique(array_filter(array_merge(
-            [$this->supplier_id],
-            $orderSupplierIds,
-        ))));
-
-        return count($known) <= 1;
+            ->count() <= 1;
     }
 
     /**
@@ -632,7 +629,7 @@ class Accessory extends SnipeModel
      */
     public function scopeOrderSupplier($query, $order)
     {
-        return $query->leftJoin('suppliers', 'accessories.supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
+        return $query->leftJoin('suppliers', 'accessories.default_supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
     }
 
     /**

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Watson\Validating\ValidatingTrait;
 
 /**
  * One line on an Order. Polymorphic to the inventory model that was
@@ -19,6 +20,7 @@ class OrderItem extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use ValidatingTrait;
 
     protected $table = 'order_items';
 
@@ -37,6 +39,22 @@ class OrderItem extends Model
     protected $casts = [
         'qty' => 'integer',
         'price' => 'decimal:4',
+    ];
+
+    /**
+     * Validation for the polymorphic pivot. item_id can't be validated
+     * exists-style without a custom rule (the target table is a runtime
+     * decision keyed off item_type), so we scope item_type to the
+     * inventory classes that legally participate in Orders and leave
+     * item_id to caller sanity. order_id blocks reference to a deleted
+     * Order via the exists rule (ignoring soft-deleted rows).
+     */
+    public $rules = [
+        'order_id' => 'required|integer|exists:orders,id',
+        'item_type' => 'required|string|in:App\\Models\\Accessory,App\\Models\\Consumable,App\\Models\\Component,App\\Models\\Asset,App\\Models\\License',
+        'item_id' => 'required|integer|min:1',
+        'qty' => 'required|integer|min:1',
+        'price' => 'nullable|numeric|gte:0|max:99999999999999999.99',
     ];
 
     public function order(): BelongsTo

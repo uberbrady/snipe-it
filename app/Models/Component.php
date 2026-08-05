@@ -12,6 +12,7 @@ use App\Presenters\ComponentPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -57,6 +58,8 @@ class Component extends SnipeModel
         'purchase_date' => 'date_format:Y-m-d|nullable',
         'purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
         'manufacturer_id' => 'integer|exists:manufacturers,id|nullable',
+        'default_supplier_id' => 'nullable|integer|exists:suppliers,id',
+        'default_purchase_cost' => 'numeric|nullable|gte:0|max:99999999999999999.99',
     ];
 
     /**
@@ -75,20 +78,23 @@ class Component extends SnipeModel
      *
      * @var array
      */
+    // supplier_id / purchase_date / purchase_cost are intentionally
+    // absent. See Accessory::$fillable for the full rationale.
+    // default_supplier_id / default_purchase_cost are parent-level
+    // "template" values that seed the adjust-quantity modal.
     protected $fillable = [
         'category_id',
         'company_id',
-        'supplier_id',
         'location_id',
         'manufacturer_id',
         'model_number',
         'name',
-        'purchase_cost',
-        'purchase_date',
         'min_amt',
         'qty',
         'serial',
         'notes',
+        'default_supplier_id',
+        'default_purchase_cost',
     ];
 
     use Searchable;
@@ -101,8 +107,6 @@ class Component extends SnipeModel
     protected $searchableAttributes = [
         'name',
         'serial',
-        'purchase_cost',
-        'purchase_date',
         'notes',
         'model_number',
     ];
@@ -116,7 +120,9 @@ class Component extends SnipeModel
         'category' => ['name'],
         'company' => ['name'],
         'location' => ['name'],
-        'supplier' => ['name'],
+        // Search by the parent's "typical supplier" template — see the
+        // Accessory model for the rationale.
+        'defaultSupplier' => ['name'],
         'manufacturer' => ['name'],
         'adminuser' => ['first_name', 'last_name', 'display_name'],
         // See Accessory::$searchableRelations. Search hits order_number
@@ -172,11 +178,16 @@ class Component extends SnipeModel
         return $this->belongsToMany(Asset::class, 'components_assets')->withPivot('id', 'assigned_qty', 'created_at', 'created_by', 'note');
     }
 
+    /**
+     * Per-pivot line cost for components-assets. Pulls the per-unit
+     * price from the last acquisition (with the same default_* fallback
+     * that lastOrderDefaults() applies) and multiplies by pivot qty.
+     */
     protected function calculatedPurchaseCost(): Attribute
     {
         return Attribute::make(
             get: function ($value) {
-                $unitPurchaseCost = $this->getRawOriginal('purchase_cost');
+                $unitPurchaseCost = $this->lastOrderDefaults()['unit_cost'] ?? null;
                 $assignedQty = $this->pivot?->assigned_qty;
 
                 if ($unitPurchaseCost === null) {
@@ -229,9 +240,16 @@ class Component extends SnipeModel
      *
      * @return Relation
      */
-    public function supplier()
+    // No `supplier()` relation, no `supplier_id` / `purchase_date` /
+    // `purchase_cost` accessors — see Accessory model for rationale.
+    // Callers use `$component->orders` or `$component->lastOrderDefaults()`.
+
+    /**
+     * Parent-level "typical supplier" template — see Accessory model.
+     */
+    public function defaultSupplier(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class, 'supplier_id');
+        return $this->belongsTo(Supplier::class, 'default_supplier_id');
     }
 
     /**
@@ -430,20 +448,9 @@ class Component extends SnipeModel
             return $carry;
         }, []);
 
-        // Account for units created before the Orders flow. Component
-        // creation doesn't write an OrderItem (unlike Asset::created),
-        // so the initial N units at parent.purchase_cost never land in
-        // the OrderItem ledger. Add them here under location.currency
-        // (or default_currency if the location has none) so this line's
-        // currency matches how unit_cost is rendered in the info-panel.
-        $allocatedQty = (int) $lines->sum('qty');
-        $unaccountedQty = max(0, (int) $this->qty - $allocatedQty);
-        if ($unaccountedQty > 0 && $this->purchase_cost !== null) {
-            $fallbackCurrency = ($this->location && $this->location->currency !== '' && $this->location->currency !== null)
-                ? $this->location->currency
-                : (Setting::getSettings()?->default_currency ?? '');
-            $totals[$fallbackCurrency] = ($totals[$fallbackCurrency] ?? 0) + ($unaccountedQty * (float) $this->purchase_cost);
-        }
+        // Orders / OrderItems is the single source of truth. No
+        // fallback to legacy_* columns (those will be dropped in a
+        // later version). See Accessory::totalCostSumByCurrency.
 
         return $totals;
     }
@@ -465,21 +472,13 @@ class Component extends SnipeModel
      */
     public function hasConsistentSupplier(): bool
     {
-        $orderSupplierIds = $this->orderItems()
+        return $this->orderItems()
             ->with('order:id,supplier_id')
             ->get()
             ->map(fn (OrderItem $line) => $line->order?->supplier_id)
             ->filter()
             ->unique()
-            ->values()
-            ->all();
-
-        $known = array_values(array_unique(array_filter(array_merge(
-            [$this->supplier_id],
-            $orderSupplierIds,
-        ))));
-
-        return count($known) <= 1;
+            ->count() <= 1;
     }
     /**
      * -----------------------------------------------
@@ -556,7 +555,7 @@ class Component extends SnipeModel
      */
     public function scopeOrderSupplier($query, $order)
     {
-        return $query->leftJoin('suppliers', 'components.supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
+        return $query->leftJoin('suppliers', 'components.default_supplier_id', '=', 'suppliers.id')->orderBy('suppliers.name', $order);
     }
 
     /**
