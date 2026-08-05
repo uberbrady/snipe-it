@@ -177,11 +177,12 @@ class ConsumablesController extends Controller
         $consumable->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $consumable->min_amt = $request->input('min_amt');
         $consumable->manufacturer_id = $request->input('manufacturer_id');
-        $consumable->supplier_id = $request->input('supplier_id');
         $consumable->model_number = $request->input('model_number');
         $consumable->item_no = $request->input('item_no');
-        $consumable->purchase_date = $request->input('purchase_date');
-        // purchase_cost is create-only. Edits go through Orders.
+        // supplier_id, purchase_date, purchase_cost are create-only on
+        // the parent. Post-create acquisitions live as Orders +
+        // OrderItems, so the edit form drops them and the controller
+        // stops overwriting the parent values.
         $consumable->notes = $request->input('notes');
 
         $consumable = $request->handleImages($consumable);

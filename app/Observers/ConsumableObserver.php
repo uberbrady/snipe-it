@@ -63,22 +63,25 @@ class ConsumableObserver
             ? $consumable->location->currency
             : Setting::getSettings()?->default_currency;
 
-        $order = Order::create([
+        $order = new Order([
             'order_number' => null,
             'supplier_id' => $consumable->supplier_id,
             'company_id' => $consumable->company_id,
             'purchase_date' => $consumable->purchase_date,
             'currency' => $currency,
-            'created_by' => $consumable->created_by ?? auth()->id(),
         ]);
+        $order->created_by = $consumable->created_by ?? auth()->id();
+        $order->save();
 
-        $orderItem = OrderItem::create([
+        $orderItem = new OrderItem([
             'order_id' => $order->id,
             'item_type' => Consumable::class,
             'item_id' => $consumable->id,
             'qty' => $qty,
             'price' => $consumable->purchase_cost,
         ]);
+        $orderItem->created_by = $consumable->created_by ?? auth()->id();
+        $orderItem->save();
 
         $logAction = new Actionlog;
         $logAction->item_type = Consumable::class;

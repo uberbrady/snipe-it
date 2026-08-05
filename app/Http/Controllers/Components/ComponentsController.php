@@ -169,10 +169,11 @@ class ComponentsController extends Controller
         $component->location_id = $request->input('location_id');
         $component->company_id = Company::getIdForCurrentUser($request->input('company_id'));
         $component->min_amt = $request->input('min_amt');
-        $component->supplier_id = $request->input('supplier_id');
         $component->serial = $request->input('serial');
-        $component->purchase_date = $request->input('purchase_date');
-        // purchase_cost is create-only. Edits go through Orders.
+        // supplier_id, purchase_date, purchase_cost are create-only on
+        // the parent. Post-create acquisitions live as Orders +
+        // OrderItems, so the edit form drops them and the controller
+        // stops overwriting the parent values.
         $component->notes = $request->input('notes');
 
         $component = $request->handleImages($component);

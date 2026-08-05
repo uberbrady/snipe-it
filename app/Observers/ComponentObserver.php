@@ -65,22 +65,25 @@ class ComponentObserver
             ? $component->location->currency
             : Setting::getSettings()?->default_currency;
 
-        $order = Order::create([
+        $order = new Order([
             'order_number' => null,
             'supplier_id' => $component->supplier_id,
             'company_id' => $component->company_id,
             'purchase_date' => $component->purchase_date,
             'currency' => $currency,
-            'created_by' => $component->created_by ?? auth()->id(),
         ]);
+        $order->created_by = $component->created_by ?? auth()->id();
+        $order->save();
 
-        $orderItem = OrderItem::create([
+        $orderItem = new OrderItem([
             'order_id' => $order->id,
             'item_type' => Component::class,
             'item_id' => $component->id,
             'qty' => $qty,
             'price' => $component->purchase_cost,
         ]);
+        $orderItem->created_by = $component->created_by ?? auth()->id();
+        $orderItem->save();
 
         $logAction = new Actionlog;
         $logAction->item_type = Component::class;

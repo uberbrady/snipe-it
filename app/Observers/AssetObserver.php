@@ -127,8 +127,8 @@ class AssetObserver
         if (! $existingLine) {
             $orderNumber = trim((string) ($asset->order_number ?? '')) ?: null;
 
-            $order = $orderNumber !== null
-                ? Order::firstOrCreate(
+            if ($orderNumber !== null) {
+                $order = Order::firstOrNew(
                     [
                         'order_number' => $orderNumber,
                         'supplier_id' => $asset->supplier_id,
@@ -136,24 +136,32 @@ class AssetObserver
                     ],
                     [
                         'purchase_date' => $asset->purchase_date,
-                        'created_by' => auth()->id(),
                     ],
-                )
-                : Order::create([
+                );
+                if (! $order->exists) {
+                    $order->created_by = auth()->id();
+                    $order->save();
+                }
+            } else {
+                $order = new Order([
                     'order_number' => null,
                     'supplier_id' => $asset->supplier_id,
                     'company_id' => $asset->company_id,
                     'purchase_date' => $asset->purchase_date,
-                    'created_by' => auth()->id(),
                 ]);
+                $order->created_by = auth()->id();
+                $order->save();
+            }
 
-            OrderItem::create([
+            $orderItem = new OrderItem([
                 'order_id' => $order->id,
                 'item_type' => Asset::class,
                 'item_id' => $asset->id,
                 'qty' => 1,
                 'price' => $asset->purchase_cost,
             ]);
+            $orderItem->created_by = $asset->created_by ?? auth()->id();
+            $orderItem->save();
         }
     }
 
