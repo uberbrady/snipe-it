@@ -464,24 +464,35 @@ class Accessory extends SnipeModel
      */
     public function totalCostSumByCurrency(): array
     {
-        $totals = $this->orderItems()
-            ->with('order:id,currency')
-            ->get()
-            ->reduce(function (array $carry, OrderItem $line) {
-                if ($line->price === null) {
-                    return $carry;
-                }
-                $currency = $line->order?->currency
-                    ?? Setting::getSettings()?->default_currency
-                    ?? '';
-                $carry[$currency] = ($carry[$currency] ?? 0) + ($line->qty * (float) $line->price);
+        $lines = $this->orderItems()->with('order:id,currency')->get();
 
+        $totals = $lines->reduce(function (array $carry, OrderItem $line) {
+            if ($line->price === null) {
                 return $carry;
-            }, []);
+            }
+            $currency = $line->order?->currency
+                ?? Setting::getSettings()?->default_currency
+                ?? '';
+            $carry[$currency] = ($carry[$currency] ?? 0) + ($line->qty * (float) $line->price);
 
-        if ($totals === [] && $this->purchase_cost !== null) {
-            $default = Setting::getSettings()?->default_currency ?? '';
-            $totals[$default] = $this->qty * (float) $this->purchase_cost;
+            return $carry;
+        }, []);
+
+        // Account for units that predate the Orders flow. Only
+        // Asset::created writes an OrderItem on creation — accessory /
+        // consumable / component observers don't, so the "10 units
+        // created at purchase_cost" pre-adjust history has no matching
+        // OrderItem line. Add the unaccounted qty * parent.purchase_cost
+        // under location.currency (or default_currency if the location
+        // has none) so this line's currency matches how unit_cost is
+        // rendered in the info-panel.
+        $allocatedQty = (int) $lines->sum('qty');
+        $unaccountedQty = max(0, (int) $this->qty - $allocatedQty);
+        if ($unaccountedQty > 0 && $this->purchase_cost !== null) {
+            $fallbackCurrency = ($this->location && $this->location->currency !== '' && $this->location->currency !== null)
+                ? $this->location->currency
+                : (Setting::getSettings()?->default_currency ?? '');
+            $totals[$fallbackCurrency] = ($totals[$fallbackCurrency] ?? 0) + ($unaccountedQty * (float) $this->purchase_cost);
         }
 
         return $totals;
@@ -495,6 +506,32 @@ class Accessory extends SnipeModel
     public function totalCostSum()
     {
         return array_sum($this->totalCostSumByCurrency()) ?: null;
+    }
+
+    /**
+     * True when every recorded acquisition for this item came from the
+     * same supplier — parent.supplier_id plus every Order linked via
+     * OrderItems. The info-panel's supplier row hides itself when this
+     * returns false: displaying a single supplier name would misrepresent
+     * an item that was replenished from multiple suppliers over time.
+     */
+    public function hasConsistentSupplier(): bool
+    {
+        $orderSupplierIds = $this->orderItems()
+            ->with('order:id,supplier_id')
+            ->get()
+            ->map(fn (OrderItem $line) => $line->order?->supplier_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $known = array_values(array_unique(array_filter(array_merge(
+            [$this->supplier_id],
+            $orderSupplierIds,
+        ))));
+
+        return count($known) <= 1;
     }
 
     /**
