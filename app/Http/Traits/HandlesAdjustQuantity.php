@@ -125,6 +125,42 @@ trait HandlesAdjustQuantity
     }
 
     /**
+     * Update the observer-created initial Order for a freshly-saved
+     * inventory item with the form-supplied order_number and currency.
+     * These two fields don't live on the parent (Accessory / Consumable
+     * / Component) column, so the observer can't capture them at
+     * create time — the controller has to enrich the resulting Order
+     * with what the user typed. No-op when neither field is filled or
+     * when no OrderItem was created (defensive, shouldn't happen).
+     */
+    protected function enrichInitialOrderFromRequest(Request $request, Model $item): void
+    {
+        $orderNumber = trim((string) $request->input('order_number', ''));
+        $currency = trim((string) $request->input('currency', ''));
+
+        if ($orderNumber === '' && $currency === '') {
+            return;
+        }
+
+        $initialOrder = $item->orderItems()->latest('id')->first()?->order;
+        if (! $initialOrder) {
+            return;
+        }
+
+        $updates = [];
+        if ($orderNumber !== '' && $initialOrder->order_number !== $orderNumber) {
+            $updates['order_number'] = $orderNumber;
+        }
+        if ($currency !== '' && $initialOrder->currency !== $currency) {
+            $updates['currency'] = $currency;
+        }
+
+        if ($updates !== []) {
+            $initialOrder->update($updates);
+        }
+    }
+
+    /**
      * Pull the acquisition-metadata fields off the request and
      * normalize each into the shape Order needs.
      *
