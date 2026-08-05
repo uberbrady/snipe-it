@@ -103,6 +103,15 @@ class OrderItemsPresenter
                 'footerFormatter' => 'sumFormatter',
                 'class' => 'text-right text-padding-number-cell',
             ],
+            [
+                'field' => 'notes',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.notes'),
+                'visible' => true,
+            ],
         ]);
     }
 }
