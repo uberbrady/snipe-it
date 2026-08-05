@@ -55,7 +55,13 @@ class ActionlogsTransformer
 
         $icon = $actionlog->present()->icon();
 
-        if (($actionlog->filename != '') && ($actionlog->action_type != 'upload deleted')) {
+        // File-type icon only wins for events that are inherently ABOUT
+        // a file (`uploaded`). Other events that happen to carry a
+        // receipt attachment (QuantityAdjust with an invoice PDF,
+        // checkouts with a signed acceptance form, etc.) keep their
+        // semantic icon so the history tab telegraphs what happened, not
+        // that a file was attached.
+        if ($actionlog->action_type === 'uploaded' && $actionlog->filename != '') {
             $icon = Helper::filetype_icon($actionlog->filename);
         }
 
@@ -201,7 +207,14 @@ class ActionlogsTransformer
                 'type' => e($actionlog->targetType()),
             ] : null,
             'quantity' => $this->getQuantity($actionlog),
-            'order_number' => ($actionlog->order_number) ? e($actionlog->order_number) : null,
+            // action_logs.order_number was replaced by action_logs.order_item_id
+            // pointing at the specific OrderItem line. The parent Order
+            // is one hop away. Null for log rows with no OrderItem
+            // attached (checkouts, edits, anything that isn't a
+            // QuantityAdjust with an order supplied).
+            'order_number' => $actionlog->orderItem?->order?->order_number
+                ? e($actionlog->orderItem->order->order_number)
+                : null,
             'note' => ($actionlog->note) ? Helper::parseEscapedMarkedownInline($actionlog->note) : null,
             'signature_file' => (($actionlog->accept_signature) && Storage::exists('private_uploads/signatures/'.$actionlog->accept_signature)) ? route('log.signature.view', ['filename' => $actionlog->accept_signature]) : null,
             'log_meta' => ((isset($clean_meta)) && (is_array($clean_meta))) ? $clean_meta : null,

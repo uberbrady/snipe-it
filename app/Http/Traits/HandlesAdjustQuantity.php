@@ -12,14 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Shared body of the adjust-quantity controller action. Web and API
- * controllers for Accessory / Consumable / Component all run the same
- * sequence — authorize the update, save an optional receipt attachment,
- * resolve or create an Order + OrderItem for the requested acquisition,
- * call the AdjustsQuantity model trait with the Order's id, and
- * translate a DomainException (would-drop-below-in-use) into the shared
- * error string. Each controller still owns its own response shape
- * (redirect vs JSON) around that shared work.
+ * Shared body of the adjust-quantity controller action. Authorize,
+ * save the optional receipt, resolve or create an Order + OrderItem,
+ * call the AdjustsQuantity trait with the OrderItem id, turn
+ * DomainException into the shared error string. Each controller wraps
+ * the outcome in its own response shape (redirect or JSON).
  */
 trait HandlesAdjustQuantity
 {
@@ -46,13 +43,13 @@ trait HandlesAdjustQuantity
         }
 
         $delta = (int) $request->input('amount');
-        $orderId = $this->resolveOrderForAdjustment($request, $model, $delta);
+        $orderItemId = $this->resolveOrderForAdjustment($request, $model, $delta);
 
         try {
             $model->adjustQuantity(
                 $delta,
                 $request->input('note'),
-                $orderId,
+                $orderItemId,
                 $filename,
             );
         } catch (DomainException) {
@@ -65,21 +62,17 @@ trait HandlesAdjustQuantity
     /**
      * Find or create an Order from the request payload and append one
      * OrderItem line for the model / delta being adjusted. Returns the
-     * Order's id (or null if the request carried no acquisition info,
-     * e.g. an audit-only zero-delta submission with no order_number
-     * given).
+     * OrderItem id (the parent Order is reachable via OrderItem->order),
+     * or null when the request carried no acquisition info (audit-only
+     * zero-delta with no order metadata).
      *
-     * Dedupes on (order_number, supplier_id, company_id) so multiple
-     * adjust-quantity events that share those fields all land under a
-     * single Order row. Never dedupes the OrderItem side — each
-     * adjustment is its own line, matching the "one line per
-     * acquisition event" semantic.
+     * Dedupes the Order on (order_number, supplier_id, company_id).
+     * Each adjustment gets its own OrderItem line so staggered receipts
+     * under one order_number stay distinguishable.
      *
-     * Accepts the base Request rather than AdjustQuantityRequest
-     * specifically so the legacy Api\{Accessory,Consumable,Component}
-     * Controller::update paths — which run through ImageUploadRequest
-     * for their qty-inside-PATCH shape — can call it with the same
-     * shape as the dedicated adjust-quantity endpoint.
+     * Accepts the base Request so the legacy Api\...Controller::update
+     * paths (which use ImageUploadRequest) can call it the same way as
+     * the dedicated adjust-quantity endpoint.
      */
     protected function resolveOrderForAdjustment(
         Request $request,
@@ -92,38 +85,48 @@ trait HandlesAdjustQuantity
             return null;
         }
 
-        $order = Order::firstOrCreate(
-            [
-                'order_number' => $payload['order_number'],
+        // Only dedupe when there's a real order_number label to match
+        // on. A blank order_number is a distinct transaction each time
+        // (own timestamp, supplier, cost, currency), not a bucket to
+        // pool anonymous acquisitions into.
+        $order = $payload['order_number'] !== null
+            ? Order::firstOrCreate(
+                [
+                    'order_number' => $payload['order_number'],
+                    'supplier_id' => $payload['supplier_id'],
+                    'company_id' => $model->company_id ?? null,
+                ],
+                [
+                    'purchase_date' => $payload['purchase_date'],
+                    'currency' => $payload['currency'],
+                    'created_by' => auth()->id(),
+                ],
+            )
+            : Order::create([
+                'order_number' => null,
                 'supplier_id' => $payload['supplier_id'],
                 'company_id' => $model->company_id ?? null,
-            ],
-            [
                 'purchase_date' => $payload['purchase_date'],
                 'currency' => $payload['currency'],
                 'created_by' => auth()->id(),
-            ],
-        );
+            ]);
 
-        OrderItem::create([
+        $orderItem = OrderItem::create([
             'order_id' => $order->id,
             'item_type' => $model::class,
             'item_id' => $model->id,
-            // OrderItem.qty is always positive — a decrement adjustment
-            // records the absolute number of units the line represents,
-            // and the delta sign lives on the sibling action_log.
+            // OrderItem.qty is always positive. The delta sign lives on
+            // the sibling action_log.
             'qty' => max(1, abs($delta)),
             'price' => $payload['unit_cost'],
         ]);
 
-        return $order->id;
+        return $orderItem->id;
     }
 
     /**
-     * Pull the five acquisition-metadata fields off the request and
-     * normalize each into the shape Order::firstOrCreate wants. Split
-     * from resolveOrderForAdjustment so the orchestrator stays small
-     * and each field's read-and-normalize logic can move independently.
+     * Pull the acquisition-metadata fields off the request and
+     * normalize each into the shape Order needs.
      *
      * @return array{order_number: ?string, supplier_id: ?int, purchase_date: ?string, unit_cost: ?float, currency: ?string}
      */
@@ -142,11 +145,9 @@ trait HandlesAdjustQuantity
     }
 
     /**
-     * True when the request carried no acquisition context (all five
-     * order-metadata fields blank). Audit-only submissions (zero delta
-     * with no supplier / order number / date / cost / currency) fall
-     * through here so we don't accrete meaningless Order rows for
-     * pure inventory counts.
+     * True when the request carried no acquisition context. Audit-only
+     * zero-delta submissions with no order metadata fall through here
+     * so we don't accrete meaningless Order rows for pure counts.
      *
      * @param  array{order_number: ?string, supplier_id: ?int, purchase_date: ?string, unit_cost: ?float, currency: ?string}  $payload
      */
