@@ -122,6 +122,7 @@ class BulkAssetsController extends Controller
             'last_checkout',
             'notes',
             'expected_checkin',
+            'order_number',
             'image',
             'assigned_to',
             'created_at',
@@ -296,6 +297,7 @@ class BulkAssetsController extends Controller
             || ($request->filled('expected_checkin'))
             || ($request->filled('purchase_cost'))
             || ($request->filled('supplier_id'))
+            || ($request->filled('order_number'))
             || ($request->filled('warranty_months'))
             || ($request->filled('rtd_location_id'))
             || ($request->filled('requestable'))
@@ -330,6 +332,7 @@ class BulkAssetsController extends Controller
                 $this->conditionallyAddItem('name')
                     ->conditionallyAddItem('purchase_date')
                     ->conditionallyAddItem('expected_checkin')
+                    ->conditionallyAddItem('order_number')
                     ->conditionallyAddItem('requestable')
                     ->conditionallyAddItem('supplier_id')
                     ->conditionallyAddItem('warranty_months')

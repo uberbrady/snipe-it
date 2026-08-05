@@ -264,8 +264,16 @@ class AccessoriesController extends Controller
     {
         $error = $this->runAdjustQuantity($request, $accessory, 'accessories');
 
-        return $error
-            ? redirect()->back()->with('error', $error)
-            : redirect()->back()->with('success', trans('general.adjust_quantity_success'));
+        if ($error) {
+            return redirect()->back()->with('error', $error);
+        }
+
+        // Land on the item's history tab so the operator sees the log
+        // entry they just wrote as confirmation. The `history` fragment
+        // matches x-tabs.history-tab's `name="history"`.
+        return redirect()
+            ->route('accessories.show', $accessory)
+            ->withFragment('history')
+            ->with('success', trans('general.adjust_quantity_success'));
     }
 }
