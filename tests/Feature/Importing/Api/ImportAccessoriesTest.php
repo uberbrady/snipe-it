@@ -530,22 +530,27 @@ class ImportAccessoriesTest extends ImportDataTestCase implements TestsPermissio
         ])->assertOk();
 
         $newAccessory = Accessory::query()
-            ->with(['location', 'category', 'manufacturer', 'supplier'])
+            ->with(['location', 'category', 'manufacturer'])
             ->where('name', $row['modelNumber'])
             ->sole();
 
+        // purchase_date, purchase_cost, and supplier moved off the
+        // parent to the Orders / OrderItems polymorphic pair —
+        // recordOrderForImportedRow persists them there. Assertions
+        // walk through orderItems.order for those three fields.
         $this->assertEquals($row['modelNumber'], $newAccessory->name);
         $this->assertEquals($row['itemName'], $newAccessory->model_number);
         $this->assertEquals($row['quantity'], $newAccessory->qty);
-        $this->assertEquals($row['notes'], $newAccessory->purchase_date->toDateString());
-        $this->assertEquals($row['location'], $newAccessory->purchase_cost);
+
+        $orderItem = $newAccessory->orderItems()->firstOrFail();
+        $this->assertEquals($row['notes'], $orderItem->order->purchase_date->toDateString());
+        $this->assertEquals($row['location'], (float) $orderItem->price);
         // See the import_accessory test above for why order_number now
         // lives on Orders / OrderItems rather than the parent column.
         // Note this custom-mapping test intentionally maps companyName
         // to the orderNumber CSV column, verifying that whatever value
         // that column carries lands on the OrderItem's Order regardless
         // of what the source column was called.
-        $orderItem = $newAccessory->orderItems()->firstOrFail();
         $this->assertEquals($row['companyName'], $orderItem->order->order_number);
         $this->assertEquals($row['purchaseDate'], $newAccessory->notes);
         $this->assertEquals($row['manufacturerName'], $newAccessory->category->name);

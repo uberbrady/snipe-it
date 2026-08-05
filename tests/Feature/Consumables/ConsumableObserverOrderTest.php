@@ -8,7 +8,6 @@ use App\Models\Consumable;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\User;
 use Tests\TestCase;

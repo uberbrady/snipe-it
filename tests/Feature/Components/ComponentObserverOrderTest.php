@@ -5,10 +5,8 @@ namespace Tests\Feature\Components;
 use App\Enums\ActionType;
 use App\Models\Actionlog;
 use App\Models\Component;
-use App\Models\Location;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\User;
 use Tests\TestCase;
@@ -63,5 +61,4 @@ class ComponentObserverOrderTest extends TestCase
 
         $this->assertSame($line->id, (int) $log->order_item_id);
     }
-
 }
