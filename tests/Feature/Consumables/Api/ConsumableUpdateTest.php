@@ -70,15 +70,18 @@ class ConsumableUpdateTest extends TestCase
         $this->assertNotEmpty($log->note);
     }
 
-    public function test_supplier_id_is_editable_via_api()
+    public function test_default_supplier_id_is_editable_on_update()
     {
-        $consumable = Consumable::factory()->create();
+        // default_supplier_id on the parent is the "typical supplier"
+        // template — see ComponentUpdateTest for the full rationale.
+        $original = Supplier::factory()->create();
+        $consumable = Consumable::factory()->create(['default_supplier_id' => $original->id]);
         $newSupplier = Supplier::factory()->create();
 
         $this->actingAsForApi(User::factory()->superuser()->create())
-            ->patchJson(route('api.consumables.update', $consumable), ['supplier_id' => $newSupplier->id])
+            ->patchJson(route('api.consumables.update', $consumable), ['default_supplier_id' => $newSupplier->id])
             ->assertOk();
 
-        $this->assertSame($newSupplier->id, (int) $consumable->fresh()->supplier_id);
+        $this->assertSame($newSupplier->id, (int) $consumable->fresh()->default_supplier_id);
     }
 }

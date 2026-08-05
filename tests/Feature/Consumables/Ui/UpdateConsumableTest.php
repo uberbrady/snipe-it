@@ -59,16 +59,18 @@ class UpdateConsumableTest extends TestCase
 
     public function test_can_update_consumable()
     {
-        $consumable = Consumable::factory()->create(['purchase_cost' => 42.00]);
+        $originalSupplier = Supplier::factory()->create();
+        $consumable = Consumable::factory()->create([
+            'default_supplier_id' => $originalSupplier->id,
+        ]);
         $originalQty = (int) $consumable->qty;
-        $originalPurchaseCost = $consumable->purchase_cost;
         $newSupplier = Supplier::factory()->create();
 
-        // qty, order_number, and purchase_cost are all create-only on
-        // the parent now. qty routes through adjust-quantity;
-        // order_number and purchase_cost ride on OrderItems. The edit
-        // form drops all three silently, so a POST body carrying them
-        // shouldn't overwrite the corresponding parent columns.
+        // qty, order_number, purchase_date, purchase_cost are create-only
+        // on the parent post-Orders. The edit form drops them and
+        // post-create changes live on Order + OrderItem rows via the
+        // adjust-quantity flow. default_supplier_id IS editable — it's
+        // the parent's "typical supplier" template.
         $editable = [
             'company_id' => Company::factory()->create()->id,
             'name' => 'My Consumable',
@@ -77,9 +79,9 @@ class UpdateConsumableTest extends TestCase
             'location_id' => Location::factory()->create()->id,
             'model_number' => '8765',
             'item_no' => '5678',
-            'purchase_date' => '2024-12-05',
             'min_amt' => '7',
             'notes' => 'Some Notes',
+            'default_supplier_id' => $newSupplier->id,
         ];
 
         $this->actingAs(User::factory()->createConsumables()->editConsumables()->create())
@@ -88,15 +90,13 @@ class UpdateConsumableTest extends TestCase
                 'category_type' => 'consumable',
                 'order_number' => 'ignored-908',
                 'qty' => '9999',
-                'purchase_cost' => '89.45', // dropped — see comment above
-                'supplier_id' => $newSupplier->id,
+                'purchase_cost' => '89.45',
+                'purchase_date' => '2024-12-05',
             ])
             ->assertRedirect(route('consumables.index'));
 
         $this->assertDatabaseHas('consumables', $editable + [
             'qty' => $originalQty,
-            'purchase_cost' => $originalPurchaseCost,
-            'supplier_id' => $newSupplier->id,
         ]);
     }
 }

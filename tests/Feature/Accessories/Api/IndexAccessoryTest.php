@@ -121,7 +121,7 @@ class IndexAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
             'company_id' => $targetCompany->id,
             'category_id' => $targetCategory->id,
             'manufacturer_id' => $targetManufacturer->id,
-            'supplier_id' => $targetSupplier->id,
+            'default_supplier_id' => $targetSupplier->id,
             'location_id' => $targetLocation->id,
             'notes' => 'NOTE-A',
         ]);
@@ -131,7 +131,7 @@ class IndexAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
             'company_id' => $otherCompany->id,
             'category_id' => $otherCategory->id,
             'manufacturer_id' => $otherManufacturer->id,
-            'supplier_id' => $otherSupplier->id,
+            'default_supplier_id' => $otherSupplier->id,
             'location_id' => $otherLocation->id,
             'notes' => 'NOTE-B',
         ]);

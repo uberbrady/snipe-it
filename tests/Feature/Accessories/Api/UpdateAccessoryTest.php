@@ -101,21 +101,20 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
         $accessory = Accessory::factory()->create([
             'name' => 'A Name to Change',
             'qty' => 5,
-            'purchase_cost' => 99.99,
             'model_number' => 'ABC098',
             'category_id' => $categoryA->id,
             'company_id' => $companyA->id,
             'location_id' => $locationA->id,
             'manufacturer_id' => $manufacturerA->id,
-            'supplier_id' => $supplierA->id,
+            'default_supplier_id' => $supplierA->id,
         ]);
 
-        // Payload shape preserved: qty / order_number / supplier_id are
-        // all accepted on update. supplier_id writes through to the model.
-        // qty change routes through adjustQuantity (asserted in the
-        // dedicated test below). order_number rides on the QuantityAdjust
-        // log entry created by that qty change; the parent's own
-        // legacy_order_number column is not written to on update.
+        // Payload shape preserved for API back-compat. Acquisition-only
+        // fields (order_number, purchase_date, purchase_cost, and the
+        // per-Order supplier_id) don't touch the parent — post-create
+        // changes flow through Orders + OrderItems via the
+        // adjust-quantity endpoint. default_supplier_id IS editable
+        // (parent template).
         $this->actingAsForApi(User::factory()->editAccessories()->create())
             ->patchJson(route('api.accessories.update', $accessory), [
                 'name' => 'A New Name',
@@ -127,19 +126,18 @@ class UpdateAccessoryTest extends TestCase implements TestsFullMultipleCompanies
                 'company_id' => $companyB->id,
                 'location_id' => $locationB->id,
                 'manufacturer_id' => $manufacturerB->id,
-                'supplier_id' => $supplierB->id,
+                'default_supplier_id' => $supplierB->id,
             ])
             ->assertOk();
 
         $accessory = $accessory->fresh();
         $this->assertEquals('A New Name', $accessory->name);
+        // qty stays supported on the PATCH endpoint for API back-compat:
+        // the update controller routes qty deltas through adjustQuantity
+        // so a payload with qty=10 (original 5) writes a +5 OrderItem
+        // and moves the parent qty to 10.
         $this->assertEquals(10, $accessory->qty);
-        $this->assertEquals($supplierB->id, $accessory->supplier_id);
-        // purchase_cost is now create-only on the parent — the PATCH
-        // payload's 199.99 rides onto the OrderItem created by the
-        // qty-change adjustQuantity call (asserted in the dedicated
-        // qty test below) rather than overwriting the parent column.
-        $this->assertEquals(99.99, $accessory->purchase_cost);
+        $this->assertEquals($supplierB->id, $accessory->default_supplier_id);
         $this->assertEquals('XYZ123', $accessory->model_number);
         $this->assertEquals($categoryB->id, $accessory->category_id);
         $this->assertEquals($companyB->id, $accessory->company_id);

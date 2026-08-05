@@ -105,7 +105,7 @@ class ConsumableIndexTest extends TestCase
             'category_id' => $targetCategory->id,
             'model_number' => 'CONS-MODEL-A',
             'manufacturer_id' => $targetManufacturer->id,
-            'supplier_id' => $targetSupplier->id,
+            'default_supplier_id' => $targetSupplier->id,
             'location_id' => $targetLocation->id,
             'notes' => 'CONS-NOTES-A',
         ]);
@@ -116,7 +116,7 @@ class ConsumableIndexTest extends TestCase
             'category_id' => $otherCategory->id,
             'model_number' => 'CONS-MODEL-B',
             'manufacturer_id' => $otherManufacturer->id,
-            'supplier_id' => $otherSupplier->id,
+            'default_supplier_id' => $otherSupplier->id,
             'location_id' => $otherLocation->id,
             'notes' => 'CONS-NOTES-B',
         ]);

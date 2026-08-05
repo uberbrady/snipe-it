@@ -67,17 +67,20 @@ class StoreAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
                 'supplier_id' => $supplier->id,
             ])->assertStatusMessageIs('success');
 
+        // supplier_id / purchase_date / purchase_cost from the request
+        // body no longer land on the accessories row — they flow to the
+        // observer-written Order + OrderItem (see AccessoryObserverOrderTest).
+        // The parent's default_supplier_id gets seeded from supplier_id
+        // so future orders pre-populate correctly.
         $this->assertDatabaseHas('accessories', [
             'name' => 'My Awesome Accessory',
             'qty' => 2,
-            'purchase_cost' => 100.00,
-            'purchase_date' => '2024-09-18',
             'model_number' => '98765',
             'category_id' => $category->id,
             'company_id' => $company->id,
             'location_id' => $location->id,
             'manufacturer_id' => $manufacturer->id,
-            'supplier_id' => $supplier->id,
+            'default_supplier_id' => $supplier->id,
         ]);
     }
 }

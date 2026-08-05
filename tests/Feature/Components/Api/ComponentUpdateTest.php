@@ -32,16 +32,21 @@ class ComponentUpdateTest extends TestCase
         $this->assertNotEmpty($log->note);
     }
 
-    public function test_supplier_id_is_editable_via_api()
+    public function test_default_supplier_id_is_editable_on_update()
     {
-        $component = Component::factory()->create();
+        // default_supplier_id on the parent is the "typical supplier"
+        // template that seeds new Orders. It stays editable after create;
+        // per-acquisition supplier lives on Order.supplier_id and is
+        // unaffected by this write.
+        $original = Supplier::factory()->create();
+        $component = Component::factory()->create(['default_supplier_id' => $original->id]);
         $newSupplier = Supplier::factory()->create();
 
         $this->actingAsForApi(User::factory()->superuser()->create())
-            ->patchJson(route('api.components.update', $component), ['supplier_id' => $newSupplier->id])
+            ->patchJson(route('api.components.update', $component), ['default_supplier_id' => $newSupplier->id])
             ->assertOk();
 
-        $this->assertSame($newSupplier->id, (int) $component->fresh()->supplier_id);
+        $this->assertSame($newSupplier->id, (int) $component->fresh()->default_supplier_id);
     }
 
     public function test_qty_only_change_via_api_creates_no_update_log_entry()

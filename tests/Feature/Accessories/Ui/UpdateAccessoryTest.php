@@ -56,12 +56,10 @@ class UpdateAccessoryTest extends TestCase
                 'company_id' => (string) $accessory->company_id,
                 'name' => $accessory->name,
                 'category_id' => (string) $accessory->category_id,
-                'supplier_id' => (string) $accessory->supplier_id,
+                'default_supplier_id' => (string) $accessory->default_supplier_id,
                 'manufacturer_id' => (string) $accessory->manufacturer_id,
                 'location_id' => (string) $accessory->location_id,
                 'model_number' => $accessory->model_number,
-                'purchase_date' => $accessory->purchase_date,
-                'purchase_cost' => $accessory->purchase_cost,
                 'min_amt' => $accessory->min_amt,
                 'notes' => $accessory->notes,
                 // the important part...
@@ -81,28 +79,26 @@ class UpdateAccessoryTest extends TestCase
         $accessory = Accessory::factory()
             ->for($companyA)
             ->for($categoryA)
-            ->for($supplierA)
             ->for($manufacturerA)
             ->for($locationA)
             ->create([
                 'min_amt' => 1,
                 'qty' => 5,
-                'purchase_cost' => 42.00,
+                'default_supplier_id' => $supplierA->id,
             ]);
 
-        // qty, order_number, and purchase_cost are all create-only for
-        // accessories now. qty flows through the adjust-quantity modal
-        // instead; order_number and purchase_cost ride on OrderItems
-        // rather than the parent column. The edit form drops all three
-        // silently, so a POST body carrying them shouldn't overwrite
-        // the corresponding parent columns.
+        // qty, order_number, purchase_date, purchase_cost are all
+        // create-only on the parent post-Orders — the edit form drops
+        // them and post-create changes live on Order + OrderItem rows.
+        // default_supplier_id IS editable (parent "typical supplier"
+        // template that seeds new orders).
         $this->actingAs(User::factory()->editAccessories()->create())
             ->put(route('accessories.update', $accessory), [
                 'redirect_option' => 'index',
                 'company_id' => (string) $companyB->id,
                 'name' => 'Changed Name',
                 'category_id' => (string) $categoryB->id,
-                'supplier_id' => (string) $supplierB->id,
+                'default_supplier_id' => (string) $supplierB->id,
                 'manufacturer_id' => (string) $manufacturerB->id,
                 'location_id' => (string) $locationB->id,
                 'model_number' => 'changed 1234',
@@ -118,13 +114,11 @@ class UpdateAccessoryTest extends TestCase
             'company_id' => $companyB->id,
             'name' => 'Changed Name',
             'category_id' => $categoryB->id,
-            'supplier_id' => $supplierB->id,
+            'default_supplier_id' => $supplierB->id,
             'manufacturer_id' => $manufacturerB->id,
             'location_id' => $locationB->id,
             'model_number' => 'changed 1234',
-            'purchase_date' => '2024-10-11',
-            'purchase_cost' => '42.00', // unchanged from create; edit ignores purchase_cost
-            'qty' => '5',                // unchanged from create; edit ignores qty
+            'qty' => '5',                             // unchanged; create-only
             'min_amt' => '10',
             'notes' => 'A new note',
         ]);
