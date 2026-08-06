@@ -7753,18 +7753,6 @@ parameters:
 			path: app/Models/Group.php
 
 		-
-			message: '#^Method App\\Models\\Labels\\DefaultLabel\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/DefaultLabel.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\DefaultLabel\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/DefaultLabel.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
 			count: 1
@@ -7891,18 +7879,6 @@ parameters:
 			path: app/Models/Labels/Sheet.php
 
 		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L4736\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L4736.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L4736\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L4736.php
-
-		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\L4736_A\:\:LABEL_MARGIN is unused\.$#'
 			identifier: classConstant.unused
 			count: 1
@@ -7913,18 +7889,6 @@ parameters:
 			identifier: classConstant.unused
 			count: 1
 			path: app/Models/Labels/Sheets/Avery/L4736_A.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L6009\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L6009.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L6009\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L6009.php
 
 		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\L6009_A\:\:LABEL_MARGIN is unused\.$#'
@@ -7939,64 +7903,16 @@ parameters:
 			path: app/Models/Labels/Sheets/Avery/L6009_A.php
 
 		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L7162\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L7162.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L7162\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L7162.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L7163\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L7163.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\L7163\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/L7163.php
-
-		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\L7163_A\:\:LABEL_MARGIN is unused\.$#'
 			identifier: classConstant.unused
 			count: 1
 			path: app/Models/Labels/Sheets/Avery/L7163_A.php
 
 		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_3490\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_3490.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_3490\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_3490.php
-
-		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\_3490_A\:\:TAG_SIZE is unused\.$#'
 			identifier: classConstant.unused
 			count: 1
 			path: app/Models/Labels/Sheets/Avery/_3490_A.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_5267\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_5267.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_5267\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_5267.php
 
 		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\_5267_A\:\:FIELD_MARGIN is unused\.$#'
@@ -8009,18 +7925,6 @@ parameters:
 			identifier: classConstant.unused
 			count: 1
 			path: app/Models/Labels/Sheets/Avery/_5267_A.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_5520\:\:getLabelColumnSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_5520.php
-
-		-
-			message: '#^Method App\\Models\\Labels\\Sheets\\Avery\\_5520\:\:getLabelRowSpacing\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Labels/Sheets/Avery/_5520.php
 
 		-
 			message: '#^Constant App\\Models\\Labels\\Sheets\\Avery\\_5520_A\:\:TAG_SIZE is unused\.$#'
@@ -12204,31 +12108,3 @@ parameters:
 			count: 2
 			path: routes/web.php
 
-		# Added manually. These five findings show up on the PHP 8.5 CI
-		# runner but not on a long-lived local composer install, most
-		# likely because a fresh vendor resolves larastan's facade /
-		# interface class map slightly differently. Real findings worth
-		# fixing later, not this PR's scope:
-		# Crypt::Decrypt should be Crypt::decrypt (Laravel facade
-		# camelCase convention; runtime still works via PHP's case-
-		# insensitive method dispatch). PasswordBroker::getUser and
-		# ::createToken live on the concrete Illuminate\Auth\Passwords\
-		# PasswordBroker but not on the Illuminate\Contracts\Auth\
-		# PasswordBroker interface that broker() is typed to return.
-		-
-			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Crypt\:\:Decrypt\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 3
-			path: app/Console/Commands/LdapTroubleshooter.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:getUser\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:createToken\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Notifications/WelcomeNotification.php
