@@ -71,7 +71,7 @@ trait HandlesAdjustQuantity
      * as same-origin to prevent open-redirect abuse; missing or
      * cross-origin referers fall back to the item show page.
      */
-    protected function adjustQuantityRedirect(Request $request, Model $model, string $itemShowUrl): RedirectResponse
+    protected function adjustQuantityRedirect(Request $request, string $itemShowUrl): RedirectResponse
     {
         $referer = Helper::sameOriginUrl($request->headers->get('referer'));
         $success = trans('general.adjust_quantity_success');

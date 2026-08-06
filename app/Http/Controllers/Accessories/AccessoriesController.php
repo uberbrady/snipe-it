@@ -279,6 +279,6 @@ class AccessoriesController extends Controller
         // #history for the confirmation loop, and sends index-page
         // opens back to the index so bulk adjust flows aren't broken
         // by a forced navigation to the item detail page.
-        return $this->adjustQuantityRedirect($request, $accessory, route('accessories.show', $accessory));
+        return $this->adjustQuantityRedirect($request, route('accessories.show', $accessory));
     }
 }

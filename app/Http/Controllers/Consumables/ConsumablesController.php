@@ -275,6 +275,6 @@ class ConsumablesController extends Controller
 
         // See AccessoriesController::adjustQuantity — helper picks
         // between show-page-#history and back-to-referer.
-        return $this->adjustQuantityRedirect($request, $consumable, route('consumables.show', $consumable));
+        return $this->adjustQuantityRedirect($request, route('consumables.show', $consumable));
     }
 }
