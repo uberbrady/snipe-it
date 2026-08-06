@@ -132,4 +132,72 @@ class StorageHelper
         return null;
 
     }
+
+    /**
+     * Return a local filesystem path the caller can hand to native PHP
+     * methods like `getimagesize()`, `fopen()`, or TCPDF's image writer,
+     * regardless of the underlying disk driver.
+     *
+     * Returns null when the file doesn't exist on the disk, matching
+     * the existing `->exists()` semantics used elsewhere in this class.
+     *
+     * @param  string  $filename  path relative to the disk root
+     * @param  string  $disk  filesystem disk name (defaults to `public`)
+     * @return string|null local path, or null if the file is missing
+     */
+    public static function readablePath(string $filename, string $disk = 'public'): ?string
+    {
+        if (!Storage::disk($disk)->exists($filename)) {
+            return null;
+        }
+
+        // Local disk: return the real filesystem path directly. No temp file
+        if (config("filesystems.disks.$disk.driver") === 'local') {
+            return Storage::disk($disk)->path($filename);
+        }
+
+        // Non-local disk: stream the object into a temp file so callers can treat it
+        // like a local path.
+        // Preserving the original extension matters for methods like
+        // getimagesize() that sniff the file type via the extension
+        // before reading bytes.
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $tmp = tempnam(sys_get_temp_dir(), 'snipeit-readable-');
+        if ($tmp === false) {
+            return null;
+        }
+        if ($extension !== '') {
+            $tmpWithExt = $tmp . '.' . $extension;
+            if (!@rename($tmp, $tmpWithExt)) {
+                @unlink($tmp);
+
+                return null;
+            }
+            $tmp = $tmpWithExt;
+        }
+
+        $stream = Storage::disk($disk)->readStream($filename);
+        if ($stream === null) {
+            @unlink($tmp);
+
+            return null;
+        }
+        $handle = fopen($tmp, 'wb');
+        if ($handle === false) {
+            fclose($stream);
+            @unlink($tmp);
+
+            return null;
+        }
+        stream_copy_to_stream($stream, $handle);
+        fclose($handle);
+        fclose($stream);
+
+        // Auto-clean at request end so the caller doesn't own the
+        // lifecycle. Register once per file so many calls in the same
+        // request each get their own cleanup.
+        register_shutdown_function(fn() => @unlink($tmp));
+
+        return $tmp;
+    }
 }
