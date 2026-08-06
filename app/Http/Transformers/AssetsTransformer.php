@@ -179,6 +179,16 @@ class AssetsTransformer
             'update' => ($asset->deleted_at == '' && Gate::allows('update', Asset::class)) ? true : false,
             'audit' => Gate::allows('audit', Asset::class) ? true : false,
             'delete' => ($asset->deleted_at == '' && $asset->assigned_to == '' && Gate::allows('delete', Asset::class) && ($asset->deleted_at == '')) ? true : false,
+            'bulk_selectable' => [
+                'edit' => ($asset->deleted_at == '' && Gate::allows('update', Asset::class)),
+                'maintenance' => ($asset->deleted_at == '' && Gate::allows('update', Asset::class)),
+                'checkout' => ($asset->deleted_at == '' && ! $asset->assigned_to && Gate::allows('checkout', Asset::class)),
+                'checkin' => ($asset->deleted_at == '' && $asset->assigned_to && Gate::allows('checkin', Asset::class)),
+                'audit' => ($asset->deleted_at == '' && Gate::allows('audit', Asset::class)),
+                'delete' => ($asset->deleted_at == '' && ! $asset->assigned_to && Gate::allows('delete', Asset::class)),
+                'labels' => $asset->deleted_at == '',
+                'restore' => ($asset->deleted_at != '' && Gate::allows('create', Asset::class)),
+            ],
         ];
 
         if (request('components') == 'true') {
@@ -403,7 +413,7 @@ class AssetsTransformer
         if (Gate::allows('viewKeys', $licenseseat->license)) {
             $product_key = $licenseseat->license->serial ?? null;
         } else {
-            $product_key = '------------';
+            $product_key = License::PRODUCT_KEY_MASK;
         }
 
         $array = [

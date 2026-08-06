@@ -33,7 +33,7 @@ class LicensesTransformer
                 'name' => e($license->manufacturer->name),
                 'tag_color' => ($license->manufacturer->tag_color) ? e($license->manufacturer->tag_color) : null,
             ] : null,
-            'product_key' => (Gate::allows('viewKeys', $license)) ? e($license->serial) : '------------',
+            'product_key' => (Gate::allows('viewKeys', $license)) ? e($license->serial) : License::PRODUCT_KEY_MASK,
             'order_number' => ($license->order_number) ? e($license->order_number) : null,
             'purchase_order' => ($license->purchase_order) ? e($license->purchase_order) : null,
             'purchase_date' => Helper::getFormattedDateObject($license->purchase_date, 'date'),
@@ -81,6 +81,7 @@ class LicensesTransformer
             'user_can_checkout' => (bool) (($license->free_seats_count - $unreassignable) > 0),
             'bulk_selectable' => [
                 'delete' => $license->isDeletable(),
+                'delete_with_checkin' => Gate::allows('delete', $license) && Gate::allows('checkin', $license) && ($license->deleted_at == ''),
             ],
         ];
 

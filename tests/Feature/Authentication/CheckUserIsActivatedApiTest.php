@@ -88,4 +88,28 @@ class CheckUserIsActivatedApiTest extends TestCase
         $this->assertStringNotContainsStringIgnoringCase('activat', (string) ($body['messages'] ?? ''));
         $this->assertStringNotContainsStringIgnoringCase('disabled', (string) ($body['messages'] ?? ''));
     }
+
+    /**
+     * Rollbar regression pin: a Python client hitting /api/v1/hardware
+     * with a bearer token but without an Accept: application/json
+     * header used to fatal with BadMethodCallException. The middleware
+     * fell past its expectsJson() check (Python's requests library
+     * doesn't set Accept by default) and called Auth::logout() on
+     * Passport's TokenGuard, which doesn't define that method.
+     *
+     * A bearer token is now a sufficient signal that the caller is on
+     * the API surface, so the middleware returns a JSON 401 instead
+     * of trying to terminate a session that doesn't exist.
+     */
+    public function test_bearer_authenticated_request_without_accept_header_returns_json_not_500(): void
+    {
+        Passport::actingAs(User::factory()->create(['activated' => 0]));
+
+        $response = $this
+            ->withHeader('Authorization', 'Bearer fake-token-value')
+            ->get(route('api.assets.index'));
+
+        $response->assertUnauthorized();
+        $this->assertSame('error', $response->json('status'));
+    }
 }

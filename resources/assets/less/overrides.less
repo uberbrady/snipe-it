@@ -1017,12 +1017,17 @@ textarea.form-control[disabled] {
     disabled-looking background, which confuses the operator into thinking
     the field is uneditable. Override to make it visually indistinguishable
     from a regular editable input.
+    Scoped to `.js-antifill-readonly` so legitimately-readonly fields
+    (SAML SP entity ID, ACS/SLS URLs, generated cert, metadata URL, etc.)
+    keep the gray-out styling from the readonly rule further down in this
+    file. Adding `readonly` alone should look readonly; opt in to the
+    autofill-masking override by adding the class explicitly.
     Deliberately does NOT match `[disabled]` — actually-disabled fields
     (demo mode locks, permission gates) must keep their grayed appearance
     and not-allowed cursor. **/
-input[readonly],
-textarea[readonly],
-.form-control[readonly] {
+input.js-antifill-readonly[readonly],
+textarea.js-antifill-readonly[readonly],
+.form-control.js-antifill-readonly[readonly] {
   cursor: text !important;
   background-color: var(--table-stripe-bg) !important;
   color: var(--color-fg) !important;
@@ -2336,6 +2341,230 @@ table rows
   background-color: var(--table-stripe-bg-alt) !important;
   border-top: var(--table-border-row-top) !important;
   color: var(--color-fg) !important;
+}
+
+
+// -----------------------------------------------------------------------------
+// CSS-sticky replacement for bootstrap-table's fixed-columns extension.
+//
+// Tables that pass use_sticky_css to <x-table> get one of these classes
+// (snipe-table--sticky-right-N / snipe-table--sticky-left-N) instead of the
+// extension's data-fixed-columns=true. The extension clones the table body
+// into an absolutely-positioned overlay, which drifts in height with
+// long-content rows (#19197) and misplaces tooltips when the container
+// reflows without a window resize (asset show + info panel toggle).
+//
+// Body cells match the zebra background so the sticky column keeps the
+// alternating pattern. Header cells use --box-bg so scrolling body rows
+// don't show through above the header stripe transition. Header z-index
+// sits above body sticky so a scrolled row can't render over the header.
+// -----------------------------------------------------------------------------
+
+// --table-stripe-bg-alt is intentionally translucent (rgba .25) so the
+// zebra stripe composites on top of the row's --box-bg. That works for
+// normal rows but leaves sticky cells see-through because scrolled
+// content passes UNDER them with no opaque backer. For sticky cells we
+// paint --box-bg as an opaque base and layer the (still-translucent)
+// stripe on top via linear-gradient, replicating the composited color.
+
+// Per-position offset variables (--sticky-right-offset-P, --sticky-left-offset-P)
+// are set by the JS block in partials/bootstrap-table.blade.php after every
+// render. Position 1 is the outermost pinned column and gets offset 0; each
+// subsequent position adds the outerWidth of the previous columns so pinned
+// cells sit flush against each other instead of stacking at the edge.
+
+// Position-specific sticky rules. Recurses from @pos=1 up to @maxN.
+.gen-sticky-right(@maxN, @pos: 1) when (@pos <= @maxN) {
+    .snipe-table--sticky-right-@{maxN} > thead > tr > th:nth-last-child(@{pos}),
+    .snipe-table--sticky-right-@{maxN} > tbody > tr > td:nth-last-child(@{pos}) {
+        position: sticky;
+        right: var(~"--sticky-right-offset-@{pos}", 0);
+        z-index: 2;
+        background-color: var(--box-bg);
+    }
+    .gen-sticky-right(@maxN, (@pos + 1));
+}
+.gen-sticky-right(1);
+.gen-sticky-right(2);
+.gen-sticky-right(3);
+.gen-sticky-right(4);
+.gen-sticky-right(5);
+
+.gen-sticky-left(@maxN, @pos: 1) when (@pos <= @maxN) {
+    .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(@{pos}),
+    .snipe-table--sticky-left-@{maxN} > tbody > tr > td:nth-child(@{pos}) {
+        position: sticky;
+        left: var(~"--sticky-left-offset-@{pos}", 0);
+        z-index: 2;
+        background-color: var(--box-bg);
+    }
+    .gen-sticky-left(@maxN, (@pos + 1));
+}
+.gen-sticky-left(1);
+.gen-sticky-left(2);
+.gen-sticky-left(3);
+.gen-sticky-left(4);
+.gen-sticky-left(5);
+
+// Shared: header z-index bump and zebra-stripe overlay for all pinned columns.
+.gen-sticky-right-shared(@maxN) {
+    .snipe-table--sticky-right-@{maxN} > thead > tr > th:nth-last-child(-n+@{maxN}) {
+        z-index: 3;
+    }
+    .snipe-table--sticky-right-@{maxN}.table-striped > tbody > tr:nth-of-type(even) > td:nth-last-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-right-@{maxN}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-last-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
+}
+.gen-sticky-right-shared(1);
+.gen-sticky-right-shared(2);
+.gen-sticky-right-shared(3);
+.gen-sticky-right-shared(4);
+.gen-sticky-right-shared(5);
+
+.gen-sticky-left-shared(@maxN) {
+    .snipe-table--sticky-left-@{maxN} > thead > tr > th:nth-child(-n+@{maxN}) {
+        z-index: 3;
+    }
+    .snipe-table--sticky-left-@{maxN}.table-striped > tbody > tr:nth-of-type(even) > td:nth-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+    }
+    .snipe-table--sticky-left-@{maxN}.table-striped > tbody > tr:nth-of-type(odd) > td:nth-child(-n+@{maxN}) {
+        background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+    }
+}
+.gen-sticky-left-shared(1);
+.gen-sticky-left-shared(2);
+.gen-sticky-left-shared(3);
+.gen-sticky-left-shared(4);
+.gen-sticky-left-shared(5);
+
+// Row-state overrides. Bootstrap-table adds `.selected` on click / checkbox
+// tick (see line ~2889 for the base rule), and Snipe-IT paints `.success`
+// and `.danger` rows for the audit / restore flows. Without these
+// overrides, the sticky columns keep their zebra background painted on top
+// of the row-selected color and read as unselected even when the rest of
+// the row is highlighted. Overriding both background-color AND
+// background-image (to clear the linear-gradient stripe overlay from the
+// -shared mixins) so the sticky cells pick up the row's highlight state.
+.gen-sticky-right-row-state(@maxN) {
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.selected > td:nth-last-child(-n+@{maxN}) {
+        background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+        background-image: none !important;
+    }
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.success > td:nth-last-child(-n+@{maxN}) {
+        background-color: #00a65a !important;
+        background-image: none !important;
+        color: white !important;
+    }
+    .snipe-table--sticky-right-@{maxN} > tbody > tr.danger > td:nth-last-child(-n+@{maxN}) {
+        background-color: var(--text-danger) !important;
+        background-image: none !important;
+        color: white !important;
+    }
+}
+.gen-sticky-right-row-state(1);
+.gen-sticky-right-row-state(2);
+.gen-sticky-right-row-state(3);
+.gen-sticky-right-row-state(4);
+.gen-sticky-right-row-state(5);
+
+.gen-sticky-left-row-state(@maxN) {
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.selected > td:nth-child(-n+@{maxN}) {
+        background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+        background-image: none !important;
+    }
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.success > td:nth-child(-n+@{maxN}) {
+        background-color: #00a65a !important;
+        background-image: none !important;
+        color: white !important;
+    }
+    .snipe-table--sticky-left-@{maxN} > tbody > tr.danger > td:nth-child(-n+@{maxN}) {
+        background-color: var(--text-danger) !important;
+        background-image: none !important;
+        color: white !important;
+    }
+}
+.gen-sticky-left-row-state(1);
+.gen-sticky-left-row-state(2);
+.gen-sticky-left-row-state(3);
+.gen-sticky-left-row-state(4);
+.gen-sticky-left-row-state(5);
+
+
+// -----------------------------------------------------------------------------
+// Checkbox column: bootstrap-table adds .bs-checkbox to the header and body
+// cells of any checkbox column. It should always be pinned to the left edge
+// regardless of what fixed_number the table sets, because the row-selection
+// affordance is expected to stay visible while the user scrolls horizontally
+// to review other columns before deciding what to check.
+// -----------------------------------------------------------------------------
+
+.snipe-table > thead > tr > th.bs-checkbox,
+.snipe-table > tbody > tr > td.bs-checkbox {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background-color: var(--box-bg);
+}
+
+.snipe-table.table-striped > tbody > tr:nth-of-type(even) > td.bs-checkbox {
+    background-image: linear-gradient(var(--table-stripe-bg), var(--table-stripe-bg));
+}
+.snipe-table.table-striped > tbody > tr:nth-of-type(odd) > td.bs-checkbox {
+    background-image: linear-gradient(var(--table-stripe-bg-alt), var(--table-stripe-bg-alt));
+}
+
+.snipe-table > thead > tr > th.bs-checkbox {
+    z-index: 3;
+}
+
+// Row-state overrides for the pinned checkbox column. Same reasoning as
+// the .gen-sticky-*-row-state mixins above: the opaque background baked
+// into the sticky cell would otherwise mask row-selected / .success /
+// .danger highlights on the checkbox column, which is exactly the column
+// users click to toggle the selection state, so the mismatch is most
+// visible there.
+.snipe-table > tbody > tr.selected > td.bs-checkbox {
+    background-color: ~"light-dark(hsl(from var(--main-theme-color) h s calc(l + 40)),hsl(from var(--main-theme-color) h s calc(l - 40)))" !important;
+    background-image: none !important;
+}
+.snipe-table > tbody > tr.success > td.bs-checkbox {
+    background-color: #00a65a !important;
+    background-image: none !important;
+    color: white !important;
+}
+.snipe-table > tbody > tr.danger > td.bs-checkbox {
+    background-color: var(--text-danger) !important;
+    background-image: none !important;
+    color: white !important;
+}
+
+
+// -----------------------------------------------------------------------------
+// Top scrollbar: mirrored above the bootstrap-table body so users on wide
+// tables don't have to scroll to the bottom to find the horizontal
+// scrollbar. Managed by updateTopScrollbar() in partials/bootstrap-table.
+// The wrapper node only exists when the table actually overflows
+// horizontally, so tables that fit in their container don't get any
+// extra chrome.
+// -----------------------------------------------------------------------------
+
+.snipe-top-scrollbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    // Slightly taller than the OS scrollbar so the thumb is always
+    // reachable even on platforms that render fatter scrollbars.
+    height: 15px;
+    margin-bottom: 4px;
+}
+
+.snipe-top-scrollbar-inner {
+    // Height just enough to make the parent scrollable; width is set by
+    // JS to match the underlying table's scrollWidth.
+    height: 1px;
 }
 
 

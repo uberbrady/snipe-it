@@ -125,7 +125,9 @@ class ComponentsController extends Controller
     {
 
         $this->authorize('update', $component);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
 
         return view('components/edit')
             ->with('item', $component)

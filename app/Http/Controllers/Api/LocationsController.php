@@ -104,11 +104,17 @@ class LocationsController extends Controller
             'locations.created_by',
             'locations.deleted_at',
         ])
-            ->withCount('assignedAssets as assigned_assets_count')
-            ->withCount('assets as assets_count')
+            // Asset counts thread through AssetsForShow so the API totals
+            // agree with the tab counts in resources/views/locations/view.blade.php,
+            // which use ->assets()->AssetsForShow() etc. Without the scope,
+            // rtd_assets_count in particular ignores the show_archived_in_list
+            // setting because the rtd_assets() relation has no built-in status
+            // filter. See #17565.
+            ->withCount(['assignedAssets as assigned_assets_count' => fn ($q) => $q->AssetsForShow()])
+            ->withCount(['assets as assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('assignedAccessories as assigned_accessories_count')
             ->withCount('accessories as accessories_count')
-            ->withCount('rtd_assets as rtd_assets_count')
+            ->withCount(['rtd_assets as rtd_assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('children as children_count')
             ->withCount('users as users_count')
             ->withCount('consumables as consumables_count')
@@ -279,11 +285,12 @@ class LocationsController extends Controller
                 'locations.notes',
                 'locations.tag_color',
             ])
-            ->withCount('assignedAssets as assigned_assets_count')
-            ->withCount('assets as assets_count')
+            // See index() for why the asset counts thread AssetsForShow. #17565.
+            ->withCount(['assignedAssets as assigned_assets_count' => fn ($q) => $q->AssetsForShow()])
+            ->withCount(['assets as assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('assignedAccessories as assigned_accessories_count')
             ->withCount('accessories as accessories_count')
-            ->withCount('rtd_assets as rtd_assets_count')
+            ->withCount(['rtd_assets as rtd_assets_count' => fn ($q) => $q->AssetsForShow()])
             ->withCount('children as children_count')
             ->withCount('users as users_count')
             ->withCount('consumables as consumables_count')
@@ -383,10 +390,10 @@ class LocationsController extends Controller
         $this->authorize('view', $location);
         $accessory_checkouts = AccessoryCheckout::LocationAssigned()->where('assigned_to', $location->id)->with('adminuser')->with('accessories');
 
-        $offset = ($request->input('offset') > $accessory_checkouts->count()) ? $accessory_checkouts->count() : app('api_offset_value');
+        $total = $accessory_checkouts->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
 
-        $total = $accessory_checkouts->count();
         $accessory_checkouts = $accessory_checkouts->skip($offset)->take($limit)->get();
 
         return (new LocationsTransformer)->transformCheckedoutAccessories($accessory_checkouts, $total);
@@ -481,7 +488,22 @@ class LocationsController extends Controller
         }
 
         if ((Setting::getSettings()->full_multiple_companies_support == '1') && $request->filled('companyId')) {
-            $locations->where('locations.company_id', '=', (int) $request->input('companyId'));
+            $companyId = (int) $request->input('companyId');
+
+            if (Setting::getSettings()->null_company_is_floater) {
+                // Floater mode: include null-company (floater) locations too,
+                // matching the "items from any company can be checked out
+                // to targets with no company assignment" policy. Without
+                // this the strict equality below hid all floaters from the
+                // checkout dropdown while the server-side canCheckoutTo
+                // still permitted the checkout (#19394).
+                $locations->where(function ($q) use ($companyId) {
+                    $q->where('locations.company_id', '=', $companyId)
+                        ->orWhereNull('locations.company_id');
+                });
+            } else {
+                $locations->where('locations.company_id', '=', $companyId);
+            }
         }
 
         $locations = $locations->orderBy('name', 'ASC')->get();
@@ -499,22 +521,13 @@ class LocationsController extends Controller
         }
 
         if ($request->filled('search')) {
-            // Search results are cherry-picked out of the tree so the
-            // pre-search Location::indenter walk cannot be reused as-is.
-            // Instead, walk each match's parent chain and inline the
-            // ancestors with the same `›` breadcrumb separator that
-            // Location::indenter uses on the tree-order branch, so both
-            // views share one visual style: `DC1 › Rack 1` distinguishes
-            // Rack 1 under DC1 from Rack 1 under DC2.
-            $locations->load('parent');
+            // Search results are cherry-picked out of the tree — no useful
+            // indent depth to apply — so just use the plain name. The user
+            // is filtering by typed text so context comes from the search
+            // term rather than dropdown position (see #19398 for why we
+            // stopped inlining the parent chain here too).
             foreach ($locations as $location) {
-                $chain = [$location->name];
-                $ancestor = $location->parent;
-                while ($ancestor) {
-                    array_unshift($chain, $ancestor->name);
-                    $ancestor = $ancestor->parent;
-                }
-                $location->use_text = implode(' › ', $chain);
+                $location->use_text = $location->name;
             }
             $locations_formatted = $locations;
         } else {

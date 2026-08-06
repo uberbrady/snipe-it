@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ActionType;
+use App\Helpers\Helper;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\Actionlog;
@@ -152,6 +153,15 @@ class MaintenancesController extends Controller
         $this->authorize('update', Asset::class);
         $this->authorize('update', $maintenance->asset);
 
+        // Capture the referring page (filtered index, asset-detail tab)
+        // server-side so update() can restore the caller's context via
+        // redirect()->intended() without trusting a hidden form field.
+        // Same-origin gated on write; also host-validated on read in
+        // update() below.
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
+
         return view('maintenances/edit')
             ->with('selected_assets', $maintenance->asset->pluck('id')->toArray())
             ->with('asset_ids', request()->input('asset_ids', []))
@@ -206,7 +216,14 @@ class MaintenancesController extends Controller
                 $this->logMaintenanceCompleteAction($maintenance);
             }
 
-            return redirect()->route('maintenances.index')
+            // url.intended was seeded from url()->previous() in edit();
+            // sanitize through Helper::sameOriginUrl() (rejects off-host
+            // and non-http(s) schemes) so an attacker-controlled referrer
+            // can't turn this into an open-redirect. Falls back to the
+            // plain index when the stored URL is missing or unsafe.
+            $target = Helper::sameOriginUrl(session()->pull('url.intended')) ?? route('maintenances.index');
+
+            return redirect($target)
                 ->with('success', trans('admin/maintenances/message.edit.success'));
         }
 
@@ -282,7 +299,7 @@ class MaintenancesController extends Controller
         }
 
         $objectType = 'maintenances';
-        $storagePath = self::$map_storage_path[$objectType];
+        $storagePath = parent::getMapStoragePath()[$objectType];
 
         if (! Storage::exists($storagePath)) {
             Storage::makeDirectory($storagePath, 775);
@@ -297,7 +314,7 @@ class MaintenancesController extends Controller
 
             $fileName = $uploadFileRequest->handleFile(
                 $storagePath,
-                self::$map_file_prefix[$objectType].'-'.$maintenance->id,
+                parent::getMapFilePrefix()[$objectType].'-'.$maintenance->id,
                 $file
             );
 

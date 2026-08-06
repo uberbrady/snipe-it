@@ -217,6 +217,11 @@ class SearchableTraitTest extends TestCase
 
     /**
      * Test License structured filter search on attributes
+     *
+     * The serial-key filter case actor holds viewKeys since Api\LicensesController
+     * routes viewKeys-less callers through TextSearchWithoutSerial, which strips
+     * `serial` from the searchable attribute set (see the FD-56674 fix). The
+     * inverse behavior for non-viewKeys callers is pinned in LicenseIndexTest.
      */
     public function test_license_structured_filter_on_attributes()
     {
@@ -230,7 +235,7 @@ class SearchableTraitTest extends TestCase
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) => $json->has('rows', 1)->etc());
 
-        $this->actingAsForApi(User::factory()->viewLicenses()->create())
+        $this->actingAsForApi(User::factory()->viewLicenses()->viewKeysLicenses()->create())
             ->getJson(route('api.licenses.index', [
                 'filter' => json_encode(['serial' => 'ADOBE']),
             ]))

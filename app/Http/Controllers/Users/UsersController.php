@@ -218,7 +218,9 @@ class UsersController extends Controller
     {
 
         $this->authorize('update', $user);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
         $user = User::with(['assets', 'assets.model', 'consumables', 'accessories', 'licenses', 'userloc'])->withTrashed()->find($user->id);
 
         if ($user) {
@@ -304,15 +306,14 @@ class UsersController extends Controller
         $user->end_date = $request->input('end_date', null);
         $user->autoassign_licenses = $request->input('autoassign_licenses', 0);
 
-        // Set this here so that we can overwrite it later if the user is an admin or superadmin
-        $user->activated = $request->input('activated', auth()->user()->is($user) ? 1 : $user->activated);
-
-        // Update the location of any assets checked out to this user
-        Asset::where('assigned_type', User::class)
-            ->where('assigned_to', $user->id)
-            ->update(['location_id' => $request->input('location_id', null)]);
-
-        // check for permissions related fields and only set them if the user has permission to edit them
+        // Permission-gated fields: `activated` lives inside this gate too.
+        // An earlier version of this method assigned `activated` right
+        // before the gate on the theory that the gate would overwrite it.
+        // That let anyone with users.edit toggle an admin's activated flag
+        // by POSTing a full edit payload — the gate would deny the second
+        // assignment but the first had already stuck. Every auth-field
+        // write must live inside this branch so an unauthorized caller
+        // can't reach past the gate on any of them.
         if (auth()->user()->can('canEditAuthFields', $user) && auth()->user()->can('editableOnDemo')) {
 
             $user->username = trim($request->input('username'));

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Models\Ldap;
 use App\Models\SamlNonce;
@@ -56,7 +57,17 @@ class LoginController extends Controller
     {
         parent::__construct();
         $this->middleware('guest', ['except' => ['logout', 'postTwoFactorAuth', 'getTwoFactorAuth', 'getTwoFactorEnroll']]);
-        Session::put('backUrl', \URL::previous());
+
+        // backUrl feeds redirectTo(), which Laravel hands to the
+        // post-login Redirector without host validation. URL::previous()
+        // is Referer-derived and login endpoints are often the loosest
+        // on CSRF, so sanitize before storing. If the referrer isn't
+        // safe we leave backUrl unset and redirectTo() falls back to
+        // $this->redirectTo.
+        if ($safeReferer = Helper::sameOriginUrl(\URL::previous())) {
+            Session::put('backUrl', $safeReferer);
+        }
+
         $this->saml = $saml;
     }
 
@@ -525,6 +536,6 @@ class LoginController extends Controller
 
     public function redirectTo()
     {
-        return Session::get('backUrl') ? Session::get('backUrl') : $this->redirectTo;
+        return Helper::sameOriginUrl(Session::get('backUrl')) ?? $this->redirectTo;
     }
 }

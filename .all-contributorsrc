@@ -4307,6 +4307,38 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Akashmdshetty",
+      "name": "Akash M D",
+      "avatar_url": "https://avatars.githubusercontent.com/u/180300697?v=4",
+      "profile": "https://portfolio-akash-m-ds-projects.vercel.app/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rodchristiansen",
+      "name": "Rod Christiansen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7052526?v=4",
+      "profile": "http://blog.focused.systems",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "KeplerAeroIT",
+      "name": "Aditya Pagaria",
+      "avatar_url": "https://avatars.githubusercontent.com/u/267885443?v=4",
+      "profile": "https://github.com/KeplerAeroIT",
+      "contributions": []
+    },
+    {
+      "login": "FloVnst",
+      "name": "Florian Vaneste",
+      "avatar_url": "https://avatars.githubusercontent.com/u/57016732?v=4",
+      "profile": "https://github.com/FloVnst",
+      "contributions": []
     }
   ]
 }

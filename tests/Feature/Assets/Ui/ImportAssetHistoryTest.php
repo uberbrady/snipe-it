@@ -28,15 +28,16 @@ class ImportAssetHistoryTest extends TestCase
             ->assertStatus(405);
     }
 
-    public function test_process_endpoint_blocked_in_demo_mode(): void
+    public function test_process_endpoint_blocked_in_demo_mode_for_non_superadmin(): void
     {
-        // Uploads were already blocked at Api\ImportController::store,
-        // but the process endpoint would still let a demo user mutate the
-        // DB via any seeded / leftover Import row. The lock_passwords
-        // gate here closes that loophole.
+        // Uploads are blocked at Api\ImportController::store, and non-
+        // superadmins are also blocked from processing so they can't
+        // mutate the demo DB via any leftover Import row. Superadmins
+        // are allowed through so they can exercise the seeded demo
+        // samples end to end (see companion test below).
         config(['app.lock_passwords' => true]);
 
-        $actor = User::factory()->canImport()->superuser()->create();
+        $actor = User::factory()->canImport()->create();
         $import = Import::factory()->assetHistory()->create(['created_by' => $actor->id]);
 
         $this->actingAsForApi($actor);
@@ -44,6 +45,32 @@ class ImportAssetHistoryTest extends TestCase
             route('api.imports.importFile', ['import' => $import->id]),
             ['import-type' => 'assetHistory', 'import' => $import->id],
         )->assertStatus(422);
+    }
+
+    public function test_process_endpoint_allowed_in_demo_mode_for_superadmin(): void
+    {
+        // Superadmins bypass the demo-mode gate on process() so the
+        // seeded sample CSVs (populated by snipeit:demo-settings) can
+        // actually be run against the demo DB. Without a real CSV on
+        // disk the import will error out below the gate, so this test
+        // just proves the gate itself lets the superadmin through
+        // (any status other than 422 "feature disabled" is fine).
+        config(['app.lock_passwords' => true]);
+
+        $actor = User::factory()->canImport()->superuser()->create();
+        $import = Import::factory()->assetHistory()->create(['created_by' => $actor->id]);
+
+        $this->actingAsForApi($actor);
+        $response = $this->postJson(
+            route('api.imports.importFile', ['import' => $import->id]),
+            ['import-type' => 'assetHistory', 'import' => $import->id],
+        );
+
+        $this->assertNotEquals(
+            trans('general.feature_disabled'),
+            $response->json('messages'),
+            'Superadmin should not hit the demo-mode gate on process().',
+        );
     }
 
     public function test_asset_history_import_requires_import_permission(): void

@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class AssetCheckoutController extends Controller
 {
@@ -45,7 +46,13 @@ class AssetCheckoutController extends Controller
         $asset->setRules($asset->getRules() + $asset->customFieldValidationRules());
 
         if ($asset->isInvalid()) {
-            return redirect()->route('hardware.edit', $asset)->withErrors($asset->getErrors());
+            // Also flash the specific validation messages via
+            // multi_error_messages so they surface in the top alert
+            // on the edit page. See the matching block in
+            // AssetCheckinController::create() for the reasoning.
+            return redirect()->route('hardware.edit', $asset)
+                ->withErrors($asset->getErrors())
+                ->with('multi_error_messages', $asset->getErrors()->all());
         }
 
         if ($asset->availableForCheckout()) {
@@ -140,7 +147,27 @@ class AssetCheckoutController extends Controller
                 'sign_in_place' => $request->boolean('sign_in_place'),
             ]);
 
-            if ($asset->checkOut($target, $admin, $checkout_at, $expected_checkin, $request->input('note'), $request->input('name'), null, $request->boolean('sign_in_place'))) {
+            // Concurrency guard. availableForCheckout() above ran on an
+            // unlocked read, so two simultaneous form submits can both
+            // observe the asset as available and both proceed through
+            // checkOut(), producing duplicate checkout-history rows and
+            // double-incrementing checkout_counter on a single-assignment
+            // asset. Re-fetch the row under lockForUpdate INSIDE a
+            // transaction and re-check availability against the locked
+            // snapshot; the second request blocks until the first commits
+            // and then sees the asset as no longer available. Mirrors the
+            // pattern in Api\AssetsController::checkout and
+            // ConsumablesController::store (GHSA-x4g2-87xc-m5jm).
+            $checkedOut = DB::transaction(function () use ($asset, $target, $admin, $checkout_at, $expected_checkin, $request): bool {
+                $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                if (! $locked || ! $locked->availableForCheckout()) {
+                    return false;
+                }
+
+                return (bool) $asset->checkOut($target, $admin, $checkout_at, $expected_checkin, $request->input('note'), $request->input('name'), null, $request->boolean('sign_in_place'));
+            });
+
+            if ($checkedOut) {
 
                 // When sign_in_place is requested and the target is a user, redirect to the
                 // acceptance/signature page so the user can sign in person. The signature is
@@ -172,10 +199,17 @@ class AssetCheckoutController extends Controller
                     ->with('success', trans('admin/hardware/message.checkout.success'));
             }
 
-            // Redirect to the asset management page with error
-            return redirect()->route('hardware.checkout.create', $asset)->with('error', trans('admin/hardware/message.checkout.error').$asset->getErrors());
+            // Redirect back to the checkout form with the specific
+            // validation messages surfaced via multi_error_messages
+            // (replaces the previous stringified MessageBag concat).
+            return redirect()->route('hardware.checkout.create', $asset)
+                ->with('error', trans('admin/hardware/message.checkout.error'))
+                ->with('multi_error_messages', $asset->getErrors()->all());
         } catch (ModelNotFoundException $e) {
-            return redirect()->back()->with('error', trans('admin/hardware/message.checkout.error'))->withErrors($asset->getErrors());
+            return redirect()->back()
+                ->with('error', trans('admin/hardware/message.checkout.error'))
+                ->withErrors($asset->getErrors())
+                ->with('multi_error_messages', $asset->getErrors()->all());
         } catch (CheckoutNotAllowed $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

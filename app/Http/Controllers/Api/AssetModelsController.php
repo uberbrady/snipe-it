@@ -155,6 +155,9 @@ class AssetModelsController extends Controller
             case 'depreciation':
                 $assetmodels->leftJoin('depreciations as depreciation_sort', 'models.depreciation_id', '=', 'depreciation_sort.id')->orderBy('depreciation_sort.name', $order);
                 break;
+            case 'percent_remaining':
+                $assetmodels->OrderPercentRemaining($order);
+                break;
             default:
                 $assetmodels->orderBy($sort, $order);
                 break;

@@ -12,15 +12,7 @@
         <x-box name="department">
 
             <x-slot:bulkactions>
-                <x-table.bulk-actions
-                        name='department'
-                        action_route="{{ route('departments.bulk.delete') }}"
-                        model_name="department"
-                >
-                    @can('delete', App\Models\Department::class)
-                        <option>{{ trans('general.delete') }}</option>
-                    @endcan
-                </x-table.bulk-actions>
+                <x-table.bulk-departments />
             </x-slot:bulkactions>
 
             <x-table
@@ -29,6 +21,7 @@
                     buttons="departmentButtons"
                     fixed_right_number="1"
                     fixed_number="1"
+                    use_sticky_css
                     api_url="{{ route('api.departments.index') }}"
                     :presenter="\App\Presenters\DepartmentPresenter::dataTableLayout()"
                     export_filename="export-departments-{{ date('Y-m-d') }}"

@@ -67,7 +67,7 @@
                                     @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
                                         <input class="form-control" type="text" name="username" id="username" value="{{ old('username', $user->username) }}" autocomplete="off" maxlength="191" disabled>
                                     @else
-                                        <input class="form-control" type="text" name="username" id="username" value="{{ old('username', $user->username) }}" autocomplete="off" maxlength="191" {{ (Helper::checkIfRequired($user, 'username')) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
+                                        <input class="form-control js-antifill-readonly" type="text" name="username" id="username" value="{{ old('username', $user->username) }}" autocomplete="off" maxlength="191" {{ (Helper::checkIfRequired($user, 'username')) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
                                     @endif
                                 @else
                                     <x-form.help name="username-ldap-managed" icon="locked">
@@ -165,7 +165,7 @@
                                         @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
                                             <input type="password" name="password" class="form-control form-control--disabled" id="password" value="" maxlength="500" autocomplete="off" disabled>
                                         @else
-                                            <input type="password" name="password" class="form-control" id="password" value="" maxlength="500" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly {{ ((Helper::checkIfRequired($user, 'password')) && (! $user->id)) ? ' required' : '' }}>
+                                            <input type="password" name="password" class="form-control js-antifill-readonly" id="password" value="" maxlength="500" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly {{ ((Helper::checkIfRequired($user, 'password')) && (! $user->id)) ? ' required' : '' }}>
                                         @endif
                                         <span class="input-group-addon">
                                             {{-- jQuery's multi-selector: this eye toggles the visibility of
@@ -202,7 +202,7 @@
                                         @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
                                             <input type="password" name="password_confirmation" id="password_confirm" class="form-control form-control--disabled" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" disabled>
                                         @else
-                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
+                                            <input type="password" name="password_confirmation" id="password_confirm" class="form-control js-antifill-readonly" value="" maxlength="500" autocomplete="off" aria-label="password_confirmation" {{ (! $user->id) ? ' required' : '' }} onfocus="this.removeAttribute('readonly');" readonly>
                                         @endif
                                         <span class="input-group-addon">
                                             {{-- Shares the same multi-selector data-toggle as the password
@@ -231,7 +231,7 @@
                                 @if ((! Gate::allows('canEditAuthFields', $user)) || ((! Gate::allows('editableOnDemo')) && ($user->id)))
                                     <input class="form-control" type="email" name="email" id="email" maxlength="191" value="{{ old('email', $user->email) }}" autocomplete="off" disabled>
                                 @else
-                                    <input class="form-control" type="email" name="email" id="email" maxlength="191" value="{{ old('email', $user->email) }}" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly {{ (Helper::checkIfRequired($user, 'email')) ? ' required' : '' }} @if (! $user->id && ! config('app.lock_passwords')) data-toggles-checkbox="#send_welcome" @endif>
+                                    <input class="form-control js-antifill-readonly" type="email" name="email" id="email" maxlength="191" value="{{ old('email', $user->email) }}" autocomplete="off" onfocus="this.removeAttribute('readonly');" readonly {{ (Helper::checkIfRequired($user, 'email')) ? ' required' : '' }} @if (! $user->id && ! config('app.lock_passwords')) data-toggles-checkbox="#send_welcome" @endif>
                                 @endif
 
                                 @cannot('canEditAuthFields', $user)

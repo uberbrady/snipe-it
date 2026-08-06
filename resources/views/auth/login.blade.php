@@ -63,9 +63,6 @@
                                             </label>
                                             <input class="form-control" placeholder="{{ trans('admin/users/table.username')  }}" name="username" type="text" id="username" autocomplete="{{ (config('auth.login_autocomplete') === true) ? 'on' : 'off'  }}" autocapitalize="off" spellcheck="false" autofocus>
                                             <x-form.error name="username" />
-                                            <x-form.help name="username">
-                                                <x-icon type="tip"/>
-                                                {{ trans('auth/general.logn_help') }}</x-form.help>
                                         </div>
 
 

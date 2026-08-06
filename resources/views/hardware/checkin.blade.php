@@ -51,8 +51,8 @@
                     <x-form.row :label="trans('admin/hardware/form.model')" name="model_display" input_div_class="col-md-8">
                         <x-slot:input>
                             <p class="form-control-static">
-                                @if (($asset->model) && ($asset->model->name))
-                                    {{ $asset->model->name }}
+                                @if ($asset->model)
+                                    {!! $asset->model->present()->formattedNameLink !!}
                                 @else
                                     <span class="text-danger text-bold">
                                         <x-icon type="warning" />
@@ -66,6 +66,15 @@
                             </p>
                         </x-slot:input>
                     </x-form.row>
+
+                        @if ($asset->defaultLoc)
+                            {{-- Default Location (read-only) --}}
+                            <x-form.row :label="trans('admin/hardware/form.default_location')" name="default_location" input_div_class="col-md-6">
+                                <x-slot:input>
+                                    <p class="form-control-static"> {!! $asset->defaultLoc->present()->formattedNameLink() !!}</p>
+                                </x-slot:input>
+                            </x-form.row>
+                        @endif
 
                     {{-- Asset name --}}
                     <x-form.row
@@ -127,22 +136,29 @@
                         </div>
                     </div>
 
+                        {{-- Location and default-location pickers. Both are
+                             pre-populated with the asset's rtd_location_id so
+                             the common case (submit without touching either
+                             field) resets `location` to rtd and leaves the
+                             default unchanged, matching the codebase-wide
+                             checkin convention. Fixes #19401, where a blank
+                             submission used to wipe `location` to null.
+
+                             Users can override either field by picking a
+                             different location or clearing via the select2 X
+                             button. --}}
                     <x-input.location-select
                         :label="trans('general.location')"
                         name="location_id"
-                        :help_text="($asset->defaultLoc) ? trans('general.checkin_to_diff_location', ['default_location' => $asset->defaultLoc->name]) : null"
-                        :selected="old('location_id')"
+                        :selected="old('location_id', $asset->rtd_location_id)"
                         :company_id="$asset->company_id"
                     />
 
-                    {{-- Update actual location  --}}
-                    <x-form.radio-row
-                        name="update_default_location"
-                        selected="1"
-                        :options="[
-                            '1' => trans('admin/hardware/form.asset_location'),
-                            '0' => trans('admin/hardware/form.asset_location_update_default_current'),
-                        ]"
+                        <x-input.location-select
+                            :label="trans('admin/hardware/form.default_location')"
+                            name="rtd_location_id"
+                            :selected="old('rtd_location_id', $asset->rtd_location_id)"
+                        :company_id="$asset->company_id"
                     />
 
                     {{-- Checkout/Checkin date. The nested input-group carries

@@ -142,7 +142,7 @@ class ConsumablePresenter extends Presenter
                 'field' => 'percent_remaining',
                 'scope' => 'col',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
                 'switchable' => true,
                 'title' => '% '.trans('general.remaining'),
                 'visible' => true,

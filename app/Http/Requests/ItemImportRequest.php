@@ -86,8 +86,14 @@ class ItemImportRequest extends FormRequest
         $limit = $this->filled('limit') ? (int) $this->input('limit') : null;
 
         $importer->import($offset, $limit);
+        $this->tally = $importer->getTally();
 
         return $this->errors;
+    }
+
+    public function getTally(): array
+    {
+        return $this->tally ?? ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errored' => 0];
     }
 
     public function log($string)
@@ -106,4 +112,6 @@ class ItemImportRequest extends FormRequest
     }
 
     private $errors;
+
+    private array $tally;
 }

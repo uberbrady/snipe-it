@@ -38,13 +38,22 @@
                 <div class="form-group notification-callout">
                     <div class="col-md-8 col-md-offset-3">
                         <x-callout type="info" role="status">
+                            {{-- Components can only be checked out to assets (see
+                                 ComponentCheckoutController::store, which forces
+                                 checkout_to_type=asset). CheckoutableListener then
+                                 resolves the notifiable user by walking to the
+                                 target asset's assignee. Use the component-scoped
+                                 copy that reflects the "if the asset is assigned
+                                 to a user" chain, rather than the generic
+                                 user-target copy used by the accessory / consumable
+                                 / license / user-scoped checkout screens. --}}
                             @if ($snipe_component->category->require_acceptance == '1')
                                 <i class="far fa-envelope fa-fw" aria-hidden="true"></i>
-                                {{ trans('admin/categories/general.required_acceptance') }}<br>
+                                {{ trans('admin/categories/general.required_acceptance_component') }}<br>
                             @endif
                             @if ($snipe_component->getEula())
                                 <i class="far fa-envelope fa-fw" aria-hidden="true"></i>
-                                {{ trans('admin/categories/general.required_eula') }}<br>
+                                {{ trans('admin/categories/general.required_eula_component') }}<br>
                             @endif
                             @if ($snipeSettings->webhook_endpoint != '')
                                 <i class="fab fa-slack fa-fw" aria-hidden="true"></i>

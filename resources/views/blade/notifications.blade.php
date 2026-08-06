@@ -131,18 +131,25 @@
         <x-alert type="warning" icon="warning" :title="trans('general.notification_error')" aria-live="assertive" aria-atomic="true">
             <button type="button" class="close" data-dismiss="alert" aria-label="{{ trans('general.close') }}"><span aria-hidden="true">&times;</span></button>
             <ul>
-                @foreach (array_splice($messages, 0, 3) as $key => $message)
+                @foreach (array_slice($messages, 0, 3) as $message)
                     <li>{{ $message }}</li>
                 @endforeach
             </ul>
-            <details>
-                <summary>{{ trans('general.show_all') }}</summary>
-                <ul>
-                    @foreach (array_splice($messages, 3) as $key => $message)
-                        <li>{{ $message }}</li>
-                    @endforeach
-                </ul>
-            </details>
+            {{-- Only render the disclosure when there's actually
+                 something behind it. Previous shape used array_splice
+                 (destructive) and rendered <details><summary>Show all</summary>
+                 unconditionally, so a 3-or-fewer message set produced
+                 an empty "Show all" toggle. --}}
+            @if (count($messages) > 3)
+                <details>
+                    <summary>{{ trans('general.show_all') }}</summary>
+                    <ul>
+                        @foreach (array_slice($messages, 3) as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </details>
+            @endif
         </x-alert>
     </div>
 @endif

@@ -90,6 +90,7 @@ class AssetHistoryImporter extends Importer
 
         if (empty($asset_tag)) {
             $this->log('Row is missing an asset tag - skipping');
+            $this->recordSkipped();
             $this->addRowError(
                 trans('admin/hardware/message.import.history.missing_asset_tag_identity'),
                 trans('general.import-history'),
@@ -104,6 +105,7 @@ class AssetHistoryImporter extends Importer
 
         if (! $asset) {
             $this->log('Asset '.$asset_tag.' does not exist - skipping');
+            $this->recordSkipped();
             $this->addRowError(
                 trans('general.asset').' '.$asset_tag,
                 trans('general.import-history'),
@@ -132,6 +134,7 @@ class AssetHistoryImporter extends Importer
 
         if (! $user) {
             $this->log('User "'.$name.'" does not exist so no checkin log was created for asset '.$asset_tag);
+            $this->recordSkipped();
             $this->addRowError(
                 trans('general.asset').' '.$asset_tag,
                 trans('general.import-history'),
@@ -178,7 +181,9 @@ class AssetHistoryImporter extends Importer
 
         if ($asset->save()) {
             $this->log('Asset history imported for '.$asset_tag.' -> '.$user->username.' at '.$checkout_date);
+            $this->recordCreated();
         } else {
+            $this->recordErrored();
             $this->logError($asset, 'asset_tag');
         }
     }

@@ -15,8 +15,76 @@ class ConsumableImporter extends ItemImporter
 
     protected function handle($row)
     {
-        parent::handle($row);
+        // ConsumableImporter deliberately does NOT call parent::handle(). See
+        // LicenseImporter / AssetImporter / AccessoryImporter for the same
+        // pattern: absent CSV columns stay out of $this->item so update mode
+        // preserves the DB value, and present-but-empty cells land as null
+        // so update mode clears the DB value. The base sanitize's reject-empty
+        // pass is suppressed via the sanitizeItemForStoring override below.
+        $this->item = [];
+
+        // Shared lookup fields. Present-and-empty clears the FK; absent
+        // preserves it; present-and-set resolves and stores the id.
+        // department + manager kept as side-effect calls even though they
+        // are not in Consumable's fillable, so createOrFetchUser can find
+        // an auto-created department when it mints a checkout-target user.
+        foreach ([
+            ['category_id', 'category', fn ($v) => $this->createOrFetchCategory($v)],
+            ['company_id', 'company', fn ($v) => $this->createOrFetchCompany($v)],
+            ['location_id', 'location', fn ($v) => $this->createOrFetchLocation($v)],
+            ['manufacturer_id', 'manufacturer', fn ($v) => $this->createOrFetchManufacturer($v)],
+            ['supplier_id', 'supplier', fn ($v) => $this->createOrFetchSupplier($v)],
+            ['department_id', 'department', fn ($v) => $this->createOrFetchDepartment($v)],
+        ] as [$itemKey, $csvKey, $resolver]) {
+            if ($this->csvRowHas($row, $csvKey)) {
+                $value = $this->findCsvMatch($row, $csvKey);
+                $this->item[$itemKey] = ($value !== '') ? $resolver($value) : null;
+            }
+        }
+
+        if ($this->csvRowHas($row, 'manager_first_name')) {
+            $first = $this->findCsvMatch($row, 'manager_first_name');
+            $last = $this->findCsvMatch($row, 'manager_last_name');
+            $this->item['manager_id'] = ($first !== '') ? $this->fetchManager($first, $last) : null;
+        }
+
+        $this->setItemFromCsvIfPresent($row, 'name', 'item_name');
+        $this->setItemFromCsvIfPresent($row, 'notes');
+        $this->setItemFromCsvIfPresent($row, 'order_number');
+        $this->setItemFromCsvIfPresent($row, 'purchase_cost');
+        $this->setItemFromCsvIfPresent($row, 'model_number');
+        $this->setItemFromCsvIfPresent($row, 'min_amt');
+        $this->setItemFromCsvIfPresent($row, 'qty', 'quantity');
+        $this->setItemFromCsvIfPresent($row, 'requestable');
+        $this->setItemFromCsvIfPresent($row, 'item_no');
+
+        if ($this->csvRowHas($row, 'purchase_date')) {
+            $raw = $this->findCsvMatch($row, 'purchase_date');
+            $this->item['purchase_date'] = null;
+            if ($raw !== '') {
+                $this->item['purchase_date'] = $raw;
+                $this->item['purchase_date'] = $this->parseOrNullDate('purchase_date');
+            }
+        }
+
+        // Internal signals for the checkout logic; neither is fillable on
+        // Consumable so sanitize's fillable filter drops them.
+        $this->item['checkout_class'] = $this->findCsvMatch($row, 'checkout_class');
+        $this->item['checkout_target'] = $this->determineCheckout($row);
+        $this->item['created_by'] = $this->created_by;
+
         $this->createConsumableIfNotExists($row);
+    }
+
+    /**
+     * Override the base sanitize to skip the reject-empty pass. See handle()
+     * above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function sanitizeItemForStoring($model, $updating = false)
+    {
+        return collect($this->item)->only($model->getFillable())->toArray();
     }
 
     /**
@@ -30,11 +98,13 @@ class ConsumableImporter extends ItemImporter
      */
     public function createConsumableIfNotExists($row)
     {
-        $consumable = Consumable::where('name', trim($this->item['name']))->first();
+        $name = trim($this->item['name'] ?? '');
+        $consumable = Consumable::where('name', $name)->first();
         if ($consumable) {
 
             if (! $this->updating) {
-                $this->log('A matching Consumable '.$this->item['name'].' already exists.  ');
+                $this->log('A matching Consumable '.$name.' already exists.  ');
+                $this->recordSkipped();
 
                 $this->maybeCheckoutConsumable($consumable);
 
@@ -44,6 +114,7 @@ class ConsumableImporter extends ItemImporter
             $consumable->update($this->sanitizeItemForUpdating($consumable));
             // update() already saves the model, no need to call save() again while Model::unguard() is active
             $consumable->setImported(true);
+            $this->recordUpdated();
 
             $this->maybeCheckoutConsumable($consumable);
 
@@ -52,18 +123,20 @@ class ConsumableImporter extends ItemImporter
 
         $this->log('No matching consumable, creating one');
         $consumable = new Consumable;
-        $consumable->created_by = auth()->id();
+        $consumable->created_by = $this->created_by;
         $consumable->fill($this->sanitizeItemForStoring($consumable));
 
         // This sets an attribute on the Loggable trait for the action log
         $consumable->setImported(true);
         if ($consumable->save()) {
-            $this->log('Consumable '.$this->item['name'].' was created');
+            $this->log('Consumable '.$name.' was created');
+            $this->recordCreated();
 
             $this->maybeCheckoutConsumable($consumable);
 
             return;
         }
+        $this->recordErrored();
         $this->logError($consumable, 'Consumable');
     }
 

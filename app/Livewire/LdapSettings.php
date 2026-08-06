@@ -170,10 +170,20 @@ class LdapSettings extends Component
 
     public string $step3TestDn = '';
 
-    public function mount(): void
+    /**
+     * mount() only fires on the initial page render, not on subsequent
+     * POST /livewire/update requests. Route-level middleware on the LDAP
+     * settings wizard requires superadmin, but a snapshot replay lands
+     * here without going through that middleware. boot() runs on every
+     * Livewire request, so it catches both surfaces.
+     */
+    public function boot(): void
     {
         abort_unless(Gate::allows('superadmin'), 403);
+    }
 
+    public function mount(): void
+    {
         $this->hydrateFromPersisted();
 
         // Restore in-flight wizard progress from the session so a page

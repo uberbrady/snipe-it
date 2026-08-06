@@ -285,17 +285,52 @@ class MappedTable extends Attribute
 
     public function add($value, Model &$object)
     {
+        $value = $this->coerceScalar($value);
         $object->{$this->relationship_id_field} = $value ? $this->relationship_class::firstOrCreate([$this->relationship_field => $value])->id : null;
     }
 
     public function replace($value, Model &$object, $path = null, $removeIfNotSet = false)
     {
+        $value = $this->coerceScalar($value);
         $object->{$this->relationship_id_field} = $value ? $this->relationship_class::firstOrCreate([$this->relationship_field => $value])->id : null;
     }
 
     public function patch($operation, $value, Model &$object, ?Path $path = null, $removeIfNotSet = false)
     {
+        $value = $this->coerceScalar($value);
         $object->{$this->relationship_id_field} = $value ? $this->relationship_class::firstOrCreate([$this->relationship_field => $value])->id : null;
+    }
+
+    // SCIM clients may send scalar-mapped attributes like `department`
+    // and `location` as complex objects — {"value": "Engineering"} or
+    // {"displayName": "Engineering"} — and SnipeRootComplex::replace()
+    // additionally wraps sub-attribute values ({"remaining.path" => v})
+    // when descending. MappedTable is a leaf that maps ONE relationship
+    // field, so anything arriving as an array must be unwrapped before
+    // firstOrCreate() gets it — otherwise Grammar::parameterize()
+    // throws when the WHERE binding receives an array. Prefer the SCIM
+    // conventional keys "value" and "displayName", then fall back to
+    // any scalar leaf; return null if no usable value exists so the
+    // caller nulls the relationship (matching the empty-string branch).
+    private function coerceScalar($value)
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        foreach (['value', 'displayName'] as $key) {
+            if (isset($value[$key]) && is_scalar($value[$key])) {
+                return $value[$key];
+            }
+        }
+
+        foreach ($value as $v) {
+            if (is_scalar($v) && $v !== '') {
+                return $v;
+            }
+        }
+
+        return null;
     }
 }
 

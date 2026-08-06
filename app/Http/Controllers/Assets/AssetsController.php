@@ -315,7 +315,9 @@ class AssetsController extends Controller
     public function edit(Asset $asset): View|RedirectResponse
     {
         $this->authorize($asset);
-        session()->put('url.intended', url()->previous());
+        if ($safeReferer = Helper::sameOriginUrl(url()->previous())) {
+            session()->put('url.intended', $safeReferer);
+        }
 
         return view('hardware/edit')
             ->with('item', $asset)
@@ -442,6 +444,15 @@ class AssetsController extends Controller
         $asset->expected_checkin = $request->input('expected_checkin', null);
         $asset->requestable = $request->input('requestable', 0);
         $asset->rtd_location_id = $request->input('rtd_location_id', null);
+        // Current location is editable from the asset edit form as of
+        // the location-dropdown addition. Only overwrite when the key
+        // is actually present in the request — a client that omits
+        // location_id entirely (a partial update API caller, an older
+        // form) still leaves the existing value intact. Present-but-
+        // blank clears via the mutator (see setLocationIdAttribute).
+        if ($request->has('location_id')) {
+            $asset->location_id = $request->input('location_id');
+        }
         $asset->byod = $request->input('byod', 0);
 
         $status = Statuslabel::find($request->input('status_id'));
@@ -832,6 +843,11 @@ class AssetsController extends Controller
     public function audit(Asset $asset): View|RedirectResponse
     {
         $this->authorize('audit', Asset::class);
+        // Per-instance authorize so SnipePermissionsPolicy::before()
+        // runs Company::isCurrentUserHasAccess($asset) at the policy
+        // layer instead of leaving FMCS scoping solely to the route-
+        // model-binding + CompanyableScope combo.
+        $this->authorize('audit', $asset);
         $settings = Setting::getSettings();
 
         // Invoke the validation to see if the audit will complete successfully
@@ -850,6 +866,11 @@ class AssetsController extends Controller
     {
 
         $this->authorize('audit', Asset::class);
+        // Per-instance authorize: without this, FMCS enforcement on
+        // an audit write depends entirely on route-model binding
+        // firing CompanyableScope. Explicit instance authorize means
+        // the policy layer independently rejects cross-company writes.
+        $this->authorize('audit', $asset);
 
         session()->put('redirect_option', $request->input('redirect_option'));
         session()->put('other_redirect', 'audit');

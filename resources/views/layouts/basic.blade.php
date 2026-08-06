@@ -12,11 +12,6 @@
 
     @include('partials.theme-mode-preflight')
 
-    {{-- Preload FA webfonts so glyphs are ready by first paint. See the
-         matching note in layouts/default.blade.php. --}}
-    <link rel="preload" href="{{ url('css/webfonts/fa-regular-400.woff2') }}" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="{{ url('css/webfonts/fa-solid-900.woff2') }}" as="font" type="font/woff2" crossorigin>
-
     {{-- stylesheets --}}
     <link rel="stylesheet" href="{{ url(mix('css/dist/all.css')) }}">
 

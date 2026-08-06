@@ -44,6 +44,13 @@ class License extends Depreciable
 
     protected $table = 'licenses';
 
+    /**
+     * Placeholder emitted anywhere a license product key would appear for a
+     * caller who lacks the viewKeys gate. Kept as a single source of truth
+     * so the API transformer, CSV export, and any future surface stay in sync.
+     */
+    public const PRODUCT_KEY_MASK = '------------';
+
     protected $casts = [
         'purchase_date' => 'date',
         'expiration_date' => 'date',
@@ -830,6 +837,28 @@ class License extends Depreciable
         return $this->hasMany(LicenseSeat::class)->whereNull('assigned_to')->whereNull('deleted_at')->whereNull('asset_id');
     }
 
+    /**
+     * TextSearch variant that removes `serial` from the searchable attribute
+     * set for the duration of the call. Used by the API index for callers
+     * who lack the `viewKeys` permission, so search / filter parameters
+     * cannot be used as an existence oracle against license product keys.
+     */
+    public function scopeTextSearchWithoutSerial($query, $search)
+    {
+        $original = $this->searchableAttributes;
+
+        $this->searchableAttributes = array_values(array_filter(
+            $original,
+            fn ($attribute) => $attribute !== 'serial'
+        ));
+
+        try {
+            return $query->TextSearch($search);
+        } finally {
+            $this->searchableAttributes = $original;
+        }
+    }
+
     public function scopeActiveLicenses($query)
     {
 
@@ -954,5 +983,26 @@ class License extends Depreciable
     public function scopeOrderByCreatedBy($query, $order)
     {
         return $query->leftJoin('users as admin_sort', 'licenses.created_by', '=', 'admin_sort.id')->select('licenses.*')->orderBy('admin_sort.first_name', $order)->orderBy('admin_sort.last_name', $order);
+    }
+
+    /**
+     * Query builder scope to sort by the calculated `% remaining` column.
+     *
+     * Mirrors License::percentRemaining(): available_seats / total_seats * 100.
+     * free_seats_count is added by withCount() in the API index() as the
+     * count of unassigned seats; seats is a real column on licenses.
+     * Guards against division by zero for licenses with no seats.
+     *
+     * PostgreSQL note: references a SELECT-list alias inside a compound
+     * ORDER BY expression, which PostgreSQL rejects per SQL standard.
+     * Snipe-IT officially supports MySQL/MariaDB and tests on SQLite
+     * (both allow this); moving to PostgreSQL would require inlining
+     * the subquery or wrapping the query in an outer SELECT.
+     */
+    public function scopeOrderPercentRemaining($query, $order)
+    {
+        $direction = strtolower($order) === 'asc' ? 'asc' : 'desc';
+
+        return $query->orderByRaw('CASE WHEN licenses.seats = 0 THEN 0 ELSE (free_seats_count * 100.0 / licenses.seats) END '.$direction);
     }
 }

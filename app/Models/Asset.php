@@ -108,6 +108,31 @@ class Asset extends Depreciable
         'deleted_at' => 'datetime',
     ];
 
+    /**
+     * location_id and company_id should store NULL when there's no
+     * assignment, never 0. Old data and previous bugs occasionally
+     * left `0` behind (empty select2 → '' → integer-cast → 0), which
+     * then breaks `exists:` validation and FMCS queries that treat
+     * NULL and 0 as different. `set` normalizes on write, `get`
+     * normalizes on read so legacy rows already storing 0 present as
+     * null at the model boundary until they're re-saved.
+     */
+    protected function locationId(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => ($value === null || (int) $value === 0) ? null : (int) $value,
+            set: fn ($value) => ($value === '' || $value === null || (int) $value === 0) ? null : (int) $value,
+        );
+    }
+
+    protected function companyId(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => ($value === null || (int) $value === 0) ? null : (int) $value,
+            set: fn ($value) => ($value === '' || $value === null || (int) $value === 0) ? null : (int) $value,
+        );
+    }
+
     protected $rules = [
         'model_id' => ['required', 'integer', 'exists:models,id,deleted_at,NULL', 'not_array'],
         'status_id' => ['required', 'integer', 'exists:status_labels,id'],
@@ -1388,7 +1413,6 @@ class Asset extends Depreciable
     public function journal()
     {
         return $this->assetlog()->where('action_type', '=', 'note added')
-            ->orderBy('created_at', 'desc')
             ->withTrashed();
     }
 

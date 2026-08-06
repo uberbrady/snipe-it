@@ -111,7 +111,8 @@ class ConsumablesController extends Controller
         }
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
-        $offset = ($request->input('offset') > $consumables->count()) ? $consumables->count() : app('api_offset_value');
+        $total = $consumables->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
         $limit = app('api_limit_value');
         $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
 
@@ -131,6 +132,9 @@ class ConsumablesController extends Controller
             case 'remaining':
                 $consumables = $consumables->OrderRemaining($order);
                 break;
+            case 'percent_remaining':
+                $consumables = $consumables->OrderPercentRemaining($order);
+                break;
             case 'supplier':
                 $consumables = $consumables->OrderSupplier($order);
                 break;
@@ -143,7 +147,6 @@ class ConsumablesController extends Controller
                 break;
         }
 
-        $total = $consumables->count();
         $consumables = $consumables->skip($offset)->take($limit)->get();
 
         return (new ConsumablesTransformer)->transformConsumables($consumables, $total);

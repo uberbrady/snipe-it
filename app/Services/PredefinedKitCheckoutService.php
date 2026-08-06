@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\CheckoutableCheckedOut;
+use App\Models\Asset;
 use App\Models\PredefinedKit;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -153,6 +154,19 @@ class PredefinedKitCheckoutService
                 // assets
                 foreach ($assets_to_add as $asset) {
                     $asset->location_id = $user->location_id;
+
+                    // Concurrency guard, same shape as Api\AssetsController::checkout.
+                    // Kit checkout can race with any other checkout of the same asset.
+                    // Re-fetch under lockForUpdate and re-check availability before
+                    // invoking checkOut; a claimed asset gets skipped rather than
+                    // producing a duplicate history row and counter bump.
+                    $locked = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                    if (! $locked || ! $locked->availableForCheckout()) {
+                        $errors[] = trans('admin/hardware/message.checkout.not_available').' ('.$asset->asset_tag.')';
+
+                        continue;
+                    }
+
                     $error = $asset->checkOut($user, $admin, $checkout_at, $expected_checkin, $note, null);
                     if ($error) {
                         array_merge_recursive($errors, $asset->getErrors()->toArray());

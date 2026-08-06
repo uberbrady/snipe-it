@@ -37,9 +37,124 @@ class AssetImporter extends ItemImporter
 
     protected function handle($row)
     {
-        // ItemImporter handles the general fetching.
-        parent::handle($row);
+        // AssetImporter deliberately does NOT call parent::handle(). The
+        // parent unconditionally assigns $this->item entries for every
+        // shared field, which conflates "column absent from CSV" with
+        // "column present but empty" and prevents empty CSV cells from
+        // clearing existing DB values on update. AssetImporter builds
+        // $this->item exclusively via setItemFromCsvIfPresent so absent
+        // columns never enter the update payload (preserving DB values)
+        // and present-but-empty columns land as null (clearing DB values).
+        // See sanitizeItemForStoring override below for the matching
+        // pass-through sanitize.
+        $this->item = [];
 
+        // Shared lookup fields. Present-and-empty clears the FK; absent
+        // preserves it; present-and-set resolves and stores the id. Some
+        // of these (category, manufacturer, department, manager) are not
+        // in Asset's fillable and get dropped by sanitize before the DB
+        // write, but the resolver calls still have important side effects
+        // like auto-creating the referenced record so downstream lookups
+        // (createOrFetchAssetModel needs the category, createOrFetchUser
+        // needs the department) can find them.
+        foreach ([
+            ['category_id', 'category', fn ($v) => $this->createOrFetchCategory($v)],
+            ['company_id', 'company', fn ($v) => $this->createOrFetchCompany($v)],
+            ['location_id', 'location', fn ($v) => $this->createOrFetchLocation($v)],
+            ['manufacturer_id', 'manufacturer', fn ($v) => $this->createOrFetchManufacturer($v)],
+            ['status_id', 'status', fn ($v) => $this->createOrFetchStatusLabel($v)],
+            ['supplier_id', 'supplier', fn ($v) => $this->createOrFetchSupplier($v)],
+            ['department_id', 'department', fn ($v) => $this->createOrFetchDepartment($v)],
+        ] as [$itemKey, $csvKey, $resolver]) {
+            if ($this->csvRowHas($row, $csvKey)) {
+                $value = $this->findCsvMatch($row, $csvKey);
+                $this->item[$itemKey] = ($value !== '') ? $resolver($value) : null;
+            }
+        }
+
+        // Manager needs both first + last name; treat "first name column
+        // present" as the presence signal for the whole lookup. Not in
+        // Asset's fillable, but createOrFetchUser reads $this->item['manager_id']
+        // when auto-creating a checkout-target user.
+        if ($this->csvRowHas($row, 'manager_first_name')) {
+            $first = $this->findCsvMatch($row, 'manager_first_name');
+            $last = $this->findCsvMatch($row, 'manager_last_name');
+            $this->item['manager_id'] = ($first !== '') ? $this->fetchManager($first, $last) : null;
+        }
+
+        // Straight CSV-to-item assignments for the Asset fillable set. Note
+        // asset_notes not notes: assets use a different CSV column name to
+        // avoid the ItemImporter's shared 'notes' handling.
+        $this->setItemFromCsvIfPresent($row, 'name', 'item_name');
+        $this->setItemFromCsvIfPresent($row, 'notes', 'asset_notes');
+        $this->setItemFromCsvIfPresent($row, 'order_number');
+        $this->setItemFromCsvIfPresent($row, 'purchase_cost');
+        $this->setItemFromCsvIfPresent($row, 'serial');
+
+        if ($this->csvRowHas($row, 'image')) {
+            $raw = $this->findCsvMatch($row, 'image');
+            $this->item['image'] = ($raw !== '') ? basename($raw) : null;
+        }
+
+        if ($this->csvRowHas($row, 'warranty_months')) {
+            $raw = $this->findCsvMatch($row, 'warranty_months');
+            $this->item['warranty_months'] = ($raw !== '') ? intval($raw) : null;
+        }
+
+        // Boolean flags: present-and-empty means clear (0). Absent means
+        // don't touch on update. On create the default fallback below
+        // fills in 0 for both columns if the CSV was absent.
+        foreach (['requestable', 'byod'] as $flag) {
+            if ($this->csvRowHas($row, $flag)) {
+                $raw = $this->findCsvMatch($row, $flag);
+                $this->item[$flag] = ($raw !== '') ? (($this->fetchHumanBoolean($raw) == 1) ? '1' : 0) : 0;
+            }
+        }
+
+        // Model lookup. asset_model absent from CSV means "don't touch";
+        // if present but resolves to nothing, leave model_id unset so the
+        // required-field validator catches it.
+        if ($this->csvRowHas($row, 'asset_model')) {
+            $modelId = $this->createOrFetchAssetModel($row);
+            if ($modelId !== null) {
+                $this->item['model_id'] = $modelId;
+            }
+        }
+
+        // Dates: raw value stored so parseOrNullDate can read it, then the
+        // parsed date replaces it. Empty CSV cell becomes null (clearing
+        // the DB field on update). Datetime format on the checkout/checkin
+        // fields preserves any time portion in the CSV.
+        foreach ([
+            'purchase_date' => 'date',
+            'last_checkin' => 'datetime',
+            'last_checkout' => 'datetime',
+            'expected_checkin' => 'datetime',
+            'last_audit_date' => 'date',
+            'next_audit_date' => 'date',
+            'asset_eol_date' => 'date',
+        ] as $dateField => $format) {
+            if ($this->csvRowHas($row, $dateField)) {
+                $raw = $this->findCsvMatch($row, $dateField);
+                if ($raw !== '') {
+                    $this->item[$dateField] = $raw;
+                    $this->item[$dateField] = $this->parseOrNullDate($dateField, $format);
+                } else {
+                    $this->item[$dateField] = null;
+                }
+            }
+        }
+
+        // Internal signals used by the checkout logic below. Neither is
+        // fillable on Asset so sanitize's fillable filter always drops
+        // them before the DB write.
+        $this->item['checkout_class'] = $this->findCsvMatch($row, 'checkout_class');
+        $this->item['checkout_target'] = $this->determineCheckout($row);
+        $this->item['created_by'] = $this->created_by;
+
+        // Custom fields keep their existing logic. Only populated when the
+        // matching CSV column is present in the row; unchanged from the
+        // pre-refactor behavior.
         if ($this->customFields) {
             foreach ($this->customFields as $customField) {
                 $customFieldValue = $this->array_smart_custom_field_fetch($row, $customField);
@@ -60,6 +175,19 @@ class AssetImporter extends ItemImporter
         }
 
         $this->createAssetIfNotExists($row);
+    }
+
+    /**
+     * Override the base sanitize to skip the reject-empty pass. AssetImporter
+     * populates $this->item exclusively from CSV columns that were present in
+     * the row, so an empty value here is an explicit intent to clear the DB
+     * field on update. See handle() above for the matching item-population.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function sanitizeItemForStoring($model, $updating = false)
+    {
+        return collect($this->item)->only($model->getFillable())->toArray();
     }
 
     /**
@@ -102,45 +230,31 @@ class AssetImporter extends ItemImporter
         } else {
             $this->log('No Matching Asset, Creating a new one');
             $asset = new Asset;
+            // created_by is not in Asset's $fillable, so the value that
+            // handle() puts on $this->item is stripped by sanitizeItemForStoring()
+            // before it reaches the model. Set it directly. Use $this->created_by
+            // (the property set by setCreatedBy() from both ItemImportRequest
+            // and ObjectImportCommand) rather than auth()->id() so CLI-run
+            // imports get the --user_id option value instead of null.
+            $asset->created_by = $this->created_by;
         }
 
-        // If no status ID is found
-        if (! array_key_exists('status_id', $this->item) && ! $editingAsset) {
-            $this->log('No status ID field found, defaulting to first deployable status label.');
-            $this->item['status_id'] = $this->defaultStatusLabelId;
+        // On create: default requestable/byod/status_id if the CSV did not
+        // include those columns. On update: leave them unset in $this->item
+        // so absent columns preserve existing values.
+        if (! $editingAsset) {
+            if (! array_key_exists('requestable', $this->item)) {
+                $this->item['requestable'] = 0;
+            }
+            if (! array_key_exists('byod', $this->item)) {
+                $this->item['byod'] = 0;
+            }
+            if (! array_key_exists('status_id', $this->item)) {
+                $this->log('No status ID field found, defaulting to first deployable status label.');
+                $this->item['status_id'] = $this->defaultStatusLabelId;
+            }
         }
 
-        $this->item['notes'] = trim($this->findCsvMatch($row, 'asset_notes'));
-        $this->item['image'] = basename(trim($this->findCsvMatch($row, 'image')));
-
-        /**
-         * Boolean fields need special handling. On create, a missing or blank value
-         * defaults to 0. On update, only touch the flag when the CSV actually provides
-         * a value — otherwise a file without the column would silently reset the flag
-         * on every updated asset. The coerced value is also assigned directly to the
-         * model because sanitizeItemForUpdating() strips falsy values, which would
-         * make it impossible to explicitly clear a flag in update mode.
-         */
-        $requestable = trim((string) $this->findCsvMatch($row, 'requestable'));
-        if ((! $this->updating) || ($requestable !== '')) {
-            $this->item['requestable'] = ($this->fetchHumanBoolean($requestable) == 1) ? '1' : 0;
-            $asset->requestable = $this->item['requestable'];
-        }
-
-        $byod = trim((string) $this->findCsvMatch($row, 'byod'));
-        if ((! $this->updating) || ($byod !== '')) {
-            $this->item['byod'] = ($this->fetchHumanBoolean($byod) == 1) ? '1' : 0;
-            $asset->byod = $this->item['byod'];
-        }
-
-        $this->item['warranty_months'] = intval(trim($this->findCsvMatch($row, 'warranty_months')));
-        $this->item['model_id'] = $this->createOrFetchAssetModel($row);
-        $this->item['last_checkin'] = trim($this->findCsvMatch($row, 'last_checkin'));
-        $this->item['last_checkout'] = trim($this->findCsvMatch($row, 'last_checkout'));
-        $this->item['expected_checkin'] = trim($this->findCsvMatch($row, 'expected_checkin'));
-        $this->item['last_audit_date'] = trim($this->findCsvMatch($row, 'last_audit_date'));
-        $this->item['next_audit_date'] = trim($this->findCsvMatch($row, 'next_audit_date'));
-        $this->item['asset_eol_date'] = trim($this->findCsvMatch($row, 'asset_eol_date'));
         $this->item['asset_tag'] = $asset_tag;
 
         // We need to save the user if it exists so that we can checkout to user later.
@@ -158,40 +272,14 @@ class AssetImporter extends ItemImporter
             $item['rtd_location_id'] = $this->item['location_id'];
         }
 
-        /**
-         * We use this to backdate the checkin action further down
-         */
+        // Backdate helpers for the checkin/checkout events below.
         $checkin_date = date('Y-m-d H:i:s');
-        if ($this->item['last_checkin'] != '') {
-            $item['last_checkin'] = $this->parseOrNullDate('last_checkin', 'datetime');
-            $checkout_date = $this->item['last_checkin'];
+        if (! empty($this->item['last_checkin'])) {
+            $checkin_date = $this->item['last_checkin'];
         }
-
-        /**
-         * We use this to backdate the checkout action further down
-         */
         $checkout_date = date('Y-m-d H:i:s');
-        if ($this->item['last_checkout'] != '') {
-            $item['last_checkout'] = $this->parseOrNullDate('last_checkout', 'datetime');
+        if (! empty($this->item['last_checkout'])) {
             $checkout_date = $this->item['last_checkout'];
-        }
-
-        if ($this->item['expected_checkin'] != '') {
-            // datetime format preserves any time portion in the CSV. Date-only
-            // values still parse fine and land as 00:00:00.
-            $item['expected_checkin'] = $this->parseOrNullDate('expected_checkin', 'datetime');
-        }
-
-        if ($this->item['last_audit_date'] != '') {
-            $item['last_audit_date'] = $this->parseOrNullDate('last_audit_date');
-        }
-
-        if ($this->item['next_audit_date'] != '') {
-            $item['next_audit_date'] = $this->parseOrNullDate('next_audit_date');
-        }
-
-        if ($this->item['asset_eol_date'] != '') {
-            $item['asset_eol_date'] = $this->parseOrNullDate('asset_eol_date');
         }
 
         if ($editingAsset) {
@@ -227,13 +315,31 @@ class AssetImporter extends ItemImporter
 
         if ($success) {
 
-            $this->log('Asset '.$this->item['name'].' with serial number '.$this->item['serial'].' created or updated');
+            $name = $this->item['name'] ?? '';
+            $serial = $this->item['serial'] ?? '';
+            $this->log('Asset '.$name.' with serial number '.$serial.' created or updated');
+
+            if ($editingAsset) {
+                $this->recordUpdated();
+            } else {
+                $this->recordCreated();
+            }
 
             // If we have a target to checkout to, lets do so.
-            // -- created_by is a property of the abstract class Importer, which this class inherits from and it's set by
-            // -- the class that needs to use it (command importer or GUI importer inside the project).
             if (isset($target) && ($target !== false)) {
-                $asset = $asset->fresh();
+                // Concurrency guard, same shape as Api\AssetsController::checkout.
+                // Two admins importing overlapping CSVs (or one admin importing
+                // while another checkout runs through the UI) could race here:
+                // the fresh() read + canCheckoutTo() check is followed by a
+                // checkOut() call with no row lock. Re-fetch the row under
+                // lockForUpdate and evaluate the ownership / eligibility
+                // conditions against the locked snapshot. If a racing operator
+                // claimed the asset in the interim, skip this row rather than
+                // stacking a duplicate history entry.
+                $asset = Asset::whereKey($asset->id)->lockForUpdate()->first();
+                if (! $asset) {
+                    return;
+                }
 
                 if (! $asset->canCheckoutTo($target)) {
                     $this->log(trans('general.error_checkout_company_mismatch', [
@@ -258,6 +364,8 @@ class AssetImporter extends ItemImporter
 
             return;
         }
-        $this->logError($asset, 'Asset "'.$this->item['name'].'"');
+        $this->recordErrored();
+        $name = $this->item['name'] ?? '';
+        $this->logError($asset, 'Asset "'.$name.'"');
     }
 }

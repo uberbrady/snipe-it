@@ -294,4 +294,143 @@ class HelperTest extends TestCase
 
         $this->assertEquals(route('users.index').'?company_id=5', $redirect->getTargetUrl());
     }
+
+    public function test_same_origin_url_returns_null_for_empty_input()
+    {
+        $this->assertNull(Helper::sameOriginUrl(null));
+        $this->assertNull(Helper::sameOriginUrl(''));
+    }
+
+    public function test_same_origin_url_returns_relative_url_unchanged()
+    {
+        $this->assertSame('/maintenances?completed=true', Helper::sameOriginUrl('/maintenances?completed=true'));
+        $this->assertSame('home', Helper::sameOriginUrl('home'));
+    }
+
+    public function test_same_origin_url_accepts_url_pointing_at_app_host()
+    {
+        $url = config('app.url').'/hardware/42';
+        $this->assertSame($url, Helper::sameOriginUrl($url));
+    }
+
+    public function test_same_origin_url_rejects_offsite_host()
+    {
+        $this->assertNull(Helper::sameOriginUrl('https://evil.example.com/steal-session'));
+    }
+
+    public function test_same_origin_url_rejects_dangerous_schemes()
+    {
+        $this->assertNull(Helper::sameOriginUrl('javascript:alert(1)'));
+        $this->assertNull(Helper::sameOriginUrl('data:text/html,<script>alert(1)</script>'));
+        $this->assertNull(Helper::sameOriginUrl('file:///etc/passwd'));
+    }
+
+    public function test_same_origin_url_strips_crlf_to_prevent_header_injection()
+    {
+        // A CR/LF in a Location: header would let an attacker split the
+        // HTTP response and inject arbitrary headers/body. The helper
+        // must strip them before returning.
+        $this->assertSame('/foo', Helper::sameOriginUrl("/foo\r\n"));
+        $this->assertSame('/foo/bar', Helper::sameOriginUrl("/foo\r\n/bar"));
+    }
+
+    public function test_same_origin_url_rejects_scheme_relative_offsite_url()
+    {
+        // //evil.com/... is a scheme-relative URL that inherits the
+        // current scheme and points at evil.com. Must be rejected.
+        $this->assertNull(Helper::sameOriginUrl('//evil.example.com/steal-session'));
+    }
+
+    /**
+     * FD-56673 regression coverage: customFieldFormValue collapses the
+     * gate + decrypt + default fallback that every branch of
+     * custom_fields_form.blade.php used to hand-roll (and got wrong on
+     * seven of them). These unit tests pin the four possible states of
+     * the helper without needing to boot a full HTTP request.
+     */
+    public function test_custom_field_form_value_masks_encrypted_field_when_gate_denies(): void
+    {
+        \App\Models\CustomField::factory()->testEncrypted()->create();
+        $field = \App\Models\CustomField::where('name', 'Test Encrypted')->first();
+
+        // Set the column value via magic-setter rather than mass assignment
+        // because CustomField columns are added at runtime and are not in
+        // Asset's $fillable, so `new Asset([...])` would silently drop them.
+        $asset = new \App\Models\Asset;
+        $asset->{$field->db_column} = \Illuminate\Support\Facades\Crypt::encrypt('very-secret-value');
+
+        $model = \App\Models\AssetModel::factory()->make();
+
+        $this->actingAs(\App\Models\User::factory()->editAssets()->create());
+
+        $this->assertSame(
+            strtoupper(trans('admin/custom_fields/general.encrypted')),
+            Helper::customFieldFormValue($field, $asset, $model)
+        );
+    }
+
+    public function test_custom_field_form_value_returns_decrypted_value_when_gate_allows(): void
+    {
+        \App\Models\CustomField::factory()->testEncrypted()->create();
+        $field = \App\Models\CustomField::where('name', 'Test Encrypted')->first();
+
+        $asset = new \App\Models\Asset;
+        $asset->{$field->db_column} = \Illuminate\Support\Facades\Crypt::encrypt('very-secret-value');
+
+        $model = \App\Models\AssetModel::factory()->make();
+
+        $this->actingAs(\App\Models\User::factory()->superuser()->create());
+
+        $this->assertSame(
+            'very-secret-value',
+            Helper::customFieldFormValue($field, $asset, $model)
+        );
+    }
+
+    public function test_custom_field_form_value_returns_raw_value_for_non_encrypted_field(): void
+    {
+        // Non-encrypted fields short-circuit before the gate check, so the caller
+        // permission is irrelevant. Verified with an unauthenticated actor to make
+        // the "gate does not gate this" behavior explicit.
+        \App\Models\CustomField::factory()->ram()->create();
+        $field = \App\Models\CustomField::where('name', 'RAM')->first();
+
+        $asset = new \App\Models\Asset;
+        $asset->{$field->db_column} = '16';
+
+        $model = \App\Models\AssetModel::factory()->make();
+
+        $this->assertSame('16', Helper::customFieldFormValue($field, $asset, $model));
+    }
+
+    public function test_custom_field_form_value_returns_default_when_item_is_null(): void
+    {
+        // Create-form path: no bound $item yet, so the helper returns the
+        // model-scoped default value for the field.
+        \App\Models\CustomField::factory()->ram()->create();
+        $field = \App\Models\CustomField::where('name', 'RAM')->first();
+        $model = \App\Models\AssetModel::factory()->create();
+
+        $this->assertSame(
+            $field->defaultValue($model->id),
+            Helper::customFieldFormValue($field, null, $model)
+        );
+    }
+
+    public function test_custom_field_form_value_masks_default_when_encrypted_field_has_no_item_and_gate_denies(): void
+    {
+        // Create-form path AND encrypted field AND caller can't view keys.
+        // The gate check runs first regardless of whether $item is present,
+        // so the mask should win over the default-value fallback.
+        \App\Models\CustomField::factory()->testEncrypted()->create();
+        $field = \App\Models\CustomField::where('name', 'Test Encrypted')->first();
+        $model = \App\Models\AssetModel::factory()->create();
+
+        $this->actingAs(\App\Models\User::factory()->editAssets()->create());
+
+        $this->assertSame(
+            strtoupper(trans('admin/custom_fields/general.encrypted')),
+            Helper::customFieldFormValue($field, null, $model)
+        );
+    }
 }

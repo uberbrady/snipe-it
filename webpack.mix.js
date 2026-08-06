@@ -8,6 +8,14 @@ mix
     processCssUrls: false,
     processFontUrls: true,
     clearConsole: false,
+    // Turn off postcss-calc (bundled into cssnano-preset-default). It
+    // chokes on CSS Level 5 relative color syntax such as
+    // `hsl(from var(--foo) h s calc(l - 10))`, misreading the color-channel
+    // keyword `l` as an undefined variable and emitting a "Lexical error"
+    // warning per calc() expression.
+    cssNano: {
+        calc: false,
+    },
   })
   .less("./node_modules/admin-lte/build/less/AdminLTE.less", "css/build")
   .less("./resources/assets/less/app.less", "css/build")

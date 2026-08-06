@@ -111,6 +111,10 @@ class ReportsController extends Controller
             'item_type',
             'action_source',
             'action_date',
+            'location',
+            'next_audit_date',
+            'days_to_next_audit',
+            'item',
         ];
 
         $total = $actionlogs->count();
@@ -123,6 +127,19 @@ class ReportsController extends Controller
         switch ($request->input('sort')) {
             case 'created_by':
                 $actionlogs->OrderByCreatedBy($order);
+                break;
+            case 'location':
+                $actionlogs->OrderByLocation($order);
+                break;
+            case 'next_audit_date':
+            case 'days_to_next_audit':
+                // days_to_next_audit = next_audit_date - today, so it
+                // sorts in the same order as next_audit_date. One
+                // scope covers both cases; no separate expression.
+                $actionlogs->OrderByAssetNextAuditDate($order);
+                break;
+            case 'item':
+                $actionlogs->OrderByItemName($order);
                 break;
             default:
                 $sort = in_array($request->input('sort'), $allowed_columns) ? e($request->input('sort')) : 'action_logs.created_at';

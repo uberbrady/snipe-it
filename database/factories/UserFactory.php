@@ -286,6 +286,11 @@ class UserFactory extends Factory
         return $this->appendPermission(['models.delete' => '1']);
     }
 
+    public function editAssetModels()
+    {
+        return $this->appendPermission(['models.edit' => '1']);
+    }
+
     public function viewAssetModels()
     {
         return $this->appendPermission(['models.view' => '1']);
@@ -459,6 +464,11 @@ class UserFactory extends Factory
     public function editUsers()
     {
         return $this->appendPermission(['users.edit' => '1']);
+    }
+
+    public function selfApi()
+    {
+        return $this->appendPermission(['self.api' => '1']);
     }
 
     public function deleteUsers()

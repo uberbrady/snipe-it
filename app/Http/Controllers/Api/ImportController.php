@@ -57,14 +57,28 @@ class ImportController extends Controller
             $detector = new EncodingDetector;
 
             foreach ($files as $file) {
-                if (! in_array($file->getMimeType(), [
+                $allowedMimes = [
                     'application/vnd.ms-excel',
                     'text/csv',
                     'application/csv',
                     'text/x-Algol68', // because wtf CSV files?
                     'text/plain',
                     'text/comma-separated-values',
-                    'text/tsv', ])) {
+                    'text/tsv',
+                ];
+                $allowedExtensions = ['csv', 'tsv', 'txt'];
+                $clientExtension = strtolower(trim($file->getClientOriginalExtension()));
+
+                // The MIME allowlist is the primary check. When it fails,
+                // fall back to the client extension because finfo returns
+                // `application/octet-stream` for CSVs on Windows/IIS and
+                // for various perfectly-valid CSVs whose first row happens
+                // to match another magic signature. Callers reach this
+                // endpoint only with the `import` permission, and the CSV
+                // reader below will reject anything that isn't actually
+                // parseable with a more precise error than a MIME veto.
+                // See issue #10387.
+                if (! in_array($file->getMimeType(), $allowedMimes) && ! in_array($clientExtension, $allowedExtensions, true)) {
                     $results['error'] = 'File type must be CSV. Uploaded file is '.$file->getMimeType();
 
                     return response()->json(Helper::formatStandardApiResponse('error', null, $results['error']), 422);
@@ -74,17 +88,64 @@ class ImportController extends Controller
                 if (! ini_get('auto_detect_line_endings')) {
                     ini_set('auto_detect_line_endings', '1');
                 }
-                if (function_exists('iconv')) {
+                if (function_exists('iconv') || function_exists('mb_convert_encoding')) {
                     $file_contents = $file->getContent(); // TODO - this *does* load the whole file in RAM, but we need that to be able to 'iconv' it?
                     $encoding = $detector->getEncoding($file_contents);
                     \Log::debug("Discovered encoding: $encoding in uploaded CSV");
+
+                    // Only fall back to mb_detect_encoding if the Onnov detector
+                    // gave us nothing useful. Overriding a correct Onnov result
+                    // (Windows-1251 for Cyrillic bytes, for example) with a
+                    // permissive mb_detect guess re-labels the file as one of
+                    // the CJK encodings early in the fallback list and produces
+                    // mojibake on iconv.
+                    if (! mb_check_encoding($file_contents, 'UTF-8')
+                        && (! $encoding || strcasecmp($encoding, 'UTF-8') === 0)) {
+                        $detected = mb_detect_encoding($file_contents, ['UTF-8', 'GBK', 'GB2312', 'GB18030', 'BIG5', 'SJIS', 'EUC-JP', 'EUC-KR', 'Windows-1252', 'Windows-1251', 'ISO-8859-1'], true);
+                        if ($detected && strcasecmp($detected, 'UTF-8') !== 0) {
+                            $encoding = $detected;
+                            \Log::debug("Fallback detected encoding: $encoding in uploaded CSV");
+                        }
+                    }
+
                     $reader = null;
-                    if (strcasecmp($encoding, 'UTF-8') != 0) {
+                    if ($encoding && strcasecmp($encoding, 'UTF-8') != 0) {
                         $transliterated = false;
                         try {
-                            $transliterated = iconv(strtoupper($encoding), 'UTF-8', $file_contents);
+                            if (function_exists('iconv')) {
+                                $transliterated = @iconv(strtoupper($encoding), 'UTF-8//IGNORE', $file_contents);
+                            } elseif (function_exists('mb_convert_encoding')) {
+                                $transliterated = mb_convert_encoding($file_contents, 'UTF-8', $encoding);
+                            }
                         } catch (\Exception $e) {
                             $transliterated = false; // blank out the partially-decoded string
+
+                            return response()->json(
+                                Helper::formatStandardApiResponse(
+                                    'error',
+                                    null,
+                                    trans('admin/hardware/message.import.transliterate_failure', ['encoding' => $encoding])
+                                ),
+                                422
+                            );
+                        }
+                        // Loss-ratio safety net. iconv's //IGNORE flag lets a
+                        // mostly-valid file with a stray invalid byte still
+                        // import successfully, but a truly-corrupt file (random
+                        // binary, wrong-encoding guess) can silently //IGNORE
+                        // away most of its bytes and land a nearly-empty CSV
+                        // downstream. If more than half the source was dropped,
+                        // treat it the same as an iconv exception and 422 out
+                        // with the existing transliterate_failure message so
+                        // the caller sees a real error instead of an eerily-
+                        // empty import.
+                        if ($transliterated !== false && strlen($transliterated) < intdiv(strlen($file_contents), 2)) {
+                            \Log::warning(sprintf(
+                                'CSV import: refusing lossy encoding conversion (%s -> UTF-8) that kept %d/%d bytes',
+                                $encoding,
+                                strlen($transliterated),
+                                strlen($file_contents),
+                            ));
 
                             return response()->json(
                                 Helper::formatStandardApiResponse(
@@ -203,10 +264,10 @@ class ImportController extends Controller
     {
         $this->authorize('import');
 
-        // Demo mode: same "feature disabled" gate as store(). Uploading
-        // was blocked there but processing an existing (seeded or leftover)
-        // Import row would still mutate the demo DB - close the loophole.
-        if (config('app.lock_passwords')) {
+        // Demo mode: uploads stay blocked at store(), but superadmins can
+        // still process the seeded sample imports so the demo shows off
+        // the flow end to end.
+        if (config('app.lock_passwords') && ! auth()->user()->isSuperUser()) {
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.feature_disabled')), 422);
         }
 
@@ -234,9 +295,6 @@ class ImportController extends Controller
         $redirectTo = 'hardware.index';
         switch ($request->input('import-type')) {
             case 'asset':
-                $model_perms = 'App\Models\Asset';
-                $redirectTo = 'hardware.index';
-                break;
             case 'assetHistory':
                 $model_perms = 'App\Models\Asset';
                 $redirectTo = 'hardware.index';
@@ -283,17 +341,22 @@ class ImportController extends Controller
                 break;
         }
 
+        $tally = $request->getTally();
+        // Payload only carries the tally when at least one importer for this
+        // type has been wired up to record it. Un-instrumented importers
+        // leave every count at zero; suppress the block in that case so we
+        // don't surface a misleading all-zero summary in the wizard.
+        $tallyPayload = array_sum($tally) > 0 ? ['tally' => $tally] : null;
+
         if ($errors) { // Failure
-            return response()->json(Helper::formatStandardApiResponse('import-errors', null, $errors), 500);
+            return response()->json(Helper::formatStandardApiResponse('import-errors', $tallyPayload, $errors), 500);
         }
         // Flash message before the redirect
         Session::flash('success', trans('admin/hardware/message.import.success'));
 
-        if (auth()->user()->can('view', $model_perms)) {
-            return response()->json(Helper::formatStandardApiResponse('success', null, ['redirect_url' => route($redirectTo)]));
-        }
+        $redirect_url = auth()->user()->can('view', $model_perms) ? route($redirectTo) : route('imports.index');
 
-        return response()->json(Helper::formatStandardApiResponse('success', null, ['redirect_url' => route('imports.index')]));
+        return response()->json(Helper::formatStandardApiResponse('success', $tallyPayload, ['redirect_url' => $redirect_url]));
     }
 
     /**

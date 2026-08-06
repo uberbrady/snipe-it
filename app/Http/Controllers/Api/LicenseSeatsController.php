@@ -57,7 +57,7 @@ class LicenseSeatsController extends Controller
             $total = $seats->count();
 
             // Make sure the offset and limit are actually integers and do not exceed system limits
-            $offset = ($request->input('offset') > $seats->count()) ? $seats->count() : app('api_offset_value');
+            $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
 
             if ($offset >= $total) {
                 $offset = 0;

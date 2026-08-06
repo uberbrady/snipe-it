@@ -11,6 +11,32 @@ use Tests\TestCase;
 
 class ImporterTest extends TestCase
 {
+    /**
+     * Write a minimal CSV file at the imports path an Import record points
+     * to, so selectFile()'s file-existence guard passes. The guard was added
+     * to block the wizard when a demo-seeded Import references a file that
+     * was deleted outside Snipe-IT (e.g. by git clean). Tests that seed
+     * factory Imports without a real file need to plant one here to exercise
+     * the code path beyond the guard.
+     */
+    protected function writeFakeImportFile(Import $import, string $csvBody = "a,b,c\n1,2,3\n"): void
+    {
+        $path = config('app.private_uploads').'/imports/'.$import->file_path;
+        file_put_contents($path, $csvBody);
+        $this->fakeImportPaths[] = $path;
+    }
+
+    /** @var array<int, string> */
+    protected array $fakeImportPaths = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->fakeImportPaths as $path) {
+            @unlink($path);
+        }
+        parent::tearDown();
+    }
+
     public function test_renders_successfully()
     {
         Livewire::actingAs(User::factory()->canImport()->create())
@@ -238,6 +264,7 @@ class ImporterTest extends TestCase
             'header_row' => ['my_column'],
             'import_type' => 'asset',
         ]);
+        $this->writeFakeImportFile($mine, "my_column\nvalue\n");
 
         Livewire::actingAs($me)
             ->test(Importer::class)
@@ -275,6 +302,7 @@ class ImporterTest extends TestCase
             'created_by' => $user->id,
             'header_row' => ['asset tag'],
         ]);
+        $this->writeFakeImportFile($import, "asset tag\nAH-1\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)
@@ -325,6 +353,29 @@ class ImporterTest extends TestCase
             ->test(Importer::class)
             ->call('selectFile', $import->id)
             ->assertSet('activeFileRowCount', 0);
+    }
+
+    /**
+     * Regression for Rollbar: selectFile() foreach()-on-null when the Import
+     * row was persisted with header_row = null (legacy imports, or a background
+     * job that never wrote the column). Previously exploded with
+     * "foreach() argument must be of type array|object, null given" at the
+     * headerRow loop. The guard now short-circuits with a translated error.
+     */
+    public function test_selecting_a_file_with_null_header_row_shows_error_and_does_not_crash(): void
+    {
+        $user = User::factory()->canImport()->create();
+        $import = Import::factory()->create([
+            'created_by' => $user->id,
+            'header_row' => null,
+        ]);
+        $this->writeFakeImportFile($import, "asset tag\nAH-1\n");
+
+        Livewire::actingAs($user)
+            ->test(Importer::class)
+            ->call('selectFile', $import->id)
+            ->assertSet('message_type', 'danger')
+            ->assertSet('message', trans('admin/hardware/message.import.header_row_missing'));
     }
 
     public function test_next_step_from_type_selection_advances_when_type_is_set(): void
@@ -470,6 +521,7 @@ class ImporterTest extends TestCase
             'import_type' => 'user',
             'header_row' => ['First Name', 'Username', 'Email'],
         ]);
+        $this->writeFakeImportFile($import, "First Name,Username,Email\nAlice,alice,alice@example.com\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)
@@ -495,6 +547,7 @@ class ImporterTest extends TestCase
             'import_type' => 'asset',
             'header_row' => ['asset_tag', 'serial_number', 'purchase_cost'],
         ]);
+        $this->writeFakeImportFile($import, "asset_tag,serial_number,purchase_cost\nAH-1,ser-1,100\n");
 
         Livewire::actingAs($user)
             ->test(Importer::class)
@@ -508,12 +561,13 @@ class ImporterTest extends TestCase
             });
     }
 
-    public function test_demo_mode_blocks_start_processing(): void
+    public function test_demo_mode_blocks_start_processing_for_non_superadmin(): void
     {
         // With lock_passwords set the Process button on the wizard is
         // disabled in the blade, but a hand-crafted Livewire call would
         // still fire the action - guard it server-side so the modal can't
-        // flip into processing mode either.
+        // flip into processing mode either. Superadmins bypass this gate
+        // in demo mode so the seeded demo imports can actually be run.
         config(['app.lock_passwords' => true]);
 
         $user = User::factory()->canImport()->create();
@@ -523,6 +577,18 @@ class ImporterTest extends TestCase
             ->call('startProcessing')
             ->assertSet('processing', false)
             ->assertSet('message_type', 'danger');
+    }
+
+    public function test_demo_mode_allows_start_processing_for_superadmin(): void
+    {
+        config(['app.lock_passwords' => true]);
+
+        $user = User::factory()->canImport()->superuser()->create();
+
+        Livewire::actingAs($user)
+            ->test(Importer::class)
+            ->call('startProcessing')
+            ->assertSet('processing', true);
     }
 
     public function test_demo_mode_blocks_destroy(): void

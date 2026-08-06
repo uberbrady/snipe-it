@@ -60,7 +60,7 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->importFileResponse(['import' => $import->id])
             ->assertOk()
             ->assertExactJson([
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 1, 'updated' => 0, 'skipped' => 0, 'errored' => 0]],
                 'status' => 'success',
                 'messages' => ['redirect_url' => route('consumables.index')],
             ]);
@@ -191,11 +191,12 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
             ->assertInternalServerError()
             ->assertExactJson([
                 'status' => 'import-errors',
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errored' => 1]],
                 'messages' => [
                     $row['itemName'] => [
                         'Consumable' => [
                             'category_id' => ['The category id field is required.'],
+                            'qty' => ['The qty field is required.'],
                         ],
                     ],
                 ],
@@ -241,6 +242,74 @@ class ImportConsumablesTest extends ImportDataTestCase implements TestsPermissio
         $this->assertEquals($consumable->manufacturer_id, $updatedConsumable->manufacturer_id);
         $this->assertEquals($consumable->notes, $updatedConsumable->notes);
         $this->assertEquals($consumable->item_number, $updatedConsumable->item_number);
+    }
+
+    #[Test]
+    public function update_mode_clears_field_when_csv_column_is_present_but_empty(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $consumable = Consumable::factory()->create([
+            'order_number' => 'PRE-EXISTING-ORDER',
+            'purchase_date' => '2022-01-01',
+        ])->refresh();
+
+        $this->assertNotNull($consumable->purchase_date);
+        $this->assertNotEmpty($consumable->order_number);
+
+        $row = ImportFileBuilder::new()->definition();
+        $row['itemName'] = $consumable->name;
+        $row['orderNumber'] = '';
+        $row['purchaseDate'] = '';
+
+        $importFileBuilder = new ImportFileBuilder([$row]);
+        $import = Import::factory()->consumable()->create([
+            'file_path' => $importFileBuilder->saveToImportsDirectory(),
+        ]);
+
+        $this->importFileResponse([
+            'import' => $import->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $consumable->refresh();
+        $this->assertNull($consumable->order_number);
+        $this->assertNull($consumable->purchase_date);
+    }
+
+    #[Test]
+    public function update_mode_preserves_fields_when_csv_column_is_absent(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $consumable = Consumable::factory()->create([
+            'order_number' => 'DO-NOT-LOSE-THIS',
+            'purchase_date' => '2022-01-01',
+        ])->refresh();
+
+        $originalOrderNumber = $consumable->order_number;
+        $originalPurchaseDate = $consumable->purchase_date?->toDateString();
+
+        // Import a CSV that only has the identity field (name) plus quantity
+        // (required by Consumable validation). All other Consumable fields
+        // are absent from the CSV, so their DB values must be preserved.
+        $partialFile = new ImportFileBuilder([[
+            'itemName' => $consumable->name,
+            'quantity' => 42,
+        ]]);
+        $partialImport = Import::factory()->consumable()->create([
+            'file_path' => $partialFile->saveToImportsDirectory(),
+        ]);
+
+        $this->importFileResponse([
+            'import' => $partialImport->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $consumable->refresh();
+        $this->assertEquals(42, $consumable->qty);
+        $this->assertEquals($originalOrderNumber, $consumable->order_number);
+        $this->assertEquals($originalPurchaseDate, $consumable->purchase_date?->toDateString());
     }
 
     #[Test]

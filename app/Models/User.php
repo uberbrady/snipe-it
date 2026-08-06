@@ -47,6 +47,22 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     use Searchable;
     use UniqueUndeletedTrait;
 
+    /**
+     * Fields governed by the `canEditAuthFields` gate: credentials (username,
+     * email, password), the activation flag, and the permission blob. Any
+     * controller / importer / job that mass-assigns from user input must gate
+     * writes to these fields on `canEditAuthFields` against the target, and
+     * signal denial rather than silently dropping them. Add to this list to
+     * bring a new field under the same gate everywhere at once.
+     */
+    public const GATED_AUTH_FIELDS = [
+        'password',
+        'username',
+        'email',
+        'activated',
+        'permissions',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -749,6 +765,16 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function syncCompaniesWithLogging(array $companyIds): void
     {
+        // Belt-and-suspenders coercion so no caller — API, web, importer,
+        // artisan, tinker, a queue job, a future FMCS refactor — can slip
+        // nested arrays or other non-scalars into ->sync(), which would
+        // bind them into SQL query params and trip "Array to string
+        // conversion" (elevated to ErrorException by Laravel's error
+        // handler). Reduce to a flat, unique list of positive int ids.
+        $companyIds = array_values(array_unique(array_filter(
+            array_map('intval', array_filter($companyIds, 'is_scalar'))
+        )));
+
         $oldIds = $this->companies()->orderBy('companies.id')->pluck('companies.id')->toArray();
         $this->companies()->sync($companyIds);
         $newIds = $this->companies()->orderBy('companies.id')->pluck('companies.id')->toArray();
@@ -1307,17 +1333,18 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      * @return string
      */
     /**
-     * Verify that a resolved local user's stored username byte-exactly matches
-     * the externally-supplied identifier. The MySQL/MariaDB default collation
-     * utf8mb4_unicode_ci folds accents and case, so `WHERE username = ?` on
-     * that engine can silently route 'snípeitreport3' or 'Admin' to the row
-     * for 'snipeitreport3' or 'admin'. Federated/SSO auth flows (SAML, LDAP,
-     * REMOTE_USER, Google OAuth) must call this after their username lookup
-     * so an attacker-controlled external identifier can't authenticate as a
-     * different local account. hash_equals runs in constant time so this
-     * check doesn't leak any timing signal.
+     * The MySQL/MariaDB default collation utf8mb4_unicode_ci folds accents
+     * and case, so `WHERE username = ?` on that engine can silently route
+     * 'snípeitreport3' (with an accent on the i) to the row for 'snipeitreport3'.
      *
-     * Returns the user when the strings match byte-for-byte, null otherwise.
+     * Federated/SSO auth flows (SAML, LDAP, REMOTE_USER, Google OAuth) must call
+     * this after their username lookup so an attacker-controlled external identifier
+     * can't authenticate as a different local account. hash_equals runs in constant
+     * time so this check doesn't leak any timing signal.
+     *
+     * Returns the user when the strings match byte-for-byte after lowercasing,
+     * null otherwise. (This was previously just bite-for-bite, but most IdPs are
+     * case-insensitive, so we normalize to lowercase before comparing.)
      */
     public static function verifyExactUsernameMatch(?self $user, string $expected): ?self
     {
@@ -1325,7 +1352,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             return null;
         }
 
-        return hash_equals((string) $user->username, $expected) ? $user : null;
+        return hash_equals(mb_strtolower((string) $user->username), mb_strtolower($expected)) ? $user : null;
     }
 
     public static function generateEmailFromFullName($name)
@@ -1727,7 +1754,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
             ->orWhere('users.employee_num', 'LIKE', '%'.$search.'%')
             ->orWhere('users.username', 'LIKE', '%'.$search.'%')
             ->orWhere('users.display_name', 'LIKE', '%'.$search.'%')
-            ->orwhereRaw('CONCAT(users.first_name," ",users.last_name) LIKE \''.$search.'%\'');
+            ->orWhereRaw('CONCAT(users.first_name," ",users.last_name) LIKE ?', [$search.'%']);
 
     }
 

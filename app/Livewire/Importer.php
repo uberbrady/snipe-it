@@ -819,7 +819,36 @@ class Importer extends Component
             return;
         }
 
+        $path = config('app.private_uploads').'/imports/'.$this->activeFile->file_path;
+        if (! is_file($path)) {
+            $this->message = trans('admin/hardware/message.import.file_missing_on_disk');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
+        $this->activeFileRowCount = $this->countActiveFileRows();
+        if ($this->activeFileRowCount === 0) {
+            $this->message = trans('admin/hardware/message.import.file_empty');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
         $this->headerRow = $this->activeFile->header_row;
+
+        // header_row is populated by the initial upload path but can be null for
+        // legacy imports created before that column was persisted, or for rows
+        // where a background job never wrote it. Without this guard the foreach
+        // below explodes with "foreach() argument must be of type array|object,
+        // null given" and the wizard is unrecoverable.
+        if (! is_array($this->headerRow) || $this->headerRow === []) {
+            $this->message = trans('admin/hardware/message.import.header_row_missing');
+            $this->message_type = 'danger';
+
+            return;
+        }
+
         $this->typeOfImport = $this->activeFile->import_type;
 
         $this->field_map = null;
@@ -834,7 +863,6 @@ class Importer extends Component
         $this->file_id = $id;
         $this->import_errors = null;
         $this->statusText = null;
-        $this->activeFileRowCount = $this->countActiveFileRows();
         $this->wizardStep = 1;
         $this->previewRows = [];
         $this->processing = false;
@@ -853,10 +881,13 @@ class Importer extends Component
      */
     public function startProcessing(bool $withBackup = false): void
     {
-        // Demo mode: the actual per-slice POSTs would 422 out of
-        // Api\ImportController::process() anyway, but bail here so we
-        // don't even flip the UI into processing mode.
-        if (config('app.lock_passwords')) {
+        // Demo mode: uploads are blocked at Api\ImportController::store,
+        // but a demo superadmin should still be able to run the seeded
+        // sample imports so the end-to-end flow is exercisable in the
+        // demo. Non-superadmins get the same "feature disabled" bail as
+        // before. Api\ImportController::process() applies the matching
+        // gate on the per-slice POSTs.
+        if (config('app.lock_passwords') && ! auth()->user()->isSuperUser()) {
             $this->message = trans('general.feature_disabled');
             $this->message_type = 'danger';
 
@@ -1048,6 +1079,9 @@ class Importer extends Component
 
             $rows = [];
             foreach ($reader->getRecords() as $row) {
+                if (self::rowIsBlank($row)) {
+                    continue;
+                }
                 $rows[] = $row;
                 if (count($rows) >= self::PREVIEW_ROW_LIMIT) {
                     break;
@@ -1061,10 +1095,11 @@ class Importer extends Component
     }
 
     /**
-     * Count the number of data rows (excluding the header row) in the
-     * currently active file's CSV. Returns 0 if the file is missing or the
-     * CSV can't be read - the modal will render "0 rows" and the caller
-     * can still choose to cancel out.
+     * Count the number of NON-BLANK data rows in the currently active file's
+     * CSV. Rows where every cell is empty (like ",,,,,,") are excluded so
+     * a file that is technically 50 rows tall but has nothing importable
+     * counts as 0 and the wizard's file_empty guard refuses to open. Returns
+     * 0 also when the file is missing or the CSV can't be read.
      */
     private function countActiveFileRows(): int
     {
@@ -1081,10 +1116,34 @@ class Importer extends Component
             $reader = Reader::createFromPath($path);
             $reader->setHeaderOffset(0);
 
-            return iterator_count($reader->getRecords());
+            $count = 0;
+            foreach ($reader->getRecords() as $row) {
+                if (! self::rowIsBlank($row)) {
+                    $count++;
+                }
+            }
+
+            return $count;
         } catch (\Throwable $e) {
             return 0;
         }
+    }
+
+    /**
+     * True when every value in the CSV row is an empty string (after trim).
+     * Used to skip cells like ",,,,,,,," that carry no information but pad
+     * the file length and would otherwise inflate row counts, appear in the
+     * preview, and dispatch pointless slices to the server on Process.
+     */
+    private static function rowIsBlank(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function destroy($id)
@@ -1231,6 +1290,11 @@ class Importer extends Component
      * superuser). Kept as a method so the view can guard both the row
      * checkbox and the singular delete button consistently.
      */
+    public function fileMissingOnDisk(Import $import): bool
+    {
+        return ! is_file(config('app.private_uploads').'/imports/'.$import->file_path);
+    }
+
     public function canDeleteFile(Import $import): bool
     {
         return auth()->user()->id === $import->created_by || auth()->user()->isSuperUser();

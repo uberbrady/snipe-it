@@ -59,7 +59,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         $this->importFileResponse(['import' => $import->id])
             ->assertOk()
             ->assertExactJson([
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 1, 'updated' => 0, 'skipped' => 0, 'errored' => 0]],
                 'status' => 'success',
                 'messages' => ['redirect_url' => route('licenses.index')],
             ]);
@@ -220,7 +220,7 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
             ->assertInternalServerError()
             ->assertExactJson([
                 'status' => 'import-errors',
-                'payload' => null,
+                'payload' => ['tally' => ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errored' => 1]],
                 'messages' => [
                     $row['licenseName'] => [
                         "License \"{$row['licenseName']}\"" => [
@@ -277,6 +277,102 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
         $this->assertEquals($license->termination_date, $updatedLicense->termination_date);
         $this->assertEquals($license->deprecate, $updatedLicense->deprecate);
         $this->assertEquals($license->min_amt, $updatedLicense->min_amt);
+    }
+
+    #[Test]
+    public function update_mode_clears_field_when_csv_column_is_present_but_empty(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $initialFile = ImportFileBuilder::new();
+        $initialRow = $initialFile->firstRow();
+        $initialImport = Import::factory()->license()->create([
+            'file_path' => $initialFile->saveToImportsDirectory(),
+        ]);
+        $this->importFileResponse(['import' => $initialImport->id])->assertOk();
+
+        $license = License::query()
+            ->where('name', $initialRow['licenseName'])
+            ->where('serial', $initialRow['serialNumber'])
+            ->sole();
+
+        // Sanity: initial import should have populated the fields we are
+        // about to clear. Guards against a false negative if the fixture
+        // shape changes and the fields default to null.
+        $this->assertNotNull($license->expiration_date);
+        $this->assertNotEmpty($license->license_email);
+        $this->assertNotEmpty($license->notes);
+
+        // Re-import with these columns present but empty. Empty CSV cells
+        // should clear the corresponding DB fields, not preserve them.
+        $clearedRow = array_merge($initialRow, [
+            'expirationDate' => '',
+            'licensedToEmail' => '',
+            'notes' => '',
+        ]);
+        $clearFile = new ImportFileBuilder([$clearedRow]);
+        $clearImport = Import::factory()->license()->create([
+            'file_path' => $clearFile->saveToImportsDirectory(),
+        ]);
+        $this->importFileResponse([
+            'import' => $clearImport->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $license->refresh();
+        $this->assertNull($license->expiration_date);
+        $this->assertNull($license->license_email);
+        $this->assertNull($license->notes);
+    }
+
+    #[Test]
+    public function update_mode_preserves_fields_when_csv_column_is_absent(): void
+    {
+        $this->actingAsForApi(User::factory()->superuser()->create());
+
+        $initialFile = ImportFileBuilder::new();
+        $initialRow = $initialFile->firstRow();
+        $initialImport = Import::factory()->license()->create([
+            'file_path' => $initialFile->saveToImportsDirectory(),
+        ]);
+        $this->importFileResponse(['import' => $initialImport->id])->assertOk();
+
+        $license = License::query()
+            ->where('name', $initialRow['licenseName'])
+            ->where('serial', $initialRow['serialNumber'])
+            ->sole();
+
+        $originalEmail = $license->license_email;
+        $originalNotes = $license->notes;
+        $originalExpirationDate = $license->expiration_date?->toDateString();
+
+        // Re-import with a CSV that only has the identity fields plus one
+        // updated field. All other columns are absent from the CSV, so
+        // their DB values must be preserved.
+        // A short static order number keeps the assertion within License's
+        // order_number varchar(50) limit regardless of what the initial row
+        // faker produced. Prefixing the faker value overflowed on some seeds.
+        $newOrderNumber = 'UPDATED-ORDER-123';
+
+        $partialRow = [
+            'licenseName' => $initialRow['licenseName'],
+            'serialNumber' => $initialRow['serialNumber'],
+            'orderNumber' => $newOrderNumber,
+        ];
+        $partialFile = new ImportFileBuilder([$partialRow]);
+        $partialImport = Import::factory()->license()->create([
+            'file_path' => $partialFile->saveToImportsDirectory(),
+        ]);
+        $this->importFileResponse([
+            'import' => $partialImport->id,
+            'import-update' => true,
+        ])->assertOk();
+
+        $license->refresh();
+        $this->assertEquals($newOrderNumber, $license->order_number);
+        $this->assertEquals($originalEmail, $license->license_email);
+        $this->assertEquals($originalNotes, $license->notes);
+        $this->assertEquals($originalExpirationDate, $license->expiration_date?->toDateString());
     }
 
     #[Test]

@@ -10,11 +10,19 @@
 {{-- Page content --}}
 @section('content')
     <x-container>
-        <x-box>
+        <x-box name="maintenance">
 
-        <x-table.maintenances
-            :route="route('api.maintenances.index').'?completed='.request()->input('completed', 'false').'&upcoming_status='.request()->input('upcoming_status', '')"
-        />
+            <x-slot:bulkactions>
+                <x-table.bulk-maintenances
+                    name="maintenance"
+                    :show-complete="request()->input('completed') !== 'true'"
+                />
+            </x-slot:bulkactions>
+
+            <x-table.maintenances
+                name="maintenance"
+                :route="route('api.maintenances.index').'?completed='.request()->input('completed', 'false').'&upcoming_status='.request()->input('upcoming_status', '')"
+            />
 
         </x-box>
     </x-container>

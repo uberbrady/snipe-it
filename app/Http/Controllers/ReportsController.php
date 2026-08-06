@@ -808,11 +808,22 @@ class ReportsController extends Controller
                 $checkout_start = Carbon::parse($request->input('checkout_date_start'))->startOfDay();
                 $checkout_end = Carbon::parse($request->input('checkout_date_end', now()))->endOfDay();
 
-                $actionlogassets = Actionlog::select('item_id')->where('action_type', '=', 'checkout')
-                    ->where('item_type', '=', Asset::class)
-                    ->whereBetween('action_date', [$checkout_start, $checkout_end]); // we are *not* doing ->get()...
-
-                $assets->whereIn('assets.id', $actionlogassets); // ...because this _should_ act as a 'subquery'
+                // Inline closure rather than a pre-built Eloquent Builder so
+                // the subquery's `select('item_id')` clause is preserved. When
+                // passed an Eloquent Builder as the second whereIn argument,
+                // Laravel doesn't always propagate the SELECT to the subquery
+                // and falls back to `select id`, which is wrong here (we want
+                // action_logs.item_id, not action_logs.id) and additionally
+                // combines with the InCategory scope's models/categories joins
+                // to produce an ambiguous outer `id` in the generated SQL.
+                $assets->whereIn('assets.id', function ($q) use ($checkout_start, $checkout_end) {
+                    $q->select('item_id')
+                        ->from('action_logs')
+                        ->where('action_type', '=', 'checkout')
+                        ->where('item_type', '=', Asset::class)
+                        ->whereBetween('action_date', [$checkout_start, $checkout_end])
+                        ->whereNull('deleted_at');
+                });
             }
 
             if (($request->filled('checkin_date_start'))) {
@@ -1326,6 +1337,15 @@ class ReportsController extends Controller
 
         $itemsForReport = $query->get()
             ->filter(fn ($unaccepted) => $unaccepted->checkoutable)
+            // FMCS scope, mirrors sentAssetAcceptanceReminder + deleteAssetAcceptance.
+            // CheckoutAcceptance has no company_id column and does not use
+            // CompanyableTrait / CompanyableChildTrait, so it is not covered
+            // by the CompanyableScope global scope. Without this per-row
+            // check, a reports.view user scoped to Company A sees pending
+            // acceptances for items owned by Company B in both the page
+            // render and the CSV export. Same helper the two mutating
+            // actions already use.
+            ->filter(fn ($unaccepted) => $this->currentUserCanAccessAcceptance($unaccepted))
             ->map(fn ($unaccepted) => Checkoutable::fromAcceptance($unaccepted));
 
         return view('reports/unaccepted_assets', compact('itemsForReport', 'showDeleted'));
@@ -1513,6 +1533,11 @@ class ReportsController extends Controller
 
         $itemsForReport = $acceptances->get()
             ->filter(fn ($unaccepted) => $unaccepted->checkoutable)
+            // FMCS scope, same rationale as getAssetAcceptanceReport.
+            // The CSV export path had the same missing filter as the page
+            // render, so a reports.view user scoped to Company A could
+            // download pending acceptances for Company B items.
+            ->filter(fn ($unaccepted) => $this->currentUserCanAccessAcceptance($unaccepted))
             ->map(fn ($unaccepted) => Checkoutable::fromAcceptance($unaccepted));
 
         $rows = [];
@@ -1531,6 +1556,16 @@ class ReportsController extends Controller
         $header = array_map('trim', $header);
         $rows[] = implode(',', $header);
 
+        // Formula-escape data rows using the same helper + setting as the
+        // sibling exports in this file. Row values (company / category /
+        // model / item name / asset tag / assignee display name) are all
+        // user-editable free-text fields that a low-privilege user could
+        // set to a spreadsheet formula. Without escaping, the payload
+        // evaluates when a reports.view user opens the downloaded CSV in
+        // Excel / LibreOffice / Google Sheets. Same backtick prefix used
+        // by every other export in ReportsController.
+        $formatter = new EscapeFormula('`');
+
         foreach ($itemsForReport as $item) {
 
             if ($item != null) {
@@ -1544,6 +1579,11 @@ class ReportsController extends Controller
                 $row[] = str_replace(',', '', $item->plain_text_name);
                 $row[] = str_replace(',', '', $item->asset_tag);
                 $row[] = str_replace(',', '', ($item->acceptance->assignedto) ? $item->acceptance->assignedto->display_name : trans('admin/reports/general.deleted_user'));
+
+                if (config('app.escape_formulas') !== false) {
+                    $row = $formatter->escapeRecord($row);
+                }
+
                 $rows[] = implode(',', $row);
             }
         }

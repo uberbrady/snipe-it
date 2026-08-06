@@ -205,6 +205,106 @@ class UpdateUserTest extends TestCase
         $this->assertEquals(1, $user->refresh()->activated);
     }
 
+    /**
+     * Companion regression to
+     * tests/Feature/Users/Ui/UpdateUserTest::test_editing_users_cannot_toggle_admin_activated_via_full_valid_payload
+     * The API path already excludes `activated` from the pre-gate fill()
+     * and only assigns it inside the canEditAuthFields branch, so this
+     * has always been safe. Pinning the behavior explicitly so a future
+     * refactor to `$user->fill($request->all())` or similar can't
+     * silently regress it.
+     */
+    public function test_api_editing_users_cannot_toggle_admin_activated()
+    {
+        $editing_user = User::factory()->editUsers()->create(['activated' => true]);
+        $admin = User::factory()->admin()->create([
+            'first_name' => 'Admin',
+            'last_name' => 'Target',
+            'username' => 'api_admin_target',
+            'email' => 'api-admin-target@example.test',
+            'activated' => true,
+        ]);
+
+        $this->actingAsForApi($editing_user)
+            ->patch(route('api.users.update', $admin), [
+                'first_name' => $admin->first_name,
+                'last_name' => $admin->last_name,
+                'username' => $admin->username,
+                'email' => $admin->email,
+                'activated' => 0,
+            ]);
+
+        $this->assertSame(1, (int) $admin->fresh()->activated, 'Non-admin actor must not be able to deactivate an admin via API.');
+    }
+
+    /**
+     * When a caller who cannot pass canEditAuthFields on the target sends any
+     * User::GATED_AUTH_FIELDS in the request payload, the API must return an
+     * error status naming the denied fields rather than silently dropping
+     * them and returning `success`. Prior behavior returned
+     * `{"status":"success", "messages":"User was successfully updated."}`
+     * even when the password / permissions / activated / username / email
+     * write in the payload never persisted, misrepresenting the actual
+     * outcome to API clients.
+     */
+    public function test_api_returns_error_when_auth_fields_requested_without_permission(): void
+    {
+        $editing_user = User::factory()->editUsers()->create();
+        $admin = User::factory()->admin()->create([
+            'username' => 'api_admin_authfield_target',
+            'email' => 'api-admin-authfield-target@example.test',
+            'first_name' => 'Original',
+            'last_name' => 'Name',
+        ]);
+
+        $originalPasswordHash = $admin->password;
+
+        $response = $this->actingAsForApi($editing_user)
+            ->patch(route('api.users.update', $admin), [
+                'first_name' => 'Tampered',
+                'password' => 'attempted-new-password',
+                'permissions' => ['licenses.keys' => '1'],
+            ])
+            ->assertOk();
+
+        $response->assertJson([
+            'status' => 'error',
+            'messages' => trans('admin/users/message.auth_fields_denied', ['fields' => 'password, permissions']),
+        ]);
+
+        $fresh = $admin->fresh();
+        $this->assertSame('Original', $fresh->first_name, 'Non-auth fields must not persist when the request is rejected for auth-field denial.');
+        $this->assertSame($originalPasswordHash, $fresh->password, 'Password must not change when the caller cannot canEditAuthFields on the target.');
+    }
+
+    /**
+     * The inverse contract: when the request carries no GATED_AUTH_FIELDS,
+     * the response stays `success` and non-auth fields persist as normal.
+     * Pins that the new loud-fail path is entered only when the payload
+     * actually asks for gated fields.
+     */
+    public function test_api_returns_success_when_no_auth_fields_are_requested(): void
+    {
+        $editing_user = User::factory()->editUsers()->create();
+        $admin = User::factory()->admin()->create([
+            'first_name' => 'Original',
+            'last_name' => 'Name',
+            'jobtitle' => 'Previous Title',
+        ]);
+
+        $this->actingAsForApi($editing_user)
+            ->patch(route('api.users.update', $admin), [
+                'first_name' => 'Updated',
+                'jobtitle' => 'New Title',
+            ])
+            ->assertOk()
+            ->assertJson(['status' => 'success']);
+
+        $fresh = $admin->fresh();
+        $this->assertSame('Updated', $fresh->first_name);
+        $this->assertSame('New Title', $fresh->jobtitle);
+    }
+
     public function test_api_users_can_be_deactivated_with_number()
     {
         $admin = User::factory()->editUsers()->create();

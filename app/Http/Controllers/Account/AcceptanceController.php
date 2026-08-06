@@ -172,7 +172,18 @@ class AcceptanceController extends Controller
                 $decoded_image = $this->flattenSignatureBackgroundToWhite($decoded_image);
                 $encodedSignatureImage = base64_encode($decoded_image);
 
-                Storage::put('private_uploads/signatures/'.$sig_filename, (string) $decoded_image);
+                // Storage::put returns false on silent write failures on
+                // non-throwing filesystem drivers. Ignoring the return let
+                // acceptance finalization proceed while the signature file
+                // was absent from disk, producing an "accepted" record whose
+                // evidence file did not exist. Refuse to advance when the
+                // write did not land. Reported by Christopher Finks
+                // (christopherfi-dev) on 2026-08-02.
+                if (! Storage::put('private_uploads/signatures/'.$sig_filename, (string) $decoded_image)) {
+                    Log::warning('Acceptance signature write failed for '.$sig_filename);
+
+                    return redirect()->back()->with('error', trans('admin/users/message.accept_signature_write_failed'));
+                }
 
                 // No image data is present, kick them back.
                 // This mostly only applies to users on super-duper crapola browsers *cough* IE *cough*
@@ -241,7 +252,19 @@ class AcceptanceController extends Controller
 
             // Generate the PDF content
             $pdf_content = $acceptance->generateAcceptancePdf($data, $acceptance);
-            Storage::put('private_uploads/eula-pdfs/'.$pdf_filename, $pdf_content);
+
+            // Storage::put returns false on silent write failures on
+            // non-throwing filesystem drivers. Ignoring the return let
+            // acceptance finalization proceed while the acceptance PDF was
+            // absent from disk, producing an "accepted" record whose
+            // evidence file did not exist. Refuse to advance when the
+            // write did not land. Reported by Christopher Finks
+            // (christopherfi-dev) on 2026-08-02.
+            if (! Storage::put('private_uploads/eula-pdfs/'.$pdf_filename, $pdf_content)) {
+                Log::warning('Acceptance PDF write failed for '.$pdf_filename);
+
+                return redirect()->back()->with('error', trans('admin/users/message.accept_pdf_write_failed'));
+            }
 
             // Log the acceptance
             $acceptance->accept($sig_filename, $item->getEula(), $pdf_filename, $request->input('note'));
