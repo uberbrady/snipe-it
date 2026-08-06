@@ -275,12 +275,10 @@ class AccessoriesController extends Controller
             return redirect()->back()->with('error', $error);
         }
 
-        // Land on the item's history tab so the operator sees the log
-        // entry they just wrote as confirmation. The `history` fragment
-        // matches x-tabs.history-tab's `name="history"`.
-        return redirect()
-            ->route('accessories.show', $accessory)
-            ->withFragment('history')
-            ->with('success', trans('general.adjust_quantity_success'));
+        // adjustQuantityRedirect keeps show-page opens landing on
+        // #history for the confirmation loop, and sends index-page
+        // opens back to the index so bulk adjust flows aren't broken
+        // by a forced navigation to the item detail page.
+        return $this->adjustQuantityRedirect($request, $accessory, route('accessories.show', $accessory));
     }
 }

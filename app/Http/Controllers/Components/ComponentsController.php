@@ -271,9 +271,8 @@ class ComponentsController extends Controller
             return redirect()->back()->with('error', $error);
         }
 
-        return redirect()
-            ->route('components.show', $component)
-            ->withFragment('history')
-            ->with('success', trans('general.adjust_quantity_success'));
+        // See AccessoriesController::adjustQuantity — helper picks
+        // between show-page-#history and back-to-referer.
+        return $this->adjustQuantityRedirect($request, $component, route('components.show', $component));
     }
 }

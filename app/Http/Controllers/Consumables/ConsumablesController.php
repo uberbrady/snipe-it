@@ -273,9 +273,8 @@ class ConsumablesController extends Controller
             return redirect()->back()->with('error', $error);
         }
 
-        return redirect()
-            ->route('consumables.show', $consumable)
-            ->withFragment('history')
-            ->with('success', trans('general.adjust_quantity_success'));
+        // See AccessoriesController::adjustQuantity — helper picks
+        // between show-page-#history and back-to-referer.
+        return $this->adjustQuantityRedirect($request, $consumable, route('consumables.show', $consumable));
     }
 }

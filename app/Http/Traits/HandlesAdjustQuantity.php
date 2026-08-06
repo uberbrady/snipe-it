@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdjustQuantityRequest;
 use App\Http\Requests\UploadFileRequest;
@@ -9,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -57,6 +59,28 @@ trait HandlesAdjustQuantity
         }
 
         return null;
+    }
+
+    /**
+     * Land the post-save redirect on the page the operator was on when
+     * they opened the modal. From the item's show page → the show page
+     * with the `#history` fragment so the newly-written log entry is
+     * visible as confirmation. From an index / listing page → back to
+     * that listing so bulk-adjust flows don't force the operator to
+     * back out and re-navigate for every item. Referer is validated
+     * as same-origin to prevent open-redirect abuse; missing or
+     * cross-origin referers fall back to the item show page.
+     */
+    protected function adjustQuantityRedirect(Request $request, Model $model, string $itemShowUrl): RedirectResponse
+    {
+        $referer = Helper::sameOriginUrl($request->headers->get('referer'));
+        $success = trans('general.adjust_quantity_success');
+
+        if ($referer && $referer !== $itemShowUrl && ! str_starts_with($referer, $itemShowUrl.'#')) {
+            return redirect()->to($referer)->with('success', $success);
+        }
+
+        return redirect()->to($itemShowUrl)->withFragment('history')->with('success', $success);
     }
 
     /**
