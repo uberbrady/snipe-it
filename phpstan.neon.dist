@@ -28,6 +28,15 @@ parameters:
     # under whatever version CI provides; only the target check moves.
     phpVersion: 80200
 
+    # Larastan's facade / interface class-map resolution varies slightly
+    # between fresh CI installs and long-lived local vendor trees, so a
+    # baseline entry generated in one environment can be "unmatched" in
+    # the other. Tolerate unmatched entries rather than fail — the
+    # baseline is an allow-list, not a must-match assertion. Real
+    # regressions still fail because they'd be genuine NEW findings
+    # that aren't in the baseline.
+    reportUnmatchedIgnoredErrors: false
+
     parallel:
         maximumNumberOfProcesses: 4
 
