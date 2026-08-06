@@ -199,58 +199,61 @@
                     {{ Helper::formatCurrencyOutput($unitCost) }}
                 </x-copy-to-clipboard>
             </x-info-element>
+        @endif
 
-            @if (isset($infoPanelObj->qty) && method_exists($infoPanelObj, 'totalCostSumByCurrency'))
-                @php $totalsByCurrency = $infoPanelObj->totalCostSumByCurrency(); @endphp
-                @if (count($totalsByCurrency) === 1)
-                    @php $currency = array_key_first($totalsByCurrency); @endphp
-                    <x-info-element>
-                        <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
-                        {{ trans('general.total_cost') }}
-                        <span class="pull-right">
-                            {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
-                            {{ Helper::formatCurrencyOutput($totalsByCurrency[$currency]) }}
-                        </span>
-                    </x-info-element>
-                @elseif (count($totalsByCurrency) > 1)
-                    <x-info-element>
-                        <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
-                        {{ trans('general.total_cost') }}
-                        {{ count($totalsByCurrency) }} {{ trans('general.currencies') }}
-                        <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#totalCostBreakdown" aria-expanded="false" aria-controls="totalCostBreakdown">
-                            <x-icon type="plus" class="fa-fw"/>
-                        </a>
-                    </x-info-element>
-                    <span class="collapse" id="totalCostBreakdown">
-                        <x-info-element class="subitem well well-sm">
-                            @foreach ($totalsByCurrency as $currency => $amount)
-                                <div>
-                                    {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
-                                    {{ Helper::formatCurrencyOutput($amount) }}
-                                </div>
-                            @endforeach
-                        </x-info-element>
+        {{-- Total cost is independent of the Last Unit Cost row. --}}
+        {{-- Historical acquisitions may have carried prices even if --}}
+        {{-- the most recent one didn't, so the total_cost row shows --}}
+        {{-- whenever totalCostSumByCurrency has anything to sum. --}}
+        @if (isset($infoPanelObj->qty) && method_exists($infoPanelObj, 'totalCostSumByCurrency'))
+            @php $totalsByCurrency = $infoPanelObj->totalCostSumByCurrency(); @endphp
+            @if (count($totalsByCurrency) === 1)
+                @php $currency = array_key_first($totalsByCurrency); @endphp
+                <x-info-element>
+                    <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
+                    {{ trans('general.total_cost') }}
+                    <span class="pull-right">
+                        {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
+                        {{ Helper::formatCurrencyOutput($totalsByCurrency[$currency]) }}
                     </span>
-                @endif
-            @endif
-
-            {{-- Skip on Asset instances. An asset is 1:1 with a --}}
-            {{-- transaction, so "ordered N times" is always 1 and --}}
-            {{-- the Orders table IS the record of the acquisition. --}}
-            {{-- Applies to Accessory/Consumable/Component (multi-order --}}
-            {{-- inventory) and to AssetModel (asset TYPE, aggregating --}}
-            {{-- distinct orders across all its Asset instances). --}}
-            @if (method_exists($infoPanelObj, 'ordersCount') && ! ($infoPanelObj instanceof \App\Models\Asset))
-                @php $ordersCount = $infoPanelObj->ordersCount(); @endphp
-                @if ($ordersCount > 0)
-                    <x-info-element>
-                        <x-icon type="order" class="fa-fw" title="{{ trans('general.total_orders') }}"/>
-                        {{ trans('general.total_orders') }}
-                        <span class="pull-right">{{ $ordersCount }}</span>
+                </x-info-element>
+            @elseif (count($totalsByCurrency) > 1)
+                <x-info-element>
+                    <x-icon type="cost" class="fa-fw" title="{{ trans('general.total_cost') }}"/>
+                    {{ trans('general.total_cost') }}
+                    {{ count($totalsByCurrency) }} {{ trans('general.currencies') }}
+                    <a class="pull-right js-copy-link" style="font-size: 16px; margin-right: 3px;" type="button" data-toggle="collapse" data-target="#totalCostBreakdown" aria-expanded="false" aria-controls="totalCostBreakdown">
+                        <x-icon type="plus" class="fa-fw"/>
+                    </a>
+                </x-info-element>
+                <span class="collapse" id="totalCostBreakdown">
+                    <x-info-element class="subitem well well-sm">
+                        @foreach ($totalsByCurrency as $currency => $amount)
+                            <div>
+                                {{ $currency !== '' ? $currency : $snipeSettings->default_currency }}
+                                {{ Helper::formatCurrencyOutput($amount) }}
+                            </div>
+                        @endforeach
                     </x-info-element>
-                @endif
+                </span>
             @endif
+        @endif
 
+        {{-- Skip on Asset instances. An asset is 1:1 with a --}}
+        {{-- transaction, so "ordered N times" is always 1 and --}}
+        {{-- the Orders table IS the record of the acquisition. --}}
+        {{-- Applies to Accessory/Consumable/Component (multi-order --}}
+        {{-- inventory) and to AssetModel (asset TYPE, aggregating --}}
+        {{-- distinct orders across all its Asset instances). --}}
+        @if (method_exists($infoPanelObj, 'ordersCount') && ! ($infoPanelObj instanceof \App\Models\Asset))
+            @php $ordersCount = $infoPanelObj->ordersCount(); @endphp
+            @if ($ordersCount > 0)
+                <x-info-element>
+                    <x-icon type="order" class="fa-fw" title="{{ trans('general.total_orders') }}"/>
+                    {{ trans('general.total_orders') }}
+                    <span class="pull-right">{{ $ordersCount }}</span>
+                </x-info-element>
+            @endif
         @endif
 
         {{-- Accessory/Consumable/Component override getOrderNumberAttribute

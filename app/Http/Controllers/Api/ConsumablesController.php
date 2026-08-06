@@ -151,6 +151,18 @@ class ConsumablesController extends Controller
             case 'created_by':
                 $consumables = $consumables->OrderByCreatedBy($order);
                 break;
+            case 'purchase_cost':
+                // See AccessoriesController for the rationale — these
+                // three sorts walk order_items rather than removed
+                // parent columns.
+                $consumables = $consumables->OrderByLastPurchaseCost($order);
+                break;
+            case 'purchase_date':
+                $consumables = $consumables->OrderByLastPurchaseDate($order);
+                break;
+            case 'total_cost':
+                $consumables = $consumables->OrderByTotalOrderCost($order);
+                break;
             default:
                 $sort = in_array($request->input('sort'), $allowed_columns) ? $request->input('sort') : 'created_at';
                 $consumables = $consumables->orderBy($sort, $order);

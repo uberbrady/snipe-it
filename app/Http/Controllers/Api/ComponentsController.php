@@ -167,6 +167,18 @@ class ComponentsController extends Controller
             case 'percent_remaining':
                 $components = $components->OrderPercentRemaining($order);
                 break;
+            case 'purchase_cost':
+                // See AccessoriesController for the rationale — these
+                // three sorts walk order_items rather than removed
+                // parent columns.
+                $components = $components->OrderByLastPurchaseCost($order);
+                break;
+            case 'purchase_date':
+                $components = $components->OrderByLastPurchaseDate($order);
+                break;
+            case 'total_cost':
+                $components = $components->OrderByTotalOrderCost($order);
+                break;
             default:
                 $components = $components->orderBy($column_sort, $order);
                 break;

@@ -225,4 +225,62 @@ trait HasOrders
                 ->select('orders.order_number'),
         ])->orderBy('sort_order_number', $direction);
     }
+
+    /**
+     * Sort by the most recent OrderItem's price. Rows with no order
+     * history sort last on `asc` / first on `desc` (natural NULL sort
+     * behavior on both MySQL and SQLite). Uses addSelect for the same
+     * reason as scopeOrderByOrderNumber above.
+     */
+    public function scopeOrderByLastPurchaseCost(Builder $query, string $direction = 'asc'): Builder
+    {
+        $modelTable = (new static)->getTable();
+
+        return $query->addSelect([
+            'sort_last_purchase_cost' => OrderItem::query()
+                ->whereColumn('order_items.item_id', $modelTable.'.id')
+                ->where('order_items.item_type', static::class)
+                ->orderByDesc('order_items.id')
+                ->limit(1)
+                ->select('order_items.price'),
+        ])->orderBy('sort_last_purchase_cost', $direction);
+    }
+
+    /**
+     * Sort by the most recent Order.purchase_date across this row's
+     * OrderItems. See scopeOrderByLastPurchaseCost for the null-sort
+     * caveat.
+     */
+    public function scopeOrderByLastPurchaseDate(Builder $query, string $direction = 'asc'): Builder
+    {
+        $modelTable = (new static)->getTable();
+
+        return $query->addSelect([
+            'sort_last_purchase_date' => OrderItem::query()
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereColumn('order_items.item_id', $modelTable.'.id')
+                ->where('order_items.item_type', static::class)
+                ->orderByDesc('order_items.id')
+                ->limit(1)
+                ->select('orders.purchase_date'),
+        ])->orderBy('sort_last_purchase_date', $direction);
+    }
+
+    /**
+     * Sort by the sum of (qty * price) across every OrderItem attached
+     * to this row. Matches the info-panel's total_cost display so a
+     * click on the total-cost column header lands rows in the same
+     * order the panel shows them.
+     */
+    public function scopeOrderByTotalOrderCost(Builder $query, string $direction = 'asc'): Builder
+    {
+        $modelTable = (new static)->getTable();
+
+        return $query->addSelect([
+            'sort_total_order_cost' => OrderItem::query()
+                ->whereColumn('order_items.item_id', $modelTable.'.id')
+                ->where('order_items.item_type', static::class)
+                ->selectRaw('COALESCE(SUM(order_items.qty * order_items.price), 0)'),
+        ])->orderBy('sort_total_order_cost', $direction);
+    }
 }

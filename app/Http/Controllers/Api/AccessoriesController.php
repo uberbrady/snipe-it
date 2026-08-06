@@ -153,8 +153,20 @@ class AccessoriesController extends Controller
             case 'created_by':
                 $accessories = $accessories->OrderByCreatedByName($order);
                 break;
+            case 'purchase_cost':
+                // purchase_cost lives on order_items now; sort by the
+                // last acquisition's price rather than the removed
+                // parent column.
+                $accessories = $accessories->OrderByLastPurchaseCost($order);
+                break;
+            case 'purchase_date':
+                $accessories = $accessories->OrderByLastPurchaseDate($order);
+                break;
             case 'total_cost':
-                $accessories = $accessories->orderByRaw('COALESCE(purchase_cost, 0) * qty '.$order);
+                // total_cost is the sum of qty*price across every
+                // OrderItem, mirroring the info-panel's total_cost
+                // display so the column header sort matches.
+                $accessories = $accessories->OrderByTotalOrderCost($order);
                 break;
             case 'percent_remaining':
                 $accessories = $accessories->OrderPercentRemaining($order);

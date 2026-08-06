@@ -355,6 +355,8 @@ return [
     'suppliers' => 'Suppliers',
     'default_supplier' => 'Default Supplier',
     'default_supplier_help' => 'Pre-populates the supplier on new orders for this item. Each order can override this value.',
+    'last_unit_cost' => 'Last Unit Cost',
+    'last_purchase_date' => 'Last Purchase Date',
     'sure_to_delete' => 'Are you sure you wish to delete',
     'sure_to_delete_var' => 'Are you sure you wish to delete :item?',
     'delete_what' => 'Delete :item',
