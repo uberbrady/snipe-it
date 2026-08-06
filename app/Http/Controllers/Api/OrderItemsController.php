@@ -7,6 +7,7 @@ use App\Http\Transformers\OrderItemsTransformer;
 use App\Models\Asset;
 use App\Models\AssetModel;
 use App\Models\OrderItem;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,97 +29,30 @@ use Illuminate\Http\Request;
  */
 class OrderItemsController extends Controller
 {
+    /**
+     * Sortable columns that live on joined tables (orders / suppliers).
+     * Keys are the API `sort` values; values are the qualified column
+     * name the ORDER BY uses. Non-mapped values fall back to `id DESC`.
+     */
+    private const SORT_COLUMN_MAP = [
+        'order_number' => 'orders.order_number',
+        'purchase_date' => 'orders.purchase_date',
+        'currency' => 'orders.currency',
+        'supplier' => 'suppliers.name',
+        'qty' => 'order_items.qty',
+        'unit_cost' => 'order_items.price',
+        'created_at' => 'order_items.created_at',
+        'created_by' => 'order_items.created_by',
+    ];
+
     public function index(Request $request): JsonResponse
     {
-        // Authorization: if the request narrows to a specific parent,
-        // require view permission on THAT parent. Otherwise fall back
-        // to the OrderItem-level policy so a global listing is gated
-        // to superusers or the equivalent.
-        $itemType = $request->input('item_type');
-        $itemId = $request->input('item_id');
-        $assetModelId = $request->input('asset_model_id');
+        $this->authorizeOrderItemsRequest($request);
 
-        if ($assetModelId) {
-            $this->authorize('view', AssetModel::findOrFail($assetModelId));
-        } elseif ($itemType && $itemId && class_exists($itemType)) {
-            $this->authorize('view', $itemType::findOrFail($itemId));
-        } elseif (! auth()->user()?->isSuperUser()) {
-            // Unfiltered "list every OrderItem" is a superuser-only
-            // capability until an OrderPolicy exists.
-            abort(403);
-        }
-
-        $query = OrderItem::query()
-            ->with([
-                'admin:id,first_name,last_name,username',
-                'order:id,order_number,supplier_id,currency,purchase_date,created_by',
-                'order.supplier:id,name',
-                'order.admin:id,first_name,last_name,username',
-            ]);
-
-        if ($assetModelId) {
-            $query->where('order_items.item_type', Asset::class)
-                ->whereIn('order_items.item_id', Asset::where('model_id', $assetModelId)->select('id'));
-        } elseif ($itemType && $itemId) {
-            $query->where('order_items.item_type', $itemType)
-                ->where('order_items.item_id', $itemId);
-        }
-
-        // Orders tab shows purchases only. Corrections / consumption
-        // events (zero or negative-qty OrderItems) belong in the item's
-        // history tab, not on the "Orders" list — they aren't purchases.
-        $query->where('order_items.qty', '>', 0);
-
-        // leftJoin onto orders + suppliers so cross-table sort / search
-        // can hit those columns. Select order_items.* so the model
-        // hydrates cleanly and the joined columns don't leak into the
-        // OrderItem attributes.
-        $query->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
-            ->leftJoin('suppliers', 'suppliers.id', '=', 'orders.supplier_id')
-            ->select('order_items.*');
-
-        if ($request->filled('search')) {
-            $needle = '%'.$request->input('search').'%';
-            $query->where(function ($q) use ($needle) {
-                $q->where('orders.order_number', 'like', $needle)
-                    ->orWhere('suppliers.name', 'like', $needle)
-                    ->orWhere('orders.notes', 'like', $needle);
-            });
-        }
-
-        $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
-        switch ($request->input('sort')) {
-            case 'order_number':
-                $query->orderBy('orders.order_number', $order);
-                break;
-            case 'purchase_date':
-                $query->orderBy('orders.purchase_date', $order);
-                break;
-            case 'currency':
-                $query->orderBy('orders.currency', $order);
-                break;
-            case 'supplier':
-                $query->orderBy('suppliers.name', $order);
-                break;
-            case 'qty':
-                $query->orderBy('order_items.qty', $order);
-                break;
-            case 'unit_cost':
-                $query->orderBy('order_items.price', $order);
-                break;
-            case 'total_cost':
-                // qty * price sort is computed rather than a stored column.
-                $query->orderByRaw('(order_items.qty * COALESCE(order_items.price, 0)) '.$order);
-                break;
-            case 'created_at':
-                $query->orderBy('order_items.created_at', $order);
-                break;
-            case 'created_by':
-                $query->orderBy('order_items.created_by', $order);
-                break;
-            default:
-                $query->orderBy('order_items.id', 'desc');
-        }
+        $query = $this->baseOrderItemsQuery();
+        $this->applyScopeFilters($query, $request);
+        $this->applyJoinsAndSearch($query, $request);
+        $this->applySort($query, $request);
 
         $total = (clone $query)->count();
         $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
@@ -131,5 +65,115 @@ class OrderItemsController extends Controller
             ['Content-Type' => 'application/json;charset=utf8'],
             JSON_UNESCAPED_UNICODE,
         );
+    }
+
+    /**
+     * Authorization: if the request narrows to a specific parent,
+     * require view permission on THAT parent. Otherwise fall back to
+     * requiring superuser — unfiltered "list every OrderItem" is a
+     * superuser-only capability until an OrderPolicy exists.
+     */
+    private function authorizeOrderItemsRequest(Request $request): void
+    {
+        $assetModelId = $request->input('asset_model_id');
+        $itemType = $request->input('item_type');
+        $itemId = $request->input('item_id');
+
+        if ($assetModelId) {
+            $this->authorize('view', AssetModel::findOrFail($assetModelId));
+
+            return;
+        }
+
+        if ($itemType && $itemId && class_exists($itemType)) {
+            $this->authorize('view', $itemType::findOrFail($itemId));
+
+            return;
+        }
+
+        if (! auth()->user()?->isSuperUser()) {
+            abort(403);
+        }
+    }
+
+    private function baseOrderItemsQuery(): Builder
+    {
+        return OrderItem::query()
+            ->with([
+                'admin:id,first_name,last_name,username',
+                'order:id,order_number,supplier_id,currency,purchase_date,created_by',
+                'order.supplier:id,name',
+                'order.admin:id,first_name,last_name,username',
+            ])
+            // Orders tab shows purchases only. Corrections / consumption
+            // events (zero or negative-qty OrderItems) belong in the
+            // item's history tab, not on the "Orders" list.
+            ->where('order_items.qty', '>', 0);
+    }
+
+    private function applyScopeFilters(Builder $query, Request $request): void
+    {
+        $assetModelId = $request->input('asset_model_id');
+        $itemType = $request->input('item_type');
+        $itemId = $request->input('item_id');
+
+        if ($assetModelId) {
+            $query->where('order_items.item_type', Asset::class)
+                ->whereIn('order_items.item_id', Asset::where('model_id', $assetModelId)->select('id'));
+
+            return;
+        }
+
+        if ($itemType && $itemId) {
+            $query->where('order_items.item_type', $itemType)
+                ->where('order_items.item_id', $itemId);
+        }
+    }
+
+    /**
+     * leftJoin onto orders + suppliers so cross-table sort / search
+     * can hit those columns. Select order_items.* so the model hydrates
+     * cleanly and the joined columns don't leak into the OrderItem
+     * attributes. Search covers order_number, supplier name, and the
+     * order notes field.
+     */
+    private function applyJoinsAndSearch(Builder $query, Request $request): void
+    {
+        $query->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+            ->leftJoin('suppliers', 'suppliers.id', '=', 'orders.supplier_id')
+            ->select('order_items.*');
+
+        if (! $request->filled('search')) {
+            return;
+        }
+
+        $needle = '%'.$request->input('search').'%';
+        $query->where(function ($q) use ($needle) {
+            $q->where('orders.order_number', 'like', $needle)
+                ->orWhere('suppliers.name', 'like', $needle)
+                ->orWhere('orders.notes', 'like', $needle);
+        });
+    }
+
+    private function applySort(Builder $query, Request $request): void
+    {
+        $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
+        $sort = $request->input('sort');
+
+        if ($sort === 'total_cost') {
+            // qty * price sort is computed rather than a stored column.
+            $query->orderByRaw('(order_items.qty * COALESCE(order_items.price, 0)) '.$order);
+
+            return;
+        }
+
+        $column = self::SORT_COLUMN_MAP[$sort] ?? null;
+        if ($column === null) {
+            $query->orderBy('order_items.id', 'desc');
+
+            return;
+        }
+
+        $query->orderBy($column, $order);
     }
 }

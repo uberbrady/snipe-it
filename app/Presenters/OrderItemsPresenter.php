@@ -11,7 +11,22 @@ class OrderItemsPresenter
 {
     public static function dataTableLayout(): string
     {
-        return json_encode([
+        return json_encode(array_merge(
+            self::metadataColumns(),
+            self::acquisitionColumns(),
+            self::amountColumns(),
+            self::notesColumns(),
+        ));
+    }
+
+    /**
+     * Created-at + who-recorded-it columns rendered at the head of the
+     * table. Kept separate from acquisition metadata so the "when +
+     * who" audit stays visually distinct from the "what" record.
+     */
+    private static function metadataColumns(): array
+    {
+        return [
             [
                 'field' => 'created_at',
                 'scope' => 'col',
@@ -32,6 +47,16 @@ class OrderItemsPresenter
                 'visible' => true,
                 'formatter' => 'usersLinkObjFormatter',
             ],
+        ];
+    }
+
+    /**
+     * purchase_date / order_number / supplier: the "what did we buy"
+     * columns that identify the acquisition event itself.
+     */
+    private static function acquisitionColumns(): array
+    {
+        return [
             [
                 'field' => 'purchase_date',
                 'scope' => 'col',
@@ -61,6 +86,16 @@ class OrderItemsPresenter
                 'visible' => true,
                 'formatter' => 'suppliersLinkObjFormatter',
             ],
+        ];
+    }
+
+    /**
+     * qty / unit_cost / currency / total_cost: the "how much" columns.
+     * All three numeric fields use sumFormatter for the footer roll-up.
+     */
+    private static function amountColumns(): array
+    {
+        return [
             [
                 'field' => 'qty',
                 'scope' => 'col',
@@ -103,6 +138,12 @@ class OrderItemsPresenter
                 'footerFormatter' => 'sumFormatter',
                 'class' => 'text-right text-padding-number-cell',
             ],
+        ];
+    }
+
+    private static function notesColumns(): array
+    {
+        return [
             [
                 'field' => 'notes',
                 'scope' => 'col',
@@ -112,6 +153,6 @@ class OrderItemsPresenter
                 'title' => trans('general.notes'),
                 'visible' => true,
             ],
-        ]);
+        ];
     }
 }

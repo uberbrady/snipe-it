@@ -152,24 +152,48 @@ trait HasOrders
      */
     public function lastAcquisitionSupplier(): ?Supplier
     {
-        if ($this->relationLoaded('orderItems')) {
-            $line = $this->orderItems->sortByDesc('id')->first();
-            $order = $line?->order;
-            if ($order && $order->relationLoaded('supplier') && $order->supplier) {
-                return $order->supplier;
-            }
-            $supplierId = $order?->supplier_id;
-        } else {
-            $line = $this->orderItems()
-                ->with('order:id,supplier_id')
-                ->latest('id')
-                ->first();
-            $supplierId = $line?->order?->supplier_id;
+        $cachedSupplier = $this->cachedLastOrderSupplier();
+        if ($cachedSupplier !== null) {
+            return $cachedSupplier;
         }
 
-        $supplierId = $supplierId ?? $this->getAttribute('default_supplier_id');
+        $supplierId = $this->lastOrderSupplierId() ?? $this->getAttribute('default_supplier_id');
 
         return $supplierId ? Supplier::find($supplierId) : null;
+    }
+
+    /**
+     * Fast-path: return the eager-loaded Supplier from the
+     * `orderItems.order.supplier` chain if the caller pre-loaded it.
+     * Callers rendering a list should eager-load this chain to avoid
+     * an N+1 through Supplier::find below.
+     */
+    private function cachedLastOrderSupplier(): ?Supplier
+    {
+        if (! $this->relationLoaded('orderItems')) {
+            return null;
+        }
+
+        $order = $this->orderItems->sortByDesc('id')->first()?->order;
+
+        if ($order?->relationLoaded('supplier') && $order->supplier) {
+            return $order->supplier;
+        }
+
+        return null;
+    }
+
+    /**
+     * Slow-path: read the latest OrderItem's Order.supplier_id via a
+     * fresh query. Called only when the eager-loaded fast-path missed.
+     */
+    private function lastOrderSupplierId(): ?int
+    {
+        if ($this->relationLoaded('orderItems')) {
+            return $this->orderItems->sortByDesc('id')->first()?->order?->supplier_id;
+        }
+
+        return $this->orderItems()->with('order:id,supplier_id')->latest('id')->first()?->order?->supplier_id;
     }
 
     /**

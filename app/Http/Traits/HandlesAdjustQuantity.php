@@ -105,35 +105,7 @@ trait HandlesAdjustQuantity
         // event, not a staggered delivery of one order. created_by is
         // set via property assignment rather than mass-fill because
         // it's guarded on both Order and OrderItem to prevent forgery.
-        if ($payload['order_number'] !== null) {
-            $order = Order::firstOrNew(
-                [
-                    'order_number' => $payload['order_number'],
-                    'supplier_id' => $payload['supplier_id'],
-                    'company_id' => $model->company_id ?? null,
-                    'purchase_date' => $payload['purchase_date'],
-                ],
-                [
-                    'currency' => $payload['currency'],
-                    'notes' => $payload['notes'],
-                ],
-            );
-            if (! $order->exists) {
-                $order->created_by = auth()->id();
-                $order->save();
-            }
-        } else {
-            $order = new Order([
-                'order_number' => null,
-                'supplier_id' => $payload['supplier_id'],
-                'company_id' => $model->company_id ?? null,
-                'purchase_date' => $payload['purchase_date'],
-                'currency' => $payload['currency'],
-                'notes' => $payload['notes'],
-            ]);
-            $order->created_by = auth()->id();
-            $order->save();
-        }
+        $order = $this->findOrCreateOrderForPayload($payload, $model);
 
         $orderItem = new OrderItem([
             'order_id' => $order->id,
@@ -151,6 +123,62 @@ trait HandlesAdjustQuantity
     }
 
     /**
+     * Resolve the Order the OrderItem line will hang off of.
+     * Non-blank order_number dedupes on (order_number, supplier_id,
+     * company_id, purchase_date); blank order_number always mints a
+     * fresh row.
+     */
+    private function findOrCreateOrderForPayload(array $payload, Model $model): Order
+    {
+        $companyId = $model->company_id ?? null;
+
+        if ($payload['order_number'] === null) {
+            return $this->createOrder($payload, $companyId);
+        }
+
+        $order = Order::firstOrNew(
+            [
+                'order_number' => $payload['order_number'],
+                'supplier_id' => $payload['supplier_id'],
+                'company_id' => $companyId,
+                'purchase_date' => $payload['purchase_date'],
+            ],
+            [
+                'currency' => $payload['currency'],
+                'notes' => $payload['notes'],
+            ],
+        );
+
+        if (! $order->exists) {
+            $order->created_by = auth()->id();
+            $order->save();
+        }
+
+        return $order;
+    }
+
+    /**
+     * Persist a new Order with the given payload. created_by is set via
+     * property assignment because it's guarded on the model to prevent
+     * caller-supplied user_id forgery via mass-assignment.
+     */
+    private function createOrder(array $payload, ?int $companyId): Order
+    {
+        $order = new Order([
+            'order_number' => $payload['order_number'],
+            'supplier_id' => $payload['supplier_id'],
+            'company_id' => $companyId,
+            'purchase_date' => $payload['purchase_date'],
+            'currency' => $payload['currency'],
+            'notes' => $payload['notes'],
+        ]);
+        $order->created_by = auth()->id();
+        $order->save();
+
+        return $order;
+    }
+
+    /**
      * Update the observer-created initial Order + OrderItem for a
      * freshly-saved inventory item with the form-supplied transaction
      * fields. None of these fields live on the accessory / consumable /
@@ -165,52 +193,94 @@ trait HandlesAdjustQuantity
      */
     protected function enrichInitialOrderFromRequest(Request $request, Model $item): void
     {
-        $orderNumber = trim((string) $request->input('order_number', ''));
-        $currency = trim((string) $request->input('currency', ''));
-        $supplierId = $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null;
-        $purchaseDate = $request->filled('purchase_date') ? $request->input('purchase_date') : null;
-        $purchaseCost = $request->filled('purchase_cost') ? (float) $request->input('purchase_cost') : null;
-        // The create form doesn't have a per-order note field yet, but
-        // accept `notes` if the caller (importer / API) passes one so the
-        // initial Order carries acquisition context matching the modal.
-        $notes = $request->filled('notes') ? trim((string) $request->input('notes')) : null;
+        $orderInputs = $this->extractOrderEnrichmentInputs($request);
+        $purchaseCost = $orderInputs['purchase_cost'];
 
-        if ($orderNumber === '' && $currency === '' && $supplierId === null && $purchaseDate === null && $purchaseCost === null && $notes === null) {
+        if ($this->initialOrderEnrichmentIsEmpty($orderInputs, $purchaseCost)) {
             return;
         }
 
         $initialLine = $item->orderItems()->latest('id')->first();
-        if (! $initialLine) {
-            return;
-        }
-        $initialOrder = $initialLine->order;
-        if (! $initialOrder) {
+        if (! $initialLine || ! $initialLine->order) {
             return;
         }
 
-        $orderUpdates = [];
-        if ($orderNumber !== '' && $initialOrder->order_number !== $orderNumber) {
-            $orderUpdates['order_number'] = $orderNumber;
-        }
-        if ($currency !== '' && $initialOrder->currency !== $currency) {
-            $orderUpdates['currency'] = $currency;
-        }
-        if ($supplierId !== null && (int) $initialOrder->supplier_id !== $supplierId) {
-            $orderUpdates['supplier_id'] = $supplierId;
-        }
-        if ($purchaseDate !== null && optional($initialOrder->purchase_date)->toDateString() !== $purchaseDate) {
-            $orderUpdates['purchase_date'] = $purchaseDate;
-        }
-        if ($notes !== null && $initialOrder->notes !== $notes) {
-            $orderUpdates['notes'] = $notes;
-        }
+        $orderUpdates = $this->diffInitialOrder($initialLine->order, $orderInputs);
         if ($orderUpdates !== []) {
-            $initialOrder->update($orderUpdates);
+            $initialLine->order->update($orderUpdates);
         }
 
         if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
             $initialLine->update(['price' => $purchaseCost]);
         }
+    }
+
+    /**
+     * Normalize request inputs into the shape the initial-Order
+     * enrichment compares against. Empty strings on the free-text
+     * columns collapse to null so the diff step treats "field was blank
+     * on the form" as "no change requested," not "clear the DB value."
+     */
+    private function extractOrderEnrichmentInputs(Request $request): array
+    {
+        return [
+            'order_number' => $this->trimmedOrNull($request->input('order_number')),
+            'currency' => $this->trimmedOrNull($request->input('currency')),
+            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
+            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
+            'purchase_cost' => $request->filled('purchase_cost') ? (float) $request->input('purchase_cost') : null,
+            'notes' => $this->trimmedOrNull($request->input('notes')),
+        ];
+    }
+
+    private function trimmedOrNull(mixed $raw): ?string
+    {
+        if ($raw === null) {
+            return null;
+        }
+        $trimmed = trim((string) $raw);
+
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function initialOrderEnrichmentIsEmpty(array $inputs, ?float $purchaseCost): bool
+    {
+        return $inputs['order_number'] === null
+            && $inputs['currency'] === null
+            && $inputs['supplier_id'] === null
+            && $inputs['purchase_date'] === null
+            && $inputs['notes'] === null
+            && $purchaseCost === null;
+    }
+
+    /**
+     * Build the Order-column diff between what the request wants and
+     * what the observer wrote. Only differing fields are returned so
+     * the update() runs the smallest possible set of column writes.
+     */
+    private function diffInitialOrder(Order $initialOrder, array $inputs): array
+    {
+        $candidates = [
+            'order_number' => $inputs['order_number'],
+            'currency' => $inputs['currency'],
+            'supplier_id' => $inputs['supplier_id'],
+            'notes' => $inputs['notes'],
+        ];
+
+        $updates = [];
+        foreach ($candidates as $column => $incoming) {
+            if ($incoming !== null && $initialOrder->getAttribute($column) != $incoming) {
+                $updates[$column] = $incoming;
+            }
+        }
+
+        if ($inputs['purchase_date'] !== null
+            && optional($initialOrder->purchase_date)->toDateString() !== $inputs['purchase_date']
+        ) {
+            $updates['purchase_date'] = $inputs['purchase_date'];
+        }
+
+        return $updates;
     }
 
     /**
