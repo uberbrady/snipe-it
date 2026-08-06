@@ -35,25 +35,25 @@ class AccessorySeeder extends Seeder
 
         Accessory::factory()->appleUsbKeyboard()->create([
             'location_id' => $locationIds->random(),
-            'supplier_id' => $supplierIds->random(),
+            'default_supplier_id' => $supplierIds->random(),
             'created_by' => $admin->id,
         ]);
 
         Accessory::factory()->appleBtKeyboard()->create([
             'location_id' => $locationIds->random(),
-            'supplier_id' => $supplierIds->random(),
+            'default_supplier_id' => $supplierIds->random(),
             'created_by' => $admin->id,
         ]);
 
         Accessory::factory()->appleMouse()->create([
             'location_id' => $locationIds->random(),
-            'supplier_id' => $supplierIds->random(),
+            'default_supplier_id' => $supplierIds->random(),
             'created_by' => $admin->id,
         ]);
 
         Accessory::factory()->microsoftMouse()->create([
             'location_id' => $locationIds->random(),
-            'supplier_id' => $supplierIds->random(),
+            'default_supplier_id' => $supplierIds->random(),
             'created_by' => $admin->id,
         ]);
 
