@@ -765,6 +765,16 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function syncCompaniesWithLogging(array $companyIds): void
     {
+        // Belt-and-suspenders coercion so no caller — API, web, importer,
+        // artisan, tinker, a queue job, a future FMCS refactor — can slip
+        // nested arrays or other non-scalars into ->sync(), which would
+        // bind them into SQL query params and trip "Array to string
+        // conversion" (elevated to ErrorException by Laravel's error
+        // handler). Reduce to a flat, unique list of positive int ids.
+        $companyIds = array_values(array_unique(array_filter(
+            array_map('intval', array_filter($companyIds, 'is_scalar'))
+        )));
+
         $oldIds = $this->companies()->orderBy('companies.id')->pluck('companies.id')->toArray();
         $this->companies()->sync($companyIds);
         $newIds = $this->companies()->orderBy('companies.id')->pluck('companies.id')->toArray();

@@ -7,5 +7,5 @@ return [
     'prerelease_version' => '',
     'hash_version' => 'gf80167fe1b',
     'full_hash' => 'v8.7.0-pre-386-gf80167fe1b',
-    'branch' => 'develop',
+    'branch' => 'master',
 ];
