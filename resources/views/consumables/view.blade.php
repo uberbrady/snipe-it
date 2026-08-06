@@ -29,8 +29,8 @@
                     />
 
                     <x-tabs.files-tab :item="$consumable" count="{{ $consumable->uploads()->count() }}"/>
-                    <x-tabs.history-tab count="{{ $consumable->history()->count() }}" :model="$consumable"/>
                     <x-tabs.orders-tab count="{{ $consumable->ordersCount() }}"/>
+                    <x-tabs.history-tab count="{{ $consumable->history()->count() }}" :model="$consumable"/>
                     <x-tabs.upload-tab :item="$consumable"/>
 
                 </x-slot:tabnav>
@@ -50,17 +50,17 @@
                         <x-table.files object_type="consumables" :object="$consumable"/>
                     </x-tabs.pane>
 
-                    <!-- start history tab pane -->
-                    <x-tabs.pane name="history">
-                        <x-table.history :model="$consumable" :route="route('api.consumables.history', $consumable)" :hide_fields="['serial']"/>
-                    </x-tabs.pane>
-                    <!-- end history tab pane -->
-
                     <!-- start orders tab pane -->
                     <x-tabs.pane name="orders">
                         <x-table.orders :route="route('api.order-items.index', ['item_type' => \App\Models\Consumable::class, 'item_id' => $consumable->id])"/>
                     </x-tabs.pane>
                     <!-- end orders tab pane -->
+
+                    <!-- start history tab pane -->
+                    <x-tabs.pane name="history">
+                        <x-table.history :model="$consumable" :route="route('api.consumables.history', $consumable)" :hide_fields="['serial']"/>
+                    </x-tabs.pane>
+                    <!-- end history tab pane -->
 
                 </x-slot:tabpanes>
 

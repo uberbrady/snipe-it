@@ -87,7 +87,9 @@ class ConsumableObserver
         $logAction->item_type = Consumable::class;
         $logAction->item_id = $consumable->id;
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->created_by = auth()->id();
+        // See AssetModelObserver::created for the seeder-friendly
+        // auth fallback rationale.
+        $logAction->created_by = auth()->id() ?? $consumable->created_by;
         $logAction->quantity = $initialQty;
         $logAction->order_item_id = $orderItem?->id;
         if ($consumable->imported) {

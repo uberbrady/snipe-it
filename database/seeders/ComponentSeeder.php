@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Actionlog;
 use App\Models\Asset;
 use App\Models\Company;
 use App\Models\Component;
@@ -16,6 +17,8 @@ class ComponentSeeder extends Seeder
 {
     public function run()
     {
+        // See AssetModelSeeder for the stale-action_log rationale.
+        Actionlog::where('item_type', Component::class)->delete();
         Component::truncate();
         DB::table('components_assets')->truncate();
 

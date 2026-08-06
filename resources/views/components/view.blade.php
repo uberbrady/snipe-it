@@ -25,8 +25,8 @@
                     />
 
                     <x-tabs.files-tab :item="$snipe_component" count="{{ $snipe_component->uploads()->count() }}"/>
-                    <x-tabs.history-tab count="{{ $snipe_component->history()->count() }}" :model="$snipe_component"/>
                     <x-tabs.orders-tab count="{{ $snipe_component->ordersCount() }}"/>
+                    <x-tabs.history-tab count="{{ $snipe_component->history()->count() }}" :model="$snipe_component"/>
                     <x-tabs.upload-tab :item="$snipe_component"/>
 
                 </x-slot:tabnav>
@@ -51,14 +51,14 @@
                         <x-table.files object_type="components" :object="$snipe_component"/>
                     </x-tabs.pane>
 
-                    <!-- start history tab pane -->
-                    <x-tabs.pane name="history">
-                        <x-table.history :model="$snipe_component" :route="route('api.components.history', $snipe_component)"/>
-                    </x-tabs.pane>
-
                     <!-- start orders tab pane -->
                     <x-tabs.pane name="orders">
                         <x-table.orders :route="route('api.order-items.index', ['item_type' => \App\Models\Component::class, 'item_id' => $snipe_component->id])"/>
+                    </x-tabs.pane>
+
+                    <!-- start history tab pane -->
+                    <x-tabs.pane name="history">
+                        <x-table.history :model="$snipe_component" :route="route('api.components.history', $snipe_component)"/>
                     </x-tabs.pane>
 
                 </x-slot:tabpanes>

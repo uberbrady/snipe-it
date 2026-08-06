@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Accessory;
 use App\Models\AccessoryCheckout;
+use App\Models\Actionlog;
 use App\Models\Location;
 use App\Models\Supplier;
 use App\Models\User;
@@ -17,6 +18,8 @@ class AccessorySeeder extends Seeder
 {
     public function run()
     {
+        // See AssetModelSeeder for the stale-action_log rationale.
+        Actionlog::where('item_type', Accessory::class)->delete();
         Accessory::truncate();
         DB::table('accessories_checkout')->truncate();
 

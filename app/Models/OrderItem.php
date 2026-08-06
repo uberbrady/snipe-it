@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Watson\Validating\ValidatingTrait;
@@ -75,5 +76,17 @@ class OrderItem extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * The action_log entry that created this OrderItem. Both a `create`
+     * observer-write and a `QuantityAdjust` receive their own action_log
+     * with `order_item_id` set, so joining on that FK surfaces the file
+     * uploaded through the adjust-quantity modal (which attaches its
+     * receipt to the action_log, not the OrderItem itself).
+     */
+    public function actionlog(): HasOne
+    {
+        return $this->hasOne(Actionlog::class, 'order_item_id')->latest('id');
     }
 }

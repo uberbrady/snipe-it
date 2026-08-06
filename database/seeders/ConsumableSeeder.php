@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Actionlog;
 use App\Models\Consumable;
 use App\Models\Supplier;
 use App\Models\User;
@@ -13,6 +14,8 @@ class ConsumableSeeder extends Seeder
 {
     public function run()
     {
+        // See AssetModelSeeder for the stale-action_log rationale.
+        Actionlog::where('item_type', Consumable::class)->delete();
         Consumable::truncate();
         DB::table('consumables_users')->truncate();
 

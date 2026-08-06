@@ -101,9 +101,14 @@ class OrderItemsController extends Controller
         return OrderItem::query()
             ->with([
                 'admin:id,first_name,last_name,username',
-                'order:id,order_number,supplier_id,currency,purchase_date,created_by',
+                'order:id,order_number,supplier_id,currency,purchase_date,notes,created_by',
                 'order.supplier:id,name',
                 'order.admin:id,first_name,last_name,username',
+                // action_log carries the receipt filename uploaded via
+                // the adjust-quantity modal; surfaced on each Orders-tab
+                // row so the file lives with the acquisition record
+                // rather than only in the item's Files tab.
+                'actionlog:id,order_item_id,filename,item_id,item_type',
             ])
             // Orders tab shows purchases only. Corrections / consumption
             // events (zero or negative-qty OrderItems) belong in the

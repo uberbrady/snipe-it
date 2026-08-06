@@ -108,7 +108,9 @@ class AssetObserver
         $logAction->item_id = $asset->id;
         $logAction->action_date = date('Y-m-d H:i:s');
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->created_by = auth()->id();
+        // See AssetModelObserver::created for the seeder-friendly
+        // auth fallback rationale.
+        $logAction->created_by = auth()->id() ?? $asset->created_by;
         if ($asset->imported) {
             $logAction->setActionSource('importer');
         }

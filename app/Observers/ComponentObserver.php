@@ -91,7 +91,9 @@ class ComponentObserver
         $logAction->item_id = $component->id;
         $logAction->created_at = date('Y-m-d H:i:s');
         $logAction->action_date = date('Y-m-d H:i:s');
-        $logAction->created_by = auth()->id();
+        // See AssetModelObserver::created for the seeder-friendly
+        // auth fallback rationale.
+        $logAction->created_by = auth()->id() ?? $component->created_by;
         $logAction->quantity = $initialQty;
         $logAction->order_item_id = $orderItem?->id;
         if ($component->imported) {

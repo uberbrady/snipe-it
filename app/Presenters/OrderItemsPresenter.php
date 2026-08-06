@@ -153,6 +153,19 @@ class OrderItemsPresenter
                 'title' => trans('general.notes'),
                 'visible' => true,
             ],
+            [
+                // Receipt file uploaded via the adjust-quantity modal.
+                // The transformer returns a URL string (or null) that
+                // downloadFormatter renders as a single download button.
+                'field' => 'receipt',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => true,
+                'title' => trans('general.file_upload'),
+                'visible' => true,
+                'formatter' => 'downloadFormatter',
+            ],
         ];
     }
 }

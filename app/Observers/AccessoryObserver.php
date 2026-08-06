@@ -96,7 +96,9 @@ class AccessoryObserver
         $logAction->item_type = Accessory::class;
         $logAction->item_id = $accessory->id;
         $logAction->created_at = date('Y-m-d H:i:s');
-        $logAction->created_by = auth()->id();
+        // See AssetModelObserver::created for the seeder-friendly
+        // auth fallback rationale.
+        $logAction->created_by = auth()->id() ?? $accessory->created_by;
         // Capture the initial on-hand qty so the create log gives auditors
         // a "started with N units" anchor point. Subsequent QuantityAdjust
         // logs record deltas, not running totals.
