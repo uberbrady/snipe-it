@@ -98,6 +98,6 @@ class Order extends SnipeModel
 
         $default = Setting::getSettings()?->default_currency;
 
-        return ($default !== null && $default !== '') ? $default : null;
+        return $default ?: null;
     }
 }
