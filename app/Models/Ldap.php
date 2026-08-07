@@ -368,7 +368,6 @@ class Ldap extends Model
             }
             $item[$key] = $ldapAttr ? ($ldapattributes[$ldapAttr][0] ?? '') : '';
         }
-        $item['locale'] = app()->getLocale();
 
         return $item;
     }
@@ -467,7 +466,7 @@ class Ldap extends Model
         $user = new User;
         self::applyLdapAttributesToUser($user, $item);
 
-        $user->locale = $item['locale'];
+        $user->locale = app()->getLocale();
         $user->password = $user->noPassword();
         if ($settings->ldap_pw_sync == '1') {
             $user->password = bcrypt($password);
