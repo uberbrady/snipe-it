@@ -439,10 +439,7 @@ class LdapSync extends Command
                 // can't call User::isDeletable() directly here because
                 // it wraps a Gate::allows('delete', $user) check that
                 // needs an authenticated web-session user, and this
-                // command runs from cron with no such user. The
-                // association-blocker half is what's actually load-
-                // bearing for "safe to delete" and is shared via the
-                // hasNoAssignmentBlockers() helper on User.
+                // command runs from cron with no such user
                 $is_deletable = $missing_user->hasNoAssignmentBlockers();
 
                 $missing_item = [
