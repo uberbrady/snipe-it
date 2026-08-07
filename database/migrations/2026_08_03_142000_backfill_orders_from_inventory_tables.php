@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\License;
+use App\Models\OrderItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +22,7 @@ use Illuminate\Support\Facades\Schema;
  * recur across different suppliers or across companies in FMCS installs,
  * and collapsing them would rewrite history.
  *
- * Rows with a null / empty order_number are skipped — they represent
+ * Rows with a null / empty order_number are skipped: they represent
  * inventory rows never associated with any order, and there's nothing
  * for the Orders table to record.
  *
@@ -29,19 +31,6 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration
 {
-    /**
-     * Model class => source table name. Order determines the sequence
-     * OrderItem rows are created in (purely cosmetic — a chronological
-     * report would sort by Order.purchase_date or Order.created_at
-     * anyway).
-     */
-    private const SOURCES = [
-        \App\Models\Accessory::class => 'accessories',
-        \App\Models\Consumable::class => 'consumables',
-        \App\Models\Component::class => 'components',
-        \App\Models\Asset::class => 'assets',
-    ];
-
     public function up(): void
     {
         // Order dedupe cache: (order_number|supplier_id|company_id) => order_id.
@@ -52,13 +41,23 @@ return new class extends Migration
         // inventory tables didn't have their own currency column, and
         // stamping every historical Order with today's system
         // default_currency would fabricate information we don't
-        // actually have — orders placed years ago may have been in a
+        // actually have, orders placed years ago may have been in a
         // different currency than the install's current setting.
         // Downstream display code can fall back to
         // $snipeSettings->default_currency at render time (matching how
         // the pre-Orders info panels rendered purchase_cost anyway).
+        //
+        // Order iteration is purely cosmetic: a chronological report
+        // would sort by Order.purchase_date or Order.created_at.
+        //
+        // License is filtered out because per-seat product-key
+        // semantics need their own design pass before License can join
+        // the Orders flow cleanly.
+        $sourceClasses = array_diff(OrderItem::ITEM_TYPES, [License::class]);
 
-        foreach (self::SOURCES as $modelClass => $table) {
+        foreach ($sourceClasses as $modelClass) {
+            $table = (new $modelClass)->getTable();
+
             // Defensive skip: if a source table has already had its
             // order_number column dropped (partial rerun, hand rollback,
             // schema drift), there's nothing to backfill from and the
@@ -129,10 +128,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Reversible only in a coarse sense — the drop wipes every row
+        // Reversible only in a coarse sense: the delete wipes every row
         // in both tables rather than trying to reconstruct the original
         // per-source-column state. Combined with the follow-up
-        // drop-columns migration (which does have a real down()), a full
+        // rename-columns migration (143000, which does have a real
+        // down() that restores the original column names), a full
         // rollback restores the pre-Orders layout.
         DB::table('order_items')->delete();
         DB::table('orders')->delete();

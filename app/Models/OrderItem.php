@@ -25,7 +25,21 @@ class OrderItem extends Model
 
     protected $table = 'order_items';
 
-    // NOTE: `created_by` is deliberately NOT fillable — accepting it via
+    /**
+     * The inventory model classes that can legally appear as the
+     * polymorphic `item` on an OrderItem. Referenced from the item_type
+     * validation rule and from the backfill / reconcile migrations,
+     * which each iterate a filtered subset of this list.
+     */
+    public const ITEM_TYPES = [
+        Accessory::class,
+        Consumable::class,
+        Component::class,
+        Asset::class,
+        License::class,
+    ];
+
+    // NOTE: `created_by` is deliberately NOT fillable, accepting it via
     // mass-assignment would let a request attribute a line to any
     // user_id the caller writes. All internal writers set it via
     // explicit `$line->created_by = auth()->id()`.
@@ -43,6 +57,18 @@ class OrderItem extends Model
     ];
 
     /**
+     * Static rules that don't depend on runtime data. The `item_type`
+     * rule is composed from ITEM_TYPES in getRules() below so the
+     * polymorphic class list has one source of truth.
+     */
+    public $rules = [
+        'order_id' => 'required|integer|exists:orders,id',
+        'item_id' => 'required|integer|min:1',
+        'qty' => 'required|integer|min:1',
+        'price' => 'nullable|numeric|gte:0|max:99999999999999999.99',
+    ];
+
+    /**
      * Validation for the polymorphic pivot. item_id can't be validated
      * exists-style without a custom rule (the target table is a runtime
      * decision keyed off item_type), so we scope item_type to the
@@ -50,13 +76,12 @@ class OrderItem extends Model
      * item_id to caller sanity. order_id blocks reference to a deleted
      * Order via the exists rule (ignoring soft-deleted rows).
      */
-    public $rules = [
-        'order_id' => 'required|integer|exists:orders,id',
-        'item_type' => 'required|string|in:App\\Models\\Accessory,App\\Models\\Consumable,App\\Models\\Component,App\\Models\\Asset,App\\Models\\License',
-        'item_id' => 'required|integer|min:1',
-        'qty' => 'required|integer|min:1',
-        'price' => 'nullable|numeric|gte:0|max:99999999999999999.99',
-    ];
+    public function getRules(): array
+    {
+        return $this->rules + [
+            'item_type' => 'required|string|in:'.implode(',', self::ITEM_TYPES),
+        ];
+    }
 
     public function order(): BelongsTo
     {

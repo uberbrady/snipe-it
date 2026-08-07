@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\ActionType;
-use App\Models\Accessory;
-use App\Models\Component;
-use App\Models\Consumable;
+use App\Models\Asset;
+use App\Models\License;
+use App\Models\OrderItem;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +31,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        foreach ([Accessory::class, Consumable::class, Component::class] as $modelClass) {
+        // Filter OrderItem::ITEM_TYPES down to the models with a scalar
+        // `qty` column that this reconciliation actually operates on.
+        // Asset is 1:1 (no qty column, one row per unit), and License
+        // is excluded per the note above.
+        $qtyModels = array_diff(OrderItem::ITEM_TYPES, [Asset::class, License::class]);
+
+        foreach ($qtyModels as $modelClass) {
             $this->reconcileFor($modelClass);
         }
     }

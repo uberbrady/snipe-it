@@ -7,7 +7,6 @@ use App\Models\Actionlog;
 
 class AccessoryObserver
 {
-
     /**
      * Listen to the User created event.
      *
