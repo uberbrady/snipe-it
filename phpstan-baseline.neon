@@ -85,6 +85,24 @@ parameters:
 			path: app/Actions/Manufacturers/DestroyManufacturerAction.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$accessories_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Suppliers/DestroySupplierAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$components_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Suppliers/DestroySupplierAction.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$consumables_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Suppliers/DestroySupplierAction.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$asset_tag\.$#'
 			identifier: property.notFound
 			count: 7
@@ -973,9 +991,33 @@ parameters:
 			path: app/Http/Controllers/Accessories/AccessoriesController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Accessories/AccessoriesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Accessories/AccessoriesController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Accessories/AccessoriesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Accessories/AccessoriesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Accessories/AccessoriesController.php
 
 		-
@@ -1111,6 +1153,12 @@ parameters:
 			path: app/Http/Controllers/Api/AccessoriesController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AccessoriesController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\AccessoryCheckout\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1135,6 +1183,18 @@ parameters:
 			path: app/Http/Controllers/Api/AccessoriesController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AccessoriesController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AccessoriesController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:companies\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -1144,6 +1204,18 @@ parameters:
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Api/AccessoriesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AccessoriesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/AccessoriesController.php
 
 		-
@@ -1483,9 +1555,39 @@ parameters:
 			path: app/Http/Controllers/Api/ComponentsController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Component\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ComponentsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ComponentsController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ComponentsController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Api/ComponentsController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ComponentsController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/ComponentsController.php
 
 		-
@@ -1543,9 +1645,39 @@ parameters:
 			path: app/Http/Controllers/Api/ConsumablesController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ConsumablesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/ConsumablesController.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ConsumablesController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Api/ConsumablesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/ConsumablesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/ConsumablesController.php
 
 		-
@@ -2011,7 +2143,25 @@ parameters:
 			path: app/Http/Controllers/Api/StatuslabelsController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$accessories_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SuppliersController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$asset_maintenances_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$components_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/SuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$consumables_count\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/SuppliersController.php
@@ -2357,12 +2507,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Assets/AssetCheckoutController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$accessories\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
@@ -2845,7 +2989,25 @@ parameters:
 			path: app/Http/Controllers/BulkStatuslabelsController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Supplier\>\:\:\$accessories_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/BulkSuppliersController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Supplier\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Supplier\>\:\:\$asset_maintenances_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/BulkSuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Supplier\>\:\:\$components_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/BulkSuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Supplier\>\:\:\$consumables_count\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/BulkSuppliersController.php
@@ -2971,9 +3133,33 @@ parameters:
 			path: app/Http/Controllers/Components/ComponentsController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Component\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Components/ComponentsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Components/ComponentsController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Components/ComponentsController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Components/ComponentsController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Components/ComponentsController.php
 
 		-
@@ -3019,9 +3205,33 @@ parameters:
 			path: app/Http/Controllers/Consumables/ConsumablesController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Consumables/ConsumablesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Consumables/ConsumablesController.php
+
+		-
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
+			path: app/Http/Controllers/Consumables/ConsumablesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:adjustQuantity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Consumables/ConsumablesController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:orderItems\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Consumables/ConsumablesController.php
 
 		-
@@ -3038,12 +3248,6 @@ parameters:
 
 		-
 			message: '#^Property App\\Models\\Consumable\:\:\$id \(int\) does not accept null\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Consumables/ConsumablesController.php
-
-		-
-			message: '#^Property App\\Models\\Consumable\:\:\$qty \(int\) does not accept string\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Consumables/ConsumablesController.php
@@ -3955,7 +4159,25 @@ parameters:
 			path: app/Http/Controllers/StatuslabelsController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$accessories_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SuppliersController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$asset_maintenances_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$components_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SuppliersController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$consumables_count\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/SuppliersController.php
@@ -4301,6 +4523,12 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Http/Requests/SettingsLdapRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$orderItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/ActionlogsTransformer.php
 
 		-
 			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
@@ -4651,6 +4879,66 @@ parameters:
 			path: app/Http/Transformers/ManufacturersTransformer.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$admin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$filename\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$item_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/OrderItemsTransformer.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4661,6 +4949,24 @@ parameters:
 			identifier: property.notFound
 			count: 3
 			path: app/Http/Transformers/PredefinedKitsTransformer.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$accessories_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/SuppliersTransformer.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$components_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/SuppliersTransformer.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$consumables_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Transformers/SuppliersTransformer.php
 
 		-
 			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
@@ -6049,6 +6355,24 @@ parameters:
 			path: app/Mail/UnacceptedAssetReminderMail.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$default_purchase_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$license\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6067,15 +6391,9 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$requests\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Accessory.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 6
 			path: app/Models/Accessory.php
 
 		-
@@ -6085,8 +6403,38 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
 			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Cannot access property \$id on class\-string\|object\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: app/Models/Accessory.php
 
@@ -6187,6 +6535,12 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 4
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Using nullsafe method call on non\-nullable type Psr\\Http\\Message\\ResponseInterface\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -6194,6 +6548,18 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>company_id" in isset\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>default_currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Accessory.php
@@ -6291,7 +6657,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 5
 			path: app/Models/Asset.php
 
 		-
@@ -6302,6 +6668,24 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$default_purchase_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$default_supplier_id\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Models/Asset.php
@@ -6349,12 +6733,6 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requests\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Asset.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warrantyExpires\.$#'
 			identifier: property.notFound
 			count: 4
@@ -6370,6 +6748,30 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company_id\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Models/Asset.php
 
 		-
@@ -6411,6 +6813,12 @@ parameters:
 		-
 			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Asset\) and ''assignedTo'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Cannot access property \$id on class\-string\|object\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: app/Models/Asset.php
 
@@ -6637,6 +7045,12 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 4
+			path: app/Models/Asset.php
+
+		-
 			message: '#^Using nullsafe method call on non\-nullable type Psr\\Http\\Message\\ResponseInterface\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -6644,6 +7058,18 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>company_id" in isset\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>default_currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Asset.php
@@ -6668,12 +7094,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\AssetModel\:\:\$model\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/AssetModel.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AssetModel\:\:\$requests\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/AssetModel.php
@@ -7185,7 +7605,25 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 6
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Component\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Component\:\:\$default_purchase_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Component\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Models/Component.php
 
 		-
@@ -7225,6 +7663,30 @@ parameters:
 			path: app/Models/Component.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:withTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -7233,6 +7695,12 @@ parameters:
 		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
 			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Cannot access property \$id on class\-string\|object\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: app/Models/Component.php
 
@@ -7297,6 +7765,12 @@ parameters:
 			path: app/Models/Component.php
 
 		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 4
+			path: app/Models/Component.php
+
+		-
 			message: '#^Using nullsafe method call on non\-nullable type Psr\\Http\\Message\\ResponseInterface\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -7304,6 +7778,18 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>company_id" in isset\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>default_currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Component.php
@@ -7335,13 +7821,31 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 6
 			path: app/Models/Consumable.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$consumables_users_count\.$#'
 			identifier: property.notFound
 			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$default_purchase_cost\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$default_supplier_id\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Models/Consumable.php
 
 		-
@@ -7369,6 +7873,30 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:withTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -7377,6 +7905,12 @@ parameters:
 		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
 			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Cannot access property \$id on class\-string\|object\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: app/Models/Consumable.php
 
@@ -7429,12 +7963,6 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
-			message: '#^Property App\\Models\\Consumable\:\:\$casts \(array\<string, string\>\) does not accept default value of type array\<int\|string, string\>\.$#'
-			identifier: property.defaultValue
-			count: 1
-			path: app/Models/Consumable.php
-
-		-
 			message: '#^Property App\\Models\\Consumable\:\:\$searchableAttributes \(array\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
 			count: 1
@@ -7459,6 +7987,12 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 4
+			path: app/Models/Consumable.php
+
+		-
 			message: '#^Using nullsafe method call on non\-nullable type Psr\\Http\\Message\\ResponseInterface\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -7466,6 +8000,18 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>company_id" in isset\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>default_currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Consumable.php
@@ -8047,30 +8593,6 @@ parameters:
 			path: app/Models/Ldap.php
 
 		-
-			message: '#^Method App\\Models\\Ldap\:\:connectToLdap\(\) has invalid return type App\\Models\\connection\.$#'
-			identifier: class.notFound
-			count: 1
-			path: app/Models/Ldap.php
-
-		-
-			message: '#^Method App\\Models\\Ldap\:\:connectToLdap\(\) should return App\\Models\\connection but returns LDAP\\Connection\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Ldap.php
-
-		-
-			message: '#^Method App\\Models\\Ldap\:\:findAndBindUserLdap\(\) should return bool but returns array\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Ldap.php
-
-		-
-			message: '#^Method App\\Models\\Ldap\:\:findAndBindUserLdap\(\) should return bool but returns array\<int\|string, array\|int\|string\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Ldap.php
-
-		-
 			message: '#^Method App\\Models\\Ldap\:\:findLdapUsers\(\) should return array\|bool but returns Illuminate\\Http\\RedirectResponse\.$#'
 			identifier: return.type
 			count: 2
@@ -8079,7 +8601,7 @@ parameters:
 		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$user$#'
 			identifier: parameter.notFound
-			count: 2
+			count: 1
 			path: app/Models/Ldap.php
 
 		-
@@ -8709,7 +9231,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:companies\(\)\.$#'
 			identifier: method.notFound
-			count: 2
+			count: 4
 			path: app/Models/SnipeSCIMConfig.php
 
 		-
@@ -8914,6 +9436,12 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$company_id\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$consumable_cost\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Models/User.php
 
 		-
@@ -10281,13 +10809,19 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Observers/AccessoryObserver.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 4
+			path: app/Observers/AssetModelObserver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AssetModel\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Observers/AssetModelObserver.php
 
 		-
@@ -10303,6 +10837,18 @@ parameters:
 			path: app/Observers/AssetObserver.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Observers/AssetObserver.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Observers/AssetObserver.php
+
+		-
 			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -10311,13 +10857,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Observers/ComponentObserver.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Observers/ConsumableObserver.php
 
 		-
@@ -10539,7 +11085,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Presenters\\ActionlogPresenter\:\:\$action_type\.$#'
 			identifier: property.notFound
-			count: 22
+			count: 25
+			path: app/Presenters/ActionlogPresenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Presenters\\ActionlogPresenter\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Presenters/ActionlogPresenter.php
 
 		-
@@ -11485,6 +12037,18 @@ parameters:
 			path: database/factories/AccessoryFactory.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/AccessoryFactory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/AccessoryFactory.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:checkouts\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -11581,6 +12145,18 @@ parameters:
 			path: database/factories/ComponentFactory.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/ComponentFactory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/ComponentFactory.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -11591,6 +12167,18 @@ parameters:
 			identifier: property.phpDocType
 			count: 1
 			path: database/factories/ComponentFactory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/ConsumableFactory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: database/factories/ConsumableFactory.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
@@ -11985,12 +12573,18 @@ parameters:
 		-
 			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
 			identifier: larastan.noUnnecessaryCollectionCall
-			count: 2
+			count: 3
 			path: database/seeders/ComponentSeeder.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: database/seeders/ConsumableSeeder.php
+
+		-
+			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
 			count: 1
 			path: database/seeders/ConsumableSeeder.php
 
@@ -12038,12 +12632,6 @@ parameters:
 
 		-
 			message: '#^Property App\\Models\\Setting\:\:\$full_multiple_companies_support \(bool\) does not accept int\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: database/seeders/SettingsSeeder.php
-
-		-
-			message: '#^Property App\\Models\\Setting\:\:\$ldap_enabled \(string\|null\) does not accept int\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: database/seeders/SettingsSeeder.php
