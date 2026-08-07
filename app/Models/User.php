@@ -657,15 +657,28 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      */
     public function isDeletable()
     {
-
         return Gate::allows('delete', $this)
-            && (($this->assets_count ?? $this->assets()->count()) === 0)
+            && $this->hasNoAssignmentBlockers()
+            && ($this->deleted_at == '');
+    }
+
+    /**
+     * The association-blocker half of isDeletable(): true only when the
+     * user has no assigned assets / accessories / licenses / consumables
+     * and isn't managing any users or locations. Split out from
+     * isDeletable() so scripts running outside a request context,
+     * Artisan `snipeit:ldap-sync --delete` flow in particular, can share
+     * the exact same rule without needing an authenticated Gate user to
+     * satisfy the delete-permission check.
+     */
+    public function hasNoAssignmentBlockers(): bool
+    {
+        return (($this->assets_count ?? $this->assets()->count()) === 0)
             && (($this->accessories_count ?? $this->accessories()->count()) === 0)
             && (($this->licenses_count ?? $this->licenses()->count()) === 0)
             && (($this->consumables_count ?? $this->consumables()->count()) === 0)
             && (($this->manages_users_count ?? $this->managesUsers()->count()) === 0)
-            && (($this->manages_locations_count ?? $this->managedLocations()->count()) === 0)
-            && ($this->deleted_at == '');
+            && (($this->manages_locations_count ?? $this->managedLocations()->count()) === 0);
     }
 
     /**
