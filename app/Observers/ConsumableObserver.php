@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ConsumableObserver
 {
-
     /**
      * Listen to the User created event.
      *
