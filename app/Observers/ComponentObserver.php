@@ -7,7 +7,6 @@ use App\Models\Component;
 
 class ComponentObserver
 {
-
     /**
      * Listen to the User created event.
      *
