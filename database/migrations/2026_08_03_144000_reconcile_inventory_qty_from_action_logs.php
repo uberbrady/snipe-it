@@ -44,14 +44,15 @@ return new class extends Migration
 
     private function reconcileFor(string $modelClass): void
     {
+        $create = ActionType::Create->value;
         $qtyAdjust = ActionType::QuantityAdjust->value;
 
-        $modelClass::query()->chunkById(500, function ($rows) use ($modelClass, $qtyAdjust) {
+        $modelClass::query()->chunkById(500, function ($rows) use ($modelClass, $create, $qtyAdjust) {
             foreach ($rows as $model) {
                 $expected = (int) DB::table('action_logs')
                     ->where('item_type', $modelClass)
                     ->where('item_id', $model->id)
-                    ->whereIn('action_type', ['create', $qtyAdjust])
+                    ->whereIn('action_type', [$create, $qtyAdjust])
                     ->whereNull('deleted_at')
                     ->sum('quantity');
 

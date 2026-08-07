@@ -61,7 +61,7 @@ class ActionlogsTransformer
         // checkouts with a signed acceptance form, etc.) keep their
         // semantic icon so the history tab telegraphs what happened, not
         // that a file was attached.
-        if ($actionlog->action_type === 'uploaded' && $actionlog->filename != '') {
+        if ($actionlog->action_type === ActionType::Uploaded->value && $actionlog->filename != '') {
             $icon = Helper::filetype_icon($actionlog->filename);
         }
 

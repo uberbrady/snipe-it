@@ -2,6 +2,8 @@
 
 namespace App\Presenters;
 
+use App\Enums\ActionType;
+
 /**
  * Class CompanyPresenter
  */
@@ -110,7 +112,7 @@ class ActionlogPresenter extends Presenter
         // quantity" label swap), so it shares the audit icon. Positive
         // and negative deltas get plus / minus so the history row's
         // icon telegraphs whether qty went up or down at a glance.
-        if ($this->action_type == 'adjusted quantity') {
+        if ($this->action_type == ActionType::QuantityAdjust->value) {
             $delta = (int) $this->quantity;
             if ($delta > 0) {
                 return 'fa-solid fa-plus';
@@ -126,11 +128,11 @@ class ActionlogPresenter extends Presenter
         // adjust-quantity flow) also want +/- icons so the history tab
         // reads consistently regardless of which path added / removed
         // the seats.
-        if ($this->action_type == 'add seats') {
+        if ($this->action_type == ActionType::AddSeats->value) {
             return 'fa-solid fa-plus';
         }
 
-        if ($this->action_type == 'delete seats') {
+        if ($this->action_type == ActionType::DeleteSeats->value) {
             return 'fa-solid fa-minus';
         }
 
@@ -146,7 +148,7 @@ class ActionlogPresenter extends Presenter
         // blank change column is confusing. Surface them as "confirmed
         // quantity" instead. The underlying action_type value stays
         // 'adjusted quantity' so filters and reports keep working.
-        if ($this->action_type === 'adjusted quantity' && (int) $this->quantity === 0) {
+        if ($this->action_type === ActionType::QuantityAdjust->value && (int) $this->quantity === 0) {
             return mb_strtolower(trans('general.confirmed_quantity'));
         }
 
