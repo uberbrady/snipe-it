@@ -690,6 +690,14 @@ class AssetsController extends Controller
     {
         $settings = Setting::getSettings();
         if ($asset = Asset::withTrashed()->find($assetId)) {
+            // Gate on the asset view policy so this endpoint enforces
+            // the same object-level authorization as its sibling detail
+            // / label / QR-code routes. Previously any authenticated
+            // user could pull the barcode PNG for any asset regardless
+            // of company scope, letting them enumerate protected asset
+            // tags.
+            $this->authorize('view', $asset);
+
             $barcode_file = public_path().'/uploads/barcodes/'.str_slug($settings->label2_1d_type).'-'.str_slug($asset->asset_tag).'.png';
 
             if (isset($asset->id, $asset->asset_tag)) {
