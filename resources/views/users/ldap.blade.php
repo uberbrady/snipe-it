@@ -15,16 +15,17 @@
         <x-form id="ldap-form">
             <x-box>
                 <x-callout type="legend" icon="tip" class="col-md-12">
-                    <p>
+
                         <strong>
                             {!! trans('admin/users/general.ldap_sync_intro', ['link' => 'https://snipe-it.readme.io/docs/ldap-sync#/']) !!}
                         </strong>
-                    </p>
+                   
                 </x-callout>
 
                 <x-input.location-select
                     :label="trans('general.ldap_sync_location')"
                     name="location_id[]"
+                    :selected="null"
                     :multiple="true"
                     :hide-new-button="true"
                     :help-text="trans('admin/users/general.ldap_config_text')"
@@ -83,7 +84,7 @@
                         <td>{{ (array_key_exists('id', $entry)) ?  $entry['id'] : '' }}</td>
                         <td>{{ $entry['username'] }}</td>
                         <td>{{ $entry['display_name'] }}</td>
-                        <td>{{ $entry['employee_number'] }}</td>
+                        <td>{{ $entry['employee_num'] }}</td>
                         <td>{{ $entry['first_name'] }}</td>
                         <td>{{ $entry['last_name'] }}</td>
                         <td>{{ $entry['email'] }}</td>
