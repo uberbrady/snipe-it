@@ -68,6 +68,35 @@ return new class extends Migration
                     continue;
                 }
 
+                // Legacy-data safety: pre-replenish deployments never
+                // populated action_logs.quantity for `create` events
+                // (the `qty_adjust` action_type didn't exist), so the
+                // ledger sum comes out at 0 or a stray small value on
+                // every legacy row. Overwriting the real qty with that
+                // stray value drives it below the currently-in-use
+                // count and renders "-N Remaining" in the UI. Skip
+                // when the ledger has no meaningful entries or when
+                // the sum would push qty below in-use.
+                if ($expected === 0 && $actual > 0) {
+                    continue;
+                }
+
+                $inUse = method_exists($model, 'currentlyInUseCount')
+                    ? (int) $model->currentlyInUseCount()
+                    : 0;
+
+                if ($expected < $inUse) {
+                    Log::info(sprintf(
+                        'Skipping reconcile of %s#%d: ledger sum %d < in-use count %d (probably stale pre-replenish action_logs)',
+                        $modelClass,
+                        $model->id,
+                        $expected,
+                        $inUse,
+                    ));
+
+                    continue;
+                }
+
                 Log::info(sprintf(
                     'Reconciling %s#%d qty: %d -> %d (ledger sum)',
                     $modelClass,

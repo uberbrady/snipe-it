@@ -7,24 +7,28 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Backfill the Orders / OrderItems tables from the pre-existing
- * order_number columns on accessories, consumables, components, and
- * assets. One Order row is created per unique (order_number,
- * supplier_id, company_id) tuple across all four tables, and each
- * source inventory row becomes an OrderItem line under that Order.
+ * Backfill the Orders / OrderItems tables from every pre-existing
+ * inventory row on accessories, consumables, components, and assets.
+ * Every source row becomes an OrderItem so the polymorphic ledger is
+ * complete after the migration runs — the reconcile migration
+ * (`2026_08_03_144000_...`) relies on every row having at least one
+ * OrderItem to represent its starting qty.
+ *
+ * Rows with a non-null order_number dedupe on
+ * (order_number, supplier_id, company_id) so multiple inventory lines
+ * placed against the same PO collapse under one shared Order. A raw
+ * string like "PO-42" can legitimately recur across different suppliers
+ * or across companies in FMCS installs, so the supplier and company
+ * are part of the dedupe key.
+ *
+ * Rows with a null / empty order_number get a fresh Order per row (no
+ * dedupe). Blank order_number is a distinct transaction each time, not
+ * a bucket to pool anonymous acquisitions into — same convention as
+ * HandlesAdjustQuantity::resolveOrderForAdjustment at runtime.
  *
  * Licenses are intentionally out of scope. Per-seat product-key
  * semantics need their own design pass before License can join the
  * Orders flow cleanly.
- *
- * The dedupe key is intentionally (order_number, supplier_id, company_id)
- * rather than just order_number: a raw string like "PO-42" can legitimately
- * recur across different suppliers or across companies in FMCS installs,
- * and collapsing them would rewrite history.
- *
- * Rows with a null / empty order_number are skipped: they represent
- * inventory rows never associated with any order, and there's nothing
- * for the Orders table to record.
  *
  * The follow-up rename migration (`2026_08_03_143000_...`) renames the
  * source columns to `legacy_*` names once this backfill has run.
@@ -79,8 +83,6 @@ return new class extends Migration
                     'created_by',
                     'created_at',
                 ])
-                ->whereNotNull('order_number')
-                ->where('order_number', '!=', '')
                 ->orderBy('id')
                 ->chunkById(500, function ($rows) use ($modelClass, $table, $hasQtyColumn, &$orderIndex) {
                     // Chunked pull grabs qty separately since assets
@@ -95,13 +97,31 @@ return new class extends Migration
                         : [];
 
                     foreach ($rows as $row) {
-                        $key = ($row->order_number ?? '')
-                            .'|'.($row->supplier_id ?? '')
-                            .'|'.($row->company_id ?? '');
+                        $hasOrderNumber = $row->order_number !== null && $row->order_number !== '';
 
-                        if (! array_key_exists($key, $orderIndex)) {
-                            $orderIndex[$key] = DB::table('orders')->insertGetId([
-                                'order_number' => $row->order_number,
+                        if ($hasOrderNumber) {
+                            $key = $row->order_number
+                                .'|'.($row->supplier_id ?? '')
+                                .'|'.($row->company_id ?? '');
+
+                            if (! array_key_exists($key, $orderIndex)) {
+                                $orderIndex[$key] = DB::table('orders')->insertGetId([
+                                    'order_number' => $row->order_number,
+                                    'supplier_id' => $row->supplier_id,
+                                    'company_id' => $row->company_id,
+                                    'purchase_date' => $row->purchase_date,
+                                    'created_by' => $row->created_by,
+                                    'created_at' => $row->created_at ?? now(),
+                                    'updated_at' => $row->created_at ?? now(),
+                                ]);
+                            }
+                            $orderId = $orderIndex[$key];
+                        } else {
+                            // No order_number → fresh Order per row.
+                            // Matches the runtime convention in
+                            // HandlesAdjustQuantity::resolveOrderForAdjustment.
+                            $orderId = DB::table('orders')->insertGetId([
+                                'order_number' => null,
                                 'supplier_id' => $row->supplier_id,
                                 'company_id' => $row->company_id,
                                 'purchase_date' => $row->purchase_date,
@@ -112,7 +132,7 @@ return new class extends Migration
                         }
 
                         DB::table('order_items')->insert([
-                            'order_id' => $orderIndex[$key],
+                            'order_id' => $orderId,
                             'item_type' => $modelClass,
                             'item_id' => $row->id,
                             'qty' => max(1, (int) ($qtyMap[$row->id] ?? 1)),
