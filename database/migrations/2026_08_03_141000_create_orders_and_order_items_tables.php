@@ -80,6 +80,15 @@ return new class extends Migration
             // currencies and low-per-unit fractional prices without
             // rounding drift on aggregate totals.
             $table->decimal('price', 20, 4)->nullable();
+            // Per-line authorship. Order.created_by records who opened
+            // the transaction, but a single Order can accumulate lines
+            // from multiple operators over time (Alice writes two lines
+            // under Order-42, Bob replenishes with three more under the
+            // same Order-42 later). Storing created_by on the OrderItem
+            // itself preserves that per-line context. Nullable so
+            // backfill rows written from parent inventory tables
+            // without a captured actor don't fail.
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
             // SoftDeletes so a force-delete on a referenced inventory
             // row (Accessory / Consumable / Component / Asset / License)
@@ -90,6 +99,7 @@ return new class extends Migration
 
             $table->index('order_id');
             $table->index(['item_type', 'item_id']);
+            $table->index('created_by');
         });
 
         // FK from every action_log row that references a specific
