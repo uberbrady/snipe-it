@@ -97,6 +97,24 @@ abstract class Controller extends BaseController
         'users' => 'user',
     ];
 
+    /**
+     * Reverse of $map_object_type: model class => canonical URL segment,
+     * used by generic code (transformers, traits) that has a class
+     * string in hand and needs the segment to build a route or key
+     * into $map_storage_path / $map_file_prefix. Asset uses 'hardware'
+     * because that's the canonical URL segment (the 'assets' and
+     * 'audits' entries above are legacy aliases pointing at the same
+     * model). Add entries here when a new model needs URL-segment
+     * lookup, not by scattering per-model `urlSegment()` methods.
+     */
+    public static $map_class_url_segment = [
+        Accessory::class => 'accessories',
+        Asset::class => 'hardware',
+        Component::class => 'components',
+        Consumable::class => 'consumables',
+        License::class => 'licenses',
+    ];
+
     public function __construct()
     {
         view()->share('signedIn', Auth::check());
@@ -129,5 +147,14 @@ abstract class Controller extends BaseController
     public static function getMapFilePrefix(): array
     {
         return static::$map_file_prefix;
+    }
+
+    /**
+     * Accessor for the class => URL segment map. See getMapObjectType
+     * for rationale.
+     */
+    public static function getMapClassUrlSegment(): array
+    {
+        return static::$map_class_url_segment;
     }
 }
