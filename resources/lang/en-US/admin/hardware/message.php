@@ -173,6 +173,8 @@ return [
         'success' => 'Request successfully submitted.',
         'canceled' => 'Request successfully canceled.',
         'cancel' => 'Cancel this item request',
+        'duplicate' => 'You already have an active request for this item.',
+        'no_active' => 'You have no active request to cancel for this item.',
     ],
 
 ];
