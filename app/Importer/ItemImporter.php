@@ -8,7 +8,6 @@ use App\Models\Company;
 use App\Models\CompanyableScope;
 use App\Models\Location;
 use App\Models\Manufacturer;
-use App\Models\Order;
 use App\Models\Statuslabel;
 use App\Models\Supplier;
 use App\Models\User;
@@ -239,41 +238,6 @@ class ItemImporter extends Importer
      */
     protected function recordOrderForImportedRow($model, array $row): void
     {
-        $payload = $this->buildOrderEnrichmentPayload($row);
-
-        if ($payload === null) {
-            return;
-        }
-
-        // Every accessory / consumable / component / asset create fires
-        // its observer which writes an initial Order + OrderItem from
-        // parent attributes (with null acquisition metadata — parents
-        // don't carry those columns any more). The importer's job here
-        // is to enrich the observer-created rows with the CSV's values.
-        $initialLine = $model->orderItems()->latest('id')->first();
-        if (! $initialLine || ! $initialLine->order) {
-            return;
-        }
-
-        $updates = $this->diffOrderAgainstPayload($initialLine->order, $payload);
-        if ($updates !== []) {
-            $initialLine->order->update($updates);
-        }
-
-        $purchaseCost = $payload['purchase_cost'];
-        if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
-            $initialLine->update(['price' => $purchaseCost]);
-        }
-    }
-
-    /**
-     * Assemble the enrichment payload from the CSV row and the
-     * sub-importer's already-normalized $this->item. Returns null when
-     * the row carried no acquisition metadata at all, so the caller
-     * can short-circuit before pulling the initial Order off the DB.
-     */
-    private function buildOrderEnrichmentPayload(array $row): ?array
-    {
         $orderNumber = trim((string) $this->findCsvMatch($row, 'order_number'));
         $currency = trim((string) $this->findCsvMatch($row, 'currency'));
         $supplierId = $this->item['supplier_id'] ?? null;
@@ -281,48 +245,48 @@ class ItemImporter extends Importer
         $rawCost = $this->item['purchase_cost'] ?? null;
         $purchaseCost = ($rawCost !== null && $rawCost !== '') ? (float) $rawCost : null;
 
-        $isEmpty = $orderNumber === ''
+        if ($orderNumber === ''
             && $currency === ''
             && $supplierId === null
             && $purchaseDate === null
-            && $purchaseCost === null;
-
-        if ($isEmpty) {
-            return null;
+            && $purchaseCost === null
+        ) {
+            return;
         }
 
-        return [
-            'order_number' => $orderNumber,
-            'currency' => $currency,
-            'supplier_id' => $supplierId,
-            'purchase_date' => $purchaseDate,
-            'purchase_cost' => $purchaseCost,
-        ];
-    }
+        // Every accessory / consumable / component / asset create fires
+        // its observer which writes an initial Order + OrderItem from
+        // parent attributes (with null acquisition metadata, parents
+        // don't carry those columns any more). The importer's job here
+        // is to enrich the observer-created rows with the CSV's values.
+        $initialLine = $model->orderItems()->latest('id')->first();
+        if (! $initialLine || ! $initialLine->order) {
+            return;
+        }
 
-    /**
-     * Compute the field-level diff between the payload and the
-     * observer-written Order. Only changed columns are returned so the
-     * subsequent update() writes the minimum set.
-     */
-    private function diffOrderAgainstPayload(Order $order, array $payload): array
-    {
+        $order = $initialLine->order;
         $updates = [];
 
-        if ($payload['order_number'] !== '' && $order->order_number !== $payload['order_number']) {
-            $updates['order_number'] = $payload['order_number'];
+        if ($orderNumber !== '' && $order->order_number !== $orderNumber) {
+            $updates['order_number'] = $orderNumber;
         }
-        if ($payload['currency'] !== '' && $order->currency !== $payload['currency']) {
-            $updates['currency'] = $payload['currency'];
+        if ($currency !== '' && $order->currency !== $currency) {
+            $updates['currency'] = $currency;
         }
-        if ($payload['supplier_id'] !== null && (int) $order->supplier_id !== (int) $payload['supplier_id']) {
-            $updates['supplier_id'] = (int) $payload['supplier_id'];
+        if ($supplierId !== null && (int) $order->supplier_id !== (int) $supplierId) {
+            $updates['supplier_id'] = (int) $supplierId;
         }
-        if ($payload['purchase_date'] !== null && optional($order->purchase_date)->toDateString() !== (string) $payload['purchase_date']) {
-            $updates['purchase_date'] = $payload['purchase_date'];
+        if ($purchaseDate !== null && optional($order->purchase_date)->toDateString() !== (string) $purchaseDate) {
+            $updates['purchase_date'] = $purchaseDate;
         }
 
-        return $updates;
+        if ($updates !== []) {
+            $order->update($updates);
+        }
+
+        if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
+            $initialLine->update(['price' => $purchaseCost]);
+        }
     }
 
     /**

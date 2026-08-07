@@ -2,8 +2,10 @@
 
 namespace App\Models\Traits;
 
+use App\Models\Actionlog;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Setting;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -122,8 +124,8 @@ trait HasOrders
             ];
         }
 
-        $defaultSupplier = $this->getAttribute('default_supplier_id');
-        $defaultCost = $this->getAttribute('default_purchase_cost');
+        $defaultSupplier = $this->default_supplier_id;
+        $defaultCost = $this->default_purchase_cost;
 
         if ($defaultSupplier === null && $defaultCost === null) {
             return null;
@@ -157,7 +159,7 @@ trait HasOrders
             return $cachedSupplier;
         }
 
-        $supplierId = $this->lastOrderSupplierId() ?? $this->getAttribute('default_supplier_id');
+        $supplierId = $this->lastOrderSupplierId() ?? $this->default_supplier_id;
 
         return $supplierId ? Supplier::find($supplierId) : null;
     }
@@ -282,5 +284,136 @@ trait HasOrders
                 ->where('order_items.item_type', static::class)
                 ->selectRaw('COALESCE(SUM(order_items.qty * order_items.price), 0)'),
         ])->orderBy('sort_total_order_cost', $direction);
+    }
+
+    /**
+     * Sum every OrderItem's line total (qty × price) grouped by the
+     * parent Order's currency, so mixed-currency acquisitions render
+     * as a per-currency breakdown instead of a single misleading total.
+     *
+     * Returns [] when the item has no OrderItems yet or every line has
+     * a null price. The info-panel skips the "Total cost" line entirely
+     * in that case rather than showing 0. Orders / OrderItems is the
+     * single source of truth for acquisition cost, no fallback to
+     * legacy_* columns (those will be dropped in a later version).
+     *
+     * @return array<string, float> currency code => sum in that currency
+     */
+    public function totalCostSumByCurrency(): array
+    {
+        return $this->orderItems()
+            ->with('order:id,currency')
+            ->get()
+            ->reduce(function (array $carry, OrderItem $line) {
+                if ($line->price === null) {
+                    return $carry;
+                }
+                $currency = $line->order?->currency
+                    ?? Setting::getSettings()?->default_currency
+                    ?? '';
+                $carry[$currency] = ($carry[$currency] ?? 0) + ($line->qty * (float) $line->price);
+
+                return $carry;
+            }, []);
+    }
+
+    /**
+     * Naive cross-currency sum, kept for backwards compatibility with
+     * external callers. New code should prefer totalCostSumByCurrency()
+     * so mixed-currency totals stay disambiguated.
+     */
+    public function totalCostSum()
+    {
+        return array_sum($this->totalCostSumByCurrency()) ?: null;
+    }
+
+    /**
+     * True when every recorded acquisition for this item came from the
+     * same supplier. Info-panel supplier row hides when false so a
+     * single supplier name doesn't misrepresent multi-supplier history.
+     */
+    public function hasConsistentSupplier(): bool
+    {
+        return $this->orderItems()
+            ->with('order:id,supplier_id')
+            ->get()
+            ->map(fn (OrderItem $line) => $line->order?->supplier_id)
+            ->filter()
+            ->unique()
+            ->count() <= 1;
+    }
+
+    /**
+     * Called from the inventory observer's `created` event. When the row
+     * lands with qty > 0, write a placeholder Order + OrderItem to
+     * represent the initial acquisition. Transaction metadata
+     * (supplier_id, purchase_date, purchase_cost, currency, order_number)
+     * only lives on Orders / OrderItems now, form-driven creates enrich
+     * the placeholder via the controller's enrichInitialOrderFromRequest,
+     * and factory / seeder paths fill it via an afterCreating hook.
+     *
+     * qty=0/null is container-only: a bare inventory row with no initial
+     * acquisition. The Order + OrderItem write is skipped entirely,
+     * later adjust-quantity events write their own when stock actually
+     * arrives.
+     *
+     * The create action_log always writes, linked to the OrderItem when
+     * one exists and unlinked (order_item_id = null) for container-only
+     * creates. quantity captures the initial on-hand count so auditors
+     * get a "started with N units" anchor, subsequent QuantityAdjust
+     * logs record deltas rather than running totals.
+     */
+    public function writeInitialInventoryCreate(): void
+    {
+        $initialQty = (int) ($this->getAttributes()['qty'] ?? 0);
+        $orderItem = $this->writeInitialOrderIfStocked($initialQty);
+
+        $log = new Actionlog;
+        $log->item_type = static::class;
+        $log->item_id = $this->id;
+        $log->created_at = date('Y-m-d H:i:s');
+        // See AssetModelObserver::created for the seeder-friendly
+        // auth fallback rationale.
+        $log->created_by = auth()->id() ?? $this->created_by;
+        $log->quantity = $initialQty;
+        $log->order_item_id = $orderItem?->id;
+        if ($this->imported) {
+            $log->setActionSource('importer');
+        }
+        $log->logaction('create');
+    }
+
+    private function writeInitialOrderIfStocked(int $initialQty): ?OrderItem
+    {
+        if ($initialQty <= 0) {
+            return null;
+        }
+
+        $locationCurrency = $this->location?->currency;
+        $currency = ($locationCurrency !== '' && $locationCurrency !== null)
+            ? $locationCurrency
+            : Setting::getSettings()?->default_currency;
+
+        $order = new Order([
+            'order_number' => null,
+            'supplier_id' => null,
+            'company_id' => $this->company_id,
+            'purchase_date' => null,
+            'currency' => $currency,
+        ]);
+        $order->created_by = $this->created_by ?? auth()->id();
+        $order->save();
+
+        $orderItem = new OrderItem([
+            'order_id' => $order->id,
+            'item_type' => static::class,
+            'item_id' => $this->id,
+            'qty' => $initialQty,
+            'price' => null,
+        ]);
+        $orderItem->created_by = $this->created_by ?? auth()->id();
+        $orderItem->save();
+
+        return $orderItem;
     }
 }

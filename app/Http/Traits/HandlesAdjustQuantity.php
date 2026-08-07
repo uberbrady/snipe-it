@@ -105,7 +105,7 @@ trait HandlesAdjustQuantity
     ): ?int {
         // Orders / OrderItems record purchases only. A negative delta is
         // a correction / consumption / loss and a zero delta is a
-        // physical-count audit — neither is a purchase, so neither
+        // physical-count audit, neither is a purchase, so neither
         // writes to the Orders ledger. Both still write an action_log
         // entry (that's the QuantityAdjust source of truth), just
         // without an order_item_id link.
@@ -113,7 +113,18 @@ trait HandlesAdjustQuantity
             return null;
         }
 
-        $payload = $this->extractOrderPayloadFromRequest($request);
+        $orderNumberRaw = trim((string) $request->input('order_number', ''));
+        $currencyRaw = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
+        $noteRaw = $request->filled('note') ? trim((string) $request->input('note')) : null;
+
+        $payload = [
+            'order_number' => $orderNumberRaw !== '' ? $orderNumberRaw : null,
+            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
+            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
+            'unit_cost' => $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null,
+            'currency' => ($currencyRaw !== null && $currencyRaw !== '') ? $currencyRaw : null,
+            'notes' => ($noteRaw !== null && $noteRaw !== '') ? $noteRaw : null,
+        ];
 
         if ($this->orderPayloadIsEmpty($payload)) {
             return null;
@@ -123,13 +134,44 @@ trait HandlesAdjustQuantity
         // on. A blank order_number is a distinct transaction each time
         // (own timestamp, supplier, cost, currency), not a bucket to
         // pool anonymous acquisitions into. purchase_date is part of
-        // the dedup key because Snipe-IT has no partial-receipt concept
-        // — every Order is a completed receipt-in-hand, so "same
+        // the dedup key because Snipe-IT has no partial-receipt concept,
+        // every Order is a completed receipt-in-hand, so "same
         // order_number on a different receipt date" is a distinct
         // event, not a staggered delivery of one order. created_by is
         // set via property assignment rather than mass-fill because
         // it's guarded on both Order and OrderItem to prevent forgery.
-        $order = $this->findOrCreateOrderForPayload($payload, $model);
+        $companyId = $model->company_id ?? null;
+
+        if ($payload['order_number'] === null) {
+            $order = new Order([
+                'order_number' => $payload['order_number'],
+                'supplier_id' => $payload['supplier_id'],
+                'company_id' => $companyId,
+                'purchase_date' => $payload['purchase_date'],
+                'currency' => $payload['currency'],
+                'notes' => $payload['notes'],
+            ]);
+            $order->created_by = auth()->id();
+            $order->save();
+        } else {
+            $order = Order::firstOrNew(
+                [
+                    'order_number' => $payload['order_number'],
+                    'supplier_id' => $payload['supplier_id'],
+                    'company_id' => $companyId,
+                    'purchase_date' => $payload['purchase_date'],
+                ],
+                [
+                    'currency' => $payload['currency'],
+                    'notes' => $payload['notes'],
+                ],
+            );
+
+            if (! $order->exists) {
+                $order->created_by = auth()->id();
+                $order->save();
+            }
+        }
 
         $orderItem = new OrderItem([
             'order_id' => $order->id,
@@ -147,62 +189,6 @@ trait HandlesAdjustQuantity
     }
 
     /**
-     * Resolve the Order the OrderItem line will hang off of.
-     * Non-blank order_number dedupes on (order_number, supplier_id,
-     * company_id, purchase_date); blank order_number always mints a
-     * fresh row.
-     */
-    private function findOrCreateOrderForPayload(array $payload, Model $model): Order
-    {
-        $companyId = $model->company_id ?? null;
-
-        if ($payload['order_number'] === null) {
-            return $this->createOrder($payload, $companyId);
-        }
-
-        $order = Order::firstOrNew(
-            [
-                'order_number' => $payload['order_number'],
-                'supplier_id' => $payload['supplier_id'],
-                'company_id' => $companyId,
-                'purchase_date' => $payload['purchase_date'],
-            ],
-            [
-                'currency' => $payload['currency'],
-                'notes' => $payload['notes'],
-            ],
-        );
-
-        if (! $order->exists) {
-            $order->created_by = auth()->id();
-            $order->save();
-        }
-
-        return $order;
-    }
-
-    /**
-     * Persist a new Order with the given payload. created_by is set via
-     * property assignment because it's guarded on the model to prevent
-     * caller-supplied user_id forgery via mass-assignment.
-     */
-    private function createOrder(array $payload, ?int $companyId): Order
-    {
-        $order = new Order([
-            'order_number' => $payload['order_number'],
-            'supplier_id' => $payload['supplier_id'],
-            'company_id' => $companyId,
-            'purchase_date' => $payload['purchase_date'],
-            'currency' => $payload['currency'],
-            'notes' => $payload['notes'],
-        ]);
-        $order->created_by = auth()->id();
-        $order->save();
-
-        return $order;
-    }
-
-    /**
      * Update the observer-created initial Order + OrderItem for a
      * freshly-saved inventory item with the form-supplied transaction
      * fields. None of these fields live on the accessory / consumable /
@@ -217,7 +203,14 @@ trait HandlesAdjustQuantity
      */
     protected function enrichInitialOrderFromRequest(Request $request, Model $item): void
     {
-        $orderInputs = $this->extractOrderEnrichmentInputs($request);
+        $orderInputs = [
+            'order_number' => $this->trimmedOrNull($request->input('order_number')),
+            'currency' => $this->trimmedOrNull($request->input('currency')),
+            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
+            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
+            'purchase_cost' => $request->filled('purchase_cost') ? (float) $request->input('purchase_cost') : null,
+            'notes' => $this->trimmedOrNull($request->input('notes')),
+        ];
         $purchaseCost = $orderInputs['purchase_cost'];
 
         if ($this->initialOrderEnrichmentIsEmpty($orderInputs, $purchaseCost)) {
@@ -237,24 +230,6 @@ trait HandlesAdjustQuantity
         if ($purchaseCost !== null && (float) $initialLine->price !== $purchaseCost) {
             $initialLine->update(['price' => $purchaseCost]);
         }
-    }
-
-    /**
-     * Normalize request inputs into the shape the initial-Order
-     * enrichment compares against. Empty strings on the free-text
-     * columns collapse to null so the diff step treats "field was blank
-     * on the form" as "no change requested," not "clear the DB value."
-     */
-    private function extractOrderEnrichmentInputs(Request $request): array
-    {
-        return [
-            'order_number' => $this->trimmedOrNull($request->input('order_number')),
-            'currency' => $this->trimmedOrNull($request->input('currency')),
-            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
-            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
-            'purchase_cost' => $request->filled('purchase_cost') ? (float) $request->input('purchase_cost') : null,
-            'notes' => $this->trimmedOrNull($request->input('notes')),
-        ];
     }
 
     private function trimmedOrNull(mixed $raw): ?string
@@ -305,28 +280,6 @@ trait HandlesAdjustQuantity
         }
 
         return $updates;
-    }
-
-    /**
-     * Pull the acquisition-metadata fields off the request and
-     * normalize each into the shape Order needs.
-     *
-     * @return array{order_number: ?string, supplier_id: ?int, purchase_date: ?string, unit_cost: ?float, currency: ?string}
-     */
-    private function extractOrderPayloadFromRequest(Request $request): array
-    {
-        $orderNumberRaw = trim((string) $request->input('order_number', ''));
-        $currencyRaw = $request->filled('currency') ? trim((string) $request->input('currency')) : null;
-        $noteRaw = $request->filled('note') ? trim((string) $request->input('note')) : null;
-
-        return [
-            'order_number' => $orderNumberRaw !== '' ? $orderNumberRaw : null,
-            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
-            'purchase_date' => $request->filled('purchase_date') ? $request->input('purchase_date') : null,
-            'unit_cost' => $request->filled('unit_cost') ? (float) $request->input('unit_cost') : null,
-            'currency' => ($currencyRaw !== null && $currencyRaw !== '') ? $currencyRaw : null,
-            'notes' => ($noteRaw !== null && $noteRaw !== '') ? $noteRaw : null,
-        ];
     }
 
     /**

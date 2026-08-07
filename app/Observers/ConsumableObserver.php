@@ -4,14 +4,12 @@ namespace App\Observers;
 
 use App\Models\Actionlog;
 use App\Models\Consumable;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ConsumableObserver
 {
+
     /**
      * Listen to the User created event.
      *
@@ -36,8 +34,6 @@ class ConsumableObserver
             $logAction->item_id = $consumable->id;
             $logAction->created_at = date('Y-m-d H:i:s');
             $logAction->created_by = auth()->id();
-            // order_number moved off Consumable to the Orders / OrderItems
-            // data model — nothing to capture on the update log anymore.
             $logAction->log_meta = json_encode($changed);
             $logAction->logaction('update');
         }
@@ -51,51 +47,7 @@ class ConsumableObserver
      */
     public function created(Consumable $consumable)
     {
-        $attrs = $consumable->getAttributes();
-        $initialQty = (int) ($attrs['qty'] ?? 0);
-
-        // Skip Order + OrderItem when qty=0/null (container-only).
-        // See AccessoryObserver::created for the full rationale.
-        $orderItem = null;
-        if ($initialQty > 0) {
-            $currency = ($consumable->location && $consumable->location->currency !== '' && $consumable->location->currency !== null)
-                ? $consumable->location->currency
-                : Setting::getSettings()?->default_currency;
-
-            $order = new Order([
-                'order_number' => null,
-                'supplier_id' => null,
-                'company_id' => $consumable->company_id,
-                'purchase_date' => null,
-                'currency' => $currency,
-            ]);
-            $order->created_by = $consumable->created_by ?? auth()->id();
-            $order->save();
-
-            $orderItem = new OrderItem([
-                'order_id' => $order->id,
-                'item_type' => Consumable::class,
-                'item_id' => $consumable->id,
-                'qty' => $initialQty,
-                'price' => null,
-            ]);
-            $orderItem->created_by = $consumable->created_by ?? auth()->id();
-            $orderItem->save();
-        }
-
-        $logAction = new Actionlog;
-        $logAction->item_type = Consumable::class;
-        $logAction->item_id = $consumable->id;
-        $logAction->created_at = date('Y-m-d H:i:s');
-        // See AssetModelObserver::created for the seeder-friendly
-        // auth fallback rationale.
-        $logAction->created_by = auth()->id() ?? $consumable->created_by;
-        $logAction->quantity = $initialQty;
-        $logAction->order_item_id = $orderItem?->id;
-        if ($consumable->imported) {
-            $logAction->setActionSource('importer');
-        }
-        $logAction->logaction('create');
+        $consumable->writeInitialInventoryCreate();
     }
 
     /**
