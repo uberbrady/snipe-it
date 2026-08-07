@@ -814,7 +814,7 @@
                         wire:loading.attr="disabled"
                         wire:target="saveAndAdvance"
                         class="btn btn-primary"
-                        @disabled(config('app.lock_passwords') || ! $this->canAdvance)
+                        @disabled(! config('app.lock_passwords') && ! $this->canAdvance)
                     >
                         <span wire:loading.remove wire:target="saveAndAdvance">
                             @if ($currentStep === 4)
