@@ -57,7 +57,7 @@ class LdapSync extends Command
         // Single source of truth for internal-key => LDAP-attribute-name
         // lives on the Ldap model so parseAndMapLdapAttributes and this
         // command can't drift. Used here for the LDAP query attribute
-        // list plus a handful of specific-lookup gates (active_flag,
+        // list plus a handful of specific-lookup gates (activated,
         // manager, location, username) that only LdapSync needs.
         $ldap_map = Ldap::attributeMap();
 
@@ -117,7 +117,7 @@ class LdapSync extends Command
              */
             $attributes = array_values(array_filter($ldap_map));
 
-            if (Setting::getSettings()->is_ad === 1 && is_null($ldap_map['active_flag'])) {
+            if (Setting::getSettings()->is_ad === 1 && is_null($ldap_map['activated'])) {
                 $attributes[] = 'useraccountcontrol';
             }
 
@@ -260,7 +260,7 @@ class LdapSync extends Command
             // Handles every mapped scalar field, plus Department and
             // Location firstOrCreate for the LDAP-derived values. The
             // three LdapSync-only concerns (manager LDAP re-query,
-            // active_flag / UAC, OU location override) are handled
+            // activated / UAC, OU location override) are handled
             // inline below because they don't apply to the first-login
             // path.
             Ldap::applyLdapAttributesToUser($user, $item);
@@ -315,10 +315,10 @@ class LdapSync extends Command
             }
 
             // Sync activated state for Active Directory.
-            if (! empty($ldap_map['active_flag'])) { // IF we have an 'active' flag set....
+            if (! empty($ldap_map['activated'])) { // IF we have an 'active' flag set....
                 // ....then *most* things that are truthy will activate the user. Anything falsey will deactivate them.
                 // (Specifically, we don't handle a value of '0.0' correctly)
-                $raw_value = @$results[$i][$ldap_map['active_flag']][0];
+                $raw_value = @$results[$i][$ldap_map['activated']][0];
                 $filter_var = filter_var($raw_value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
                 $boolean_cast = (bool) $raw_value;
