@@ -311,51 +311,56 @@ class Ldap extends Model
      * @param  $ldapatttibutes
      * @return array|bool
      */
+    /**
+     * Single source of truth for the LDAP-attribute mapping. Internal
+     * key (used across parseAndMapLdapAttributes' $item, the User field
+     * writes in applyLdapAttributesToUser, and LdapSync's specific
+     * lookups) => LDAP attribute name pulled from Settings. A null / ''
+     * value means the admin left that particular mapping unconfigured.
+     *
+     * @return array<string, ?string>
+     */
+    public static function attributeMap(): array
+    {
+        $settings = Setting::getSettings();
+
+        return [
+            'username' => $settings->ldap_username_field,
+            'first_name' => $settings->ldap_fname_field,
+            'last_name' => $settings->ldap_lname_field,
+            'employee_number' => $settings->ldap_emp_num,
+            'display_name' => $settings->ldap_display_name,
+            'email' => $settings->ldap_email,
+            'phone' => $settings->ldap_phone_field,
+            'mobile' => $settings->ldap_mobile,
+            'jobtitle' => $settings->ldap_jobtitle,
+            'address' => $settings->ldap_address,
+            'city' => $settings->ldap_city,
+            'state' => $settings->ldap_state,
+            'zip' => $settings->ldap_zip,
+            'country' => $settings->ldap_country,
+            'department' => $settings->ldap_dept,
+            'location' => $settings->ldap_location,
+            'manager' => $settings->ldap_manager,
+            // LdapSync-only: active_flag is consumed by the
+            // active-directory sync logic in the console command.
+            // parseAndMapLdapAttributes does not surface it because
+            // the first-login path has no use for it (the user just
+            // successfully bound to LDAP, they're active by definition).
+            'active_flag' => $settings->ldap_active_flag,
+        ];
+    }
+
     public static function parseAndMapLdapAttributes($ldapattributes)
     {
-        // Get LDAP attribute config. The settings column names here are
-        // the same ones LdapSync's $ldap_map reads, so this parser and
-        // the bulk-sync command see identical field lookups.
-        $settings = Setting::getSettings();
-        $ldap_result_username = $settings->ldap_username_field;
-        $ldap_result_emp_num = $settings->ldap_emp_num;
-        $ldap_result_last_name = $settings->ldap_lname_field;
-        $ldap_result_first_name = $settings->ldap_fname_field;
-        $ldap_result_display_name = $settings->ldap_display_name;
-        $ldap_result_email = $settings->ldap_email;
-        $ldap_result_phone = $settings->ldap_phone_field;
-        $ldap_result_mobile = $settings->ldap_mobile;
-        $ldap_result_jobtitle = $settings->ldap_jobtitle;
-        $ldap_result_address = $settings->ldap_address;
-        $ldap_result_city = $settings->ldap_city;
-        $ldap_result_state = $settings->ldap_state;
-        $ldap_result_zip = $settings->ldap_zip;
-        $ldap_result_country = $settings->ldap_country;
-        $ldap_result_location = $settings->ldap_location;
-        $ldap_result_dept = $settings->ldap_dept;
-        $ldap_result_manager = $settings->ldap_manager;
-
-        // Get LDAP user data. Kept in the same shape LdapSync's per-user
-        // $item array uses so the two paths stay comparable when this
-        // one grows.
         $item = [];
-        $item['username'] = $ldapattributes[$ldap_result_username][0] ?? '';
-        $item['employee_number'] = $ldapattributes[$ldap_result_emp_num][0] ?? '';
-        $item['lastname'] = $ldapattributes[$ldap_result_last_name][0] ?? '';
-        $item['firstname'] = $ldapattributes[$ldap_result_first_name][0] ?? '';
-        $item['display_name'] = $ldapattributes[$ldap_result_display_name][0] ?? '';
-        $item['email'] = $ldapattributes[$ldap_result_email][0] ?? '';
-        $item['telephone'] = $ldapattributes[$ldap_result_phone][0] ?? '';
-        $item['mobile'] = $ldapattributes[$ldap_result_mobile][0] ?? '';
-        $item['jobtitle'] = $ldapattributes[$ldap_result_jobtitle][0] ?? '';
-        $item['address'] = $ldapattributes[$ldap_result_address][0] ?? '';
-        $item['city'] = $ldapattributes[$ldap_result_city][0] ?? '';
-        $item['state'] = $ldapattributes[$ldap_result_state][0] ?? '';
-        $item['zip'] = $ldapattributes[$ldap_result_zip][0] ?? '';
-        $item['country'] = $ldapattributes[$ldap_result_country][0] ?? '';
-        $item['department'] = $ldapattributes[$ldap_result_dept][0] ?? '';
-        $item['manager'] = $ldapattributes[$ldap_result_manager][0] ?? '';
-        $item['location'] = $ldapattributes[$ldap_result_location][0] ?? '';
+        foreach (self::attributeMap() as $key => $ldapAttr) {
+            // active_flag is LdapSync's concern. See attributeMap().
+            if ($key === 'active_flag') {
+                continue;
+            }
+            $item[$key] = $ldapAttr ? ($ldapattributes[$ldapAttr][0] ?? '') : '';
+        }
         $item['locale'] = app()->getLocale();
 
         return $item;
@@ -381,53 +386,53 @@ class Ldap extends Model
      */
     public static function applyLdapAttributesToUser(User $user, array $ldapAttr): void
     {
-        $settings = Setting::getSettings();
+        $map = self::attributeMap();
 
         // Always-written identity fields. These have no per-field gate
         // because Snipe-IT considers username / first name / last name /
-        // email load-bearing for every user — if a mapping's blank the
+        // email load-bearing for every user, if a mapping's blank the
         // LDAP payload just gives us an empty string, matching the
         // pre-fix behavior on the create path.
         $user->username = $ldapAttr['username'];
-        $user->first_name = $ldapAttr['firstname'];
-        $user->last_name = $ldapAttr['lastname'];
+        $user->first_name = $ldapAttr['first_name'];
+        $user->last_name = $ldapAttr['last_name'];
         $user->email = $ldapAttr['email'];
 
-        if ($settings->ldap_display_name != '') {
+        if ($map['display_name'] != '') {
             $user->display_name = $ldapAttr['display_name'];
         }
-        if ($settings->ldap_emp_num != '') {
+        if ($map['employee_number'] != '') {
             $user->employee_num = e($ldapAttr['employee_number']);
         }
-        if ($settings->ldap_phone_field != '') {
-            $user->phone = $ldapAttr['telephone'];
+        if ($map['phone'] != '') {
+            $user->phone = $ldapAttr['phone'];
         }
-        if ($settings->ldap_mobile != '') {
+        if ($map['mobile'] != '') {
             $user->mobile = $ldapAttr['mobile'];
         }
-        if ($settings->ldap_jobtitle != '') {
+        if ($map['jobtitle'] != '') {
             $user->jobtitle = $ldapAttr['jobtitle'];
         }
-        if ($settings->ldap_address != '') {
+        if ($map['address'] != '') {
             $user->address = $ldapAttr['address'];
         }
-        if ($settings->ldap_city != '') {
+        if ($map['city'] != '') {
             $user->city = $ldapAttr['city'];
         }
-        if ($settings->ldap_state != '') {
+        if ($map['state'] != '') {
             $user->state = $ldapAttr['state'];
         }
-        if ($settings->ldap_zip != '') {
+        if ($map['zip'] != '') {
             $user->zip = $ldapAttr['zip'];
         }
-        if ($settings->ldap_country != '') {
+        if ($map['country'] != '') {
             $user->country = $ldapAttr['country'];
         }
-        if ($settings->ldap_dept != '' && $ldapAttr['department'] !== '') {
+        if ($map['department'] != '' && $ldapAttr['department'] !== '') {
             $department = Department::firstOrCreate(['name' => $ldapAttr['department']]);
             $user->department_id = $department->id;
         }
-        if ($settings->ldap_location != '' && $ldapAttr['location'] !== '') {
+        if ($map['location'] != '' && $ldapAttr['location'] !== '') {
             $location = Location::firstOrCreate(['name' => $ldapAttr['location']]);
             $user->location_id = $location->id;
         }
