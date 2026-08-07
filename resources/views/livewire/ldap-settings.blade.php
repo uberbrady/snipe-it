@@ -212,9 +212,6 @@
 
         <div class="box-body">
 
-            <span id="wizard-locked-note" class="sr-only">
-                {{ trans('admin/settings/general.ldap_wizard.locked_help') }}
-            </span>
 
             {{-- Step title + help text, always the current step's copy. --}}
             @php
@@ -230,10 +227,22 @@
                 <x-form.legend for="{{ $currentStep }}" help_text="{!! trans($stepHelpKey) !!}" />
             @endif
 
+            @if ($isReadOnly)
+                <x-alert type="warning" role="status" icon="warning">
+                    This is a demo. Every LDAP config field is read-only, but you can still <strong><a href="?step=3">enter
+                            a sample username</a></strong> on step 3 and use the Test Find User button to see the wizard
+                    search against the pre-seeded readonly directory. (You can search on tesla, einstein, or curie.)
+                    The wizard will not actually save any LDAP settings in this demo.
+                </x-alert>
+
+            @endif
+
             {{-- Wizard progress indicator. Same .bs-wizard class the
                  quickstart setup layout + importer modal use. Flex + flex:1 on
                  children rather than bootstrap col-md-*, so the layout
                  stays uniform regardless of step count. --}}
+
+
             <div class="bs-wizard" style="border-bottom:0; margin-bottom: 25px; display: flex;" role="group" aria-label="{{ trans('admin/settings/general.ldap_wizard.progress_label') }}">
                 @foreach ($this->stepTitles as $stepNum => $stepTitle)
                     @php
@@ -344,6 +353,7 @@
                         wire:model.live="is_ad"
                         :label="trans('admin/settings/general.ad')"
                         :checked="$is_ad"
+                        :disabled="$isReadOnly"
                     />
 
                     <!-- AD Domain (only when is_ad is checked) -->
@@ -359,6 +369,7 @@
                                     wire:model="ad_domain"
                                     placeholder="{{ trans('general.example').'example.com' }}"
                                     :required="true"
+                                    :readonly="$isReadOnly"
                                 />
                             </x-slot:input>
                         </x-form.row>
@@ -376,6 +387,7 @@
                                 wire:model.live.debounce.500ms="ldap_server"
                                 placeholder="{{ trans('general.example').'ldap://ldap.example.com' }}"
                                 :required="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -387,6 +399,7 @@
                         :label="trans('admin/settings/general.ldap_tls')"
                         :checked="$ldap_tls"
                         help_text="{!! trans('admin/settings/general.ldap_tls_help') !!}"
+                        :disabled="$isReadOnly"
                     />
 
                     <!-- Ignore LDAP certificate -->
@@ -396,6 +409,7 @@
                         :label="trans('admin/settings/general.ldap_server_cert_ignore')"
                         :checked="$ldap_server_cert_ignore"
                         help_text="{!! trans('admin/settings/general.ldap_server_cert_help') !!}"
+                        :disabled="$isReadOnly"
                     />
 
                     <!-- Client TLS key -->
@@ -410,6 +424,7 @@
                                 rows="4"
                                 :placeholder="sprintf('%s-----BEGIN RSA PRIVATE KEY-----%s1234567890%s-----END RSA PRIVATE KEY-----', trans('general.example'), PHP_EOL, PHP_EOL)"
                                 :required="$ldap_client_tls_cert !== ''"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -427,6 +442,7 @@
                                 rows="4"
                                 :placeholder="sprintf('%s-----BEGIN CERTIFICATE-----%s1234567890%s-----END CERTIFICATE-----', trans('general.example'), PHP_EOL, PHP_EOL)"
                                 :required="$ldap_client_tls_key !== ''"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -452,6 +468,7 @@
                                 placeholder="{{ trans('general.example').'ou=users,dc=example,dc=com' }}"
                                 :required="true"
                                 :ignore-autofill="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -471,6 +488,7 @@
                                 placeholder="{{ trans('general.example').($is_ad ? 'admin@example.com' : 'cn=admin,dc=example,dc=com') }}"
                                 :ignore-autofill="true"
                                 :required="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -487,6 +505,7 @@
                                 wire:model.live.debounce.500ms="ldap_pword"
                                 :required="true"
                                 :ignore-autofill="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -503,6 +522,7 @@
                                 wire:model.live.debounce.500ms="ldap_filter"
                                 placeholder="{{ trans('general.example').'&(cn=*)' }}"
                                 :ignore-autofill="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -520,6 +540,7 @@
                                 placeholder="{{ trans('general.example').'uid=' }}"
                                 :required="true"
                                 :ignore-autofill="true"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -553,6 +574,7 @@
                                     :placeholder="$placeholderExample !== '' ? trans('general.example').$placeholderExample : ''"
                                     :required="$required"
                                     :ignore-autofill="true"
+                                    :readonly="$isReadOnly"
                                 />
                             </x-slot:input>
                         </x-form.row>
@@ -568,6 +590,7 @@
                         :label="trans('admin/settings/general.ldap_invert_active_flag')"
                         :checked="$ldap_invert_active_flag"
                         help_text="{!! trans('admin/settings/general.ldap_invert_active_flag_help') !!}"
+                        :disabled="$isReadOnly"
                     />
 
                     {{-- Sample-lookup section, boxed in an x-well so it
@@ -646,7 +669,7 @@
                                 <tbody>
                                     @foreach ($step3TestAttributes as $snipeField => $preview)
                                         <tr>
-                                            <td>{{ $snipeField }}</td>
+                                            <td>{{ $preview['label'] ?? $snipeField }}</td>
                                             <td>
                                                 @if ($preview['attr'])
                                                     <code>{{ $preview['attr'] }}</code>
@@ -683,6 +706,7 @@
                         :label="trans('admin/settings/general.ldap_wizard.sync.ldap_pw_sync_label')"
                         :checked="$ldap_pw_sync"
                         help_text="{!! trans('admin/settings/general.ldap_pw_sync_help') !!}"
+                        :disabled="$isReadOnly"
                     />
 
                     <!-- Default permissions group -->
@@ -701,6 +725,7 @@
                                 ] + $this->permissionGroups"
                                 :forLivewire="true"
                                 style="width: 100%"
+                                :disabled="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -717,6 +742,7 @@
                                 name="custom_forgot_pass_url"
                                 wire:model.blur="custom_forgot_pass_url"
                                 placeholder="{{ trans('general.example').'https://my.ldapserver-forgotpass.com' }}"
+                                :readonly="$isReadOnly"
                             />
                         </x-slot:input>
                     </x-form.row>
@@ -762,7 +788,6 @@
                     <strong>{{ trans('admin/settings/general.ldap_wizard.verifying_help') }}</strong>
                 </p>
 
-                <x-demo-lock>{{ trans('general.feature_disabled') }}</x-demo-lock>
             </div>
             </div>
 
@@ -789,7 +814,7 @@
                         wire:loading.attr="disabled"
                         wire:target="saveAndAdvance"
                         class="btn btn-primary"
-                        @disabled(config('app.lock_passwords') || ! $this->canAdvance)
+                        @disabled(! config('app.lock_passwords') && ! $this->canAdvance)
                     >
                         <span wire:loading.remove wire:target="saveAndAdvance">
                             @if ($currentStep === 4)

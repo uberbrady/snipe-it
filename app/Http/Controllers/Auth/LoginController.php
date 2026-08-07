@@ -300,7 +300,7 @@ class LoginController extends Controller
             return redirect()->back()->withInput()->withErrors($validator);
         }
 
-        // Set the custom lockout attempts from the env and sett the custom lockout throttle from the env.
+        // Set the custom lockout attempts from the env and set the custom lockout throttle from the env.
         // We divide decayMinutes by 60 here to get minutes, since Laravel changed the default from minutes
         // to seconds, and we don't want to break limits on existing systems
         $this->maxAttempts = config('auth.passwords.users.throttle.max_attempts');
@@ -314,8 +314,12 @@ class LoginController extends Controller
 
         $user = null;
 
-        // Should we even check for LDAP users?
-        if (Setting::getSettings()->ldap_enabled) { // avoid hitting the $this->ldap
+        // Should we even check for LDAP users? Skip LDAP entirely when
+        // the app is in demo mode. The LDAP wizard's
+        // demo seed points at Forumsys as a reference config for
+        // visitors to click through, we don't want the login form to
+        // actually try to bind against it on every demo sign-in.
+        if (Setting::getSettings()->ldap_enabled && !config('app.lock_passwords')) { // avoid hitting the $this->ldap
             Log::debug('LDAP is enabled.');
             try {
                 Log::debug('Attempting to log user in by LDAP authentication.');
