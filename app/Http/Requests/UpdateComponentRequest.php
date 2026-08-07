@@ -19,14 +19,6 @@ class UpdateComponentRequest extends ImageUploadRequest
         }
     }
 
-    public function rules(): array
-    {
-        // qty is no longer submitted via the edit form — adjust-quantity
-        // modal handles all post-create qty changes so each change is a
-        // separate action_log entry. No qty rule needed here.
-        return parent::rules();
-    }
-
     public function response(array $errors)
     {
         return $this->redirector->back()->withInput()->withErrors($errors, $this->errorBag);
