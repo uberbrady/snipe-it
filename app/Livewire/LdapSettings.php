@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Ldap;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -770,38 +771,6 @@ class LdapSettings extends Component
 
     // === Step 3: Attribute mapping ========================================= =============================
 
-    /**
-     * Snipe-IT field name → LDAP-attribute-name Livewire property. Used
-     * both by the preview-table render and by any future sync-side code
-     * that wants a canonical map of "what field goes where." Order here
-     * defines the order in the preview table.
-     *
-     * Any new mappings we create would need to go here too.
-     */
-    protected function attributeMap(): array
-    {
-        return [
-            'username' => $this->ldap_username_field,
-            'first_name' => $this->ldap_fname_field,
-            'last_name' => $this->ldap_lname_field,
-            'display_name' => $this->ldap_display_name,
-            'email' => $this->ldap_email,
-            'employee_num' => $this->ldap_emp_num,
-            'phone' => $this->ldap_phone_field,
-            'mobile' => $this->ldap_mobile,
-            'job_title' => $this->ldap_jobtitle,
-            'manager' => $this->ldap_manager,
-            'department' => $this->ldap_dept,
-            'address' => $this->ldap_address,
-            'city' => $this->ldap_city,
-            'state' => $this->ldap_state,
-            'zip' => $this->ldap_zip,
-            'country' => $this->ldap_country,
-            'location' => $this->ldap_location,
-            'active_flag' => $this->ldap_active_flag,
-        ];
-    }
-
     protected function saveStep3(): void
     {
         $this->validate($this->step3SyntaxRules(), attributes: $this->step3SyntaxAttributes());
@@ -923,7 +892,7 @@ class LdapSettings extends Component
         // whole entry when we only care about a handful.
         $requestedAttrs = array_values(array_filter(array_map(
             fn ($attr) => trim(strtolower((string) $attr)),
-            $this->attributeMap(),
+            Ldap::attributeMap($this),
         )));
 
         $searchResult = @ldap_search($conn, $this->ldap_basedn, $lookupFilter, $requestedAttrs);
@@ -986,10 +955,12 @@ class LdapSettings extends Component
         // muted). Attribute names are compared lowercase. LDAP is
         // case-insensitive on attribute names.
         $preview = [];
-        foreach ($this->attributeMap() as $snipeField => $ldapAttr) {
+        $labels = Ldap::attributeLabels();
+        foreach (Ldap::attributeMap($this) as $snipeField => $ldapAttr) {
+            $label = $labels[$snipeField] ?? $snipeField;
             $ldapAttrLower = trim(strtolower((string) $ldapAttr));
             if ($ldapAttrLower === '') {
-                $preview[$snipeField] = ['attr' => null, 'value' => null];
+                $preview[$snipeField] = ['label' => $label, 'attr' => null, 'value' => null];
 
                 continue;
             }
@@ -997,7 +968,7 @@ class LdapSettings extends Component
             if (isset($attributes[$ldapAttrLower][0])) {
                 $value = $attributes[$ldapAttrLower][0];
             }
-            $preview[$snipeField] = ['attr' => $ldapAttr, 'value' => $value];
+            $preview[$snipeField] = ['label' => $label, 'attr' => $ldapAttr, 'value' => $value];
         }
 
         $this->step3TestDn = (string) $dn;
