@@ -97,7 +97,7 @@ class Ldap extends Model
         ldap_set_option($connection, LDAP_OPT_NETWORK_TIMEOUT, 20);
 
         if ($ldap_use_tls == '1') {
-            if (!ldap_start_tls($connection)) {
+            if (! ldap_start_tls($connection)) {
                 throw new Exception('STARTTLS Failed.');
             }
         }
@@ -313,27 +313,45 @@ class Ldap extends Model
      */
     public static function parseAndMapLdapAttributes($ldapattributes)
     {
-        // Get LDAP attribute config
-        $ldap_result_username = Setting::getSettings()->ldap_username_field;
-        $ldap_result_emp_num = Setting::getSettings()->ldap_emp_num;
-        $ldap_result_last_name = Setting::getSettings()->ldap_lname_field;
-        $ldap_result_first_name = Setting::getSettings()->ldap_fname_field;
-        $ldap_result_email = Setting::getSettings()->ldap_email;
-        $ldap_result_phone = Setting::getSettings()->ldap_phone;
-        $ldap_result_jobtitle = Setting::getSettings()->ldap_jobtitle;
-        $ldap_result_country = Setting::getSettings()->ldap_country;
-        $ldap_result_location = Setting::getSettings()->ldap_location;
-        $ldap_result_dept = Setting::getSettings()->ldap_dept;
-        $ldap_result_manager = Setting::getSettings()->ldap_manager;
-        // Get LDAP user data
+        // Get LDAP attribute config. The settings column names here are
+        // the same ones LdapSync's $ldap_map reads, so this parser and
+        // the bulk-sync command see identical field lookups.
+        $settings = Setting::getSettings();
+        $ldap_result_username = $settings->ldap_username_field;
+        $ldap_result_emp_num = $settings->ldap_emp_num;
+        $ldap_result_last_name = $settings->ldap_lname_field;
+        $ldap_result_first_name = $settings->ldap_fname_field;
+        $ldap_result_display_name = $settings->ldap_display_name;
+        $ldap_result_email = $settings->ldap_email;
+        $ldap_result_phone = $settings->ldap_phone_field;
+        $ldap_result_mobile = $settings->ldap_mobile;
+        $ldap_result_jobtitle = $settings->ldap_jobtitle;
+        $ldap_result_address = $settings->ldap_address;
+        $ldap_result_city = $settings->ldap_city;
+        $ldap_result_state = $settings->ldap_state;
+        $ldap_result_zip = $settings->ldap_zip;
+        $ldap_result_country = $settings->ldap_country;
+        $ldap_result_location = $settings->ldap_location;
+        $ldap_result_dept = $settings->ldap_dept;
+        $ldap_result_manager = $settings->ldap_manager;
+
+        // Get LDAP user data. Kept in the same shape LdapSync's per-user
+        // $item array uses so the two paths stay comparable when this
+        // one grows.
         $item = [];
         $item['username'] = $ldapattributes[$ldap_result_username][0] ?? '';
         $item['employee_number'] = $ldapattributes[$ldap_result_emp_num][0] ?? '';
         $item['lastname'] = $ldapattributes[$ldap_result_last_name][0] ?? '';
         $item['firstname'] = $ldapattributes[$ldap_result_first_name][0] ?? '';
+        $item['display_name'] = $ldapattributes[$ldap_result_display_name][0] ?? '';
         $item['email'] = $ldapattributes[$ldap_result_email][0] ?? '';
         $item['telephone'] = $ldapattributes[$ldap_result_phone][0] ?? '';
+        $item['mobile'] = $ldapattributes[$ldap_result_mobile][0] ?? '';
         $item['jobtitle'] = $ldapattributes[$ldap_result_jobtitle][0] ?? '';
+        $item['address'] = $ldapattributes[$ldap_result_address][0] ?? '';
+        $item['city'] = $ldapattributes[$ldap_result_city][0] ?? '';
+        $item['state'] = $ldapattributes[$ldap_result_state][0] ?? '';
+        $item['zip'] = $ldapattributes[$ldap_result_zip][0] ?? '';
         $item['country'] = $ldapattributes[$ldap_result_country][0] ?? '';
         $item['department'] = $ldapattributes[$ldap_result_dept][0] ?? '';
         $item['manager'] = $ldapattributes[$ldap_result_manager][0] ?? '';
@@ -341,6 +359,78 @@ class Ldap extends Model
         $item['locale'] = app()->getLocale();
 
         return $item;
+    }
+
+    /**
+     * Copy the parseAndMapLdapAttributes() output onto a User row.
+     * Called by both createUserFromLdap (first login, new user) and
+     * LoginController::loginViaLdap (existing user re-login), so the
+     * mapping list lives in exactly one place.
+     *
+     * Each optional field is gated on its LDAP mapping being non-blank
+     * so unset mappings don't overwrite existing values with empty
+     * strings. Department and Location are firstOrCreate'd only when
+     * both the mapping is set and the LDAP payload actually carried a
+     * value, so a blank attribute doesn't accrete a nameless row.
+     *
+     * Manager is intentionally out of scope: LdapSync's manager
+     * resolution needs an admin re-bind + LDAP re-query to translate
+     * the DN into a Snipe-IT user id, and that's best done in bulk.
+     * ldap_import users get their manager populated on the next
+     * `snipe-it:ldap-sync` run.
+     */
+    public static function applyLdapAttributesToUser(User $user, array $ldapAttr): void
+    {
+        $settings = Setting::getSettings();
+
+        // Always-written identity fields. These have no per-field gate
+        // because Snipe-IT considers username / first name / last name /
+        // email load-bearing for every user — if a mapping's blank the
+        // LDAP payload just gives us an empty string, matching the
+        // pre-fix behavior on the create path.
+        $user->username = $ldapAttr['username'];
+        $user->first_name = $ldapAttr['firstname'];
+        $user->last_name = $ldapAttr['lastname'];
+        $user->email = $ldapAttr['email'];
+
+        if ($settings->ldap_display_name != '') {
+            $user->display_name = $ldapAttr['display_name'];
+        }
+        if ($settings->ldap_emp_num != '') {
+            $user->employee_num = e($ldapAttr['employee_number']);
+        }
+        if ($settings->ldap_phone_field != '') {
+            $user->phone = $ldapAttr['telephone'];
+        }
+        if ($settings->ldap_mobile != '') {
+            $user->mobile = $ldapAttr['mobile'];
+        }
+        if ($settings->ldap_jobtitle != '') {
+            $user->jobtitle = $ldapAttr['jobtitle'];
+        }
+        if ($settings->ldap_address != '') {
+            $user->address = $ldapAttr['address'];
+        }
+        if ($settings->ldap_city != '') {
+            $user->city = $ldapAttr['city'];
+        }
+        if ($settings->ldap_state != '') {
+            $user->state = $ldapAttr['state'];
+        }
+        if ($settings->ldap_zip != '') {
+            $user->zip = $ldapAttr['zip'];
+        }
+        if ($settings->ldap_country != '') {
+            $user->country = $ldapAttr['country'];
+        }
+        if ($settings->ldap_dept != '' && $ldapAttr['department'] !== '') {
+            $department = Department::firstOrCreate(['name' => $ldapAttr['department']]);
+            $user->department_id = $department->id;
+        }
+        if ($settings->ldap_location != '' && $ldapAttr['location'] !== '') {
+            $location = Location::firstOrCreate(['name' => $ldapAttr['location']]);
+            $user->location_id = $location->id;
+        }
     }
 
     /**
@@ -356,33 +446,43 @@ class Ldap extends Model
     {
         $item = self::parseAndMapLdapAttributes($ldapatttibutes);
 
-        // Create user from LDAP data
-        if (! empty($item['username'])) {
-            $user = new User;
-            $user->first_name = $item['firstname'];
-            $user->last_name = $item['lastname'];
-            $user->username = $item['username'];
-            $user->email = $item['email'];
-            $user->locale = $item['locale'];
-            $user->password = $user->noPassword();
+        if (empty($item['username'])) {
+            return false;
+        }
 
-            if (Setting::getSettings()->ldap_pw_sync == '1') {
-                $user->password = bcrypt($password);
-            }
+        $settings = Setting::getSettings();
 
-            $user->activated = 1;
-            $user->ldap_import = 1;
-            $user->notes = 'Imported on first login from LDAP';
+        $user = new User;
+        self::applyLdapAttributesToUser($user, $item);
 
-            if ($user->save()) {
-                return $user;
-            } else {
-                Log::debug('Could not create user.'.$user->getErrors());
-                throw new Exception('Could not create user: '.$user->getErrors());
+        $user->locale = $item['locale'];
+        $user->password = $user->noPassword();
+        if ($settings->ldap_pw_sync == '1') {
+            $user->password = bcrypt($password);
+        }
+
+        $user->activated = 1;
+        $user->ldap_import = 1;
+        $user->notes = 'Imported on first login from LDAP';
+
+        if (! $user->save()) {
+            Log::debug('Could not create user.'.$user->getErrors());
+            throw new Exception('Could not create user: '.$user->getErrors());
+        }
+
+        // Attach the configured Default Permissions Group to newly-
+        // created LDAP users so first-login users land with the same
+        // baseline permissions bulk-synced users get. Matches
+        // LdapSync::handle()'s post-save group attachment. Skipped when
+        // the setting points at a deleted group.
+        if ($settings->ldap_default_group) {
+            $default = Group::find($settings->ldap_default_group);
+            if ($default !== null && ! $user->groups()->where('group_id', $default->id)->exists()) {
+                $user->groups()->attach($default->id);
             }
         }
 
-        return false;
+        return $user;
     }
 
     /**

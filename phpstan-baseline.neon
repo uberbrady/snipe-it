@@ -8041,8 +8041,14 @@ parameters:
 			path: app/Models/Labels/Tapes/Generic/Tape_53mm.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$ldap_phone\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Models/Ldap.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Models/Ldap.php
 

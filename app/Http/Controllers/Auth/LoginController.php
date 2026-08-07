@@ -205,16 +205,22 @@ class LoginController extends Controller
             Log::debug('Local user '.$request->input('username').' exists in database. Updating existing user against LDAP.');
 
             $ldap_attr = Ldap::parseAndMapLdapAttributes($ldap_user);
+            $settings = Setting::getSettings();
 
             $user->password = $user->noPassword();
-            if (Setting::getSettings()->ldap_pw_sync == '1') {
+            if ($settings->ldap_pw_sync == '1') {
                 $user->password = bcrypt($request->input('password'));
             }
 
             $user->last_login = \Carbon::now();
-            $user->email = $ldap_attr['email'];
-            $user->first_name = $ldap_attr['firstname'];
-            $user->last_name = $ldap_attr['lastname']; // FIXME (or TODO?) - do we need to map additional fields that we now support? E.g. country, phone, etc.
+
+            // Refresh every mapped field from the LDAP payload. Shared
+            // with Ldap::createUserFromLdap so the field list lives in
+            // one place. Bulk sync via snipe-it:ldap-sync remains the
+            // canonical path for the fields that need a re-bind
+            // (manager, active_flag, etc.).
+            Ldap::applyLdapAttributesToUser($user, $ldap_attr);
+
             $user->saveQuietly();
         } // End if(!user)
 
