@@ -445,8 +445,8 @@ class LdapSync extends Command
                 $missing_item = [
                     'id' => $missing_user->id,
                     'username' => $missing_user->username,
-                    'firstname' => $missing_user->first_name,
-                    'lastname' => $missing_user->last_name,
+                    'first_name' => $missing_user->first_name,
+                    'last_name' => $missing_user->last_name,
                     'email' => $missing_user->email,
                     'createorupdate' => 'skipped',
                     'status' => 'info',
@@ -466,13 +466,18 @@ class LdapSync extends Command
         }
 
         if ($this->option('summary')) {
-            for ($x = 0; $x < count($summary); $x++) {
-                if ($summary[$x]['status'] == 'error') {
-                    $this->error('ERROR: '.$summary[$x]['firstname'].' '.$summary[$x]['lastname'].' (username:  '.$summary[$x]['username'].') was not imported: '.$summary[$x]['note']);
-                } else {
-                    $this->info('User '.$summary[$x]['firstname'].' '.$summary[$x]['lastname'].' (username:  '.$summary[$x]['username'].') was '.strtoupper($summary[$x]['createorupdate']).'.');
-                }
-            }
+            $rows = array_map(fn ($row) => [
+                $row['username'] ?? '',
+                trim(($row['first_name'] ?? '').' '.($row['last_name'] ?? '')),
+                strtoupper($row['createorupdate'] ?? ''),
+                strtoupper($row['status'] ?? ''),
+                $row['note'] ?? '',
+            ], $summary);
+
+            $this->table(
+                ['Username', 'Name', 'Action', 'Status', 'Note'],
+                $rows,
+            );
         } elseif ($this->option('json_summary')) {
             $json_summary = ['error' => false, 'error_message' => '', 'summary' => $summary]; // hardcoding the error to false and the error_message to blank seems a bit weird
             $this->info(json_encode($json_summary));
