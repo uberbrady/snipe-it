@@ -281,18 +281,7 @@ class ConsumablesController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Consumable $consumable): JsonResponse
     {
-        $error = $this->runAdjustQuantity($request, $consumable, 'consumables');
-
-        if ($error !== null) {
-            return response()->json(
-                Helper::formatStandardApiResponse('error', null, $error),
-                422,
-            );
-        }
-
-        return response()->json(
-            Helper::formatStandardApiResponse('success', $consumable->fresh(), trans('general.adjust_quantity_success')),
-        );
+        return $this->adjustQuantityAsJson($request, $consumable);
     }
 
     /**

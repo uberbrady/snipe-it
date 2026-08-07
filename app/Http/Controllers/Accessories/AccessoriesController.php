@@ -263,22 +263,12 @@ class AccessoriesController extends Controller
     }
 
     /**
-     * Apply an on-hand quantity delta (+/-) and log the change. The
-     * shared body lives on the HandlesAdjustQuantity trait; this method
-     * only owns the redirect-response shape.
+     * Apply an on-hand quantity delta (+/-) and log the change. Route
+     * exists here so route-model binding resolves against Accessory,
+     * everything else lives on HandlesAdjustQuantity.
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Accessory $accessory): RedirectResponse
     {
-        $error = $this->runAdjustQuantity($request, $accessory, 'accessories');
-
-        if ($error) {
-            return redirect()->back()->with('error', $error);
-        }
-
-        // adjustQuantityRedirect keeps show-page opens landing on
-        // #history for the confirmation loop, and sends index-page
-        // opens back to the index so bulk adjust flows aren't broken
-        // by a forced navigation to the item detail page.
-        return $this->adjustQuantityRedirect($request, route('accessories.show', $accessory));
+        return $this->adjustQuantityAsRedirect($request, $accessory);
     }
 }

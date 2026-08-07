@@ -363,18 +363,7 @@ class AccessoriesController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Accessory $accessory): JsonResponse
     {
-        $error = $this->runAdjustQuantity($request, $accessory, 'accessories');
-
-        if ($error !== null) {
-            return response()->json(
-                Helper::formatStandardApiResponse('error', null, $error),
-                422,
-            );
-        }
-
-        return response()->json(
-            Helper::formatStandardApiResponse('success', $accessory->fresh(), trans('general.adjust_quantity_success')),
-        );
+        return $this->adjustQuantityAsJson($request, $accessory);
     }
 
     /**

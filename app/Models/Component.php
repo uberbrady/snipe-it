@@ -418,69 +418,6 @@ class Component extends SnipeModel
     }
 
     /**
-     * Sum every OrderItem's line total (qty × price) grouped by the
-     * parent Order's currency, so mixed-currency acquisitions render
-     * as a per-currency breakdown instead of a single misleading total.
-     *
-     * Falls back to `qty × parent.purchase_cost` under the system's
-     * default_currency when the item has no OrderItems yet (legacy
-     * rows uncaught by backfill, or brand-new items with a purchase
-     * cost set but no acquisitions recorded).
-     *
-     * Returns [] when both paths are empty. The info-panel skips the
-     * "Total cost" line entirely in that case rather than showing 0.
-     *
-     * @return array<string, float> currency code => sum in that currency
-     */
-    public function totalCostSumByCurrency(): array
-    {
-        $lines = $this->orderItems()->with('order:id,currency')->get();
-
-        $totals = $lines->reduce(function (array $carry, OrderItem $line) {
-            if ($line->price === null) {
-                return $carry;
-            }
-            $currency = $line->order?->currency
-                ?? Setting::getSettings()?->default_currency
-                ?? '';
-            $carry[$currency] = ($carry[$currency] ?? 0) + ($line->qty * (float) $line->price);
-
-            return $carry;
-        }, []);
-
-        // Orders / OrderItems is the single source of truth. No
-        // fallback to legacy_* columns (those will be dropped in a
-        // later version). See Accessory::totalCostSumByCurrency.
-
-        return $totals;
-    }
-
-    /**
-     * Naive cross-currency sum, kept for backwards compatibility with
-     * external callers. New code should prefer totalCostSumByCurrency()
-     * so mixed-currency totals stay disambiguated.
-     */
-    public function totalCostSum()
-    {
-        return array_sum($this->totalCostSumByCurrency()) ?: null;
-    }
-
-    /**
-     * True when every recorded acquisition for this item came from the
-     * same supplier. Info-panel supplier row hides when false so a
-     * single supplier name doesn't misrepresent multi-supplier history.
-     */
-    public function hasConsistentSupplier(): bool
-    {
-        return $this->orderItems()
-            ->with('order:id,supplier_id')
-            ->get()
-            ->map(fn (OrderItem $line) => $line->order?->supplier_id)
-            ->filter()
-            ->unique()
-            ->count() <= 1;
-    }
-    /**
      * -----------------------------------------------
      * BEGIN MUTATORS
      * -----------------------------------------------

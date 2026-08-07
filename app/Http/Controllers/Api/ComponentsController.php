@@ -296,18 +296,7 @@ class ComponentsController extends Controller
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Component $component): JsonResponse
     {
-        $error = $this->runAdjustQuantity($request, $component, 'components');
-
-        if ($error !== null) {
-            return response()->json(
-                Helper::formatStandardApiResponse('error', null, $error),
-                422,
-            );
-        }
-
-        return response()->json(
-            Helper::formatStandardApiResponse('success', $component->fresh(), trans('general.adjust_quantity_success')),
-        );
+        return $this->adjustQuantityAsJson($request, $component);
     }
 
     /**

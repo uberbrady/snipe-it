@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -63,9 +64,9 @@ trait HandlesAdjustQuantity
 
     /**
      * Land the post-save redirect on the page the operator was on when
-     * they opened the modal. From the item's show page → the show page
+     * they opened the modal. From the item's show page: the show page
      * with the `#history` fragment so the newly-written log entry is
-     * visible as confirmation. From an index / listing page → back to
+     * visible as confirmation. From an index / listing page: back to
      * that listing so bulk-adjust flows don't force the operator to
      * back out and re-navigate for every item. Referer is validated
      * as same-origin to prevent open-redirect abuse; missing or
@@ -81,6 +82,48 @@ trait HandlesAdjustQuantity
         }
 
         return redirect()->to($itemShowUrl)->withFragment('history')->with('success', $success);
+    }
+
+    /**
+     * Full web controller flow. Runs the shared work and wraps the
+     * outcome in the standard redirect-with-flash shape. Route target
+     * derives from Controller::$map_class_url_segment so a new inventory
+     * model that adopts HandlesAdjustQuantity only needs an entry in
+     * that map, not a per-model method or a controller-side segment
+     * string.
+     */
+    protected function adjustQuantityAsRedirect(AdjustQuantityRequest $request, Model $model): RedirectResponse
+    {
+        $segment = Controller::getMapClassUrlSegment()[$model::class];
+        $error = $this->runAdjustQuantity($request, $model, $segment);
+
+        if ($error) {
+            return redirect()->back()->with('error', $error);
+        }
+
+        return $this->adjustQuantityRedirect($request, route("$segment.show", $model));
+    }
+
+    /**
+     * Full API controller flow. Runs the shared work and wraps the
+     * outcome in the standard Snipe-IT JSON envelope. 422 on validation
+     * / floor errors, 200 with the refreshed model on success.
+     */
+    protected function adjustQuantityAsJson(AdjustQuantityRequest $request, Model $model): JsonResponse
+    {
+        $segment = Controller::getMapClassUrlSegment()[$model::class];
+        $error = $this->runAdjustQuantity($request, $model, $segment);
+
+        if ($error !== null) {
+            return response()->json(
+                Helper::formatStandardApiResponse('error', null, $error),
+                422,
+            );
+        }
+
+        return response()->json(
+            Helper::formatStandardApiResponse('success', $model->fresh(), trans('general.adjust_quantity_success')),
+        );
     }
 
     /**

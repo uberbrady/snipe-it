@@ -261,20 +261,12 @@ class ConsumablesController extends Controller
     }
 
     /**
-     * Apply an on-hand quantity delta (+/-) and log the change. The
-     * shared body lives on the HandlesAdjustQuantity trait; this method
-     * only owns the redirect-response shape.
+     * Apply an on-hand quantity delta (+/-) and log the change. Route
+     * exists here so route-model binding resolves against Consumable,
+     * everything else lives on HandlesAdjustQuantity.
      */
     public function adjustQuantity(AdjustQuantityRequest $request, Consumable $consumable): RedirectResponse
     {
-        $error = $this->runAdjustQuantity($request, $consumable, 'consumables');
-
-        if ($error) {
-            return redirect()->back()->with('error', $error);
-        }
-
-        // See AccessoriesController::adjustQuantity — helper picks
-        // between show-page-#history and back-to-referer.
-        return $this->adjustQuantityRedirect($request, route('consumables.show', $consumable));
+        return $this->adjustQuantityAsRedirect($request, $consumable);
     }
 }
