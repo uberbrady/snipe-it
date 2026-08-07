@@ -60,8 +60,6 @@ class Ldap extends Model
      * @author [A. Gianotto] [<snipe@snipe.net>]
      *
      * @since  [v3.0]
-     *
-     * @return connection
      */
     public static function connectToLdap()
     {
@@ -180,16 +178,14 @@ class Ldap extends Model
     }
 
     /**
-     * Binds/authenticates the user to LDAP, and returns their attributes.
+     * Binds/authenticates the user to LDAP, and returns their attributes
+     * (lowercase-keyed) on success or false when the bind or search fails.
      *
      * @author [A. Gianotto] [<snipe@snipe.net>]
      *
      * @since  [v3.0]
      *
-     * @param  bool|false  $user
-     * @return bool true    if the username and/or password provided are valid
-     *              false   if the username and/or password provided are invalid
-     *              array of ldap_attributes if $user is true
+     * @return array|false
      */
     public static function findAndBindUserLdap($username, $password)
     {
@@ -315,39 +311,50 @@ class Ldap extends Model
      * Single source of truth for the LDAP-attribute mapping. Internal
      * key (used across parseAndMapLdapAttributes' $item, the User field
      * writes in applyLdapAttributesToUser, and LdapSync's specific
-     * lookups) => LDAP attribute name pulled from Settings. A null / ''
-     * value means the admin left that particular mapping unconfigured.
+     * lookups) => LDAP attribute name.
      *
+     * Keys mirror the User model's column names (jobtitle,
+     * employee_num, first_name, etc.) so downstream code can walk this
+     * map and write straight onto a User without translation.
+     *
+     * `$source` defaults to the persisted Setting model so backend
+     * callers (LdapSync, parseAndMapLdapAttributes, applyLdapAttributesToUser)
+     * see saved values. The LDAP wizard Livewire component passes
+     * `$this` so its live preview reflects in-flight form edits before
+     * they're written to Settings. Any object exposing the same
+     * `ldap_*` properties works.
+     *
+     * @param  object|null  $source  Setting-shaped object; defaults to Setting::getSettings()
      * @return array<string, ?string>
      */
-    public static function attributeMap(): array
+    public static function attributeMap(?object $source = null): array
     {
-        $settings = Setting::getSettings();
+        $source ??= Setting::getSettings();
 
         return [
-            'username' => $settings->ldap_username_field,
-            'first_name' => $settings->ldap_fname_field,
-            'last_name' => $settings->ldap_lname_field,
-            'employee_number' => $settings->ldap_emp_num,
-            'display_name' => $settings->ldap_display_name,
-            'email' => $settings->ldap_email,
-            'phone' => $settings->ldap_phone_field,
-            'mobile' => $settings->ldap_mobile,
-            'jobtitle' => $settings->ldap_jobtitle,
-            'address' => $settings->ldap_address,
-            'city' => $settings->ldap_city,
-            'state' => $settings->ldap_state,
-            'zip' => $settings->ldap_zip,
-            'country' => $settings->ldap_country,
-            'department' => $settings->ldap_dept,
-            'location' => $settings->ldap_location,
-            'manager' => $settings->ldap_manager,
+            'username' => $source->ldap_username_field,
+            'first_name' => $source->ldap_fname_field,
+            'last_name' => $source->ldap_lname_field,
+            'employee_num' => $source->ldap_emp_num,
+            'display_name' => $source->ldap_display_name,
+            'email' => $source->ldap_email,
+            'phone' => $source->ldap_phone_field,
+            'mobile' => $source->ldap_mobile,
+            'jobtitle' => $source->ldap_jobtitle,
+            'address' => $source->ldap_address,
+            'city' => $source->ldap_city,
+            'state' => $source->ldap_state,
+            'zip' => $source->ldap_zip,
+            'country' => $source->ldap_country,
+            'department' => $source->ldap_dept,
+            'location' => $source->ldap_location,
+            'manager' => $source->ldap_manager,
             // LdapSync-only: active_flag is consumed by the
             // active-directory sync logic in the console command.
             // parseAndMapLdapAttributes does not surface it because
             // the first-login path has no use for it (the user just
             // successfully bound to LDAP, they're active by definition).
-            'active_flag' => $settings->ldap_active_flag,
+            'active_flag' => $source->ldap_active_flag,
         ];
     }
 
@@ -401,8 +408,8 @@ class Ldap extends Model
         if ($map['display_name'] != '') {
             $user->display_name = $ldapAttr['display_name'];
         }
-        if ($map['employee_number'] != '') {
-            $user->employee_num = e($ldapAttr['employee_number']);
+        if ($map['employee_num'] != '') {
+            $user->employee_num = e($ldapAttr['employee_num']);
         }
         if ($map['phone'] != '') {
             $user->phone = $ldapAttr['phone'];
