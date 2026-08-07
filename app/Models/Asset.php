@@ -8,6 +8,7 @@ use App\Helpers\Helper;
 use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\Acceptable;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasOrders;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Requestable;
@@ -38,6 +39,7 @@ class Asset extends Depreciable
 
     use CompanyableTrait;
     use HasFactory;
+    use HasOrders;
     use HasUploads;
     use Loggable;
     use Presentable;
@@ -1335,7 +1337,13 @@ class Asset extends Depreciable
 
     public function getAccessoryCost()
     {
-        return (float) $this->accessories()->sum('purchase_cost');
+        // purchase_cost no longer lives on the accessories parent —
+        // per-unit cost is on the last OrderItem's price, with the
+        // parent's default_purchase_cost as fallback. lastOrderDefaults()
+        // encapsulates that fallback ladder.
+        return (float) $this->accessories()
+            ->get()
+            ->sum(fn ($accessory) => (float) ($accessory->lastOrderDefaults()['unit_cost'] ?? 0));
     }
 
     /**

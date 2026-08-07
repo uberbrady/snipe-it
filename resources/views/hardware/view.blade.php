@@ -400,7 +400,7 @@
                             :table_header="trans('general.audits')"
                             :model="$asset"
                             :route="route('api.activity.index', ['item_id' => $asset->id, 'item_type' => 'asset', 'action_type' => 'audit'])"
-                            :hide_fields="['id','action_type', 'item', 'changed', 'target','quantity','changed','serial','signature_file','log_meta']"
+                            :hide_fields="['id','action_type', 'item', 'changed', 'target','quantity','changed','serial','signature_file','log_meta','order_number']"
                             :extra_columns="$audit_custom_field_columns"
                         />
                     </x-tabs.pane>
@@ -411,7 +411,7 @@
                         <x-table.history
                             :table_header="trans('general.notes')"
                             :model="$asset" :route="route('api.activity.index', ['item_id' => $asset->id, 'item_type' => 'asset', 'action_type' => 'note added'])"
-                            :hide_fields="['id','action_type', 'item', 'changed', 'target','file','file_download','quantity','changed','serial','signature_file','log_meta']"
+                            :hide_fields="['id','action_type', 'item', 'changed', 'target','file','file_download','quantity','changed','serial','signature_file','log_meta','order_number']"
                         />
                     </x-tabs.pane>
                     <!-- end audits tab pane -->
@@ -430,6 +430,7 @@
                         <x-table.history
                             :model="$asset"
                             :route="route('api.assets.history', $asset)"
+                            :hide_fields="['order_number']"
                         />
                     </x-tabs.pane>
                     <!-- end history tab pane -->

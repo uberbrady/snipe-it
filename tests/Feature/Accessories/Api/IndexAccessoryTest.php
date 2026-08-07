@@ -119,10 +119,9 @@ class IndexAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
         $targetAccessory = Accessory::factory()->create([
             'name' => 'Target Accessory',
             'company_id' => $targetCompany->id,
-            'order_number' => 'ORDER-A',
             'category_id' => $targetCategory->id,
             'manufacturer_id' => $targetManufacturer->id,
-            'supplier_id' => $targetSupplier->id,
+            'default_supplier_id' => $targetSupplier->id,
             'location_id' => $targetLocation->id,
             'notes' => 'NOTE-A',
         ]);
@@ -130,17 +129,18 @@ class IndexAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
         $otherAccessory = Accessory::factory()->create([
             'name' => 'Other Accessory',
             'company_id' => $otherCompany->id,
-            'order_number' => 'ORDER-B',
             'category_id' => $otherCategory->id,
             'manufacturer_id' => $otherManufacturer->id,
-            'supplier_id' => $otherSupplier->id,
+            'default_supplier_id' => $otherSupplier->id,
             'location_id' => $otherLocation->id,
             'notes' => 'NOTE-B',
         ]);
 
+        // order_number was dropped from the filters list when the parent
+        // column was renamed to legacy_order_number and current order
+        // numbers moved to the QuantityAdjust action_log per event.
         $filters = [
             'company_id' => $targetCompany->id,
-            'order_number' => 'ORDER-A',
             'category_id' => $targetCategory->id,
             'manufacturer_id' => $targetManufacturer->id,
             'supplier_id' => $targetSupplier->id,

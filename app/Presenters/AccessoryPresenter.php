@@ -142,19 +142,24 @@ class AccessoryPresenter extends Presenter
                 'formatter' => 'progressBarFormatter',
             ],
             [
+                // "Last" prefix reflects that purchase_date now lives
+                // on Orders — an accessory can have many, so displaying
+                // an unqualified "Purchase Date" on the index page is
+                // misleading. The API's purchase_date sort routes
+                // through OrderByLastPurchaseDate accordingly.
                 'field' => 'purchase_date',
                 'scope' => 'col',
-                'searchable' => true,
+                'searchable' => false,
                 'sortable' => true,
                 'visible' => false,
-                'title' => trans('general.purchase_date'),
+                'title' => trans('general.last_purchase_date'),
                 'formatter' => 'dateDisplayFormatter',
             ], [
                 'field' => 'purchase_cost',
                 'scope' => 'col',
-                'searchable' => true,
+                'searchable' => false,
                 'sortable' => true,
-                'title' => trans('general.unit_cost'),
+                'title' => trans('general.last_unit_cost'),
                 'class' => 'text-right text-padding-number-cell',
             ], [
                 'field' => 'total_cost',
@@ -164,13 +169,6 @@ class AccessoryPresenter extends Presenter
                 'title' => trans('general.total_cost'),
                 'footerFormatter' => 'sumFormatterQuantity',
                 'class' => 'text-right text-padding-number-cell',
-            ], [
-                'field' => 'order_number',
-                'scope' => 'col',
-                'searchable' => true,
-                'sortable' => true,
-                'visible' => false,
-                'title' => trans('general.order_number'),
             ], [
                 'field' => 'notes',
                 'scope' => 'col',
