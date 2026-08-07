@@ -349,12 +349,49 @@ class Ldap extends Model
             'department' => $source->ldap_dept,
             'location' => $source->ldap_location,
             'manager' => $source->ldap_manager,
-            // LdapSync-only: active_flag is consumed by the
-            // active-directory sync logic in the console command.
+            // LdapSync-only: activated is consumed by the active-
+            // directory sync logic in the console command, which reads
+            // the mapped LDAP attribute (or AD's useraccountcontrol)
+            // and writes the resulting bool onto user.activated.
             // parseAndMapLdapAttributes does not surface it because
             // the first-login path has no use for it (the user just
             // successfully bound to LDAP, they're active by definition).
-            'active_flag' => $source->ldap_active_flag,
+            'activated' => $source->ldap_active_flag,
+        ];
+    }
+
+    /**
+     * Companion to attributeMap(): internal key => translated human
+     * label. Consumed by the LDAP wizard's step-3 preview table and by
+     * the settings-page ldaptest results table, so both render
+     * "Employee Number" / "Title" / etc. instead of the raw
+     * snake_case internal keys. Adding a new key to attributeMap()
+     * should be paired with an entry here so it shows up nicely in
+     * both places automatically.
+     *
+     * @return array<string, string>
+     */
+    public static function attributeLabels(): array
+    {
+        return [
+            'username' => trans('general.username'),
+            'first_name' => trans('general.first_name'),
+            'last_name' => trans('general.last_name'),
+            'employee_num' => trans('general.employee_number'),
+            'display_name' => trans('admin/users/table.display_name'),
+            'email' => trans('general.email'),
+            'phone' => trans('general.phone'),
+            'mobile' => trans('admin/users/table.mobile'),
+            'jobtitle' => trans('admin/users/table.title'),
+            'address' => trans('general.address'),
+            'city' => trans('general.city'),
+            'state' => trans('general.state'),
+            'zip' => trans('general.zip'),
+            'country' => trans('general.country'),
+            'department' => trans('general.department'),
+            'location' => trans('general.location'),
+            'manager' => trans('admin/users/table.manager'),
+            'activated' => trans('admin/users/table.activated'),
         ];
     }
 
@@ -362,8 +399,8 @@ class Ldap extends Model
     {
         $item = [];
         foreach (self::attributeMap() as $key => $ldapAttr) {
-            // active_flag is LdapSync's concern. See attributeMap().
-            if ($key === 'active_flag') {
+            // activated is LdapSync's concern. See attributeMap().
+            if ($key === 'activated') {
                 continue;
             }
             $item[$key] = $ldapAttr ? ($ldapattributes[$ldapAttr][0] ?? '') : '';
@@ -396,7 +433,7 @@ class Ldap extends Model
 
         // Always-written identity fields. These have no per-field gate
         // because Snipe-IT considers username / first name / last name /
-        // email load-bearing for every user, if a mapping's blank the
+        // email important for every user, if a mapping's blank the
         // LDAP payload just gives us an empty string, matching the
         // pre-fix behavior on the create path.
         $user->username = $ldapAttr['username'];

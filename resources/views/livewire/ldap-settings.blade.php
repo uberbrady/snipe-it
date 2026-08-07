@@ -646,7 +646,7 @@
                                 <tbody>
                                     @foreach ($step3TestAttributes as $snipeField => $preview)
                                         <tr>
-                                            <td>{{ $snipeField }}</td>
+                                            <td>{{ $preview['label'] ?? $snipeField }}</td>
                                             <td>
                                                 @if ($preview['attr'])
                                                     <code>{{ $preview['attr'] }}</code>
