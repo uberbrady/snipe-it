@@ -693,6 +693,25 @@
                 }
             };
 
+            // Tell tableExport how to interpret numbers in the HTML cells so the
+            // XLSX export writes correct numeric values on non-US locales. Without
+            // this the plugin defaults to US format ("," thousands, "." decimal)
+            // and misparses cells that numberWithCommas() rendered in
+            // "1.234,56" shape: 3.854,60 becomes 3.8546 (issue #19415).
+            // Output stays invariant (raw "." decimal, no thousands separator)
+            // because OpenXML numeric cells must be locale-neutral; Excel handles
+            // display formatting from the cell style on open.
+            export_options['numbers'] = {
+                html: {
+                    decimalMark: "{{ $snipeSettings->digit_separator == '1.234,56' ? ',' : '.' }}",
+                    thousandsSeparator: "{{ $snipeSettings->digit_separator == '1.234,56' ? '.' : ',' }}"
+                },
+                output: {
+                    decimalMark: ".",
+                    thousandsSeparator: ""
+                }
+            };
+
             // This allows us to override the table defaults set below using the data-dash attributes
             var table = this;
             var data_with_default = function (key,default_value) {
