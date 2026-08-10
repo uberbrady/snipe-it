@@ -1348,14 +1348,13 @@ class LdapSettings extends Component
         }
 
         if (! config('app.test_allow_private_ips')) {
-            // FILTER_FLAG_NO_PRIV_RANGE blocks 10/8, 172.16/12, 192.168/16, fc00::/7.
-            // FILTER_FLAG_NO_RES_RANGE blocks loopback (127/8, ::1), link-local
-            // (169.254/16 - cloud metadata!), multicast, broadcast, and other
-            // IETF-reserved ranges.
-            // While this makes sense in some cases, we control that via the
-            // TEST_ALLOW_PRIVATE_IPS env var, since some folks will legitimately need
-            // their install of Snipe-IT to talk to internal networks
-            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            // Block loopback, RFC-1918, link-local (169.254/16 -- cloud
+            // metadata!), multicast, broadcast, and IPv6 transition
+            // prefixes that would embed a non-public IPv4 payload. See
+            // App\Helpers\PublicIpCheck for the exact ranges covered.
+            // The check is gated on TEST_ALLOW_PRIVATE_IPS because some
+            // installs legitimately need to talk to internal LDAP servers.
+            if (! \App\Helpers\PublicIpCheck::isPublic($ip)) {
                 return trans('admin/settings/general.ldap_wizard.test.private_ip_blocked', ['host' => $host, 'ip' => $ip]);
             }
         }
