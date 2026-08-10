@@ -547,6 +547,42 @@
                 this.unsortedData = this.data.slice();
             };
 
+        // Bootstrap-table's "print" extension races Safari's async print
+        // against its own synchronous close(). doPrint calls
+        // newWin.focus(); newWin.print(); newWin.close(); right after
+        // document.write. When the written HTML contains <img> tags,
+        // Safari kicks off fetches for them and treats the popup
+        // document as not-yet-ready-to-print. The queued print() is
+        // waiting on that ready state, but close() fires anyway, tears
+        // down the popup, and the queued print is silently canceled.
+        //
+        // See https://github.com/grokability/snipe-it/issues/19443
+        //
+        // Deferring newWin.close() by 500ms gives Safari enough time
+        // to either finish loading the images or latch the print
+        // dialog against the popup before it disappears.
+        if (BootstrapTable && BootstrapTable.prototype.doPrint) {
+            var origDoPrint = BootstrapTable.prototype.doPrint;
+            BootstrapTable.prototype.doPrint = function (data) {
+                var origOpen = window.open;
+                window.open = function () {
+                    var w = origOpen.apply(window, arguments);
+                    if (w) {
+                        var realClose = w.close.bind(w);
+                        w.close = function () {
+                            setTimeout(realClose, 500);
+                        };
+                    }
+                    return w;
+                };
+                try {
+                    return origDoPrint.call(this, data);
+                } finally {
+                    window.open = origOpen;
+                }
+            };
+        }
+
         var blockedFields = "searchable,sortable,switchable,title,visible,formatter,class".split(",");
 
         var keyBlocked = function(key) {
