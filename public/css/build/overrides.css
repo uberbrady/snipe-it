@@ -3117,6 +3117,24 @@ dl.table-display {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+@media (max-width: 1400px) {
+  .box-body .fixed-table-toolbar > .search.pull-right {
+    clear: both !important;
+    margin-top: 8px;
+  }
+}
+.info-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 -10px;
+}
+.info-panel-actions > .pull-right {
+  margin-left: auto;
+}
+.info-panel-actions > .pull-right ~ .pull-right {
+  margin-left: 0;
+}
 
 
 /*# sourceMappingURL=overrides.css.map*/

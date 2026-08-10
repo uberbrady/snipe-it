@@ -654,7 +654,7 @@
                         <x-button.delete :item="$user"/>
 
                         @can('delete', $user)
-                            <form action="{{ route('users/bulkedit') }}" method="POST" class="form-inline" style="display: inline; padding-right: 5px;">
+                            <form action="{{ route('users/bulkedit') }}" method="POST" class="form-inline pull-right" style="display: inline; padding-right: 5px;">
                                 <!-- CSRF Token -->
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}"/>
                                 <input type="hidden" name="bulk_actions" value="delete"/>
