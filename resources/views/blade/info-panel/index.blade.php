@@ -9,7 +9,7 @@
 <div class="box-header with-border" style="padding-top: 0;">
 
     @if (isset($buttons))
-        <div class="row hidden-print" style="padding-left: 5px;">
+        <div class="info-panel-actions hidden-print">
             {{ $buttons }}
         </div>
     @endif

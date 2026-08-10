@@ -3277,3 +3277,60 @@ dl.table-display {
     border: 0;
   }
 }
+
+// Issue #19443: on narrower viewports (sidebar open, small laptops)
+// the bs-table search input ends up wedged between the box's
+// bulk-actions area (pulled left, ~500px min-width) and the button
+// toolbar (pulled right), which strands it visually in the middle.
+// Force the search onto its own row below the toolbar, right-aligned,
+// when the viewport isn't wide enough to fit all three inline. Wide
+// layouts stay unchanged.
+//
+// The outer `.search` is bootstrap's `.input-group` (display: table)
+// wrapping a nested `.input-group` with the input + clear button.
+// Just adding `clear: both` to the still-floated element left it
+// stranded mid-container. Turning the outer into a plain block with
+// `text-align: right`, and forcing the nested input-group to
+// `inline-flex` so it respects the parent's text alignment, lets it
+// sit flush against the box's right edge on its own row.
+@media (max-width: 1400px) {
+  .box-body .fixed-table-toolbar > .search.pull-right {
+    clear: both !important;
+    margin-top: 8px;
+  }
+}
+
+// Info-panel action button row. Every asset / user / license detail
+// page renders a horizontal strip of icon buttons (edit, clone, note,
+// audit, delete, ...) above the info panel. Was a plain .row with no
+// wrap strategy, so on narrow viewports the last one or two buttons
+// would drop to their own line with no spacing from the row above.
+// Flex + wrap + gap gives a predictable break point and consistent
+// spacing between buttons in either axis. Also fixed #19443.
+//
+// Destructive buttons (delete, and by convention checkin) still need
+// to sit visually apart from the non-destructive ones on the right
+// edge, which they got via `pull-right` (float: right) before this
+// container went flex. Floats are ignored by flex, so the first
+// pull-right child gets margin-left: auto to consume the remaining
+// space and shove itself right. Anything after it clusters next to
+// it. This preserves the "danger zone on the right" grouping in the
+// wide layout and keeps them grouped together when they wrap to
+// their own line.
+.info-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  // Bleed out through the parent .box-header's 10px horizontal
+  // padding so the button row hits the box's actual edges. Matches
+  // how a bootstrap .row offsets its container's gutters.
+  margin: 0 -10px;
+
+  > .pull-right {
+    margin-left: auto;
+  }
+
+  > .pull-right ~ .pull-right {
+    margin-left: 0;
+  }
+}
