@@ -2345,14 +2345,17 @@ table rows
 
 
 // -----------------------------------------------------------------------------
-// CSS-sticky replacement for bootstrap-table's fixed-columns extension.
+// CSS sticky columns. Bootstrap-table's fixed-columns feature was pulled
+// from the bundle in favor of this — the old feature cloned the table
+// body into an absolutely-positioned overlay, which drifted in height
+// with long-content rows (#19197, #19458) and misplaced tooltips when
+// the container reflowed without a window resize (asset show + info
+// panel toggle). CSS position:sticky on the actual <td> cells can't
+// drift because the cells ARE the pinned cells.
 //
-// Tables that pass use_sticky_css to <x-table> get one of these classes
-// (snipe-table--sticky-right-N / snipe-table--sticky-left-N) instead of the
-// extension's data-fixed-columns=true. The extension clones the table body
-// into an absolutely-positioned overlay, which drifts in height with
-// long-content rows (#19197) and misplaces tooltips when the container
-// reflows without a window resize (asset show + info panel toggle).
+// Tables that want pinned columns get the snipe-table--sticky-right-N
+// or snipe-table--sticky-left-N class (via <x-table>'s fixed_number /
+// fixed_right_number props, or applied directly on a raw table).
 //
 // Body cells match the zebra background so the sticky column keeps the
 // alternating pattern. Header cells use --box-bg so scrolling body rows

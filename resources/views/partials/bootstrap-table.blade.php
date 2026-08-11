@@ -827,8 +827,6 @@
                 showSearchClearButton: data_with_default('show-search-clear-button', true),
                 sortName: data_with_default('sort-name', 'created_at'),
                 sortOrder: data_with_default('sort-order', 'desc'),
-                fixedColumns: data_with_default('fixed-columns', 'true'),
-                fixedRightNumber: data_with_default('fixed-right-number', '1'),
                 stickyHeader: true,
                 stickyHeaderOffsetLeft: parseInt($('body').css('padding-left'), 10),
                 stickyHeaderOffsetRight: parseInt($('body').css('padding-right'), 10),
@@ -3387,12 +3385,12 @@
     // document.ready callback runs anywhere.
     // -----------------------------------------------------------------
 
-    // Tables opted into use_sticky_css (see blade/table/index.blade.php)
-    // pin the first / last N columns via position:sticky. Each pinned
-    // column needs a right/left offset equal to the cumulative outerWidth
-    // of the pinned columns outside it, otherwise they all stack at the
-    // edge. The offsets are per-column and can change on column-toggle
-    // and window resize, so recompute after every render + resize.
+    // Tables that carry a snipe-table--sticky-right-N or -left-N class
+    // pin those columns via position:sticky. Each pinned column needs a
+    // right/left offset equal to the cumulative outerWidth of the
+    // pinned columns outside it, otherwise they all stack at the edge.
+    // The offsets are per-column and can change on column-toggle and
+    // window resize, so recompute after every render + resize.
     function updateStickyColumnOffsets(root) {
         var $targets = root ? $(root).filter('.snipe-table') : $('.snipe-table');
         $targets.each(function () {
