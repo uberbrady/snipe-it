@@ -707,6 +707,30 @@ class SnipeSCIMConfig
                                 }
 
                                 throw new SCIMException("Could not handle path for update $path", 422);
+                            } else {
+                                // Okta hits this one for creating a user - it does a full PUT for their ID
+                                \Log::debug("GetValuePAthFilter is null for path: $path");
+                                \Log::debug("GetValuePathFilter is now null and trying to set value of: " . print_r($value, true));
+                                // the Addresses object is a 'list' (array with numeric indices) by definition...
+                                if (is_array($value) && array_is_list($value)) {
+                                    foreach ($value as $address) {
+                                        // we just need to check if this is a 'work' address, we don't really care about "primary => true"
+                                        if (@$address['type'] == 'work') {
+                                            foreach ($address as $key => $v) {
+                                                if (array_key_exists($key, self::$addressmap)) {
+                                                    \Log::debug("Addresses: Setting " . self::$addressmap[$key] . " to '$v'");
+                                                    $object->{self::$addressmap[$key]} = $v;
+                                                }
+                                            }
+                                        } else {
+                                            //should we throw if you give us a 'home' address? I don't know.
+                                            // what if you gave us _both_ ?
+                                        }
+                                    }
+                                } else {
+                                    \Log::debug("Unknown Address Object: " . print_r($value, true));
+                                    throw new SCIMException("Unknown Address object of type: " . gettype($value), 422);
+                                }
                             }
                         }
                     })->withSubAttributes(
