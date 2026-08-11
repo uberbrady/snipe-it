@@ -143,10 +143,17 @@
                     </x-slot:input>
                 </x-form.row>
 
-                @include ('partials.forms.edit.model-select', ['translated_name' => trans('admin/hardware/form.model'), 'fieldname' => 'model_id'])
+                <x-input.model-select
+                    :label="trans('admin/hardware/form.model')"
+                    name="model_id"
+                    :selected="old('model_id')"
+                />
 
-                {{-- Default location --}}
-                @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.default_location'), 'fieldname' => 'rtd_location_id'])
+                <x-input.location-select
+                    :label="trans('admin/hardware/form.default_location')"
+                    name="rtd_location_id"
+                    :selected="old('rtd_location_id')"
+                />
 
                 {{-- Actual-location update rule (3-way radio) --}}
                 <x-form.radio-row
@@ -174,11 +181,17 @@
                     </x-slot:input>
                 </x-form.row>
 
-                {{-- Supplier --}}
-                @include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
+                <x-input.supplier-select
+                    :label="trans('general.supplier')"
+                    name="supplier_id"
+                    :selected="old('supplier_id')"
+                />
 
-                {{-- Company --}}
-                @include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id'])
+                <x-input.company-select
+                    :label="trans('general.company')"
+                    name="company_id"
+                    :selected="old('company_id')"
+                />
 
                 {{-- Order number --}}
                 <x-form.row
@@ -244,7 +257,11 @@
                     input_div_class="col-md-7"
                 />
 
-                @include ('partials.forms.edit.notes')
+                <x-form.row
+                    :label="trans('general.notes')"
+                    name="notes"
+                    type="textarea"
+                />
 
                 {{-- Set notes to null --}}
                 <x-form.checkbox-row
