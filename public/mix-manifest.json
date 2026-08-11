@@ -1,5 +1,5 @@
 {
-    "/js/dist/all.js": "/js/dist/all.js?id=887f92c73daf3875484043cb9d406cef",
+    "/js/dist/all.js": "/js/dist/all.js?id=f00faad4ec2747af7dd5492bf173cf4c",
     "/css/build/overrides.css": "/css/build/overrides.css?id=ce53e45204847df139bd67cb165195f2",
     "/css/build/app.css": "/css/build/app.css?id=fe990b9e061d607ad3a33ddb38f0f837",
     "/css/build/AdminLTE.css": "/css/build/AdminLTE.css?id=ee0ed88465dd878588ed044eefb67723",
@@ -77,6 +77,6 @@
     "/js/dist/bootstrap-table-locale-all.min.js": "/js/dist/bootstrap-table-locale-all.min.js?id=d300041b9e5038b45b68e036add83be4",
     "/js/dist/bootstrap-table-en-US.min.js": "/js/dist/bootstrap-table-en-US.min.js?id=6d0de12d91548ba2cd80b868838ce5fa",
     "/js/dist/Chart.min.js": "/js/dist/Chart.min.js?id=9b1ae20c4c7048d6e4a1b2e1aee7fb31",
-    "/css/dist/bootstrap-table.css": "/css/dist/bootstrap-table.css?id=82b56573f8098e439bf14ccb4530de6e",
-    "/js/dist/bootstrap-table.js": "/js/dist/bootstrap-table.js?id=e1531ba4cea2a4a3b966751c2870a8e0"
+    "/css/dist/bootstrap-table.css": "/css/dist/bootstrap-table.css?id=9def0b5d3b891ac3669b3b7aa7e805ce",
+    "/js/dist/bootstrap-table.js": "/js/dist/bootstrap-table.js?id=e11e0fff41162f5df87cfcb075f9e821"
 }
