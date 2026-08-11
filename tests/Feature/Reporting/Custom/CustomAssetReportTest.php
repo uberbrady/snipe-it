@@ -223,7 +223,11 @@ class CustomAssetReportTest extends TestCase
         $customField = CustomField::factory()->encrypt()->create();
         $columnName = $customField->db_column_name();
 
-        $asset = Asset::factory()->create(['name' => 'Encrypted Asset']);
+        $fieldset = CustomFieldset::factory()->create();
+        $fieldset->fields()->attach($customField, ['order' => 1, 'required' => false]);
+        $model = AssetModel::factory()->create(['fieldset_id' => $fieldset->id]);
+
+        $asset = Asset::factory()->for($model, 'model')->create(['name' => 'Encrypted Asset']);
         $asset->{$columnName} = Crypt::encrypt('super-secret-value');
         $asset->save();
 
