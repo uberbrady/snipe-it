@@ -13,7 +13,6 @@
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Api/AssetsController.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Api/LabelsController.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Api/LicenseSeatsController.php"/>
-  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Api/SettingsController.php"/>
   <violation rule="PHPMD\Rule\UnusedLocalVariable" file="app/Http/Controllers/Api/SettingsController.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Api/UsersController.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Controllers/Assets/AssetCheckinController.php"/>
@@ -35,8 +34,6 @@
   <violation rule="PHPMD\Rule\UnusedLocalVariable" file="app/Http/Requests/SettingsSamlRequest.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Http/Traits/UniqueUndeletedTrait.php"/>
   <violation rule="PHPMD\Rule\UnusedLocalVariable" file="app/Http/Transformers/DepreciationReportTransformer.php"/>
-  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Importer/AccessoryImporter.php"/>
-  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Importer/ConsumableImporter.php"/>
   <violation rule="PHPMD\Rule\UnusedLocalVariable" file="app/Importer/ItemImporter.php"/>
   <violation rule="PHPMD\Rule\UnusedLocalVariable" file="app/Livewire/Importer.php"/>
   <violation rule="PHPMD\Rule\UnusedFormalParameter" file="app/Livewire/LdapSettings.php"/>
