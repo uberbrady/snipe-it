@@ -98,6 +98,14 @@ class AcceptanceController extends Controller
             abort(403, trans('general.insufficient_permissions'));
         }
 
+        // Bound the note server-side. Unbounded notes were reaching synchronous
+        // CommonMark rendering in the acceptance notification email and
+        // consuming worker CPU on a per-request basis (defense in depth against
+        // the parser CVE; the commonmark bump to 2.9.0 is the primary fix).
+        $request->validate([
+            'note' => 'nullable|string|max:1000',
+        ]);
+
         $acceptance = CheckoutAcceptance::find($id);
 
         if (! $acceptance) {
