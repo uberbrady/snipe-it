@@ -1026,21 +1026,17 @@ class Importer extends Component
             }
         }
 
-        // Asset imports let users map custom fields on top of the built-in
-        // ones. A custom field marked required in ANY fieldset should be
-        // flagged as required at the wizard level - we can't know per-row
-        // which fieldset each asset will land in, so we treat the union
-        // across all fieldsets as the safe requirement set. Users see the
-        // strictest possible bar and can back out if their CSV doesn't
-        // cover it.
-        if ($type === 'asset') {
-            $requiredCustomFields = CustomField::whereHas(
-                'fieldset',
-                fn ($q) => $q->where('custom_field_custom_fieldset.required', 1),
-            )->get()->map->db_column_name()->all();
-
-            $required = array_values(array_unique(array_merge($required, $requiredCustomFields)));
-        }
+        // Custom fields are intentionally NOT flagged as required at the
+        // wizard level for asset imports. Required-ness varies per fieldset,
+        // and a CSV can span multiple asset models pointing at different
+        // fieldsets, so a field required in Fieldset A may be irrelevant
+        // for rows destined for Fieldset B (issue #19468). Server-side
+        // validation on Asset::save() enforces the correct per-asset rule
+        // via customFieldValidationRules() -> $model->fieldset->validation_rules(),
+        // which reads the pivot->required flag for the specific fieldset
+        // attached to the row's model. Rows that legitimately need the
+        // field will still fail at save-time and surface in the import
+        // error output.
 
         return $required;
     }
