@@ -515,13 +515,21 @@
                                             @php
                                                 // Skip CSV columns that the auto-map
                                                 // couldn't bind to any target for the
-                                                // current import type. If the user
-                                                // needs manual control they can
-                                                // pick a different import type in
-                                                // step 1 and the map re-runs.
+                                                // current import type — those come
+                                                // through as PHP null. Rows the USER
+                                                // set to "Do not import" come through
+                                                // as empty string (Livewire binds the
+                                                // select's value="" as ""), so those
+                                                // stay visible and the user can change
+                                                // their mind. Previously used empty()
+                                                // here, which conflated the two and
+                                                // made "Do not import" rows disappear
+                                                // from the wizard with no way to bring
+                                                // them back short of restarting the
+                                                // import (#19450).
                                                 $currentMapping = $field_map[$index] ?? null;
                                             @endphp
-                                            @continue(empty($currentMapping))
+                                            @continue(is_null($currentMapping))
 
                                             <div class="form-group col-md-12" wire:key="header-row-{{ $index }}">
                                                 <label for="field_map.{{ $index }}" class="col-md-3 control-label text-right">{{ $header }}</label>

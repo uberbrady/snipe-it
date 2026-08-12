@@ -211,7 +211,14 @@ class Importer extends Component
         $tmp = [];
         if ($this->activeFile) {
             $tmp = array_combine($this->headerRow, $this->field_map);
-            $tmp = array_filter($tmp);
+            // Drop only nulls (columns the auto-map couldn't bind to
+            // anything for this import type). Preserve empty strings,
+            // which encode the user's explicit "Do not import" choice
+            // in the wizard select. Bare array_filter($tmp) treats both
+            // as falsy and silently loses the user selection, forcing
+            // them to re-set "Do not import" every time the template
+            // is reloaded (see the wizard-side companion fix for #19450).
+            $tmp = array_filter($tmp, fn ($v) => $v !== null);
         }
 
         return json_encode($tmp);
@@ -866,9 +873,18 @@ class Importer extends Component
         $this->field_map = null;
         foreach ($this->headerRow as $element) {
             if (isset($this->activeFile->field_map[$element])) {
+                // Preserved values may be either a real target-field key
+                // or the empty string "" (user's explicit "Do not import"
+                // choice, persisted by generate_field_map). Push through
+                // as-is; the blade side's is_null-based @continue keeps
+                // "" rows visible so the user can flip them back.
                 $this->field_map[] = $this->activeFile->field_map[$element];
             } else {
-                $this->field_map[] = null; // re-inject the 'nulls' if a file was imported with some 'Do Not Import' settings
+                // Header wasn't in the saved map at all. Treat as
+                // never-mapped (auto-map couldn't bind or this header
+                // is new since the template was saved). Null hides the
+                // row in the wizard by design.
+                $this->field_map[] = null;
             }
         }
 
