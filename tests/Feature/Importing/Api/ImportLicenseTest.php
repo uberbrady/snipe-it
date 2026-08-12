@@ -636,6 +636,53 @@ class ImportLicenseTest extends ImportDataTestCase implements TestsPermissionsRe
     }
 
     #[Test]
+    public function import_records_error_when_license_runs_out_of_free_seats(): void
+    {
+        // Regression for #19467 follow-up. If a seat-assignment CSV exceeds
+        // the target license's free-seat count, the trailing rows should
+        // surface as errored tally entries with a specific "no free seats"
+        // message, not silently be dropped on the floor.
+        [$firstUser, $secondUser, $thirdUser] = User::factory()->count(3)->create();
+        $existingLicense = License::factory()->create([
+            'serial' => null,
+            'seats' => 2,
+        ]);
+
+        $rowShape = [
+            'licenseName' => $existingLicense->name,
+            'category' => 'Software',
+            'seats' => 2,
+        ];
+
+        $file = new ImportFileBuilder([
+            array_merge($rowShape, ['checkoutUsername' => $firstUser->username]),
+            array_merge($rowShape, ['checkoutUsername' => $secondUser->username]),
+            array_merge($rowShape, ['checkoutUsername' => $thirdUser->username]),
+        ]);
+
+        $import = Import::factory()->license()->create(['file_path' => $file->saveToImportsDirectory()]);
+
+        $this->actingAsForApi(User::factory()->superuser()->create());
+        $response = $this->importFileResponse([
+            'import' => $import->id,
+            'import-update' => true,
+        ]);
+
+        // The API convention for import runs with any errored rows is HTTP
+        // 500 (see Api\ImportController::importFile line 352). The interesting
+        // assertion is that the tally reflects the failure and the message
+        // surfaces the specific "no free seats" reason.
+        $response->assertStatus(500);
+        $response->assertJson(['status' => 'import-errors']);
+        $this->assertSame(1, $response->json('payload.tally.errored'), 'The row that had no free seat should be counted as errored in the tally.');
+        $this->assertStringContainsString('no free seats', $response->content());
+
+        // Two seats successfully assigned (rows 1 and 2), third row's seat
+        // assignment failed and was recorded.
+        $this->assertSame(2, LicenseSeat::where('license_id', $existingLicense->id)->whereNotNull('assigned_to')->count());
+    }
+
+    #[Test]
     public function update_matches_existing_license_with_null_serial_when_csv_omits_serial(): void
     {
         // Same class of bug as multiple_rows_without_serial_column, on the

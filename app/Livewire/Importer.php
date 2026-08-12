@@ -161,7 +161,19 @@ class Importer extends Component
         'accessory' => [Accessory::class, ['item_name' => 'name', 'category' => 'category_id']],
         'consumable' => [Consumable::class, ['item_name' => 'name', 'category' => 'category_id']],
         'component' => [ComponentModel::class, ['item_name' => 'name', 'category' => 'category_id']],
-        'license' => [License::class, ['item_name' => 'name', 'seats' => 'seats']],
+        // license: only item_name is enforced at wizard level. `seats` is
+        // the license's total capacity count (not a per-seat pivot id).
+        // License imports currently drive three different intents depending
+        // on the row shape: (1) create a new License with N seats,
+        // (2) update an existing License's capacity, (3) assign a user or
+        // asset to one of an existing License's free seats. The importer
+        // figures out which path each row takes at process time. seats is
+        // only needed for (1) and (2); (3) doesn't reference it. Since the
+        // wizard can't know per-row which path a caller intends, we don't
+        // enforce seats at the wizard level. Server-side validation still
+        // enforces `seats` on the create path per License::$rules. See
+        // issue #19467.
+        'license' => [License::class, ['item_name' => 'name']],
         'user' => [User::class, ['first_name' => 'first_name', 'username' => 'username']],
         'location' => [Location::class, ['name' => 'name']],
         'supplier' => [Supplier::class, ['name' => 'name']],

@@ -237,6 +237,29 @@ class LicenseImporter extends ItemImporter
 
         $targetLicense = $license->freeSeat();
         if (is_null($targetLicense)) {
+            // No free seats left on the license. The row's license
+            // create/update already succeeded (or was correctly skipped as
+            // a duplicate), but the seat-assignment portion cannot proceed.
+            // Surface this as an errored row so the wizard tally reflects
+            // that the caller's intent was only partially fulfilled, and
+            // log a specific message the caller can act on. Without this,
+            // a seat-assignment CSV whose row count exceeds the license's
+            // available seats silently drops the trailing rows on the
+            // floor (reported in #19467 follow-up).
+            $target_label = $checkout_target?->name
+                ?? $checkout_target?->username
+                ?? ($asset ? $asset->display_name : trans('general.unassigned'));
+
+            $this->log(trans('admin/licenses/message.import.no_free_seats', [
+                'license' => $license->name,
+                'target' => $target_label,
+            ]));
+            $this->addErrorToBag($license, 'seats', trans('admin/licenses/message.import.no_free_seats', [
+                'license' => $license->name,
+                'target' => $target_label,
+            ]));
+            $this->recordErrored();
+
             return;
         }
 
