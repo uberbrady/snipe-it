@@ -3130,6 +3130,7 @@ dl.table-display {
   margin: 0 -10px;
 }
 .info-panel-actions > .pull-right {
+  order: 1;
   margin-left: auto;
 }
 .info-panel-actions > .pull-right ~ .pull-right {

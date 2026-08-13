@@ -3317,9 +3317,19 @@ dl.table-display {
 // container went flex. Floats are ignored by flex, so the first
 // pull-right child gets margin-left: auto to consume the remaining
 // space and shove itself right. Anything after it clusters next to
-// it. This preserves the "danger zone on the right" grouping in the
-// wide layout and keeps them grouped together when they wrap to
-// their own line.
+// it.
+//
+// pull-right children also get order:1 so they visually move to the
+// end of the row regardless of their DOM position. Without this,
+// pull-right buttons that appear BEFORE non-pull-right buttons in
+// markup (checkin is emitted before edit/clone/audit on the asset
+// view, and only when the asset is currently checked out - which is
+// why the misalignment only showed up on checked-out assets) end up
+// dragging every subsequent sibling right along with them via the
+// auto margin, leaving only the first non-pull-right button alone on
+// the left. order:1 corrects the visual grouping so pull-right ends
+// up on the right and the non-pull-right stack stays left, matching
+// the behavior the old floats used to give.
 .info-panel-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3330,6 +3340,7 @@ dl.table-display {
   margin: 0 -10px;
 
   > .pull-right {
+    order: 1;
     margin-left: auto;
   }
 
