@@ -328,7 +328,7 @@ class LdapSettings extends Component
     #[Computed]
     public function hasPersistedLdapPword(): bool
     {
-        return ! empty(Setting::getSettings()?->ldap_pword);
+        return ! empty(Setting::getSettings()->ldap_pword);
     }
 
     public function goToStep(int $step): void
