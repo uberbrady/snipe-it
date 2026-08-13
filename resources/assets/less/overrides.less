@@ -697,9 +697,11 @@ h4 {
     padding-bottom: 15px;
   }
 
-  .firstnav {
-    padding-top: 120px !important;
-  }
+  // .firstnav { padding-top: 120px !important } used to live here as
+  // another static compensation for the wrapped-header-covers-first-item
+  // bug at narrow widths. Superseded by the dynamic
+  // .main-sidebar padding-top: var(--main-header-height) rule; leaving
+  // it would double-count on top of the runtime-measured header height.
 
   .product {
     width: 400px;
@@ -919,14 +921,8 @@ thead th.css-history > .th-inner::before {
   .tab-content .tab-pane .alert-block {
     margin-top: 120px
   }
-  .sidebar-menu{
-    margin-top:160px;
-  }
 }
 @media screen and (max-width: 912px) and (min-width: 512px){
-  .sidebar-menu {
-    margin-top:100px
-  }
   .navbar-custom-menu > .navbar-nav > li.dropdown.user.user-menu {
     float:right;
   }
@@ -935,11 +931,17 @@ thead th.css-history > .th-inner::before {
   }
 }
 
-@media screen and (max-width: 1268px) and (min-width: 912px){
-  .sidebar-menu {
-    margin-top:50px
-  }
-}
+// Legacy .sidebar-menu { margin-top: Npx } rules at 912-1268px,
+// 512-912px, and <=511px used to live here as hardcoded compensation
+// for the "header wraps at intermediate widths and covers the first
+// sidebar item" bug (#5085, #11868, #19482). Same story for the
+// .firstnav { padding-top: 120px !important } that used to be inside
+// the max-width: 520px block below. All three were double-counted on
+// top of the dynamic .main-sidebar padding-top: var(--main-header-height)
+// rule further down that measures the actual header height at runtime,
+// producing 200px+ visual gaps above Dashboard at those breakpoints.
+// The dynamic measurement covers all these cases correctly, so the
+// static compensation is deleted.
 @media screen and (max-width: 992px){
   .info-stack-container {
     flex-direction: column;
@@ -2733,6 +2735,55 @@ Active and hover for top tier sidenav items
 
 .main-sidebar {
   background-color: #1e282c;
+}
+
+// Shift .main-header's BOX (not just its inner .navbar) so the header
+// occupies only the horizontal space past the sidebar's column. Base
+// AdminLTE 2 leaves .main-header full-width and only offsets the
+// .navbar's contents via margin-left: 230px, which fixes visual
+// alignment but not click alignment: the header's own <div> (z-index
+// 1030) still extends across the sidebar column above the sidebar
+// (z-index 810), so at intermediate widths where the navbar wraps to
+// two or three rows the header's empty second/third-row area sits on
+// top of the first sidebar item and eats clicks. Reported repeatedly
+// on the tracker (#19482, #11868, #5085) and previously papered over
+// with hardcoded .sidebar-menu { margin-top: Npx } offsets at
+// specific breakpoints - since removed above in favor of this
+// structural fix.
+//
+// Shift values track the sidebar's rendered width per body class:
+//  - default (.sidebar-mini, sidebar open): 230px
+//  - .sidebar-mini.sidebar-collapse (menu closed, mini icons): 50px
+//  - mobile (<=767px): 0 (sidebar is translated off-screen)
+//
+// The navbar's own margin-left is zeroed at each state so the navbar
+// content doesn't get double-shifted after the header itself moves.
+// Transition on .main-header matches the navbar's existing 0.3s
+// margin-left transition so the header and its content animate
+// together when the sidebar toggles.
+@media (min-width: 768px) {
+  .main-header {
+    margin-left: 230px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+  .main-header .navbar {
+    margin-left: 0;
+  }
+  .sidebar-mini.sidebar-collapse .main-header {
+    margin-left: 50px;
+  }
+  // AdminLTE has a higher-specificity rule at min-width: 768px:
+  //   .sidebar-mini.sidebar-collapse .main-header .navbar { margin-left: 50px }
+  // that overrides our plain .main-header .navbar reset above. Without
+  // matching its specificity here, the mini-collapsed state ends up
+  // double-shifting the navbar (header shifted 50px + navbar shifted
+  // 50px = navbar starts at x=100). That pushed the .sidebar-toggle
+  // hamburger past the sidebar column and into the header instead of
+  // sitting over the mini-icon column at the top-left (where its
+  // -48px margin-left is designed to place it).
+  .sidebar-mini.sidebar-collapse .main-header .navbar {
+    margin-left: 0;
+  }
 }
 
 

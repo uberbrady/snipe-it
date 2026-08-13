@@ -22241,9 +22241,6 @@ h4 {
     padding-top: 15px;
     padding-bottom: 15px;
   }
-  .firstnav {
-    padding-top: 120px !important;
-  }
   .product {
     width: 400px;
   }
@@ -22445,24 +22442,13 @@ thead th.css-history > .th-inner::before {
   .tab-content .tab-pane .alert-block {
     margin-top: 120px;
   }
-  .sidebar-menu {
-    margin-top: 160px;
-  }
 }
 @media screen and (max-width: 912px) and (min-width: 512px) {
-  .sidebar-menu {
-    margin-top: 100px;
-  }
   .navbar-custom-menu > .navbar-nav > li.dropdown.user.user-menu {
     float: right;
   }
   .navbar-custom-menu > .navbar-nav > li > .dropdown-menu {
     margin-right: -39px;
-  }
-}
-@media screen and (max-width: 1268px) and (min-width: 912px) {
-  .sidebar-menu {
-    margin-top: 50px;
   }
 }
 @media screen and (max-width: 992px) {
@@ -24280,6 +24266,21 @@ Active and hover for top tier sidenav items
  */
 .main-sidebar {
   background-color: #1e282c;
+}
+@media (min-width: 768px) {
+  .main-header {
+    margin-left: 230px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+  .main-header .navbar {
+    margin-left: 0;
+  }
+  .sidebar-mini.sidebar-collapse .main-header {
+    margin-left: 50px;
+  }
+  .sidebar-mini.sidebar-collapse .main-header .navbar {
+    margin-left: 0;
+  }
 }
 .sidebar-menu > li.active > a,
 .sidebar-menu > li:hover > a,
@@ -25864,9 +25865,6 @@ h4 {
     padding-top: 15px;
     padding-bottom: 15px;
   }
-  .firstnav {
-    padding-top: 120px !important;
-  }
   .product {
     width: 400px;
   }
@@ -26068,24 +26066,13 @@ thead th.css-history > .th-inner::before {
   .tab-content .tab-pane .alert-block {
     margin-top: 120px;
   }
-  .sidebar-menu {
-    margin-top: 160px;
-  }
 }
 @media screen and (max-width: 912px) and (min-width: 512px) {
-  .sidebar-menu {
-    margin-top: 100px;
-  }
   .navbar-custom-menu > .navbar-nav > li.dropdown.user.user-menu {
     float: right;
   }
   .navbar-custom-menu > .navbar-nav > li > .dropdown-menu {
     margin-right: -39px;
-  }
-}
-@media screen and (max-width: 1268px) and (min-width: 912px) {
-  .sidebar-menu {
-    margin-top: 50px;
   }
 }
 @media screen and (max-width: 992px) {
@@ -27903,6 +27890,21 @@ Active and hover for top tier sidenav items
  */
 .main-sidebar {
   background-color: #1e282c;
+}
+@media (min-width: 768px) {
+  .main-header {
+    margin-left: 230px;
+    transition: margin-left 0.3s ease-in-out;
+  }
+  .main-header .navbar {
+    margin-left: 0;
+  }
+  .sidebar-mini.sidebar-collapse .main-header {
+    margin-left: 50px;
+  }
+  .sidebar-mini.sidebar-collapse .main-header .navbar {
+    margin-left: 0;
+  }
 }
 .sidebar-menu > li.active > a,
 .sidebar-menu > li:hover > a,
