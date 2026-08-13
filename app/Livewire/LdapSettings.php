@@ -316,6 +316,21 @@ class LdapSettings extends Component
         ];
     }
 
+    /**
+     * Whether a bind password is currently stored in the settings row.
+     *
+     * hydrateFromPersisted() intentionally leaves $ldap_pword as ''
+     * to avoid round-tripping the plaintext to the browser, so the
+     * summary on step 5 can't tell "no password saved" from "password
+     * saved but not loaded" by looking at the property alone. This
+     * computed checks the persisted row directly for the render.
+     */
+    #[Computed]
+    public function hasPersistedLdapPword(): bool
+    {
+        return ! empty(Setting::getSettings()->ldap_pword);
+    }
+
     public function goToStep(int $step): void
     {
         if ($step >= 1 && $step <= $this->highestStepReached) {

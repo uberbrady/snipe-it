@@ -297,7 +297,20 @@
                         <div class="progress" aria-hidden="true">
                             <div class="progress-bar"></div>
                         </div>
-                        <span class="bs-wizard-dot" aria-hidden="true"></span>
+                        {{-- The circular indicator on the progress line
+                             is now itself a click target (matching the
+                             text-based click target above)  --}}
+                        <button
+                            type="button"
+                            wire:click="goToStep({{ $stepNum }})"
+                            @if ($dirty && $stepNum !== $currentStep && $reachable)
+                                wire:confirm="{{ trans('admin/settings/general.ldap_wizard.confirm_discard') }}"
+                            @endif
+                            @disabled(! $reachable)
+                            tabindex="-1"
+                            aria-hidden="true"
+                            class="bs-wizard-dot"
+                            style="padding: 0; border: 0;"></button>
                     </div>
                 @endforeach
             </div>
@@ -759,15 +772,171 @@
                         <h2>{{ trans('admin/settings/general.ldap_wizard.done.subtitle') }}</h2>
                         <p>{{ trans('admin/settings/general.ldap_wizard.done.intro') }}</p>
                         <p>{{ trans('admin/settings/general.ldap_wizard.done.sync_intro') }}</p>
-                        <br><br>
 
-                        <br><br><br><br><br>
+                        {{-- Persisted-config summary, grouped by wizard
+                             step with an "Edit" button that jumps back
+                             to that step. Sensitive fields (bind
+                             password, TLS client key) are shown as a
+                             set/not-set indicator rather than the
+                             actual value. Empty fields are hidden. --}}
+                        @php
+                            // Group field keys by the wizard step they
+                            // live on. Kept as an inline map so the
+                            // summary stays self-contained; if steps
+                            // move fields around, only this array needs
+                            // to update (plus the corresponding form
+                            // sections above, of course).
+                            $summaryGroups = [
+                                1 => [
+                                    'title' => trans('admin/settings/general.ldap_wizard.step_connection'),
+                                    'fields' => [
+                                        'ldap_server' => trans('admin/settings/general.ldap_server'),
+                                        'ldap_tls' => trans('admin/settings/general.ldap_tls'),
+                                        'ldap_server_cert_ignore' => trans('admin/settings/general.ldap_server_cert_ignore'),
+                                        'is_ad' => trans('admin/settings/general.is_ad'),
+                                        'ad_domain' => trans('admin/settings/general.ad_domain'),
+                                    ],
+                                ],
+                                2 => [
+                                    'title' => trans('admin/settings/general.ldap_wizard.step_authscope'),
+                                    'fields' => [
+                                        'ldap_uname' => trans('admin/settings/general.ldap_uname'),
+                                        'ldap_pword' => trans('admin/settings/general.ldap_pword'),
+                                        'ldap_basedn' => trans('admin/settings/general.ldap_basedn'),
+                                        'ldap_filter' => trans('admin/settings/general.ldap_filter'),
+                                        'ldap_auth_filter_query' => trans('admin/settings/general.ldap_auth_filter_query'),
+                                    ],
+                                ],
+                                3 => [
+                                    'title' => trans('admin/settings/general.ldap_wizard.step_mapping'),
+                                    'fields' => [
+                                        'ldap_username_field' => trans('admin/settings/general.ldap_username_field'),
+                                        'ldap_fname_field' => trans('admin/settings/general.ldap_fname_field'),
+                                        'ldap_lname_field' => trans('admin/settings/general.ldap_lname_field'),
+                                        'ldap_display_name' => trans('admin/settings/general.ldap_display_name'),
+                                        'ldap_email' => trans('admin/settings/general.ldap_email'),
+                                        'ldap_emp_num' => trans('admin/settings/general.ldap_emp_num'),
+                                        'ldap_phone_field' => trans('admin/settings/general.ldap_phone'),
+                                        'ldap_mobile' => trans('admin/settings/general.ldap_mobile'),
+                                        'ldap_jobtitle' => trans('admin/settings/general.ldap_jobtitle'),
+                                        'ldap_manager' => trans('admin/settings/general.ldap_manager'),
+                                        'ldap_dept' => trans('admin/settings/general.ldap_dept'),
+                                        'ldap_location' => trans('admin/settings/general.ldap_location'),
+                                        'ldap_active_flag' => trans('admin/settings/general.ldap_active_flag'),
+                                        'ldap_invert_active_flag' => trans('admin/settings/general.ldap_invert_active_flag'),
+                                    ],
+                                ],
+                                4 => [
+                                    'title' => trans('admin/settings/general.ldap_wizard.step_sync'),
+                                    'fields' => [
+                                        'ldap_pw_sync' => trans('admin/settings/general.ldap_pw_sync'),
+                                        'ldap_default_group' => trans('admin/settings/general.ldap_default_group'),
+                                        'custom_forgot_pass_url' => trans('admin/settings/general.custom_forgot_pass_url'),
+                                    ],
+                                ],
+                            ];
+                            // Bind password and TLS client key/cert are
+                            // never rendered as their raw persisted
+                            // value in the summary - show only whether
+                            // they are set. Keeps sensitive material off
+                            // any incidental screenshot/screen-share.
+                            $summarySecretFields = ['ldap_pword', 'ldap_client_tls_key', 'ldap_client_tls_cert'];
+                        @endphp
+
+                        <h3 style="margin-top: 30px;">{{ trans('admin/settings/general.ldap_wizard.done.summary_heading') }}</h3>
+
+                        @foreach ($summaryGroups as $stepNum => $group)
+                            <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--box-border-color, #f4f4f4);">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px;">
+                                    <h4>{{ $stepNum }}. {{ $group['title'] }}</h4>
+                                    <button
+                                        type="button"
+                                        wire:click="goToStep({{ $stepNum }})"
+                                        class="btn btn-sm btn-theme"
+                                    >
+                                        <x-icon type="edit"/> {{ trans('button.edit') }}
+                                    </button>
+                                </div>
+                                <x-page-data>
+                                    @foreach ($group['fields'] as $field => $label)
+                                        @php
+                                            $value = $this->{$field} ?? null;
+                                            // Booleans always render (yes/no
+                                            // is meaningful); everything else
+                                            // (secrets included) hides when
+                                            // unset so the summary stays
+                                            // focused on what the admin
+                                            // actually configured.
+                                            $isBool = is_bool($value);
+                                            $isSecret = in_array($field, $summarySecretFields, true);
+
+                                            // ldap_pword deliberately stays '' on
+                                            // the component (never round-tripped
+                                            // to the browser). Check the persisted
+                                            // row via the computed helper so a
+                                            // stored password renders as masked
+                                            // asterisks instead of being hidden.
+                                            $secretIsSet = $isSecret
+                                                ? ($field === 'ldap_pword'
+                                                    ? $this->hasPersistedLdapPword
+                                                    : ($value !== null && $value !== ''))
+                                                : false;
+
+                                            if ($isSecret && ! $secretIsSet) {
+                                                continue;
+                                            }
+                                            if (! $isBool && ! $isSecret && ($value === null || $value === '')) {
+                                                continue;
+                                            }
+                                            if ($field === 'ldap_default_group' && $value !== null && $value !== '') {
+                                                // Resolve the id to the group name for readability.
+                                                $group_name = \App\Models\Group::find($value)?->name;
+                                                $displayValue = $group_name ?? trans('general.unknown');
+                                            } elseif ($isBool) {
+                                                $displayValue = $value
+                                                    ? trans('general.yes')
+                                                    : trans('general.no');
+                                            } elseif ($isSecret) {
+                                                // Show masked asterisks when a
+                                                // value is stored so operators
+                                                // can see the credential IS set,
+                                                // without ever surfacing the
+                                                // actual value.
+                                                $displayValue = '************';
+                                            } else {
+                                                $displayValue = $value;
+                                            }
+                                        @endphp
+                                        {{-- Boolean rows render icon + label
+                                             for scan-ability; secret rows
+                                             skip copy_what so the masked
+                                             asterisks aren't offered as
+                                             clipboard content. Everything
+                                             else uses the standard
+                                             copy-to-clipboard treatment so
+                                             admins can grab the value the
+                                             same way the hardware view lets
+                                             them copy asset details. --}}
+                                        @if ($isBool)
+                                            <x-data-row :label="$label">
+                                                <x-icon type="{{ $value ? 'checkmark' : 'x' }}" class="fa-fw {{ $value ? 'text-success' : 'text-danger' }}"/>
+                                                {{ $displayValue }}
+                                            </x-data-row>
+                                        @elseif ($isSecret)
+                                            <x-data-row :label="$label">
+                                                <code>{{ $displayValue }}</code>
+                                            </x-data-row>
+                                        @else
+                                            <x-data-row :label="$label" copy_what="{{ $field }}">
+                                                <code>{{ $displayValue }}</code>
+                                            </x-data-row>
+                                        @endif
+                                    @endforeach
+                                </x-page-data>
+                            </div>
+                        @endforeach
                     </div>
 
-                @else
-                    <x-alert type="info" role="status">
-                        {{ trans('admin/settings/general.ldap_wizard.placeholder') }}
-                    </x-alert>
                 @endif
 
             </div>
