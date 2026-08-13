@@ -828,6 +828,13 @@
                 sortName: data_with_default('sort-name', 'created_at'),
                 sortOrder: data_with_default('sort-order', 'desc'),
                 stickyHeader: true,
+                // Push the sticky-header clone down by the top-scrollbar
+                // mirror's height (14px) plus its padding-bottom (4px)
+                // so the .snipe-top-scrollbar (position: sticky top: 0)
+                // can sit above the sticky thead without overlapping it,
+                // matching the natural unscrolled order where the mirror
+                // reads immediately above the thead (#19484 follow-up).
+                stickyHeaderOffsetY: 18,
                 stickyHeaderOffsetLeft: parseInt($('body').css('padding-left'), 10),
                 stickyHeaderOffsetRight: parseInt($('body').css('padding-right'), 10),
                 trimOnSearch: false,
@@ -3465,29 +3472,59 @@
             if (! $primaryTable.length) return;
             var primaryTable = $primaryTable[0];
 
+            // Clean up any scrollbar left inside .fixed-table-container
+            // from an older layout. Current placement is as a direct
+            // child of .bootstrap-table (see the sticky-context comment
+            // below); orphan strays here would be invisible when the
+            // page scrolls (sticky broken by the container's
+            // overflow: hidden) and would double-render with the new
+            // one on wide tables.
+            $primaryContainer.children('.snipe-top-scrollbar').remove();
+
             // Fixed-height tables (data-height, e.g. dashboard widgets)
             // already show their bottom scrollbar within the box they
             // live in, so the top scrollbar adds noise without benefit.
             if ($(tbl).is('[data-height]')) {
-                $primaryContainer.children('.snipe-top-scrollbar').remove();
+                $btWrapper.children('.snipe-top-scrollbar').remove();
                 return;
             }
 
             var overflows = primaryTable.scrollWidth > primaryBody.clientWidth;
             // Look up an existing scrollbar as a direct child of the
-            // primary .fixed-table-container, sitting immediately above
-            // .fixed-table-body so it hugs the top of the table the same
-            // way the native scrollbar hugs the bottom of it.
-            var $topScroll = $primaryContainer.children('.snipe-top-scrollbar');
+            // .bootstrap-table wrapper (NOT nested inside
+            // .fixed-table-container). Nesting inside the container
+            // used to make sense visually - the scrollbar sat right
+            // above .fixed-table-body - but .fixed-table-container has
+            // overflow: hidden as a fixed-column overlay clip, which
+            // makes it the sticky scroll context. Sticky inside an
+            // overflow:hidden ancestor won't engage against the page
+            // scroll, so scrolling the page just carries the scrollbar
+            // off-screen with the container. Living as a direct child
+            // of .bootstrap-table (overflow: visible) lets sticky bind
+            // to the outer page scroll and stay pinned at viewport top
+            // when the user scrolls past the natural table position
+            // (#19484 follow-up: bleed-through above sticky-clone thead).
+            var $topScroll = $btWrapper.children('.snipe-top-scrollbar');
 
+            // Sort re-renders can measure momentarily-wrong widths while
+            // bootstrap-table is settling the sticky-header clone and
+            // column widths — .remove()-ing the scrollbar during that
+            // window and then relying on a later post-body event to
+            // recreate it was fragile (#19484: horizontal scrollbar
+            // silently vanishes after a sort). Hide the element instead
+            // when the table currently fits, so the same node survives
+            // and can be re-shown as soon as an overflowing state is
+            // observed again on the next event tick or scroll.
             if (! overflows) {
-                $topScroll.remove();
+                $topScroll.hide();
                 return;
             }
 
             if (! $topScroll.length) {
                 $topScroll = $('<div class="snipe-top-scrollbar" aria-hidden="true"><div class="snipe-top-scrollbar-inner"></div></div>');
-                $primaryBody.before($topScroll);
+                $primaryContainer.before($topScroll);
+            } else {
+                $topScroll.show();
             }
 
             // Rebind scroll sync every time. The top scrollbar element
@@ -3511,8 +3548,82 @@
             });
 
             $topScroll.children('.snipe-top-scrollbar-inner').css('width', primaryTable.scrollWidth + 'px');
+
+            // Re-evaluate pinning immediately so a table that was
+            // scrolled past before this render (e.g. the user sorted
+            // while scrolled down) gets the fixed positioning
+            // recomputed against the new column widths.
+            pinTopScrollbarIfScrolled($topScroll, $primaryContainer);
         });
     }
+
+    // Toggle the top scrollbar between natural flow and position:
+    // fixed at viewport top when the user has scrolled past the
+    // .fixed-table-container's start. Would ideally be position:
+    // sticky (declarative, no JS scroll handler) but sticky did not
+    // engage reliably against page scroll from inside the
+    // .bootstrap-table's ancestor chain. #19484 follow-up: the
+    // scrollbar was invisible when the sticky-clone thead activated,
+    // and the offset gap opened by stickyHeaderOffsetY was bleeding
+    // through tbody rows behind it.
+    function pinTopScrollbarIfScrolled($topScroll, $primaryContainer) {
+        if (! $topScroll.length || ! $primaryContainer.length) return;
+        if ($topScroll.css('display') === 'none') return;
+
+        var containerRect = $primaryContainer[0].getBoundingClientRect();
+        var scrollbarHeight = $topScroll.outerHeight();
+        // Pin as soon as the top of .fixed-table-container would go
+        // above the space we'd reserve for the pinned scrollbar (so
+        // the pin engages just before the natural scrollbar would
+        // scroll off-screen). Unpin when the container top comes
+        // back into view.
+        var shouldPin = containerRect.top < 0;
+        // Also unpin when the entire container has scrolled off the
+        // bottom of the viewport - no point pinning a scrollbar for
+        // a table that's not on screen.
+        if (containerRect.bottom < scrollbarHeight) {
+            shouldPin = false;
+        }
+
+        if (shouldPin) {
+            $topScroll.addClass('is-pinned').css({
+                position: 'fixed',
+                top: 0,
+                left: Math.round(containerRect.left) + 'px',
+                width: Math.round(containerRect.width) + 'px'
+            });
+        } else if ($topScroll.hasClass('is-pinned')) {
+            $topScroll.removeClass('is-pinned').css({
+                position: '',
+                top: '',
+                left: '',
+                width: ''
+            });
+        }
+    }
+
+    // Global scroll listener that repositions every visible top
+    // scrollbar mirror. Single listener over all tables rather than
+    // one per mirror so the handler count stays constant and cheap
+    // even on pages with many tables. rAF-throttled to keep the
+    // scroll path smooth.
+    var pinRafPending = false;
+    function schedulePinRecompute() {
+        if (pinRafPending) return;
+        pinRafPending = true;
+        var raf = window.requestAnimationFrame || function (cb) { return window.setTimeout(cb, 16); };
+        raf(function () {
+            pinRafPending = false;
+            $('.snipe-top-scrollbar').each(function () {
+                var $ts = $(this);
+                var $btWrap = $ts.parent('.bootstrap-table');
+                if (! $btWrap.length) return;
+                var $pc = $btWrap.children('.fixed-table-container').first();
+                pinTopScrollbarIfScrolled($ts, $pc);
+            });
+        });
+    }
+    $(window).on('scroll.snipeTopScrollbarPin resize.snipeTopScrollbarPin', schedulePinRecompute);
 
     // Helper: run the given callback after enough layout has settled that
     // clientWidth / scrollWidth reads on newly-visible tables are stable.
@@ -3536,12 +3647,23 @@
 
     // Re-measure after every bootstrap-table render. Delegated on document
     // so it catches tables that init after this handler was attached.
+    //
+    // Includes a second re-check ~250ms later specifically for the top
+    // scrollbar. Sort re-renders (and stickyHeader clone width sync)
+    // can leave scrollWidth reading briefly equal to clientWidth on the
+    // first deferAfterLayout tick, which would hide the mirror even
+    // though the table actually overflows once layout settles. The
+    // delayed re-check catches that transient state without needing
+    // a full-blown ResizeObserver (#19484).
     $(document).on('post-body.bs.table', '.snipe-table', function () {
         var tbl = this;
         deferAfterLayout(function () {
             updateStickyColumnOffsets(tbl);
             updateTopScrollbar(tbl);
         });
+        window.setTimeout(function () {
+            updateTopScrollbar(tbl);
+        }, 250);
     });
 
     // Re-measure when a tab becomes visible. Bootstrap 3 renders inactive

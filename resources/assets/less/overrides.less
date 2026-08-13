@@ -2558,16 +2558,70 @@ table rows
 // -----------------------------------------------------------------------------
 
 .snipe-top-scrollbar {
-    overflow-x: auto;
+    // scroll (not auto) so the scrollbar thumb stays visible whenever
+    // the container is displayed. auto lets macOS's trackpad-scrollbar
+    // auto-hide take over on trackpad users even with the WebKit
+    // pseudo-element styling below, which read as "top scrollbar fades
+    // faster than the bottom one" (#19484 follow-up). Whole container
+    // gets display: none from updateTopScrollbar() when the underlying
+    // table doesn't actually overflow, so persistent scroll doesn't
+    // produce a floating stub on tables that fit in the viewport.
+    overflow-x: scroll;
     overflow-y: hidden;
-    // Sized to match the WebKit thumb below so the scrollbar reads as a
-    // deliberate chrome element rather than an OS-native accident.
-    height: 10px;
-    margin-bottom: 4px;
-    // Firefox scrollbar styling — spec-standard. `thin` gives us a
-    // ~thin-thumb, `color` is `thumb track` order.
-    scrollbar-width: thin;
+    // 14px scrollbar sized to match the WebKit thumb below so it
+    // reads as a deliberate chrome element rather than an OS-native
+    // accident. Bumped from 10px so the thumb is easier to grab and
+    // drag on trackpads / small screens.
+    //
+    // Outer height is 18px (border-box) = 14px scrollbar content +
+    // 4px padding-bottom acting as a visual spacer between the
+    // scrollbar thumb and the thead below it. Total 18px matches
+    // the stickyHeaderOffsetY: 18 in bootstrap-table.blade.php so
+    // the pinned scrollbar band + the sticky-clone thead just below
+    // it stack seamlessly with no bleed-through gap between them
+    // (#19484 follow-up: 4px gap of tbody rows visible between the
+    // scrollbar and the sticky thead).
+    box-sizing: border-box;
+    height: 18px;
+    padding-bottom: 4px;
+    background-color: var(--box-bg);
+    // Firefox scrollbar styling — spec-standard. `auto` uses the
+    // OS-default thickness (matches the bumped-up 14px WebKit height
+    // below so the thumb is easy to grab on trackpads / small screens).
+    scrollbar-width: auto;
     scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.06);
+
+    // Stay visible while the user scrolls the page down past the
+    // natural table header. Bootstrap-table's own stickyHeader
+    // (position: fixed via the .fix-sticky class) floats the thead
+    // clone at viewport top; we mirror that positioning via JS
+    // (updateTopScrollbarSticky in bootstrap-table.blade.php) so
+    // the scrollbar sits ABOVE the sticky-clone thead - matching
+    // the natural (unscrolled) order where the scrollbar reads
+    // immediately above the thead. Bootstrap-table config pushes
+    // .fix-sticky down by (this mirror's height + padding-bottom)
+    // via stickyHeaderOffsetY so the two don't overlap. Sticky
+    // positioning would have been simpler than the JS toggle but
+    // didn't engage reliably against page scroll from inside the
+    // .bootstrap-table nesting depth; falling back to position:
+    // fixed set by the scroll listener. Reported in #19484 as
+    // "none of scrollbars are visible when list is scrolled to
+    // the point where header starts floating" plus follow-up
+    // "top scrollbar used to be above the table headers, which
+    // seems a little better".
+    z-index: 101;
+
+    // When the scroll listener detects the natural position has
+    // gone above viewport top, this class flips the element to
+    // position: fixed via inline style. The class itself just
+    // marks "currently pinned" so callers can style pinned vs
+    // unpinned states differently if needed.
+    &.is-pinned {
+        // Inline top/left/width comes from JS. Keeping the box
+        // shadow drop off here so pinned state visually separates
+        // the mirror from the sticky-clone thead below it.
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+    }
 
     // WebKit / Blink scrollbar pseudo-elements. Both the track and the
     // thumb get border-radius so the container reads as rounded even
@@ -2576,15 +2630,15 @@ table rows
     // had no visible background to round). Track carries a subtle tint
     // so the rounded shape is actually visible rather than shape-of-nothing.
     &::-webkit-scrollbar {
-        height: 10px;
+        height: 14px;
     }
     &::-webkit-scrollbar-track {
         background-color: rgba(0, 0, 0, 0.06);
-        border-radius: 6px;
+        border-radius: 7px;
     }
     &::-webkit-scrollbar-thumb {
         background-color: rgba(0, 0, 0, 0.35);
-        border-radius: 6px;
+        border-radius: 7px;
     }
     &::-webkit-scrollbar-thumb:hover {
         background-color: rgba(0, 0, 0, 0.5);
@@ -2595,6 +2649,34 @@ table rows
     // Height just enough to make the parent scrollable; width is set by
     // JS to match the underlying table's scrollWidth.
     height: 1px;
+}
+
+// Match the native bottom scrollbar on the table body to the styled
+// top mirror above so the two horizontal scroll handles read as a
+// consistent pair. Without this, the top uses our thin-with-rounded-
+// thumb chrome while the bottom uses the OS default and the two look
+// mismatched when both are visible on wide tables. scrollbar-width
+// bumped from `thin` to `auto` and the WebKit height matched to the
+// top mirror's 14px so the two scrollbars are the same easy-to-grab
+// size on trackpads / small screens (#19484 follow-up).
+.bootstrap-table .fixed-table-body {
+    scrollbar-width: auto;
+    scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.06);
+
+    &::-webkit-scrollbar {
+        height: 14px;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.06);
+        border-radius: 7px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.35);
+        border-radius: 7px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 }
 
 
