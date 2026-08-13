@@ -55,6 +55,31 @@ return new class extends Migration
 
         $modelClass::query()->chunkById(500, function ($rows) use ($modelClass, $create, $qtyAdjust) {
             foreach ($rows as $model) {
+                // Guard against clobbering rows the AdjustsQuantity trait
+                // never touched. A row with zero qty_adjust entries is
+                // definitionally pre-trait: every post-trait qty change
+                // writes a qty_adjust log, so the absence of any means
+                // this row's current qty was maintained by direct writes
+                // that never fed the ledger. The ledger sum for such a
+                // row is whatever legacy code happened to record on the
+                // create entry (often quantity=1 on pre-replenish
+                // deployments), which will not match the true on-hand
+                // count. Trusting the ledger here silently clobbers qty
+                // (see issue #19474: legacy accessories all reset to 1
+                // after v8.7.0 upgrade). Skip the row - qty stays as the
+                // human admin last set it, and legacy_qty (captured by
+                // the snapshot migration) is the rollback lever.
+                $qtyAdjustCount = DB::table('action_logs')
+                    ->where('item_type', $modelClass)
+                    ->where('item_id', $model->id)
+                    ->where('action_type', $qtyAdjust)
+                    ->whereNull('deleted_at')
+                    ->count();
+
+                if ($qtyAdjustCount === 0) {
+                    continue;
+                }
+
                 $expected = (int) DB::table('action_logs')
                     ->where('item_type', $modelClass)
                     ->where('item_id', $model->id)
@@ -68,15 +93,13 @@ return new class extends Migration
                     continue;
                 }
 
-                // Legacy-data safety: pre-replenish deployments never
-                // populated action_logs.quantity for `create` events
-                // (the `qty_adjust` action_type didn't exist), so the
-                // ledger sum comes out at 0 or a stray small value on
-                // every legacy row. Overwriting the real qty with that
-                // stray value drives it below the currently-in-use
-                // count and renders "-N Remaining" in the UI. Skip
-                // when the ledger has no meaningful entries or when
-                // the sum would push qty below in-use.
+                // Redundant with the qty_adjust guard above (a row with
+                // no qty_adjust entries and only a legacy zero-quantity
+                // create event would trip both), but kept as a
+                // belt-and-braces defense for any lingering edge shape
+                // - e.g. a create entry that was soft-deleted and
+                // filtered out of $expected but not out of the trait's
+                // own write path.
                 if ($expected === 0 && $actual > 0) {
                     continue;
                 }
