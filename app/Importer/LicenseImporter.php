@@ -246,9 +246,14 @@ class LicenseImporter extends ItemImporter
             // a seat-assignment CSV whose row count exceeds the license's
             // available seats silently drops the trailing rows on the
             // floor (reported in #19467 follow-up).
-            $target_label = $checkout_target?->name
-                ?? $checkout_target?->username
-                ?? ($asset ? $asset->display_name : trans('general.unassigned'));
+            // The guard at the top of this method already returned when
+            // both $checkout_target and $asset were falsy, so the else
+            // branch here is reached only when $asset is truthy.
+            if ($checkout_target) {
+                $target_label = $checkout_target->name ?: ($checkout_target->username ?: (string) $checkout_target->id);
+            } else {
+                $target_label = $asset->present()->name();
+            }
 
             $this->log(trans('admin/licenses/message.import.no_free_seats', [
                 'license' => $license->name,
