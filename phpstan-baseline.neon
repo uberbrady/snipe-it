@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Actions/Breadcrumbs/BuildAcceptanceBreadcrumbs.php
-
-		-
 			message: '#^Method App\\Actions\\CheckoutRequests\\CreateCheckoutRequestAction\:\:run\(\) should return string but returns true\.$#'
 			identifier: return.type
 			count: 1
@@ -649,12 +643,6 @@ parameters:
 			path: app/Console/Commands/SendInventoryAlerts.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendUpcomingAuditReport.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_formatted_date\.$#'
 			identifier: property.notFound
 			count: 1
@@ -671,12 +659,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Console/Commands/SendUpcomingAuditReport.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Console/Commands/SyncAssetLocations.php
 
 		-
 			message: '#^Access to an undefined property ArrayObject\:\:\$id\.$#'
@@ -1075,12 +1057,6 @@ parameters:
 			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$location_id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -1115,12 +1091,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Account/AcceptanceController.php
 
 		-
 			message: '#^Static method Illuminate\\Contracts\\Filesystem\\Filesystem\:\:makeDirectory\(\) invoked with 2 parameters, 1 required\.$#'
@@ -1162,12 +1132,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\AccessoryCheckout\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Api/AccessoriesController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
 			path: app/Http/Controllers/Api/AccessoriesController.php
 
 		-
@@ -1297,49 +1261,7 @@ parameters:
 			path: app/Http/Controllers/Api/AssetModelsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$requestable\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/AssetsController.php
@@ -1447,12 +1369,6 @@ parameters:
 			path: app/Http/Controllers/Api/AssetsController.php
 
 		-
-			message: '#^Property App\\Models\\Asset\:\:\$rtd_location_id \(int\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Api/AssetsController.php
-
-		-
 			message: '#^Relation ''accessories'' is not found in App\\Models\\AccessoryCheckout model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -1541,12 +1457,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/CompaniesController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/ComponentsController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Component\:\:\$assigned_to\.$#'
@@ -1819,12 +1729,6 @@ parameters:
 			path: app/Http/Controllers/Api/LabelsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LicenseSeatsController.php
-
-		-
 			message: '#^Call to an undefined method App\\Models\\LicenseSeat\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
@@ -1841,12 +1745,6 @@ parameters:
 			identifier: booleanNot.alwaysFalse
 			count: 1
 			path: app/Http/Controllers/Api/LicenseSeatsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/LicensesController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\License\:\:\$created_by\.$#'
@@ -2407,24 +2305,6 @@ parameters:
 			path: app/Http/Controllers/AssetModelsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:disassociate\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -2443,34 +2323,10 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetCheckinController.php
 
 		-
-			message: '#^Property App\\Models\\Asset\:\:\$rtd_location_id \(int\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
 			message: '#^Property App\\Models\\Asset\:\:\$status_id \(int\|null\) does not accept string\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckoutController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Assets/AssetCheckoutController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckoutController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$location_id\.$#'
@@ -2509,55 +2365,7 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetCheckoutController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$location_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Assets/AssetsController.php
@@ -2707,48 +2515,6 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 9
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$location_id\.$#'
 			identifier: property.notFound
 			count: 3
@@ -2769,12 +2535,6 @@ parameters:
 		-
 			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
 			identifier: larastan.noUnnecessaryCollectionCall
-			count: 1
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Property App\\Models\\Asset\:\:\$rtd_location_id \(int\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Assets/BulkAssetsController.php
 
@@ -3091,12 +2851,6 @@ parameters:
 			path: app/Http/Controllers/Components/ComponentCheckinController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Components/ComponentCheckoutController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Component\:\:\$asset_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3343,12 +3097,6 @@ parameters:
 			path: app/Http/Controllers/GroupsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Kits/CheckoutKitController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$location_id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -3493,19 +3241,7 @@ parameters:
 			path: app/Http/Controllers/Kits/PredefinedKitsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LabelsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$is_label_preview\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LabelsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/LabelsController.php
@@ -3569,12 +3305,6 @@ parameters:
 			identifier: parameter.notFound
 			count: 1
 			path: app/Http/Controllers/Licenses/LicenseCheckinController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Licenses/LicenseCheckoutController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -3817,37 +3547,13 @@ parameters:
 			path: app/Http/Controllers/Reports/CustomComponentReportController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/ReportsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/ReportsController.php
@@ -4285,12 +3991,6 @@ parameters:
 			path: app/Http/Controllers/Users/ImpersonateController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Users/ImpersonateController.php
-
-		-
 			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
 			identifier: catch.neverThrown
 			count: 1
@@ -4303,18 +4003,6 @@ parameters:
 			path: app/Http/Controllers/Users/UserItemTransferController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Users/UserItemTransferController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Users/UserItemTransferController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:dissociate\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -4322,12 +4010,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Users/UsersController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Users/UsersController.php
@@ -4385,12 +4067,6 @@ parameters:
 			identifier: assign.propertyType
 			count: 1
 			path: app/Http/Controllers/Users/UsersController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ViewAssetsController.php
 
 		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$assetId$#'
@@ -4573,43 +4249,7 @@ parameters:
 			path: app/Http/Transformers/AssetsTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$requestable\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/AssetsTransformer.php
@@ -4781,12 +4421,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/LicensesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/LocationsTransformer.php
 
 		-
 			message: '#^Method App\\Http\\Transformers\\LocationsTransformer\:\:transformLocationCompact\(\) should return array but return statement is missing\.$#'
@@ -4987,12 +4621,6 @@ parameters:
 			path: app/Http/Transformers/UsersTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Transformers/UsersTransformer.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$manages_locations_count\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5047,12 +4675,6 @@ parameters:
 			path: app/Importer/AccessoryImporter.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Importer/AssetHistoryImporter.php
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
 			count: 1
@@ -5072,12 +4694,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Importer/AssetImporter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Importer/AssetImporter.php
@@ -5143,12 +4759,6 @@ parameters:
 			path: app/Importer/CategoryImporter.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Importer/ComponentImporter.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Component\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5204,12 +4814,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Importer\\Importer\:\:\$send_welcome\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Importer/Importer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Importer/Importer.php
@@ -5467,12 +5071,6 @@ parameters:
 			path: app/Importer/ItemImporter.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Importer/LicenseImporter.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\License\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5487,7 +5085,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 1
 			path: app/Importer/LicenseImporter.php
 
 		-
@@ -6079,12 +5677,6 @@ parameters:
 			path: app/Mail/CheckoutAccessoryMail.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Mail/CheckoutAccessoryMail.php
-
-		-
 			message: '#^Access to an undefined property App\\Mail\\CheckoutAssetMail\:\:\$acceptance\.$#'
 			identifier: property.notFound
 			count: 3
@@ -6134,12 +5726,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Mail/CheckoutAssetMail.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Mail/CheckoutAssetMail.php
@@ -6280,18 +5866,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Mail\\CheckoutLicenseMail\:\:\$target\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Mail/CheckoutLicenseMail.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Mail/CheckoutLicenseMail.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Mail/CheckoutLicenseMail.php
 
 		-
@@ -6661,18 +6235,6 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Asset.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6697,12 +6259,6 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Asset.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6718,18 +6274,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$license_id\.$#'
 			identifier: property.notFound
 			count: 5
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_date\.$#'
-			identifier: property.notFound
-			count: 2
 			path: app/Models/Asset.php
 
 		-
@@ -8567,12 +8111,6 @@ parameters:
 			identifier: property.onlyWritten
 			count: 1
 			path: app/Models/Labels/Tapes/Generic/Tape_53mm.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Ldap.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
@@ -10831,18 +10369,6 @@ parameters:
 			path: app/Observers/AssetObserver.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Observers/AssetObserver.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$company_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Observers/AssetObserver.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -11749,109 +11275,7 @@ parameters:
 			path: app/Providers/AuthServiceProvider.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\AssetModel\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Category\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Company\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Company\:\:\$parent\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Component\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Consumable\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\CustomFieldset\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Department\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Depreciation\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Group\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\PredefinedKit\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Statuslabel\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Supplier\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Providers/BreadcrumbsServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Providers/BreadcrumbsServiceProvider.php
@@ -12079,12 +11503,6 @@ parameters:
 			path: database/factories/ActionlogFactory.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: database/factories/AssetFactory.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -12271,12 +11689,6 @@ parameters:
 			path: database/factories/LocationFactory.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$location_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: database/factories/MaintenanceFactory.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -12445,12 +11857,6 @@ parameters:
 			path: database/migrations/2017_01_25_063357_fix_utf8_custom_field_column_names.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: database/migrations/2017_12_26_170856_re_normalize_last_audit.php
-
-		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 1
@@ -12479,12 +11885,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: database/migrations/2022_05_16_235350_remove_stored_eula_field.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$asset_eol_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: database/migrations/2023_07_13_052204_denormalized_eol_and_add_column_for_explicit_date_to_assets.php
 
 		-
 			message: '#^Method DenormalizedEolAndAddColumnForExplicitDateToAssets\:\:eolUpdateExpression\(\) should return Illuminate\\Database\\Query\\Expression but returns Illuminate\\Contracts\\Database\\Query\\Expression\.$#'

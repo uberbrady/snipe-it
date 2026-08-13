@@ -291,7 +291,7 @@ class LicenseImporter extends ItemImporter
         if (! $license->canCheckoutTo($asset)) {
             $this->log(trans('general.error_checkout_company_mismatch', [
                 'item' => trans('general.license').' "'.$license->name.'"',
-                'item_company' => $license->company?->name ?? trans('general.unassigned'),
+                'item_company' => $license->company->name ?? trans('general.unassigned'),
                 'target' => trans('general.asset').' "'.$asset->display_name.'"',
             ]));
 
