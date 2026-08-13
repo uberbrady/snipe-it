@@ -456,6 +456,46 @@ class ImporterTest extends TestCase
             ->assertSet('statusType', 'error');
     }
 
+    public function test_mapping_step_renders_every_csv_header_even_when_auto_map_finds_no_match(): void
+    {
+        // Reporter feedback on #19450 (swift2512 / Dewi4nt): the wizard
+        // was silently omitting CSV columns whose headers didn't hit an
+        // auto-match or an alias, which left users with no way to
+        // hand-map them. Every header should show up in the mapping list
+        // - matched ones with the target pre-selected, unmatched ones
+        // defaulting to "Do not import" (rendered as an empty-value
+        // option) with the dropdown available.
+        Storage::fake();
+        $user = User::factory()->canImport()->create();
+
+        $import = Import::factory()->create([
+            'created_by' => $user->id,
+            'header_row' => ['Asset Tag', 'lorem ipsum column'],
+            'first_row' => ['ASSET-001', 'whatever'],
+            'import_type' => 'asset',
+        ]);
+        $this->writeFakeImportFile($import, "Asset Tag,lorem ipsum column\nASSET-001,whatever\n");
+
+        $component = Livewire::actingAs($user)
+            ->test(Importer::class)
+            ->call('selectFile', $import->id)
+            ->set('typeOfImport', 'asset');
+
+        // Both header positions are represented in field_map. Index 0 is
+        // the auto-matched target key, index 1 is null (auto-unmapped -
+        // the user picks from the dropdown in the UI).
+        $fieldMap = $component->get('field_map');
+        $this->assertCount(2, $fieldMap, 'field_map should hold one entry per CSV header, matched or not.');
+        $this->assertSame('asset_tag', $fieldMap[0]);
+        $this->assertNull($fieldMap[1]);
+
+        // The unmapped header's raw text is rendered in the mapping list.
+        $component->call('nextStep')
+            ->assertSet('wizardStep', 2)
+            ->assertSee('lorem ipsum column')
+            ->assertSee('Asset Tag');
+    }
+
     public function test_next_step_from_mapping_advances_when_required_fields_are_mapped(): void
     {
         $user = User::factory()->canImport()->create();
