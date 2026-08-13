@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Components\Api;
 
+use App\Models\Asset;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\Component;
@@ -117,5 +118,46 @@ class ComponentIndexTest extends TestCase
                 ->assertResponseContainsInRows($targetComponent)
                 ->assertResponseDoesNotContainInRows($otherComponent);
         }
+    }
+
+    public function test_can_sort_components_by_raw_remaining_count()
+    {
+        // Requested in issue #18505 alongside the percent_remaining sort:
+        // sort by absolute stock left (qty - active assignments). The
+        // scope references the withSum-added `sum_unconstrained_assets`
+        // alias, so a regression in the API's eager-load order would
+        // surface here as a SQL error or a null-count sort.
+        $user = User::factory()->viewComponents()->create();
+
+        $lots = Component::factory()->create(['name' => 'Lots left', 'qty' => 10]);
+        $some = Component::factory()->create(['name' => 'Some left', 'qty' => 10]);
+        $none = Component::factory()->create(['name' => 'None left', 'qty' => 10]);
+
+        $asset = Asset::factory()->create();
+
+        // assigned_qty on the pivot is what withSum('unconstrainedAssets')
+        // sums into sum_unconstrained_assets, so one pivot row per
+        // component with a distinct qty gives distinct remaining counts.
+        $lots->assets()->attach($asset->id, ['assigned_qty' => 1, 'created_at' => now(), 'created_by' => $user->id]);  // remaining = 9
+        $some->assets()->attach($asset->id, ['assigned_qty' => 5, 'created_at' => now(), 'created_by' => $user->id]);  // remaining = 5
+        $none->assets()->attach($asset->id, ['assigned_qty' => 10, 'created_at' => now(), 'created_by' => $user->id]); // remaining = 0
+
+        $descRows = $this->actingAsForApi($user)
+            ->getJson(route('api.components.index', ['sort' => 'remaining', 'order' => 'desc']))
+            ->assertOk()
+            ->json('rows');
+
+        $descNames = array_column($descRows, 'name');
+        $descRelevant = array_values(array_intersect($descNames, ['Lots left', 'Some left', 'None left']));
+        $this->assertSame(['Lots left', 'Some left', 'None left'], $descRelevant);
+
+        $ascRows = $this->actingAsForApi($user)
+            ->getJson(route('api.components.index', ['sort' => 'remaining', 'order' => 'asc']))
+            ->assertOk()
+            ->json('rows');
+
+        $ascNames = array_column($ascRows, 'name');
+        $ascRelevant = array_values(array_intersect($ascNames, ['Lots left', 'Some left', 'None left']));
+        $this->assertSame(['None left', 'Some left', 'Lots left'], $ascRelevant);
     }
 }

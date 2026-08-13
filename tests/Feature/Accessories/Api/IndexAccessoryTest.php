@@ -156,4 +156,40 @@ class IndexAccessoryTest extends TestCase implements TestsFullMultipleCompaniesS
                 ->assertResponseDoesNotContainInRows($otherAccessory);
         }
     }
+
+    public function test_can_sort_accessories_by_raw_remaining_count()
+    {
+        // Requested in issue #18505 alongside the percent_remaining sort:
+        // sort by absolute stock left (qty - active checkouts). The scope
+        // references the withCount-added `checkouts_count` alias, so a
+        // regression in the API's eager-load order would surface here as
+        // a SQL error or a null-count sort.
+        $user = User::factory()->viewAccessories()->create();
+
+        $lots = Accessory::factory()->create(['name' => 'Lots left', 'qty' => 10]);
+        $some = Accessory::factory()->create(['name' => 'Some left', 'qty' => 10]);
+        $none = Accessory::factory()->create(['name' => 'None left', 'qty' => 10]);
+
+        AccessoryCheckout::factory()->count(1)->create(['accessory_id' => $lots->id]);   // remaining = 9
+        AccessoryCheckout::factory()->count(5)->create(['accessory_id' => $some->id]);   // remaining = 5
+        AccessoryCheckout::factory()->count(10)->create(['accessory_id' => $none->id]);  // remaining = 0
+
+        $descRows = $this->actingAsForApi($user)
+            ->getJson(route('api.accessories.index', ['sort' => 'remaining', 'order' => 'desc']))
+            ->assertOk()
+            ->json('rows');
+
+        $descNames = array_column($descRows, 'name');
+        $descRelevant = array_values(array_intersect($descNames, ['Lots left', 'Some left', 'None left']));
+        $this->assertSame(['Lots left', 'Some left', 'None left'], $descRelevant);
+
+        $ascRows = $this->actingAsForApi($user)
+            ->getJson(route('api.accessories.index', ['sort' => 'remaining', 'order' => 'asc']))
+            ->assertOk()
+            ->json('rows');
+
+        $ascNames = array_column($ascRows, 'name');
+        $ascRelevant = array_values(array_intersect($ascNames, ['Lots left', 'Some left', 'None left']));
+        $this->assertSame(['None left', 'Some left', 'Lots left'], $ascRelevant);
+    }
 }

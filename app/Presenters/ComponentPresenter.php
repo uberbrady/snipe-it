@@ -129,7 +129,7 @@ class ComponentPresenter extends Presenter
                 'field' => 'remaining',
                 'scope' => 'col',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
                 'title' => trans('admin/components/general.remaining'),
                 'visible' => true,
                 'class' => 'text-right text-padding-number-cell',

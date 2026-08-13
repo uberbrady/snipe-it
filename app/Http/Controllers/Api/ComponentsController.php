@@ -167,6 +167,9 @@ class ComponentsController extends Controller
             case 'percent_remaining':
                 $components = $components->OrderPercentRemaining($order);
                 break;
+            case 'remaining':
+                $components = $components->OrderRemaining($order);
+                break;
             case 'purchase_cost':
                 // See AccessoriesController for the rationale — these
                 // three sorts walk order_items rather than removed

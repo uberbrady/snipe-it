@@ -117,7 +117,11 @@ class AccessoryPresenter extends Presenter
                 'field' => 'remaining',
                 'scope' => 'col',
                 'searchable' => false,
-                'sortable' => false,
+                'sortable' => true,
+                // Kept hidden by default so the primary "% Remaining"
+                // progress bar column stays the headline signal; users
+                // who want raw-count sorting can toggle this on via
+                // the bootstrap-table column picker (issue #18505).
                 'visible' => false,
                 'title' => trans('admin/accessories/general.remaining'),
                 'footerFormatter' => 'qtySumFormatter',

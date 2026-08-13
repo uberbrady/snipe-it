@@ -171,6 +171,9 @@ class AccessoriesController extends Controller
             case 'percent_remaining':
                 $accessories = $accessories->OrderPercentRemaining($order);
                 break;
+            case 'remaining':
+                $accessories = $accessories->OrderRemaining($order);
+                break;
             default:
                 $accessories = $accessories->orderBy($column_sort, $order);
                 break;
