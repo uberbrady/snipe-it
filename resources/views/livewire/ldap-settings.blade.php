@@ -816,7 +816,7 @@
                                         'ldap_display_name' => trans('admin/settings/general.ldap_display_name'),
                                         'ldap_email' => trans('admin/settings/general.ldap_email'),
                                         'ldap_emp_num' => trans('admin/settings/general.ldap_emp_num'),
-                                        'ldap_phone_field' => trans('admin/settings/general.ldap_phone_field'),
+                                        'ldap_phone_field' => trans('admin/settings/general.ldap_phone'),
                                         'ldap_mobile' => trans('admin/settings/general.ldap_mobile'),
                                         'ldap_jobtitle' => trans('admin/settings/general.ldap_jobtitle'),
                                         'ldap_manager' => trans('admin/settings/general.ldap_manager'),
@@ -857,7 +857,7 @@
                                         <x-icon type="edit"/> {{ trans('button.edit') }}
                                     </button>
                                 </div>
-                                <dl class="dl-horizontal">
+                                <x-page-data>
                                     @foreach ($group['fields'] as $field => $label)
                                         @php
                                             $value = $this->{$field} ?? null;
@@ -907,17 +907,32 @@
                                                 $displayValue = $value;
                                             }
                                         @endphp
-                                        <dt style="width: 40%; text-align: left; word-wrap: break-word; line-height: 30px;">{{ $label }}</dt>
-                                        <dd style="margin-left: 40%; word-wrap: break-word; line-height: 30px;">
-                                            @if ($isBool)
-                                                <x-icon type="{{ $value ? 'checkmark' : 'x' }}" class="{{ $value ? 'text-success' : 'text-danger' }}"/>
+                                        {{-- Boolean rows render icon + label
+                                             for scan-ability; secret rows
+                                             skip copy_what so the masked
+                                             asterisks aren't offered as
+                                             clipboard content. Everything
+                                             else uses the standard
+                                             copy-to-clipboard treatment so
+                                             admins can grab the value the
+                                             same way the hardware view lets
+                                             them copy asset details. --}}
+                                        @if ($isBool)
+                                            <x-data-row :label="$label">
+                                                <x-icon type="{{ $value ? 'checkmark' : 'x' }}" class="fa-fw {{ $value ? 'text-success' : 'text-danger' }}"/>
                                                 {{ $displayValue }}
-                                            @else
+                                            </x-data-row>
+                                        @elseif ($isSecret)
+                                            <x-data-row :label="$label">
                                                 <code>{{ $displayValue }}</code>
-                                            @endif
-                                        </dd>
+                                            </x-data-row>
+                                        @else
+                                            <x-data-row :label="$label" copy_what="{{ $field }}">
+                                                <code>{{ $displayValue }}</code>
+                                            </x-data-row>
+                                        @endif
                                     @endforeach
-                                </dl>
+                                </x-page-data>
                             </div>
                         @endforeach
                     </div>
