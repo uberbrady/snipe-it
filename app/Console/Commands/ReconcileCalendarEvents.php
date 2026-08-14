@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CalendarEvent;
-use App\Models\Traits\HasCalendarEvents;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Reconciles the calendar_events index against every source model
@@ -135,10 +133,12 @@ class ReconcileCalendarEvents extends Command
     }
 
     /**
-     * Discover source classes by walking app/Models and picking any
-     * that use HasCalendarEvents. Explicit --source overrides the
-     * scan for targeted reconciles (e.g. after a bulk import touched
-     * one model).
+     * Explicit --source overrides the scan for targeted reconciles
+     * (e.g. after a bulk import touched one model). Otherwise defer
+     * to CalendarEvent::sourceModels(), which is the single source
+     * of truth for "which models participate in the calendar" so a
+     * new HasCalendarEvents adopter picks up here without editing
+     * this command.
      */
     protected function discoverSources(): array
     {
@@ -152,27 +152,7 @@ class ReconcileCalendarEvents extends Command
             return [$single];
         }
 
-        $sources = [];
-        $modelDir = app_path('Models');
-        $files = glob($modelDir.'/*.php');
-        foreach ($files as $file) {
-            $class = 'App\\Models\\'.pathinfo($file, PATHINFO_FILENAME);
-            if (! class_exists($class)) {
-                continue;
-            }
-
-            $reflection = new \ReflectionClass($class);
-            if ($reflection->isAbstract() || $reflection->isInterface() || $reflection->isTrait()) {
-                continue;
-            }
-            if (! is_subclass_of($class, Model::class)) {
-                continue;
-            }
-            if (in_array(HasCalendarEvents::class, class_uses_recursive($class), true)) {
-                $sources[] = $class;
-            }
-        }
-
+        $sources = CalendarEvent::sourceModels();
         sort($sources);
 
         return $sources;
