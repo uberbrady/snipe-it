@@ -570,7 +570,7 @@
 
                             @can('view', \App\Models\Asset::class)
                                 <li{!! (request()->routeIs('calendar.index') ? ' class="active" aria-current="page"' : '') !!}>
-                                    <a href="#">
+                                    <a href="{{ route('calendar.index') }}">
                                         <x-icon type="calendar" class="fa-fw"/>
                                         <span>{{ trans('general.calendar') }}</span>
                                     </a>
