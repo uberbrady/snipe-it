@@ -50,7 +50,9 @@ class DashboardController extends Controller
                 Artisan::call('passport:install', ['--no-interaction' => true]);
             }
 
-            return view('dashboard')->with('asset_stats', $asset_stats)->with('counts', $counts);
+            return view('dashboard')
+                ->with('asset_stats', $asset_stats)
+                ->with('counts', $counts);
         } else {
             Session::reflash();
 
