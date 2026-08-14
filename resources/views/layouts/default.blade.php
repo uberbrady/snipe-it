@@ -394,7 +394,7 @@
                             </li>
                         @endcan
                         @can('index', \App\Models\Asset::class)
-                            <li class="treeview{{ ((request()->is('statuslabels/*') || request()->is(['hardware*', 'maintenances*'])) ? ' active' : '') }}">
+                                <li class="treeview{{ ((request()->is('statuslabels/*') || request()->is('hardware*')) ? ' active' : '') }}">
                                 <a href="#">
                                     <x-icon type="assets" class="fa-fw" />
                                     <span>{{ trans('general.assets') }}</span>
@@ -523,11 +523,6 @@
                                                 {{ trans('general.deleted') }}
                                             </a>
                                         </li>
-                                        <li {!! (request()->is('maintenances') ? ' class="active" aria-current="page"' : '') !!}>
-                                            <a href="{{ route('maintenances.index') }}">
-                                                {{ trans('general.maintenances') }}
-                                            </a>
-                                        </li>
                                     @endcan
                                     @can('audit', \App\Models\Asset::class)
                                         <li id="bulk-audit-sidenav-option" {!! (request()->is('hardware/bulkaudit') ? ' class="active" aria-current="page"' : '') !!}>
@@ -538,6 +533,47 @@
                                     @endcan
 
                                 </ul>
+                                </li>
+                            @endcan
+                            {{-- Dedicated Maintenances section. Treeview parent
+                                 so "list all" and Maintenance Types share one
+                                 visual home. The @if guard OR's the two
+                                 governing permissions so a user with either
+                                 can see the parent. --}}
+                            @if (Gate::allows('view', \App\Models\Asset::class) || Gate::allows('index', \App\Models\MaintenanceType::class))
+                                <li class="treeview{{ (request()->is('maintenances*') || request()->is('maintenance-types*')) ? ' active' : '' }}">
+                                    <a href="#">
+                                        <x-icon type="maintenances" class="fa-fw"/>
+                                        <span>{{ trans('general.maintenances') }}</span>
+                                        <x-icon type="angle-left" class="pull-right fa-fw"/>
+                                    </a>
+                                    <ul class="treeview-menu">
+                                        @can('view', \App\Models\Asset::class)
+                                            <li{!! (request()->is('maintenances') ? ' class="active" aria-current="page"' : '') !!}>
+                                            <a href="{{ route('maintenances.index') }}">
+                                                <x-icon type="circle" class="text-grey fa-fw"/>
+                                                {{ trans('general.list_all') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                        @can('index', \App\Models\MaintenanceType::class)
+                                            <li{!! (request()->is('maintenance-types*') ? ' class="active" aria-current="page"' : '') !!}>
+                                                <a href="{{ route('maintenance-types.index') }}">
+                                                    <x-icon type="circle" class="text-grey fa-fw"/>
+                                                    {{ trans('admin/maintenance_types/general.maintenance_types') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                                </li>
+                            @endif
+
+                            @can('view', \App\Models\Asset::class)
+                                <li{!! (request()->routeIs('calendar.index') ? ' class="active" aria-current="page"' : '') !!}>
+                                    <a href="#">
+                                        <x-icon type="calendar" class="fa-fw"/>
+                                        <span>{{ trans('general.calendar') }}</span>
+                                    </a>
                             </li>
                         @endcan
                         @can('view', \App\Models\License::class)
