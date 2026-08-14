@@ -3481,3 +3481,180 @@ dl.table-display {
     margin-left: 0;
   }
 }
+
+// ============================================================================
+// FullCalendar v6 dark-mode overrides.
+//
+// FullCalendar's stock CSS reads from a fixed palette of light neutrals for
+// header cells, gridlines, and hour-axis text. In light mode that reads fine
+// against the AdminLTE box background; in dark mode the light-neutral rules
+// produce a wash of near-white cells and pale grid strokes that lack
+// contrast against the dark box. Rebind them to the same tokens the rest of
+// the app already uses.
+// ============================================================================
+
+[data-theme="dark"] {
+  .fc {
+    --fc-border-color: var(--box-header-top-border-color);
+    --fc-page-bg-color: var(--box-bg);
+    --fc-neutral-bg-color: ~"hsl(from var(--box-bg) h s calc(l + 5))";
+    --fc-neutral-text-color: var(--color-fg);
+    --fc-list-event-hover-bg-color: ~"hsl(from var(--box-bg) h s calc(l + 8))";
+    --fc-today-bg-color: ~"hsl(from var(--main-theme-color) h s calc(l - 25) / 0.25)";
+
+    .fc-col-header-cell,
+    .fc-list-day-cushion {
+      background-color: ~"hsl(from var(--box-bg) h s calc(l + 5))";
+      color: var(--color-fg);
+    }
+
+    .fc-col-header-cell-cushion,
+    .fc-daygrid-day-number,
+    .fc-timegrid-axis-cushion,
+    .fc-timegrid-slot-label-cushion,
+    .fc-list-day-text,
+    .fc-list-day-side-text,
+    .fc-list-event-title,
+    .fc-list-event-time {
+      color: var(--color-fg);
+    }
+
+    .fc-scrollgrid,
+    .fc-scrollgrid td,
+    .fc-scrollgrid th,
+    .fc-timegrid-slot,
+    .fc-daygrid-day {
+      border-color: var(--box-header-top-border-color);
+    }
+  }
+}
+
+// ============================================================================
+// Dashboard equal-height rows.
+//
+// AdminLTE 2 / Bootstrap 3 don't stretch sibling .box heights within a row,
+// so a col-md-8 + col-md-4 pair looks lopsided any time the wider box has
+// more content than the narrower one. This wrapper turns the row into a
+// flex container and forces every child .box to fill its column's height.
+// Applied only on rows opted-in via `dashboard-row-eq` so the rule doesn't
+// leak into other admin pages that happen to use .row + .box.
+// ============================================================================
+
+// Row-wrapper margin lives outside the media query so successive rows stay
+// gutter-separated at every breakpoint, mobile included.
+.dashboard-row-eq {
+  margin-bottom: 20px;
+}
+
+// Equal-height flex layout ONLY on md and up. Below md, Bootstrap 3 collapses
+// .col-md-* to full-width stacked blocks; forcing flex there causes every
+// widget in the row to stretch to the tallest sibling in the flow, which
+// leaves the small widgets with huge whitespace gaps on a phone. Falling
+// back to BS3's stock block layout below md keeps mobile clean.
+@media (min-width: 992px) {
+  .dashboard-row-eq {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .dashboard-row-eq > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+    float: none; // BS3 gives cols float:left, which suppresses flex behavior
+  }
+
+  .dashboard-row-eq > [class*="col-"] > .box {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 100%;
+  }
+
+  // Ensure the box-body absorbs slack inside a stretched box, so header stays
+  // pinned to the top and any footer/link stays at the bottom instead of the
+  // body content leaving whitespace beneath itself.
+  .dashboard-row-eq > [class*="col-"] > .box > .box-body {
+    flex: 1 1 auto;
+  }
+
+  // AdminLTE flips a .collapsed-box class on the .box when the header
+  // +/- toggle collapses the body. Without this override, the box would
+  // stay stretched to the col's full height and the collapse would have
+  // no visible effect. Let the collapsed box shrink to its own content
+  // (just the header) so the toggle behaves like it does on non-flex
+  // dashboards. Neighboring boxes stay stretched to their previous
+  // heights.
+  .dashboard-row-eq > [class*="col-"] > .box.collapsed-box {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+}
+
+// ============================================================================
+// FullCalendar filter buttons render as a native DOM row above the
+// calendar element (see buildFilterButtons in snipeit-calendar.js).
+// Kept out of FullCalendar's headerToolbar so the calendar's own
+// prev/next/today/title/views row isn't pushed off-center by an
+// inline row of filter chips.
+// ============================================================================
+
+.snipeit-calendar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--box-header-top-border-color, #ddd);
+}
+
+.snipeit-calendar-filter-button {
+  // Reserve horizontal space for the checkmark glyph up-front via a
+  // transparent placeholder so the button doesn't grow when its
+  // .active class is added. Without this the ::before content on
+  // `.active` shifts every other button in the row when a filter is
+  // toggled and makes the whole row jump.
+  padding: 4px 10px;
+  font-size: 13px;
+
+  &::before {
+    content: "\2713\00a0";
+    font-weight: bold;
+    visibility: hidden;
+  }
+}
+
+// ============================================================================
+// Calendar filter-button active-state styling (both themes).
+//
+// buildFilterButtons flips `.active` on selected filters. Bootstrap 3's
+// stock `.btn-default.active` only nudges the background a few shades
+// darker, which reads as "hovered" not "selected" and Snipe reported she
+// couldn't tell which filters were on. Force the active state to the
+// app's primary theme color with an inset border ring and a leading
+// checkmark glyph so a viewer can spot which filters are active without
+// squinting. Kept a11y-friendly with a real ::before content marker
+// rather than color alone (aria-pressed is toggled in JS on top of it).
+// ============================================================================
+
+.snipeit-calendar-filter-button.active,
+.snipeit-calendar-filter-button.active:hover,
+.snipeit-calendar-filter-button.active:focus,
+.snipeit-calendar-filter-button.active:active {
+  background-color: var(--main-theme-color) !important;
+  background-image: none !important;
+  border-color: ~"hsl(from var(--main-theme-color) h s calc(l - 15))" !important;
+  color: var(--nav-primary-text-color) !important;
+  box-shadow: inset 0 0 0 2px ~"hsl(from var(--main-theme-color) h s calc(l - 25))" !important;
+}
+
+.snipeit-calendar-filter-button.active::before {
+  visibility: visible;
+}
+
+.snipeit-calendar-filter-button.active:focus {
+  box-shadow: inset 0 0 0 2px ~"hsl(from var(--main-theme-color) h s calc(l - 25))",
+              0 0 0 3px ~"hsl(from var(--main-theme-color) h s calc(l + 20) / 0.5)" !important;
+}
+
