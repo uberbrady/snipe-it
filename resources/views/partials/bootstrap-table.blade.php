@@ -827,7 +827,12 @@
                 showSearchClearButton: data_with_default('show-search-clear-button', true),
                 sortName: data_with_default('sort-name', 'created_at'),
                 sortOrder: data_with_default('sort-order', 'desc'),
-                stickyHeader: true,
+                // Opt-out per table via data-sticky-header="false". The
+                // dashboard widgets in particular set that flag since
+                // they render inside small col-md-4 boxes where a
+                // pinned header clone reads as visual noise rather than
+                // helping navigate a long list.
+                stickyHeader: data_with_default('sticky-header', true),
                 // Push the sticky-header clone down by the top-scrollbar
                 // mirror's height (14px) plus its padding-bottom (4px)
                 // so the .snipe-top-scrollbar (position: sticky top: 0)
@@ -1045,6 +1050,16 @@
 
                 },
                 formatNoMatches: function () {
+                    // Per-table override via `data-empty-message="..."`
+                    // so callers can swap the generic
+                    // "no matching records" line for something more
+                    // reassuring on widgets where empty is a good state
+                    // (e.g. dashboard low-stock: nothing below threshold
+                    // is a happy path, not an error).
+                    var customEmpty = data_with_default('empty-message', null);
+                    if (customEmpty) {
+                        return '<span class="snipe-table-empty-state">' + customEmpty + '</span>';
+                    }
                     return '{{ trans('table.no_matching_records') }}';
                 }
 
@@ -2390,11 +2405,12 @@
             // components). The click handler in snipeit.js reads the
             // data-* attrs and shows blade/modals/adjust-quantity.
             if ((row.available_actions) && (row.available_actions.adjust_quantity === true)) {
-                actions += '<button type="button" class="actions btn btn-sm btn-primary hidden-print adjust-quantity" data-tooltip="true" title="{{ trans('general.adjust_quantity') }}"'
-                    + ' data-adjust-url="{{ config('app.url') }}/' + dest + '/' + row.id + '/adjust-quantity"'
-                    + ' data-item-name="' + (row.name || '') + '"'
-                    + ' data-available="' + (row.remaining != null ? row.remaining : '') + '">'
-                    + '<x-icon type="plus-minus" class="fa-fw" /><span class="sr-only">{{ trans('general.adjust_quantity') }}</span></button>&nbsp;';
+                actions += window.renderAdjustQuantityButton({
+                    dest: dest,
+                    id: row.id,
+                    name: row.name || '',
+                    available: row.remaining,
+                }) + '&nbsp;';
             }
 
             if ((row.available_actions) && (row.available_actions.delete === true)) {
@@ -2689,6 +2705,49 @@
 
         actions += '</nobr>';
         return actions;
+    };
+
+    // Shared markup for the adjust-quantity plus-minus button. Used by
+    // genericActionsFormatter's adjust_quantity branch above AND by
+    // lowStockActionsFormatter below so both call sites render an
+    // identical button and open the same shared adjust-quantity modal.
+    // Callers pass the per-row URL segment as `dest` (accessories /
+    // consumables / components), the numeric row id, the display name
+    // for the modal header, and the available count for the modal help
+    // text.
+    window.renderAdjustQuantityButton = function (opts) {
+        return '<button type="button" class="actions btn btn-sm btn-primary hidden-print adjust-quantity" data-tooltip="true" title="{{ trans('general.adjust_quantity') }}"'
+            + ' data-adjust-url="{{ config('app.url') }}/' + opts.dest + '/' + opts.id + '/adjust-quantity"'
+            + ' data-item-name="' + (opts.name || '') + '"'
+            + ' data-available="' + (opts.available != null ? opts.available : '') + '">'
+            + '<x-icon type="plus-minus" class="fa-fw" /><span class="sr-only">{{ trans('general.adjust_quantity') }}</span></button>';
+    };
+
+    // Dashboard low-stock widget actions column. Renders only the
+    // adjust-quantity plus-minus button (there's no edit/delete on this
+    // widget), gated on the row's available_actions.adjust_quantity.
+    // Row is polymorphic across consumables / accessories / components /
+    // asset_models / licenses; item.type carries the per-row URL segment,
+    // pluralized to match the sibling web routes.
+    window.lowStockActionsFormatter = function (value, row) {
+        if (!row || !row.item || !value || value.adjust_quantity !== true) {
+            return '';
+        }
+        var typeToDest = {
+            consumable: 'consumables',
+            accessory: 'accessories',
+            component: 'components',
+        };
+        var dest = typeToDest[row.item.type];
+        if (!dest) {
+            return '';
+        }
+        return '<nobr>' + window.renderAdjustQuantityButton({
+            dest: dest,
+            id: row.item.id,
+            name: row.item.name || '',
+            available: row.remaining,
+        }) + '</nobr>';
     };
 
     var child_formatters = [
