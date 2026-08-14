@@ -8,6 +8,7 @@ use App\Helpers\Helper;
 use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\Acceptable;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasCalendarEvents;
 use App\Models\Traits\HasOrders;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
@@ -30,6 +31,14 @@ use Watson\Validating\ValidatingTrait;
  * Model for Assets.
  *
  * @version v1.0
+ *
+ * @property ?int $location_id
+ * @property Carbon|string|null $next_audit_date
+ * @property Carbon|string|null $last_audit_date
+ * @property Carbon|string|null $asset_eol_date
+ * @property ?int $company_id
+ * @property Carbon|string|null $last_checkin
+ * @property bool $requestable
  */
 class Asset extends Depreciable
 {
@@ -38,6 +47,7 @@ class Asset extends Depreciable
     // protected $with = ['model', 'adminuser', 'location', 'company'];
 
     use CompanyableTrait;
+    use HasCalendarEvents;
     use HasFactory;
     use HasOrders;
     use HasUploads;
@@ -339,7 +349,7 @@ class Asset extends Depreciable
     protected function warrantyExpires(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes) => ($attributes['warranty_months'] && $attributes['purchase_date']) ? Carbon::parse($attributes['purchase_date'])->addMonths((int) $attributes['warranty_months']) : null,
+            get: fn (mixed $value, array $attributes) => (! empty($attributes['warranty_months']) && ! empty($attributes['purchase_date'])) ? Carbon::parse($attributes['purchase_date'])->addMonths((int) $attributes['warranty_months']) : null,
         );
     }
 
@@ -1835,6 +1845,46 @@ class Asset extends Depreciable
      * @param  \Illuminate\Database\Query\Builder  $query  Query builder instance
      * @return \Illuminate\Database\Query\Builder Modified query builder
      */
+    public function calendarEventDefinitions(): array
+    {
+        // Every entry marked all_day: true. Cast metadata on Asset is
+        // mixed (next_audit_date is 'datetime:m-d-Y', expected_checkin
+        // and last_checkout are 'datetime', asset_eol_date has no cast
+        // at all) so cast-based auto-detection wouldn't catch them
+        // uniformly. Calendar context also doesn't need hour-precision
+        // for any of these - an audit-due date, an EOL date, or the
+        // day something got checked out reads as an all-day marker on
+        // the calendar even for columns that happen to store a time.
+        return [
+            [
+                'field' => 'next_audit_date',
+                'event_type' => 'asset.audit_due',
+                'all_day' => true,
+            ],
+            [
+                'field' => 'expected_checkin',
+                'event_type' => 'asset.expected_checkin',
+                'all_day' => true,
+            ],
+            [
+                'field' => 'last_checkout',
+                'event_type' => 'asset.checkout',
+                'all_day' => true,
+            ],
+            [
+                'field' => 'asset_eol_date',
+                'event_type' => 'asset.eol',
+                'all_day' => true,
+            ],
+            [
+                'field' => 'warranty_expires',
+                'event_type' => 'asset.warranty_expiration',
+                'trigger_fields' => ['purchase_date', 'warranty_months'],
+                'all_day' => true,
+            ],
+        ];
+    }
+
     public function scopeAssetsForShow($query)
     {
         // Pluck IDs then whereIn — do NOT replace with whereHas. whereHas generates a correlated EXISTS per row and causes severe slowdowns in withCount contexts.
