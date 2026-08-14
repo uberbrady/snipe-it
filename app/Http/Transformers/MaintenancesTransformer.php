@@ -87,8 +87,23 @@ class MaintenancesTransformer
                 'id' => (int) $assetmaintenance->adminuser->id,
                 'name' => e($assetmaintenance->adminuser->display_name),
             ] : null,
+            // DEPRECATED: bare-string maintenance_type. Kept for API
+            // back-compat with callers reading this as a plain type
+            // name. New consumers should read maintenance_type_details
+            // below for id/name/tag_color, which the bootstrap-table
+            // linker formatter uses to render the type as a link to
+            // its Maintenance Types detail page.
             'maintenance_type' => $assetmaintenance->maintenanceType
                 ? e($assetmaintenance->maintenanceType->name)
+                : null,
+            'maintenance_type_details' => $assetmaintenance->maintenanceType
+                ? [
+                    'id' => (int) $assetmaintenance->maintenanceType->id,
+                    'name' => e($assetmaintenance->maintenanceType->name),
+                    'tag_color' => $assetmaintenance->maintenanceType->tag_color
+                        ? e($assetmaintenance->maintenanceType->tag_color)
+                        : null,
+                ]
                 : null,
             'responsible_party' => ($assetmaintenance->responsibleParty) ? [
                 'id' => (int) $assetmaintenance->responsibleParty->id,
@@ -150,8 +165,23 @@ class MaintenancesTransformer
             'supplier' => ($assetmaintenance->supplier) ? e($assetmaintenance->supplier?->name) : null,
             'url' => ($assetmaintenance->url) ? e($assetmaintenance->url) : null,
             'cost' => Helper::formatCurrencyOutput($assetmaintenance->cost),
+            // DEPRECATED: bare-string maintenance_type. Kept for API
+            // back-compat with callers reading this as a plain type
+            // name. New consumers should read maintenance_type_details
+            // below for id/name/tag_color, which the bootstrap-table
+            // linker formatter uses to render the type as a link to
+            // its Maintenance Types detail page.
             'maintenance_type' => $assetmaintenance->maintenanceType
                 ? e($assetmaintenance->maintenanceType->name)
+                : null,
+            'maintenance_type_details' => $assetmaintenance->maintenanceType
+                ? [
+                    'id' => (int) $assetmaintenance->maintenanceType->id,
+                    'name' => e($assetmaintenance->maintenanceType->name),
+                    'tag_color' => $assetmaintenance->maintenanceType->tag_color
+                        ? e($assetmaintenance->maintenanceType->tag_color)
+                        : null,
+                ]
                 : null,
             'asset_maintenance_type' => e($assetmaintenance->asset_maintenance_type),
             'start_date' => Helper::getFormattedDateObject($assetmaintenance->start_date, 'date'),
