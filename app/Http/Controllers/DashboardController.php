@@ -37,6 +37,7 @@ class DashboardController extends Controller
         if (auth()->user()->hasAccess('admin')) {
             $asset_stats = null;
 
+            $counts = [];
             $counts['asset'] = Asset::count();
             $counts['accessory'] = Accessory::count();
             $counts['license'] = License::assetcount();

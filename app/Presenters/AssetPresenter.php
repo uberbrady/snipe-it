@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Class AssetPresenter
+ *
+ * @property \App\Models\Asset $model Concrete-typed override of the base
+ *           Presenter's $model so PHPStan can resolve Asset-specific
+ *           properties (supplier, model relation, tag_color, etc)
+ *           without falling back to SnipeModel and flagging every
+ *           access as property.notFound.
  */
 class AssetPresenter extends Presenter
 {
@@ -778,6 +784,12 @@ class AssetPresenter extends Presenter
 
     public function calendarColor(): ?string
     {
+        // Trailing `?->tag_color` (right before the ??) is stylistically
+        // redundant per PHPStan since if the left-hand relation is
+        // null the ?-> short-circuits already and the ?? catches the
+        // null. Drop the trailing nullsafe on the last hop only;
+        // keep it on intermediate relation hops that really can be
+        // null at runtime (model->category, supplier).
         return $this->model->tag_color
             ?? $this->model->model?->category?->tag_color
             ?? $this->model->supplier?->tag_color;

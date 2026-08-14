@@ -1717,12 +1717,6 @@ parameters:
 			path: app/Http/Controllers/Api/MaintenancesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/MaintenancesController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3295,12 +3289,6 @@ parameters:
 			path: app/Http/Controllers/MaintenancesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/MaintenancesController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4219,9 +4207,9 @@ parameters:
 			path: app/Http/Transformers/LocationsTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
-			count: 12
+			count: 1
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
@@ -4231,33 +4219,21 @@ parameters:
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$completedByUser\.$#'
-			identifier: property.notFound
-			count: 2
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Asset\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$maintenanceType\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$responsibleParty\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$supplier\.$#'
-			identifier: property.notFound
-			count: 2
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Supplier\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
 			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 4
+			count: 3
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
@@ -5253,19 +5229,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Http\\Client\\Response\:\:getStatusCode\(\)\.$#'
 			identifier: method.notFound
-			count: 4
-			path: app/Livewire/SlackSettingsForm.php
-
-		-
-			message: '#^Result of method Illuminate\\Session\\Store\:\:flash\(\) \(void\) is used\.$#'
-			identifier: method.void
-			count: 8
-			path: app/Livewire/SlackSettingsForm.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
+			count: 1
 			path: app/Livewire/SlackSettingsForm.php
 
 		-
@@ -6157,6 +6121,12 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$query$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$settings$#'
 			identifier: parameter.notFound
 			count: 1
@@ -6170,6 +6140,12 @@ parameters:
 
 		-
 			message: '#^PHPDoc tag @return with type Illuminate\\Database\\Query\\Builder is incompatible with native type Illuminate\\Database\\Eloquent\\Builder\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^PHPDoc tag @return with type Illuminate\\Database\\Query\\Builder is incompatible with native type array\.$#'
 			identifier: return.phpDocType
 			count: 1
 			path: app/Models/Asset.php
@@ -8329,12 +8305,6 @@ parameters:
 			path: app/Models/Maintenance.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\MaintenanceType\:\:\$presenter\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/MaintenanceType.php
-
-		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
@@ -10231,12 +10201,6 @@ parameters:
 			path: app/Policies/LocationPolicy.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Policies/MaintenancePolicy.php
-
-		-
 			message: '#^Method App\\Policies\\MaintenanceTypePolicy\:\:columnName\(\) should return bool but returns string\.$#'
 			identifier: return.type
 			count: 1
@@ -10393,39 +10357,9 @@ parameters:
 			path: app/Presenters/AssetPresenter.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$asset_tag\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Presenters/AssetPresenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$assigned\.$#'
+			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Presenters/AssetPresenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$assigned_to\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Presenters/AssetPresenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$model\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Presenters/AssetPresenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Presenters/AssetPresenter.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 4
 			path: app/Presenters/AssetPresenter.php
 
 		-
@@ -10485,6 +10419,12 @@ parameters:
 		-
 			message: '#^Method App\\Presenters\\AssetPresenter\:\:eol_date\(\) should return string\|false but return statement is missing\.$#'
 			identifier: return.missing
+			count: 1
+			path: app/Presenters/AssetPresenter.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>tag_color" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Presenters/AssetPresenter.php
 
@@ -10729,6 +10669,12 @@ parameters:
 			path: app/Presenters/LicensePresenter.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>tag_color" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Presenters/LicensePresenter.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$license\.$#'
 			identifier: property.notFound
 			count: 1
@@ -10903,7 +10849,7 @@ parameters:
 			path: app/Presenters/SupplierPresenter.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$gravatar\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$company\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Presenters/UserPresenter.php
@@ -10953,6 +10899,12 @@ parameters:
 		-
 			message: '#^Method App\\Presenters\\UserPresenter\:\:gravatar\(\) should return string but returns false\.$#'
 			identifier: return.type
+			count: 1
+			path: app/Presenters/UserPresenter.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>tag_color" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Presenters/UserPresenter.php
 

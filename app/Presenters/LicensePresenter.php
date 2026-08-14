@@ -4,6 +4,8 @@ namespace App\Presenters;
 
 /**
  * Class LicensePresenter
+ *
+ * @property \App\Models\License $model
  */
 class LicensePresenter extends Presenter
 {

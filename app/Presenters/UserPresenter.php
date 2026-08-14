@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Class UserPresenter
+ *
+ * @property \App\Models\User $model
  */
 class UserPresenter extends Presenter
 {

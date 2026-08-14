@@ -43,57 +43,112 @@ use Illuminate\Http\Request;
  */
 class CalendarEventsController extends Controller
 {
+    /**
+     * Hard cap on returned rows. Two calendar contexts hit this
+     * endpoint: the full calendar page (default 500) and the
+     * dashboard's Today widget (much smaller, sends ?limit=25). A
+     * request that asks for more than the ceiling silently gets
+     * capped so the browser can't be exhausted.
+     */
+    private const LIMIT_CEILING = 500;
+
     public function index(Request $request): JsonResponse
     {
-        // Base gate: viewer must be able to view AT LEAST ONE of the
-        // registered HasCalendarEvents source models. Source list is
-        // discovered from CalendarEvent::sourceModels() so a new
-        // model adopting the trait is picked up automatically without
-        // touching this controller. Per-row policy checks below then
-        // do the actual event-level scoping.
+        $this->authorizeAnySource($request);
+
+        [$rangeStart, $rangeEnd] = $this->resolveRange($request);
+        $eventTypes = $this->resolveEventTypes($request);
+        $limit = $this->resolveLimit($request);
+
+        $baseQuery = $this->buildBaseQuery($rangeStart, $rangeEnd, $eventTypes);
+        $total = (clone $baseQuery)->count();
+        $rows = $baseQuery->orderBy('start')->limit($limit)->get();
+
+        // Whether we hit the query limit. Honest signal for "there
+        // might be more events after this batch". Comparing $total to
+        // count($events) post-per-row-filter would report truncated=
+        // true any time an FMCS-filtered event brought the returned
+        // count below $total, misleading users into clicking "+N more"
+        // links for events they never had permission to see.
+        $hitLimit = $rows->count() >= $limit;
+
+        $sourcesByType = $this->batchLoadSources($rows);
+        $events = $this->buildEvents($rows, $sourcesByType, $request);
+
+        return response()->json([
+            'events' => (new CalendarEventsTransformer)->transformCalendarEvents($events),
+            'total' => $total,
+            'truncated' => $hitLimit,
+        ]);
+    }
+
+    /**
+     * Base gate: viewer must be able to view AT LEAST ONE registered
+     * HasCalendarEvents source model. Source list comes from
+     * CalendarEvent::sourceModels() so a new adopter of the trait is
+     * picked up automatically. Per-row policy checks inside
+     * buildEvents() handle the actual event-level scoping.
+     */
+    protected function authorizeAnySource(Request $request): void
+    {
         $viewer = $request->user();
-        $canViewAnySource = false;
         foreach (CalendarEvent::sourceModels() as $sourceClass) {
             if ($viewer?->can('view', $sourceClass)) {
-                $canViewAnySource = true;
-                break;
+                return;
             }
         }
-        abort_unless($canViewAnySource, 403);
+        abort(403);
+    }
 
-        $rangeStart = $request->filled('start')
-            ? Carbon::parse($request->input('start'))
-            : now()->subMonths(3)->startOfDay();
-        $rangeEnd = $request->filled('end')
-            ? Carbon::parse($request->input('end'))
-            : now()->addMonths(3)->endOfDay();
+    /**
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    protected function resolveRange(Request $request): array
+    {
+        return [
+            $request->filled('start')
+                ? Carbon::parse($request->input('start'))
+                : now()->subMonths(3)->startOfDay(),
+            $request->filled('end')
+                ? Carbon::parse($request->input('end'))
+                : now()->addMonths(3)->endOfDay(),
+        ];
+    }
 
-        // event_type filter comes as either ?event_type[]=a&event_type[]=b
-        // (repeatable) or ?event_type=a,b (single param, comma-split).
-        // Empty or missing means "all types allowed".
+    /**
+     * `event_type[]=a&event_type[]=b` (repeatable) or `event_type=a,b`
+     * (single param, comma-split). Empty or missing means "all types".
+     *
+     * @return array<int, string>
+     */
+    protected function resolveEventTypes(Request $request): array
+    {
         $eventTypes = $request->input('event_type');
         if (is_string($eventTypes)) {
             $eventTypes = array_filter(array_map('trim', explode(',', $eventTypes)));
         }
-        $eventTypes = is_array($eventTypes) ? array_values(array_filter($eventTypes)) : [];
 
-        // Hard cap on returned rows. Two calendar contexts hit this
-        // endpoint: the full calendar page (default 500) and the
-        // dashboard's Today widget (much smaller, sends ?limit=25). A
-        // request that asks for more than the ceiling silently gets
-        // capped so the browser can't be exhausted.
-        $ceiling = 500;
-        $limit = (int) $request->input('limit', $ceiling);
-        $limit = max(1, min($limit, $ceiling));
+        return is_array($eventTypes) ? array_values(array_filter($eventTypes)) : [];
+    }
 
-        // FullCalendar's fetchInfo passes ranges as [start, end)
-        // (end exclusive) so a listDay view of today = start=today
-        // 00:00, end=tomorrow 00:00. whereBetween is inclusive on
-        // BOTH sides though, which was pulling tomorrow's midnight
-        // events into today's listDay widget and inflating the
-        // truncation count. Use explicit >= start / < end to match
-        // FC's half-open interval semantics.
-        $baseQuery = CalendarEvent::query()
+    protected function resolveLimit(Request $request): int
+    {
+        $limit = (int) $request->input('limit', self::LIMIT_CEILING);
+
+        return max(1, min($limit, self::LIMIT_CEILING));
+    }
+
+    /**
+     * FullCalendar's fetchInfo passes ranges as [start, end) (end
+     * exclusive), so a listDay view of today is start=today 00:00,
+     * end=tomorrow 00:00. whereBetween is inclusive on both sides
+     * though, which pulled tomorrow's midnight events into today's
+     * listDay widget and inflated the truncation count. Explicit
+     * `>= start` / `< end` matches FC's half-open interval semantics.
+     */
+    protected function buildBaseQuery(Carbon $rangeStart, Carbon $rangeEnd, array $eventTypes)
+    {
+        return CalendarEvent::query()
             ->where(function ($q) use ($rangeStart, $rangeEnd) {
                 $q->where(function ($inner) use ($rangeStart, $rangeEnd) {
                     $inner->where('start', '>=', $rangeStart)
@@ -109,30 +164,21 @@ class CalendarEventsController extends Controller
                     });
             })
             ->when(! empty($eventTypes), fn ($q) => $q->whereIn('event_type', $eventTypes));
+    }
 
-        $total = (clone $baseQuery)->count();
-
-        $rows = $baseQuery
-            ->orderBy('start')
-            ->limit($limit)
-            ->get();
-
-        // Whether we hit the query limit. This is the honest signal for
-        // "there might be more events after this batch". The alternative
-        // (comparing $total to count($events) post-per-row-filter) reports
-        // truncated=true any time an FMCS-filtered event brings the
-        // returned count below $total, which was misleading users into
-        // clicking "+N more on calendar" links for events they never had
-        // permission to see in the first place.
-        $hitLimit = $rows->count() >= $limit;
-
-        // Batch-load source models per source_type in one query per
-        // type. Groups rows by source_type, whereIn's the ids, and
-        // key-lookups them from the resulting collection. Avoids the
-        // N+1 that a naive $row->source access would produce.
-        $rowsByType = $rows->groupBy('source_type');
+    /**
+     * One query per distinct source_type, keyed by id for O(1) lookup
+     * in buildEvents. Avoids the N+1 a naive $row->source access
+     * would produce. Includes trashed sources when the model uses
+     * SoftDeletes so an event whose parent was soft-deleted between
+     * the index write and the request still resolves for display.
+     *
+     * @return array<class-string, \Illuminate\Support\Collection>
+     */
+    protected function batchLoadSources($rows): array
+    {
         $sourcesByType = [];
-        foreach ($rowsByType as $sourceType => $typeRows) {
+        foreach ($rows->groupBy('source_type') as $sourceType => $typeRows) {
             if (! class_exists($sourceType)) {
                 continue;
             }
@@ -147,52 +193,63 @@ class CalendarEventsController extends Controller
                 ->keyBy('id');
         }
 
+        return $sourcesByType;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buildEvents($rows, array $sourcesByType, Request $request): array
+    {
         $events = [];
         foreach ($rows as $row) {
             $source = $sourcesByType[$row->source_type][$row->source_id] ?? null;
             if (! $source) {
-                // Source disappeared between the index write and now
+                // Source disappeared between index write and now
                 // (mid-request delete without a completed observer
-                // cascade). Skip the row so the client doesn't see a
-                // ghost event; the reconcile command will clean up
-                // the orphan on its next pass.
+                // cascade). Skip so the client doesn't see a ghost
+                // event; reconcile command cleans up the orphan on
+                // its next pass.
                 continue;
             }
 
-            // Per-row access check via each source's own policy.
-            // Without this, a user with view-Asset but no access to
-            // a particular license (FMCS mismatch) would still see
-            // its expiration event on the calendar. Any source that
-            // doesn't have a view policy is treated as visible; add
-            // policies to lock down access.
+            // Per-row access via each source's own view policy.
+            // Without this, view-Asset holders without a particular
+            // license access would still see its expiration event.
+            // Sources without a view policy are treated as visible;
+            // add policies to lock down access.
             if (! $request->user()?->can('view', $source)) {
                 continue;
             }
 
-            $allDay = $this->isAllDayField($source, $row->source_field);
-
-            $events[] = [
-                'id' => $row->id,
-                'title' => $this->titleFor($source, $row->event_type),
-                'start' => $this->formatDate($row->start, $allDay),
-                'end' => $this->formatDate($row->end, $allDay),
-                'allDay' => $allDay,
-                'url' => $this->urlFor($source),
-                'color' => $this->colorFor($source),
-                'extendedProps' => [
-                    'source_type' => $row->source_type,
-                    'source_id' => $row->source_id,
-                    'source_field' => $row->source_field,
-                    'event_type' => $row->event_type,
-                ],
-            ];
+            $events[] = $this->shapeEvent($row, $source);
         }
 
-        return response()->json([
-            'events' => (new CalendarEventsTransformer)->transformCalendarEvents($events),
-            'total' => $total,
-            'truncated' => $hitLimit,
-        ]);
+        return $events;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function shapeEvent($row, $source): array
+    {
+        $allDay = $this->isAllDayField($source, $row->source_field);
+
+        return [
+            'id' => $row->id,
+            'title' => $this->titleFor($source, $row->event_type),
+            'start' => $this->formatDate($row->start, $allDay),
+            'end' => $this->formatDate($row->end, $allDay),
+            'allDay' => $allDay,
+            'url' => $this->urlFor($source),
+            'color' => $this->colorFor($source),
+            'extendedProps' => [
+                'source_type' => $row->source_type,
+                'source_id' => $row->source_id,
+                'source_field' => $row->source_field,
+                'event_type' => $row->event_type,
+            ],
+        ];
     }
 
     /**
@@ -285,9 +342,13 @@ class CalendarEventsController extends Controller
             return null;
         }
 
-        if (! $date instanceof \DateTimeInterface) {
-            $date = Carbon::parse($date);
-        }
+        // Normalize to Carbon so we get toIso8601String() (Carbon-specific,
+        // not on DateTimeInterface). Anything already Carbon stays as-is
+        // via Carbon::instance's short-circuit; date strings and other
+        // DateTimeInterface values get wrapped.
+        $date = $date instanceof Carbon
+            ? $date
+            : ($date instanceof \DateTimeInterface ? Carbon::instance($date) : Carbon::parse($date));
 
         return $allDay ? $date->format('Y-m-d') : $date->toIso8601String();
     }

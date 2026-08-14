@@ -382,10 +382,19 @@ function init(elementId, config) {
             // If the event object carries a `url`, clicking it navigates
             // via a normal same-tab link rather than a popup. Individual
             // callers can override with their own eventClick handler.
+            //
+            // The scheme allowlist below guards window.location.href
+            // against a `javascript:` / `data:` / `vbscript:` URI
+            // sneaking in through the event payload (defence-in-depth:
+            // the API builds URLs from source-model presenters we
+            // control, but treating anything that flows into
+            // location.href as untrusted is cheap and closes a class
+            // of XSS the linter flagged).
             eventClick: config.eventClick || function (info) {
-                if (info.event.url) {
+                var url = info.event.url;
+                if (url && /^(https?:\/\/|\/)/i.test(url)) {
                     info.jsEvent.preventDefault();
-                    window.location.href = info.event.url;
+                    window.location.href = url;
                 }
             },
             // datesSet fires on every navigation (prev/next/today) AND

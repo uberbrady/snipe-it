@@ -29,6 +29,7 @@ use Watson\Validating\ValidatingTrait;
  * @property-read \App\Models\User|null $adminuser
  * @property-read \App\Models\User|null $responsibleParty
  * @property-read \App\Models\User|null $completedByUser
+ * @property-read \Illuminate\Database\Eloquent\Model|null $item Polymorphic parent (usually Asset). See item() below.
  */
 class Maintenance extends SnipeModel implements ICompanyableChild
 {
