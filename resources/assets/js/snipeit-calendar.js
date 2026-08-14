@@ -220,8 +220,7 @@ function phpDateFormatToFullCalendar(phpFormat) {
         'i': 'mm', 's': 'ss', 'a': 'a', 'A': 'A',
     };
     let out = '';
-    for (let i = 0; i < phpFormat.length; i++) {
-        const c = phpFormat[i];
+    for (const c of phpFormat) {
         out += Object.prototype.hasOwnProperty.call(map, c) ? map[c] : c;
     }
     return out;

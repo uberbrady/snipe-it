@@ -73,10 +73,10 @@ class CalendarEventsController extends Controller
         $hitLimit = $rows->count() >= $limit;
 
         $sourcesByType = $this->batchLoadSources($rows);
-        $events = $this->buildEvents($rows, $sourcesByType, $request);
+        $authorizedRows = $this->filterAuthorizedRows($rows, $sourcesByType, $request);
 
         return response()->json([
-            'events' => (new CalendarEventsTransformer)->transformCalendarEvents($events),
+            'events' => (new CalendarEventsTransformer)->transformCalendarEvents($authorizedRows, $sourcesByType),
             'total' => $total,
             'truncated' => $hitLimit,
         ]);
@@ -197,195 +197,28 @@ class CalendarEventsController extends Controller
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * Filters rows down to those whose source still exists AND whose
+     * source the current viewer can `view` under its own policy. Actual
+     * event shaping happens in CalendarEventsTransformer once the row
+     * set is known-safe to serialize.
+     *
+     * Per-row access via each source's own view policy: without this,
+     * view-Asset holders without a particular license access would
+     * still see its expiration event. Missing source means the parent
+     * was deleted between the index write and now (mid-request delete
+     * without a completed observer cascade); reconcile command cleans
+     * up the orphan on its next pass.
+     *
+     * @return \Illuminate\Support\Collection<int, CalendarEvent>
      */
-    protected function buildEvents($rows, array $sourcesByType, Request $request): array
+    protected function filterAuthorizedRows($rows, array $sourcesByType, Request $request)
     {
-        $events = [];
-        foreach ($rows as $row) {
+        $viewer = $request->user();
+
+        return $rows->filter(function (CalendarEvent $row) use ($sourcesByType, $viewer) {
             $source = $sourcesByType[$row->source_type][$row->source_id] ?? null;
-            if (! $source) {
-                // Source disappeared between index write and now
-                // (mid-request delete without a completed observer
-                // cascade). Skip so the client doesn't see a ghost
-                // event; reconcile command cleans up the orphan on
-                // its next pass.
-                continue;
-            }
 
-            // Per-row access via each source's own view policy.
-            // Without this, view-Asset holders without a particular
-            // license access would still see its expiration event.
-            // Sources without a view policy are treated as visible;
-            // add policies to lock down access.
-            if (! $request->user()?->can('view', $source)) {
-                continue;
-            }
-
-            $events[] = $this->shapeEvent($row, $source);
-        }
-
-        return $events;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function shapeEvent($row, $source): array
-    {
-        $allDay = $this->isAllDayField($source, $row->source_field);
-
-        return [
-            'id' => $row->id,
-            'title' => $this->titleFor($source, $row->event_type),
-            'start' => $this->formatDate($row->start, $allDay),
-            'end' => $this->formatDate($row->end, $allDay),
-            'allDay' => $allDay,
-            'url' => $this->urlFor($source),
-            'color' => $this->colorFor($source),
-            'extendedProps' => [
-                'source_type' => $row->source_type,
-                'source_id' => $row->source_id,
-                'source_field' => $row->source_field,
-                'event_type' => $row->event_type,
-            ],
-        ];
-    }
-
-    /**
-     * Resolve a display name from the source model, prefixed with a
-     * human-readable label for the event_type so a viewer can tell at
-     * a glance why a row is on the calendar (e.g. "Audit due: Laptop
-     * #7" vs. just "Laptop #7"). Presenter's name() is the canonical
-     * Snipe-IT accessor; falls through to common attribute names for
-     * models that don't have a presenter wired up yet.
-     */
-    protected function titleFor($source, string $eventType): string
-    {
-        if (method_exists($source, 'present')) {
-            $presenter = $source->present();
-            if (method_exists($presenter, 'name')) {
-                $name = (string) $presenter->name();
-            }
-        }
-
-        $name ??= (string) ($source->display_name ?? $source->name ?? (class_basename($source).'#'.$source->getKey()));
-
-        $label = $this->eventTypeLabel($eventType);
-
-        return $label ? sprintf('%s: %s', $label, $name) : $name;
-    }
-
-    /**
-     * Human-readable label for an event_type. Keyed on the canonical
-     * event_type strings emitted by each model's
-     * calendarEventDefinitions(); unknown types fall through to the
-     * event_type itself so a new source at least reads coherently
-     * before its label is registered.
-     */
-    protected function eventTypeLabel(string $eventType): string
-    {
-        $keys = [
-            'maintenance.start' => 'general.calendar_event_maintenance',
-            'asset.audit_due' => 'general.calendar_event_asset_audit_due',
-            'asset.expected_checkin' => 'general.calendar_event_asset_expected_checkin',
-            'asset.checkout' => 'general.calendar_event_asset_checkout',
-            'asset.eol' => 'general.calendar_event_asset_eol',
-            'asset.warranty_expiration' => 'general.calendar_event_asset_warranty_expiration',
-            'license.expiration' => 'general.calendar_event_license_expiration',
-            'license.termination' => 'general.calendar_event_license_termination',
-            'user.end_date' => 'general.calendar_event_user_end_date',
-        ];
-
-        if (! array_key_exists($eventType, $keys)) {
-            return $eventType;
-        }
-
-        return trans($keys[$eventType]);
-    }
-
-    /**
-     * True when the underlying source field is cast as a bare date
-     * (not a datetime). Rendering these on a timegrid as ISO-8601 with
-     * a T00:00:00 component stacks the whole day's events at midnight;
-     * FullCalendar's `allDay: true` mode turns them into a solid bar
-     * across the day instead. Also flips the payload's start/end to
-     * YYYY-MM-DD so FullCalendar doesn't reinterpret the missing time
-     * as UTC midnight.
-     */
-    protected function isAllDayField($source, ?string $field): bool
-    {
-        if (! $field) {
-            return false;
-        }
-
-        if (method_exists($source, 'calendarEventDefinitions')) {
-            foreach ($source->calendarEventDefinitions() as $definition) {
-                if (($definition['field'] ?? null) === $field && array_key_exists('all_day', $definition)) {
-                    return (bool) $definition['all_day'];
-                }
-            }
-        }
-
-        if (! method_exists($source, 'getCasts')) {
-            return false;
-        }
-
-        $cast = $source->getCasts()[$field] ?? null;
-
-        return in_array($cast, ['date', 'immutable_date'], true);
-    }
-
-    protected function formatDate(mixed $date, bool $allDay): ?string
-    {
-        if ($date === null || $date === '') {
-            return null;
-        }
-
-        // Normalize to Carbon so we get toIso8601String() (Carbon-specific,
-        // not on DateTimeInterface). Anything already Carbon stays as-is
-        // via Carbon::instance's short-circuit; date strings and other
-        // DateTimeInterface values get wrapped.
-        $date = $date instanceof Carbon
-            ? $date
-            : ($date instanceof \DateTimeInterface ? Carbon::instance($date) : Carbon::parse($date));
-
-        return $allDay ? $date->format('Y-m-d') : $date->toIso8601String();
-    }
-
-    /**
-     * Resolve a link to the source model. Presenter's route() (or
-     * similar) is preferred so each source owns its own routing
-     * conventions; falls back to a source-type-keyed default when
-     * absent.
-     */
-    protected function urlFor($source): ?string
-    {
-        if (method_exists($source, 'present')) {
-            $presenter = $source->present();
-            if (method_exists($presenter, 'calendarUrl')) {
-                return $presenter->calendarUrl();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Resolve a color for the event via the source model's
-     * presenter. Null means "no per-event color" - frontend paints
-     * from a per-event_type CSS palette so uncolored installs still
-     * read cleanly.
-     */
-    protected function colorFor($source): ?string
-    {
-        if (method_exists($source, 'present')) {
-            $presenter = $source->present();
-            if (method_exists($presenter, 'calendarColor')) {
-                return $presenter->calendarColor();
-            }
-        }
-
-        return null;
+            return $source && $viewer?->can('view', $source);
+        })->values();
     }
 }

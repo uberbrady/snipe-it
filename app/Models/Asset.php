@@ -345,6 +345,14 @@ class Asset extends Depreciable
      * Returns the warranty expiration date as Carbon object
      *
      * @return Attribute<Carbon|null, never>
+     *
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter")
+     * `$value` is unused because this is a computed accessor - the
+     * warranty expiration is derived from purchase_date +
+     * warranty_months, not stored as its own column. Laravel's
+     * Attribute closure signature is positional though (`$value` must
+     * be the first parameter), so we can't drop it. Suppression tells
+     * PHPMD / Codacy to stop flagging.
      */
     protected function warrantyExpires(): Attribute
     {

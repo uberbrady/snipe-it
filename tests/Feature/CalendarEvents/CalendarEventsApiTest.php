@@ -48,7 +48,8 @@ class CalendarEventsApiTest extends TestCase implements TestsFullMultipleCompani
             ->assertOk()
             ->json('events');
 
-        $matching = collect($rows)->firstWhere('extendedProps.source_id', $maintenance->id);
+        $matching = collect($rows)->first(fn ($row) => $row['extendedProps']['source_type'] === Maintenance::class
+            && $row['extendedProps']['source_id'] === $maintenance->id);
         $this->assertNotNull($matching);
         $this->assertSame('maintenance.start', $matching['extendedProps']['event_type']);
         $this->assertNotEmpty($matching['title']);

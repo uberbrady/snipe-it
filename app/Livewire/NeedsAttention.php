@@ -39,8 +39,7 @@ use Livewire\Component;
  * (hasAccess('admin')). Without this, a non-admin user with a
  * captured snapshot could POST /livewire/update to hydrate the widget
  * and read the counts even though the parent view would 302 them
- * away - route-level middleware doesn't guard snapshot replays (see
- * project memory: livewire_component_authorization).
+ * away - route-level middleware doesn't guard snapshot replays
  */
 #[Lazy]
 class NeedsAttention extends Component
@@ -50,7 +49,7 @@ class NeedsAttention extends Component
     // by render() through the view. Also lets Livewire's dehydrate /
     // hydrate cycle re-use the computed counts across a component
     // refresh rather than re-running the eight queries on every
-    // Livewire XHR (e.g. if the widget ever grows an action).
+    // Livewire XHR (e.g. if the widget ever grows an action, which it likely will).
     public int $overdueAudits = 0;
 
     public int $overdueCheckins = 0;
@@ -69,6 +68,9 @@ class NeedsAttention extends Component
 
     public function boot(): void
     {
+        // This may change in the future if we ever want to show the widget to non-admins, but for now the eight
+        // counts are all admin-only, so gate it here to avoid any
+        // unnecessary queries for non-admins. Livewire's boot() runs before mount() so the eight queries
         abort_unless(auth()->check() && auth()->user()->hasAccess('admin'), 403);
     }
 
@@ -77,7 +79,7 @@ class NeedsAttention extends Component
         $todayStart = now()->startOfDay();
         $inThirtyDays = now()->addDays(30)->endOfDay();
 
-        // Range comparisons (not whereDate) so the b-tree indexes on
+        // Range comparisons (not whereDate) so the indexes on
         // these date columns can actually be used - see the
         // 2026_08_14_170000 migration that adds them for every
         // column referenced below. whereDate's DATE() wrap would
