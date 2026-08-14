@@ -1,7 +1,6 @@
 <?php
 
-use App\Models\Traits\HasCalendarEvents;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\CalendarEvent;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Migrations\Migration;
 
@@ -48,27 +47,8 @@ return new class extends Migration
 
     protected function discoverSources(): array
     {
-        $sources = [];
-        $modelDir = app_path('Models');
-        $files = glob($modelDir.'/*.php');
-        foreach ($files as $file) {
-            $class = 'App\\Models\\'.pathinfo($file, PATHINFO_FILENAME);
-            if (! class_exists($class)) {
-                continue;
-            }
-
-            $reflection = new \ReflectionClass($class);
-            if ($reflection->isAbstract() || $reflection->isInterface() || $reflection->isTrait()) {
-                continue;
-            }
-            if (! is_subclass_of($class, Model::class)) {
-                continue;
-            }
-            if (in_array(HasCalendarEvents::class, class_uses_recursive($class), true)) {
-                $sources[] = $class;
-            }
-        }
-
-        return $sources;
+        // See CalendarEvent::sourceModels() - single source of truth
+        // for the HasCalendarEvents adopter list.
+        return CalendarEvent::sourceModels();
     }
 };
