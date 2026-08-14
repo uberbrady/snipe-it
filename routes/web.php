@@ -10,6 +10,7 @@ use App\Http\Controllers\BulkCategoriesController;
 use App\Http\Controllers\BulkCompaniesController;
 use App\Http\Controllers\BulkDepartmentsController;
 use App\Http\Controllers\BulkDepreciationsController;
+use App\Http\Controllers\BulkMaintenanceTypesController;
 use App\Http\Controllers\BulkManufacturersController;
 use App\Http\Controllers\BulkStatuslabelsController;
 use App\Http\Controllers\BulkSuppliersController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\UploadedFilesController;
 use App\Http\Controllers\ViewAssetsController;
 use App\Livewire\Importer;
 use App\Mail\CheckoutComponentMail;
+use App\Models\MaintenanceType;
 use App\Models\ReportTemplate;
 use Illuminate\Support\Facades\Route;
 use Tabuna\Breadcrumbs\Trail;
@@ -99,6 +101,16 @@ Route::middleware(['web', 'auth', 'authorize:superuser'])->prefix('oauth')->grou
 
 Route::group(['middleware' => 'auth'], function () {
     /*
+    * Calendar (unified view across every HasCalendarEvents source).
+    * Companion API endpoint lives at /api/v1/calendar/events.
+    */
+    Route::get('calendar', [App\Http\Controllers\CalendarEventsController::class, 'index'])
+        ->name('calendar.index')
+        ->breadcrumbs(fn (Tabuna\Breadcrumbs\Trail $trail) => $trail->parent('home')
+            ->push(trans('general.calendar'), route('calendar.index'))
+        );
+
+    /*
     * Companies
     */
     Route::resource('companies', CompaniesController::class, [
@@ -152,8 +164,51 @@ Route::group(['middleware' => 'auth'], function () {
 
     /*
     * Maintenance Types
+    *
+    * Expanded from a Route::resource so per-route breadcrumbs can hang
+    * off each GET action. The four GET routes get an explicit
+    * ->breadcrumbs(); the write routes (POST / PUT / PATCH / DELETE)
+    * don't render a page and don't need trails. Route names match what
+    * Route::resource('maintenance-types', ...) would have generated so
+    * every existing route() lookup keeps working.
     */
-    Route::resource('maintenance-types', MaintenanceTypesController::class);
+    Route::get('maintenance-types', [MaintenanceTypesController::class, 'index'])
+        ->name('maintenance-types.index')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('maintenances.index')
+            ->push(trans('admin/maintenance_types/general.maintenance_types'), route('maintenance-types.index'))
+        );
+
+    Route::get('maintenance-types/create', [MaintenanceTypesController::class, 'create'])
+        ->name('maintenance-types.create')
+        ->breadcrumbs(fn (Trail $trail) => $trail->parent('maintenance-types.index')
+            ->push(trans('admin/maintenance_types/general.create'))
+        );
+
+    Route::post('maintenance-types', [MaintenanceTypesController::class, 'store'])
+        ->name('maintenance-types.store');
+
+    Route::get('maintenance-types/{maintenance_type}', [MaintenanceTypesController::class, 'show'])
+        ->name('maintenance-types.show')
+        ->breadcrumbs(fn (Trail $trail, MaintenanceType $maintenanceType) => $trail->parent('maintenance-types.index')
+            ->push($maintenanceType->name, route('maintenance-types.show', $maintenanceType))
+        );
+
+    Route::get('maintenance-types/{maintenance_type}/edit', [MaintenanceTypesController::class, 'edit'])
+        ->name('maintenance-types.edit')
+        ->breadcrumbs(fn (Trail $trail, MaintenanceType $maintenanceType) => $trail->parent('maintenance-types.show', $maintenanceType)
+            ->push(trans('admin/maintenance_types/general.update'))
+        );
+
+    Route::put('maintenance-types/{maintenance_type}', [MaintenanceTypesController::class, 'update'])
+        ->name('maintenance-types.update');
+
+    Route::patch('maintenance-types/{maintenance_type}', [MaintenanceTypesController::class, 'update']);
+
+    Route::delete('maintenance-types/{maintenance_type}', [MaintenanceTypesController::class, 'destroy'])
+        ->name('maintenance-types.destroy');
+
+    Route::post('maintenance-types/bulk/delete', [BulkMaintenanceTypesController::class, 'destroy'])
+        ->name('maintenance-types.bulk.delete');
 
     /*
     * Depreciations
