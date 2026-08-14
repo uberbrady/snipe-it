@@ -3679,8 +3679,20 @@ dl.table-display {
 
 @media (min-width: 1200px) {
   .dashboard-row-compact > [class*="col-"] > .box > .box-body {
-    max-height: 340px;
+    max-height: 400px;
     overflow-y: auto;
+  }
+
+  // .dashboard-chart-body opts a box-body out of the compact scroll
+  // cap. Charts (Chart.js pie in particular) render a single canvas
+  // per box; capping + scrolling makes the pie clip inside a
+  // scrollable viewport instead of filling the box like a chart
+  // should. Keep the flex-stretch to match sibling row heights, but
+  // let the chart's own responsive resize fill the vertical space
+  // instead of forcing a scrollbar.
+  .dashboard-row-compact > [class*="col-"] > .box > .box-body.dashboard-chart-body {
+    max-height: none;
+    overflow: visible;
   }
 }
 

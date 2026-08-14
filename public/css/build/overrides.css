@@ -3258,8 +3258,12 @@ dl.table-display {
 }
 @media (min-width: 1200px) {
   .dashboard-row-compact > [class*="col-"] > .box > .box-body {
-    max-height: 340px;
+    max-height: 400px;
     overflow-y: auto;
+  }
+  .dashboard-row-compact > [class*="col-"] > .box > .box-body.dashboard-chart-body {
+    max-height: none;
+    overflow: visible;
   }
 }
 .dashboard-attention-list > .list-group-item > a {

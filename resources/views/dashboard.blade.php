@@ -210,7 +210,7 @@
 @else
 
     <!-- recent activity + today calendar -->
-    <div class="row dashboard-row-eq">
+    <div class="row dashboard-row-eq dashboard-row-compact">
   <div class="col-md-8">
     <div class="box box-default">
       <div class="box-header with-border">
@@ -228,7 +228,6 @@
 
                 <table
                     data-cookie-id-table="dashActivityReport"
-                    data-height="500"
                     data-pagination="false"
                     data-side-pagination="server"
                     data-id-table="dashActivityReport"
@@ -315,9 +314,17 @@
                     </button>
                 </div>
             </div>
-            <div class="box-body">
-                <div class="chart-responsive">
-                    <canvas id="statusPieChart" height="260"></canvas>
+            {{-- Fixed-height wrapper with position:relative is the
+                 stable Chart.js responsive pattern: canvas inside has
+                 no dimensions of its own and the responsive resize
+                 fills the wrapper. Height:100% here caused a resize
+                 loop against the flex-stretched box-body (canvas
+                 grows → box grows → canvas resizes). Pinning to 300px
+                 gives the pie enough room without dominating the row
+                 and stops the growth loop. --}}
+            <div class="box-body dashboard-chart-body">
+                <div class="chart-responsive" style="position: relative; height: 300px;">
+                    <canvas id="statusPieChart"></canvas>
                 </div>
             </div>
         </div>
@@ -679,7 +686,7 @@
                         direction: '{{ \App\Helpers\Helper::determineLanguageDirection() }}',
                         locale: '{{ str_replace('_', '-', app()->getLocale()) }}',
                         urlState: false,
-                        limit: 12,
+                        limit: 10,
                         onFetchMeta: function (meta) {
                             var more = document.getElementById('dashboard-today-more');
                             var link = document.getElementById('dashboard-today-more-link');
@@ -706,6 +713,15 @@
 
         <script src="{{ url(mix('js/dist/Chart.min.js')) }}"></script>
 <script nonce="{{ csrf_token() }}">
+    // Theme-aware default text color for every Chart.js instance on
+    // this page. Without this the shipped Chart.js default (#666)
+    // reads as illegible on the dark-theme box background. Same
+    // isDark() + defaultFontColor pattern the reports page uses.
+    function isDark() {
+        return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+    Chart.defaults.global.defaultFontColor = isDark() ? '#cccccc' : '#666666';
+
     // ---------------------------
     // - ASSET STATUS CHART -
     // ---------------------------
@@ -713,10 +729,18 @@
       var pieChart = new Chart(pieChartCanvas);
       var ctx = document.getElementById("statusPieChart");
       var pieOptions = {
+              // `responsive` + `maintainAspectRatio` are top-level
+              // chart options in Chart.js, not legend options. Before
+              // this fix they were nested under `legend`, which
+              // Chart.js silently ignored — so the pie stayed at its
+              // canvas height="260" attribute and didn't fill its
+              // container. Setting maintainAspectRatio: false lets the
+              // pie fill both dimensions of the .chart-responsive
+              // wrapper the dashboard puts it in.
+              responsive: true,
+              maintainAspectRatio: false,
               legend: {
                   position: 'top',
-                  responsive: true,
-                  maintainAspectRatio: true,
               },
               tooltips: {
                 callbacks: {
