@@ -375,6 +375,39 @@ body {
   overflow: hidden;
 }
 
+// Bs-table ships several 1px #dee2e6 hairlines on the fixed-height
+// container (border-bottom on the plain no-footer variant, top+bottom
+// on has-card-view, left+right on .fixed-table-border). #dee2e6 is a
+// pale gray that blends into white on light mode but reads as a stark
+// bright edge on dark mode against --box-bg. Rather than kill the
+// borders (they're the visual seam between the table body and the
+// box wrapper) we re-color them to the same theme-aware token the
+// box's own edges use so the seam reads consistently on both themes.
+// !important is needed because bs-table's shipped stylesheet is
+// pushed via @stack('css') and can load AFTER overrides.less depending
+// on Mix bundling order; same selector + same specificity means load
+// order determines the winner without it.
+.bootstrap-table .fixed-table-container.fixed-height,
+.bootstrap-table .fixed-table-container.fixed-height:not(.has-footer),
+.bootstrap-table .fixed-table-container.fixed-height.has-card-view {
+  border-color: var(--box-bg) !important;
+}
+
+.bootstrap-table .fixed-table-container.fixed-height .fixed-table-border {
+  border-color: var(--box-bg) !important;
+}
+
+// Bs-table's loading overlay is `position: absolute; bottom: 0;
+// width: 100%; background: #fff`. Hidden via opacity:0 / visibility:
+// hidden by default, but the hardcoded white bg reads through on dark
+// mode as a stark bright strip along the container's bottom edge in
+// some browsers' compositing paths (especially when a transition is
+// in-flight or the element sits behind a translucent layer). Rebind
+// the bg to the box color so any bleed-through matches the surround.
+.bootstrap-table .fixed-table-container .fixed-table-body .fixed-table-loading {
+  background: var(--box-bg) !important;
+}
+
 @media print {
 
   @page {
@@ -3590,6 +3623,131 @@ dl.table-display {
     flex: 0 0 auto;
     min-height: 0;
   }
+}
+
+// ============================================================================
+// FullCalendar built-in toolbar buttons (today / prev / next / month /
+// week / day / list) use the shipped `.fc-button-primary` gray palette
+// out of the box, which looks unrelated to the rest of the app. Rebind
+// them to Snipe-IT's --main-theme-color palette so the whole calendar
+// header reads as part of the same UI. `.fc-button-active` for the
+// currently-selected view gets a darker fill so it stays distinct.
+// ============================================================================
+
+.fc {
+  .fc-button-primary {
+    background-color: var(--main-theme-color) !important;
+    background-image: none !important;
+    border-color: ~"hsl(from var(--main-theme-color) h s calc(l - 15))" !important;
+    color: var(--nav-primary-text-color) !important;
+  }
+
+  .fc-button-primary:hover,
+  .fc-button-primary:focus {
+    background-color: ~"hsl(from var(--main-theme-color) h s calc(l - 8))" !important;
+    border-color: ~"hsl(from var(--main-theme-color) h s calc(l - 20))" !important;
+    color: var(--nav-primary-text-color) !important;
+  }
+
+  .fc-button-primary:not(:disabled).fc-button-active,
+  .fc-button-primary:not(:disabled):active {
+    background-color: ~"hsl(from var(--main-theme-color) h s calc(l - 18))" !important;
+    border-color: ~"hsl(from var(--main-theme-color) h s calc(l - 25))" !important;
+    color: var(--nav-primary-text-color) !important;
+    box-shadow: inset 0 0 0 2px ~"hsl(from var(--main-theme-color) h s calc(l - 30))" !important;
+  }
+
+  .fc-button-primary:disabled {
+    background-color: ~"hsl(from var(--main-theme-color) h s calc(l + 10) / 0.5)" !important;
+    border-color: ~"hsl(from var(--main-theme-color) h s calc(l - 5) / 0.5)" !important;
+    color: var(--nav-primary-text-color) !important;
+    opacity: 0.6;
+  }
+}
+
+// ============================================================================
+// Dashboard row-height cap (large screens only).
+//
+// Rows opted in via `dashboard-row-compact` get a max-height on each
+// box's body so a long list (Needs Attention) or a long low-stock
+// scroll doesn't drag the whole row taller than the rest of the
+// dashboard reads comfortably. Gated on min-width: 1200px because on
+// smaller screens the boxes stack (single column) and clipping
+// content there would hide useful rows behind a scrollbar the user
+// didn't ask for.
+// ============================================================================
+
+@media (min-width: 1200px) {
+  .dashboard-row-compact > [class*="col-"] > .box > .box-body {
+    max-height: 340px;
+    overflow-y: auto;
+  }
+}
+
+// ============================================================================
+// Needs-attention widget: two-column row layout so badge counts of
+// wildly different widths ("1" vs "1,247") share a right-aligned column
+// and the labels below each other line up on a shared left spine. The
+// stock Bootstrap 3 .badge inside .list-group-item floats right, which
+// looks fine per-row in isolation but produces jagged label indents
+// once the counts span more than one digit.
+// ============================================================================
+
+.dashboard-attention-list > .list-group-item > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-attention-list .dashboard-attention-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dashboard-attention-list .dashboard-attention-count {
+  flex: 0 0 auto;
+  min-width: 3.5em;
+  text-align: center;
+  // Overrides Bootstrap 3's .list-group-item .badge float-right so
+  // the flex layout above actually controls positioning; otherwise
+  // the badge escapes the flex row and stacks weirdly.
+  float: none;
+  margin-left: 0;
+}
+
+// ============================================================================
+// bs-table's stock "no matching records found" cell reads as a dim
+// afterthought at default font size / weight. On dashboard widgets
+// where empty is often a happy state ("nothing below threshold"),
+// the unstyled row makes the panel look broken. Give empty-state
+// text a centered, padded, muted-but-legible presence via a wrapper
+// span that formatNoMatches emits when a data-empty-message is set.
+// ============================================================================
+
+.snipe-table-empty-state {
+  display: block;
+  padding: 24px 12px;
+  color: var(--text-legend-help, #888);
+  font-style: italic;
+  text-align: center;
+}
+
+// ============================================================================
+// FullCalendar list-view day-group headers render as <a> elements
+// regardless of the navLinks setting (v6 emits anchors and only
+// wires the click handler when navLinks is on). Browser default
+// styling paints them with underline + link color, so they look
+// clickable when they aren't. Neutralize the anchor look so the day
+// headers read as headings, not links.
+// ============================================================================
+
+.fc .fc-list-day-cushion a,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+  pointer-events: none;
 }
 
 // ============================================================================

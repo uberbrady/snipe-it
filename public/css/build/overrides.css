@@ -373,6 +373,17 @@ body {
 .bootstrap-table .fixed-table-container {
   overflow: hidden;
 }
+.bootstrap-table .fixed-table-container.fixed-height,
+.bootstrap-table .fixed-table-container.fixed-height:not(.has-footer),
+.bootstrap-table .fixed-table-container.fixed-height.has-card-view {
+  border-color: var(--box-bg) !important;
+}
+.bootstrap-table .fixed-table-container.fixed-height .fixed-table-border {
+  border-color: var(--box-bg) !important;
+}
+.bootstrap-table .fixed-table-container .fixed-table-body .fixed-table-loading {
+  background: var(--box-bg) !important;
+}
 @media print {
   @page {
     size: A4;
@@ -3219,6 +3230,68 @@ dl.table-display {
     flex: 0 0 auto;
     min-height: 0;
   }
+}
+.fc .fc-button-primary {
+  background-color: var(--main-theme-color) !important;
+  background-image: none !important;
+  border-color: hsl(from var(--main-theme-color) h s calc(l - 15)) !important;
+  color: var(--nav-primary-text-color) !important;
+}
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:focus {
+  background-color: hsl(from var(--main-theme-color) h s calc(l - 8)) !important;
+  border-color: hsl(from var(--main-theme-color) h s calc(l - 20)) !important;
+  color: var(--nav-primary-text-color) !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: hsl(from var(--main-theme-color) h s calc(l - 18)) !important;
+  border-color: hsl(from var(--main-theme-color) h s calc(l - 25)) !important;
+  color: var(--nav-primary-text-color) !important;
+  box-shadow: inset 0 0 0 2px hsl(from var(--main-theme-color) h s calc(l - 30)) !important;
+}
+.fc .fc-button-primary:disabled {
+  background-color: hsl(from var(--main-theme-color) h s calc(l + 10) / 0.5) !important;
+  border-color: hsl(from var(--main-theme-color) h s calc(l - 5) / 0.5) !important;
+  color: var(--nav-primary-text-color) !important;
+  opacity: 0.6;
+}
+@media (min-width: 1200px) {
+  .dashboard-row-compact > [class*="col-"] > .box > .box-body {
+    max-height: 340px;
+    overflow-y: auto;
+  }
+}
+.dashboard-attention-list > .list-group-item > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dashboard-attention-list .dashboard-attention-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dashboard-attention-list .dashboard-attention-count {
+  flex: 0 0 auto;
+  min-width: 3.5em;
+  text-align: center;
+  float: none;
+  margin-left: 0;
+}
+.snipe-table-empty-state {
+  display: block;
+  padding: 24px 12px;
+  color: var(--text-legend-help, #888);
+  font-style: italic;
+  text-align: center;
+}
+.fc .fc-list-day-cushion a,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+  color: inherit;
+  text-decoration: none;
+  cursor: default;
+  pointer-events: none;
 }
 .snipeit-calendar-filters {
   display: flex;
