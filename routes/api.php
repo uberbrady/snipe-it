@@ -655,6 +655,24 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     ); // end assets API routes
 
     /**
+     * Unified calendar events API. Reads from the calendar_events
+     * index (populated by every HasCalendarEvents source model)
+     * and hydrates titles / urls / colors live from the source.
+     */
+    Route::get('/calendar/events',
+        [Api\CalendarEventsController::class, 'index']
+    )->name('api.calendar.events');
+
+    /**
+     * Low-stock unified endpoint for the dashboard widget. Delegates to
+     * Helper::checkLowInventory so this and the top-nav alert bell
+     * share a single source of truth.
+     */
+    Route::get('/low-stock',
+        [Api\LowStockController::class, 'index']
+    )->name('api.low-stock.index');
+
+    /**
      * Asset maintenances API routes
      */
     Route::get('/maintenances/{maintenance}/history',
