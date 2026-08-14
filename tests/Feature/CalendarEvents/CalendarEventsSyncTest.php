@@ -185,6 +185,58 @@ class CalendarEventsSyncTest extends TestCase
         $this->assertTrue($event->start->equalTo($driftedStart));
     }
 
+    public function test_updating_asset_next_audit_date_reflects_on_the_calendar_event_row(): void
+    {
+        // Mirror of the Maintenance start_date test above, but for
+        // Asset::next_audit_date - the exact field the audit workflow
+        // writes when an admin performs an audit
+        // (AssetsController::auditStore sets $asset->next_audit_date +
+        // $asset->last_audit_date and calls $asset->save()). Locks
+        // down that the trait's updated observer catches the change
+        // and refreshes the calendar_events row.
+        $initialAuditDate = now()->addWeek()->startOfDay();
+        $asset = Asset::factory()->create([
+            'next_audit_date' => $initialAuditDate,
+        ]);
+
+        $eventBefore = CalendarEvent::where('source_type', Asset::class)
+            ->where('source_id', $asset->id)
+            ->where('source_field', 'next_audit_date')
+            ->first();
+        $this->assertNotNull($eventBefore, 'Creating an asset with next_audit_date should have written a calendar_events row.');
+
+        $newAuditDate = now()->addMonths(3)->startOfDay();
+        $asset->update(['next_audit_date' => $newAuditDate]);
+
+        $eventAfter = $eventBefore->fresh();
+        $this->assertTrue(
+            $eventAfter->start->equalTo($newAuditDate),
+            'Updating next_audit_date should have refreshed the calendar_events row.',
+        );
+    }
+
+    public function test_nulling_asset_next_audit_date_deletes_the_calendar_event_row(): void
+    {
+        $asset = Asset::factory()->create([
+            'next_audit_date' => now()->addWeek()->startOfDay(),
+        ]);
+
+        $this->assertDatabaseHas('calendar_events', [
+            'source_type' => Asset::class,
+            'source_id' => $asset->id,
+            'source_field' => 'next_audit_date',
+        ]);
+
+        $asset->update(['next_audit_date' => null]);
+
+        $this->assertDatabaseMissing('calendar_events', [
+            'source_type' => Asset::class,
+            'source_id' => $asset->id,
+            'source_field' => 'next_audit_date',
+            'deleted_at' => null,
+        ]);
+    }
+
     public function test_reconcile_command_deletes_orphaned_rows(): void
     {
         $asset = Asset::factory()->create();
