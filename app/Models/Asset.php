@@ -1082,7 +1082,7 @@ class Asset extends Depreciable
      */
     public function maintenances()
     {
-        return $this->hasMany(Maintenance::class, 'asset_id')
+        return $this->morphMany(Maintenance::class, 'item')
             ->orderBy('created_at', 'desc');
     }
 
