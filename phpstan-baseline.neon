@@ -445,18 +445,6 @@ parameters:
 			path: app/Console/Commands/ObjectImportCommand.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\CheckoutAcceptance\:\:\$checkoutable_category_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/PurgeEulaPDFs.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\CheckoutAcceptance\:\:\$display_checkoutable_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/PurgeEulaPDFs.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$display_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -497,30 +485,6 @@ parameters:
 			identifier: if.alwaysTrue
 			count: 1
 			path: app/Console/Commands/RegenerateAssetTags.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$header_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ResetDemoSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ResetDemoSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ResetDemoSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ResetDemoSettings.php
 
 		-
 			message: '#^Property App\\Models\\User\:\:\$enable_confetti \(bool\) does not accept int\.$#'
@@ -583,82 +547,16 @@ parameters:
 			path: app/Console/Commands/RotateAppKey.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$expected_checkin_diff_for_humans\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpectedCheckinAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$expected_checkin_formattedDate\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpectedCheckinAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$purchase_date_formatted\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpectedCheckinAlerts.php
-
-		-
 			message: '#^Left side of && is always true\.$#'
 			identifier: booleanAnd.leftAlwaysTrue
 			count: 2
 			path: app/Console/Commands/SendExpectedCheckinAlerts.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$expires_diff_for_humans\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpirationAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$expires_formatted_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/SendExpirationAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$purchase_date_formatted\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpirationAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$terminates_diff_for_humans\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpirationAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\License\:\:\$terminates_formatted_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendExpirationAlerts.php
-
-		-
 			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
 			identifier: greater.alwaysTrue
 			count: 1
 			path: app/Console/Commands/SendInventoryAlerts.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_audit_formatted_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendUpcomingAuditReport.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_diff_in_days\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendUpcomingAuditReport.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$next_audit_formatted_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/SendUpcomingAuditReport.php
 
 		-
 			message: '#^Access to an undefined property ArrayObject\:\:\$id\.$#'
@@ -3505,24 +3403,6 @@ parameters:
 			path: app/Http/Controllers/NotesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ProfileController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ProfileController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ProfileController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3550,12 +3430,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/ReportsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Controllers/ReportsController.php
 
 		-
@@ -3703,30 +3577,6 @@ parameters:
 			path: app/Http/Controllers/SettingsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$header_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SettingsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SettingsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SettingsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SettingsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$default_avatar\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3788,24 +3638,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SetupController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SetupController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/SetupController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$nav_link_color\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/SetupController.php
@@ -4099,42 +3931,6 @@ parameters:
 			path: app/Http/Kernel.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/CheckColorSettings.php
-
-		-
 			message: '#^Binary operation "\." between non\-falsy\-string and array\<string\> results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -4244,18 +4040,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\AccessoryCheckout\:\:\$display_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/AssetsTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warranty_expires\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/AssetsTransformer.php
@@ -4388,12 +4172,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/DepreciationReportTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warranty_expires\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/DepreciationReportTransformer.php
@@ -5725,12 +5503,6 @@ parameters:
 			path: app/Mail/CheckoutAssetMail.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Mail/CheckoutAssetMail.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
 			identifier: parameter.notFound
 			count: 1
@@ -6253,18 +6025,6 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$eolDate\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Asset.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$license\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6274,18 +6034,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$license_id\.$#'
 			identifier: property.notFound
 			count: 5
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warrantyExpires\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warranty_expires\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Models/Asset.php
 
 		-
@@ -6421,21 +6169,9 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^PHPDoc tag @return with type Carbon\\Carbon\|null is incompatible with native type Illuminate\\Database\\Eloquent\\Casts\\Attribute\.$#'
-			identifier: return.phpDocType
-			count: 1
-			path: app/Models/Asset.php
-
-		-
 			message: '#^PHPDoc tag @return with type Illuminate\\Database\\Query\\Builder is incompatible with native type Illuminate\\Database\\Eloquent\\Builder\.$#'
 			identifier: return.phpDocType
 			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^PHPDoc tag @return with type void is incompatible with native type Illuminate\\Database\\Eloquent\\Casts\\Attribute\.$#'
-			identifier: return.phpDocType
-			count: 2
 			path: app/Models/Asset.php
 
 		-
@@ -7831,12 +7567,6 @@ parameters:
 			path: app/Models/Labels/FieldOption.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$warranty_expires\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Labels/FieldOption.php
-
-		-
 			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
 			identifier: catch.neverThrown
 			count: 1
@@ -8695,12 +8425,6 @@ parameters:
 			path: app/Models/Setting.php
 
 		-
-			message: '#^PHPDoc tag @return with type string is incompatible with native type Illuminate\\Database\\Eloquent\\Casts\\Attribute\.$#'
-			identifier: return.phpDocType
-			count: 1
-			path: app/Models/Setting.php
-
-		-
 			message: '#^PHPDoc tag @var above a method has no effect\.$#'
 			identifier: varTag.misplaced
 			count: 2
@@ -8932,24 +8656,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 5
-			path: app/Models/User.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_dark_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$link_light_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$nav_link_color\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Models/User.php
 
 		-
@@ -9749,12 +9455,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 2
 			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutAssetNotification.php
 
 		-
 			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$admin\.$#'
@@ -11905,18 +11605,6 @@ parameters:
 			path: database/migrations/2024_09_17_204302_change_user_id_to_created_by.php
 
 		-
-			message: '#^Left side of \|\| is always true\.$#'
-			identifier: booleanOr.leftAlwaysTrue
-			count: 6
-			path: database/migrations/2025_11_28_175733_add_link_colors_to_settings.php
-
-		-
-			message: '#^Right side of \|\| is always true\.$#'
-			identifier: booleanOr.rightAlwaysTrue
-			count: 6
-			path: database/migrations/2025_11_28_175733_add_link_colors_to_settings.php
-
-		-
 			message: '#^Called ''pluck'' on Laravel collection, but could have been retrieved as a query\.$#'
 			identifier: larastan.noUnnecessaryCollectionCall
 			count: 2
@@ -12017,12 +11705,6 @@ parameters:
 			identifier: larastan.noUnnecessaryCollectionCall
 			count: 1
 			path: database/seeders/LicenseSeeder.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Setting\:\:\$header_color\.$#'
-			identifier: property.notFound
-			count: 1
-			path: database/seeders/SettingsSeeder.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$enable_sound\.$#'
