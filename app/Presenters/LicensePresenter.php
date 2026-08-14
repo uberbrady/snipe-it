@@ -497,4 +497,16 @@ class LicensePresenter extends Presenter
     {
         return route('licenses.show', $this->id);
     }
+
+    public function calendarUrl(): ?string
+    {
+        return route('licenses.show', $this->model->id);
+    }
+
+    public function calendarColor(): ?string
+    {
+        return $this->model->category?->tag_color
+            ?? $this->model->manufacturer?->tag_color
+            ?? $this->model->supplier?->tag_color;
+    }
 }

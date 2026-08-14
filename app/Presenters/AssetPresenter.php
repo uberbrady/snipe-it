@@ -538,10 +538,10 @@ class AssetPresenter extends Presenter
     public function formattedTagLink()
     {
         if (auth()->user()->can('view', ['\App\Models\Asset', $this])) {
-            return '<a href="' . route('hardware.show', e($this->id)) . '" class="' . (($this->deleted_at != '') ? 'deleted' : '') . '">' . e($this->asset_tag) . '</a>';
+            return '<a href="'.route('hardware.show', e($this->id)).'" class="'.(($this->deleted_at != '') ? 'deleted' : '').'">'.e($this->asset_tag).'</a>';
         }
 
-        return '<span class="' . (($this->deleted_at != '') ? 'deleted' : '') . '">' . e($this->asset_tag) . '</span>';
+        return '<span class="'.(($this->deleted_at != '') ? 'deleted' : '').'">'.e($this->asset_tag).'</span>';
     }
 
     public function modelUrl()
@@ -769,5 +769,17 @@ class AssetPresenter extends Presenter
     public function glyph()
     {
         return '<x-icon type="assets" />';
+    }
+
+    public function calendarUrl(): ?string
+    {
+        return route('hardware.show', $this->model->id);
+    }
+
+    public function calendarColor(): ?string
+    {
+        return $this->model->tag_color
+            ?? $this->model->model?->category?->tag_color
+            ?? $this->model->supplier?->tag_color;
     }
 }
