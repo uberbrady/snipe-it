@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Helpers\Helper;
 use App\Models\Builders\MaintenanceQueryBuilder;
 use App\Models\Traits\CompanyableChildTrait;
-use App\Models\Traits\HasCalendarEvents;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
@@ -33,7 +32,7 @@ use Watson\Validating\ValidatingTrait;
 class Maintenance extends SnipeModel implements ICompanyableChild
 {
     use CompanyableChildTrait;
-    use HasCalendarEvents;
+
     use HasFactory;
     use HasUploads;
     use Loggable, Presentable;
@@ -48,7 +47,7 @@ class Maintenance extends SnipeModel implements ICompanyableChild
 
     protected $rules = [
         // item_id is the polymorphic FK. Legacy asset_id keeps working
-        // via the accessor / mutator pair below; both mutators set
+        // via the accessor / mutator pair below. Both mutators set
         // item_id so the validator's item_id rule catches either.
         'item_id' => 'required|integer',
         'item_type' => 'required|string',
