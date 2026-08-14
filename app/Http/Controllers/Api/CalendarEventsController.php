@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Transformers\CalendarEventsTransformer;
-use App\Models\Asset;
 use App\Models\CalendarEvent;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -31,19 +30,36 @@ use Illuminate\Http\Request;
  *     frontend can render a "narrow filters" banner when truncated.
  *
  * Access control:
- *   - The base `view Asset` gate governs whether the endpoint
- *     responds at all. Source-specific access is enforced per-row
- *     via each source's own view policy - if the actor can't view
- *     the underlying model (FMCS mismatch, location scoping, etc.),
- *     the event is filtered out before it hits the response.
+ *   - Base gate: the viewer must be able to view AT LEAST ONE of the
+ *     source types (Maintenance / Asset / License / User). A user
+ *     with only license-view permission still legitimately wants the
+ *     calendar to render their license expirations, so the endpoint
+ *     shouldn't 403 them just because they can't see assets.
+ *   - Source-specific access is enforced per-row via each source's
+ *     own view policy - if the actor can't view the underlying model
+ *     (FMCS mismatch, location scoping, etc.), the event is filtered
+ *     out before it hits the response. That per-row gate does the
+ *     actual scoping work.
  */
 class CalendarEventsController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        // Base gate. Calendar as a whole is asset-adjacent, so tie
-        // to view-Asset; source-specific gates below narrow per row.
-        $this->authorize('view', Asset::class);
+        // Base gate: viewer must be able to view AT LEAST ONE of the
+        // registered HasCalendarEvents source models. Source list is
+        // discovered from CalendarEvent::sourceModels() so a new
+        // model adopting the trait is picked up automatically without
+        // touching this controller. Per-row policy checks below then
+        // do the actual event-level scoping.
+        $viewer = $request->user();
+        $canViewAnySource = false;
+        foreach (CalendarEvent::sourceModels() as $sourceClass) {
+            if ($viewer?->can('view', $sourceClass)) {
+                $canViewAnySource = true;
+                break;
+            }
+        }
+        abort_unless($canViewAnySource, 403);
 
         $rangeStart = $request->filled('start')
             ? Carbon::parse($request->input('start'))
