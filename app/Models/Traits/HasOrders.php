@@ -140,6 +140,44 @@ trait HasOrders
     }
 
     /**
+     * Prefill values for the create / clone form's initial-acquisition
+     * fields. Distinct from lastOrderDefaults() because this shape
+     * includes `order_number` (per-shipment, not a "default" concept)
+     * and matches the request keys the create form posts back, so a
+     * controller can loop the return array to assign values directly
+     * onto a cloned model's attributes.
+     *
+     * Used by getClone() on Accessories / Consumables / Components to
+     * carry the source item's most recent acquisition context onto the
+     * cloned entry's create form, restoring the pre-Orders workflow
+     * where cloning a stock entry pre-filled supplier / order # / date
+     * / price for a fast restock. Items with no order history return
+     * an all-null array.
+     *
+     * @return array{
+     *     supplier_id: ?int,
+     *     purchase_date: ?string,
+     *     purchase_cost: ?string,
+     *     order_number: ?string,
+     * }
+     */
+    public function lastOrderPrefill(): array
+    {
+        $line = $this->orderItems()
+            ->with('order:id,order_number,supplier_id,purchase_date')
+            ->latest('id')
+            ->first();
+        $order = $line?->order;
+
+        return [
+            'supplier_id' => $order?->supplier_id,
+            'purchase_date' => $order?->purchase_date?->toDateString(),
+            'purchase_cost' => $line?->price !== null ? (string) $line->price : null,
+            'order_number' => $order?->order_number,
+        ];
+    }
+
+    /**
      * Resolve a Supplier for the "last acquisition" view (transformers,
      * info-panel, report callbacks). Same fallback ladder as
      * lastOrderDefaults(): last Order.supplier_id wins, falls back to
