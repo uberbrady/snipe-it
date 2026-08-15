@@ -252,6 +252,15 @@ class ComponentsController extends Controller
         $cloned_component->id = null;
         $cloned_component->deleted_at = null;
 
+        // See AccessoriesController::getClone — same rationale for
+        // carrying the source item's most recent acquisition context
+        // onto the cloned create form.
+        foreach ($component->lastOrderPrefill() as $field => $value) {
+            if ($value !== null) {
+                $cloned_component->{$field} = $value;
+            }
+        }
+
         // Show the page
         return view('components/edit')
             ->with('item', $cloned_component)

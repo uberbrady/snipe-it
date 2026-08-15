@@ -255,6 +255,15 @@ class ConsumablesController extends Controller
         $consumable->id = null;
         $consumable->created_by = null;
 
+        // See AccessoriesController::getClone — same rationale for
+        // carrying the source item's most recent acquisition context
+        // onto the cloned create form.
+        foreach ($consumable_to_close->lastOrderPrefill() as $field => $value) {
+            if ($value !== null) {
+                $consumable->{$field} = $value;
+            }
+        }
+
         return view('consumables/edit')
             ->with('cloned_model', $consumable_to_close)
             ->with('item', $consumable);
