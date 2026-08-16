@@ -1717,12 +1717,6 @@ parameters:
 			path: app/Http/Controllers/Api/MaintenancesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/MaintenancesController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3295,12 +3289,6 @@ parameters:
 			path: app/Http/Controllers/MaintenancesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/MaintenancesController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4219,45 +4207,15 @@ parameters:
 			path: app/Http/Transformers/LocationsTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 12
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$checkedOutTo\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$completedByUser\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$maintenanceType\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$responsibleParty\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$supplier\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
 			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 4
+			count: 3
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
@@ -5253,19 +5211,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Http\\Client\\Response\:\:getStatusCode\(\)\.$#'
 			identifier: method.notFound
-			count: 4
-			path: app/Livewire/SlackSettingsForm.php
-
-		-
-			message: '#^Result of method Illuminate\\Session\\Store\:\:flash\(\) \(void\) is used\.$#'
-			identifier: method.void
-			count: 8
-			path: app/Livewire/SlackSettingsForm.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
+			count: 1
 			path: app/Livewire/SlackSettingsForm.php
 
 		-
@@ -5761,7 +5707,19 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Accessory.php
@@ -5769,7 +5727,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Accessory.php
 
 		-
@@ -6055,7 +6013,19 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Asset.php
@@ -6063,7 +6033,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Asset.php
 
 		-
@@ -6955,7 +6925,19 @@ parameters:
 			path: app/Models/Component.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Component.php
@@ -6963,7 +6945,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Component.php
 
 		-
@@ -7165,7 +7147,19 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Consumable.php
@@ -7173,7 +7167,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Consumable.php
 
 		-
@@ -8327,12 +8321,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Maintenance.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\MaintenanceType\:\:\$presenter\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/MaintenanceType.php
 
 		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
@@ -10229,12 +10217,6 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Policies/LocationPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$asset\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Policies/MaintenancePolicy.php
 
 		-
 			message: '#^Method App\\Policies\\MaintenanceTypePolicy\:\:columnName\(\) should return bool but returns string\.$#'

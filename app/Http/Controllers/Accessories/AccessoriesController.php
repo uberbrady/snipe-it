@@ -159,11 +159,15 @@ class AccessoriesController extends Controller
         // create-form input names so enrichInitialOrderFromRequest
         // in store() picks them up on save and writes them onto the
         // observer-created initial Order + OrderItem for the new row.
-        foreach ($accessory->lastOrderPrefill() as $field => $value) {
-            if ($value !== null) {
-                $cloned->{$field} = $value;
-            }
-        }
+        // Explicit assignments (not a foreach) so each typed value from
+        // lastOrderPrefill() lands on the matching typed model property
+        // without going through a mixed intermediate that would fail
+        // larastan's assign.propertyType check.
+        $prefill = $accessory->lastOrderPrefill();
+        $cloned->supplier_id = $prefill['supplier_id'];
+        $cloned->purchase_date = $prefill['purchase_date'];
+        $cloned->purchase_cost = $prefill['purchase_cost'];
+        $cloned->order_number = $prefill['order_number'];
 
         return view('accessories/edit')
             ->with('cloned_model', $accessory_to_clone)
