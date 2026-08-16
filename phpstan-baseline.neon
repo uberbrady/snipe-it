@@ -5725,7 +5725,19 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Accessory.php
@@ -5733,7 +5745,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Accessory.php
 
 		-
@@ -6019,7 +6031,19 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Asset.php
@@ -6027,7 +6051,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Asset.php
 
 		-
@@ -6931,7 +6955,19 @@ parameters:
 			path: app/Models/Component.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Component.php
@@ -6939,7 +6975,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Component.php
 
 		-
@@ -7141,7 +7177,19 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_date\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Models/Consumable.php
@@ -7149,7 +7197,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Models/Consumable.php
 
 		-

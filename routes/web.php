@@ -101,16 +101,6 @@ Route::middleware(['web', 'auth', 'authorize:superuser'])->prefix('oauth')->grou
 
 Route::group(['middleware' => 'auth'], function () {
     /*
-    * Calendar (unified view across every HasCalendarEvents source).
-    * Companion API endpoint lives at /api/v1/calendar/events.
-    */
-    Route::get('calendar', [App\Http\Controllers\CalendarEventsController::class, 'index'])
-        ->name('calendar.index')
-        ->breadcrumbs(fn (Tabuna\Breadcrumbs\Trail $trail) => $trail->parent('home')
-            ->push(trans('general.calendar'), route('calendar.index'))
-        );
-
-    /*
     * Companies
     */
     Route::resource('companies', CompaniesController::class, [
