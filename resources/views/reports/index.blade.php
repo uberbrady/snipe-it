@@ -20,55 +20,55 @@
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/custom') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="assets"/> {{ trans('general.custom_report') }}
+                <x-icon type="assets" class="fa-fw"/> {{ trans('general.custom_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('reports.custom.component') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="components"/> {{ trans('general.custom_component_report') }}
+                <x-icon type="components" class="fa-fw"/> {{ trans('general.custom_component_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('reports.custom.consumable') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="consumables"/> {{ trans('general.custom_consumable_report') }}
+                <x-icon type="consumables" class="fa-fw"/> {{ trans('general.custom_consumable_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('reports.audit') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="audit"/> {{ trans('general.audit_report') }}
+                <x-icon type="audit" class="fa-fw"/> {{ trans('general.audit_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/depreciation') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="depreciation"/> {{ trans('general.depreciation_report') }}
+                <x-icon type="depreciation" class="fa-fw"/> {{ trans('general.depreciation_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/licenses') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="licenses"/> {{ trans('general.license_report') }}
+                <x-icon type="licenses" class="fa-fw"/> {{ trans('general.license_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('ui.reports.maintenances') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="maintenances"/> {{ trans('general.asset_maintenance_report') }}
+                <x-icon type="maintenances" class="fa-fw"/> {{ trans('general.asset_maintenance_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/unaccepted_assets') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="assets"/> {{ trans('general.unaccepted_asset_report') }}
+                <x-icon type="assets" class="fa-fw"/> {{ trans('general.unaccepted_asset_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/accessories') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal; text-align: left; padding-left: 15px;">
-                <x-icon type="accessories"/> {{ trans('general.accessory_report') }}
+                <x-icon type="accessories" class="fa-fw"/> {{ trans('general.accessory_report') }}
             </a>
         </div>
 
