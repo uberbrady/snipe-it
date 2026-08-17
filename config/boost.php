@@ -47,6 +47,7 @@ return [
     'guidelines' => [
         'exclude' => [
             'deployments',
+            'herd',
         ],
     ],
 
