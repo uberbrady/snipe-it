@@ -79,27 +79,49 @@ class NeedsAttentionTest extends TestCase implements TestsFullMultipleCompaniesS
 
     public function test_counts_reflect_seeded_data(): void
     {
-        // Seed rows that should push each count above zero.
-        Asset::factory()->count(3)->create(['next_audit_date' => now()->subDays(5)]);
+        // AssetFactory's configure() afterMaking hook has two sprinkles
+        // that leak into these counts if the test doesn't override
+        // them per-asset:
+        //   1. next_audit_date is set on ~20% of assets, with a range
+        //      that lands in the past ~14% of the time (2.8% total per
+        //      asset). Would inflate overdueAudits.
+        //   2. asset_eol_date is set unconditionally from purchase_date
+        //      + model.eol and can land in the past. Would inflate
+        //      assetsPastEol.
+        // Every non-target asset gets both fields pinned to a far
+        // future date to isolate each count to the seeds intended for
+        // it. Target assets forceFill the specific past date they need
+        // after creation so the hook's unconditional overwrite of
+        // asset_eol_date doesn't undo the intent.
+        $farFuture = now()->addYears(5)->format('Y-m-d');
+
+        // 3 assets overdue for audit
+        Asset::factory()->count(3)->create(['next_audit_date' => now()->subDays(5)])
+            ->each(fn ($asset) => $asset->forceFill(['asset_eol_date' => $farFuture])->save());
+
+        // 2 assets overdue for checkin
         Asset::factory()->count(2)->create([
             'expected_checkin' => now()->subDays(2),
             'assigned_to' => User::factory()->create()->id,
             'assigned_type' => User::class,
-        ]);
-        // AssetFactory's configure() afterMaking hook unconditionally
-        // overwrites asset_eol_date (computed from purchase_date +
-        // model.eol). Bypass by creating first and then forceFilling
-        // the exact date we want.
-        Asset::factory()->count(4)->create()->each(function ($asset) {
-            $asset->forceFill(['asset_eol_date' => now()->subDays(10)])->save();
-        });
+            'next_audit_date' => $farFuture,
+        ])->each(fn ($asset) => $asset->forceFill(['asset_eol_date' => $farFuture])->save());
+
+        // 4 assets past EOL
+        Asset::factory()->count(4)->create(['next_audit_date' => $farFuture])
+            ->each(fn ($asset) => $asset->forceFill(['asset_eol_date' => now()->subDays(10)])->save());
 
         License::factory()->count(2)->create([
             'expiration_date' => now()->addDays(10)->format('Y-m-d'),
         ]);
 
+        // Maintenance's own Asset needs the same isolation - otherwise
+        // it can accidentally satisfy overdueAudits or assetsPastEol.
+        $maintenanceAsset = Asset::factory()->create(['next_audit_date' => $farFuture]);
+        $maintenanceAsset->forceFill(['asset_eol_date' => $farFuture])->save();
+
         Maintenance::factory()->create([
-            'item_id' => Asset::factory()->create()->id,
+            'item_id' => $maintenanceAsset->id,
             'item_type' => Asset::class,
             'start_date' => now()->subDays(20),
             'expected_completion_date' => now()->subDays(5),
