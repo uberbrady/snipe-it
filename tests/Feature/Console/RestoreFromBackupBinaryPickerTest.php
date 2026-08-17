@@ -87,6 +87,17 @@ class RestoreFromBackupBinaryPickerTest extends TestCase
         $this->assertSame('mariadb', config('database.connections.mariadb.driver'));
     }
 
+    public function test_public_files_covers_current_branding_upload_shape(): void
+    {
+        // Regression for #19503. ImageUploadRequest::handleImages produces
+        // filenames like Setting-<field><id>-<random>.<ext> for the branding
+        // fields, and the restore classifier uses strrpos (case-sensitive)
+        // to match. Both cases must be present or the branding files get
+        // silently dropped during restore.
+        $this->assertContains('public/uploads/Setting-*', RestoreFromBackup::PUBLIC_FILES);
+        $this->assertContains('public/uploads/setting-*', RestoreFromBackup::PUBLIC_FILES);
+    }
+
     public function test_skip_ssl_is_absent_from_dump_config_by_default(): void
     {
         // Regression: spatie's processExtraDumpParameters iterates the dump

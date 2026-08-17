@@ -193,6 +193,25 @@ class RestoreFromBackup extends Command
     protected $description = 'Restore from a previously created Snipe-IT backup file';
 
     /**
+     * File-path patterns under public/uploads that the restore should extract
+     * back to disk. Wildcard entries end in `*`; the classifier trims the
+     * wildcard and matches via strrpos. The Setting- and setting- entries
+     * catch the branding filename shape produced by ImageUploadRequest
+     * (Setting-<field><id>-<random>.<ext>). Both cases are listed because
+     * the classifier is case-sensitive and either case can appear depending
+     * on when the backup was created and which filesystem it came from.
+     * The default_avatar file lives in avatars/ and is caught by the
+     * public_dirs list, not here.
+     */
+    public const PUBLIC_FILES = [
+        'public/uploads/Setting-*',
+        'public/uploads/setting-*',
+        'public/uploads/logo.*',
+        'public/uploads/favicon.*',
+        'public/uploads/favicon-uploaded.*',
+    ];
+
+    /**
      * Create a new command instance.
      *
      * @return void
@@ -215,7 +234,7 @@ class RestoreFromBackup extends Command
         $fallback = $preferred === 'mariadb' ? 'mysql' : 'mariadb';
 
         foreach ([$preferred, $fallback] as $name) {
-            $candidate = rtrim($binaryPath, \DIRECTORY_SEPARATOR) . \DIRECTORY_SEPARATOR . $name . $ext;
+            $candidate = rtrim($binaryPath, \DIRECTORY_SEPARATOR).\DIRECTORY_SEPARATOR.$name.$ext;
             if (file_exists($candidate)) {
                 return $candidate;
             }
@@ -251,8 +270,8 @@ class RestoreFromBackup extends Command
         $connectionConfig = config("database.connections.$connectionName");
         $driver = $connectionConfig['driver'] ?? null;
 
-        if (!in_array($driver, ['mysql', 'mariadb'], true)) {
-            return $this->error('DB_CONNECTION must be MySQL or MariaDB in order to perform a restore. Detected driver: ' . ($driver ?? 'unknown') . " (connection: $connectionName)");
+        if (! in_array($driver, ['mysql', 'mariadb'], true)) {
+            return $this->error('DB_CONNECTION must be MySQL or MariaDB in order to perform a restore. Detected driver: '.($driver ?? 'unknown')." (connection: $connectionName)");
         }
 
         $za = new ZipArchive;
@@ -264,7 +283,7 @@ class RestoreFromBackup extends Command
                 ZipArchive::ER_INCONS => 'Zip archive inconsistent.',
                 ZipArchive::ER_INVAL => 'Invalid argument.',
                 ZipArchive::ER_MEMORY => 'Malloc failure.',
-                ZipArchive::ER_NOENT => 'No such file (' . $filename . ') in directory ' . $dir . '.',
+                ZipArchive::ER_NOENT => 'No such file ('.$filename.') in directory '.$dir.'.',
                 ZipArchive::ER_NOZIP => 'Not a zip archive.',
                 ZipArchive::ER_OPEN => "Can't open file.",
                 ZipArchive::ER_READ => 'Read error.',
@@ -272,7 +291,7 @@ class RestoreFromBackup extends Command
                 default => "Unknown reason: $errcode",
             };
 
-            return $this->error('Could not access file: ' . $filename . ' - ' . $error_msg);
+            return $this->error('Could not access file: '.$filename.' - '.$error_msg);
         }
 
         $private_dirs = [
@@ -313,14 +332,7 @@ class RestoreFromBackup extends Command
             'public/uploads/suppliers',
         ];
 
-        $public_files = [
-            'public/uploads/logo.*',
-            'public/uploads/setting-email_logo*',
-            'public/uploads/setting-label_logo*',
-            'public/uploads/setting-logo*',
-            'public/uploads/favicon.*',
-            'public/uploads/favicon-uploaded.*',
-        ];
+        $public_files = self::PUBLIC_FILES;
 
         $sqlfiles = [];
         $sqlfile_indices = [];
@@ -456,7 +468,7 @@ class RestoreFromBackup extends Command
         $sql_contents = $za->getStream($sql_stat['name']); // maybe copy *THIS* thing?
 
         if ($sql_contents === false) {
-            $this->error('Unable to open SQL file: ' . $sql_stat['name']);
+            $this->error('Unable to open SQL file: '.$sql_stat['name']);
 
             return -1;
         }
@@ -493,12 +505,12 @@ class RestoreFromBackup extends Command
             return $this->error("DB client binary '$preferred' not found in DB_DUMP_PATH ('$binaryPath'). Please edit DB_DUMP_PATH in your .env to point to a directory that contains the mysql/mariadb client binary.");
         }
 
-        $proc_results = proc_open(escapeshellarg($client_binary) . ' -h ' .
-            escapeshellarg($connectionConfig['host']) .
-            ' --batch ' .
-            ' --binary-mode ' .
-            ' -u ' . escapeshellarg($connectionConfig['username']) . ' ' .
-            ' -P ' . escapeshellarg($connectionConfig['port']) . ' ' .
+        $proc_results = proc_open(escapeshellarg($client_binary).' -h '.
+            escapeshellarg($connectionConfig['host']).
+            ' --batch '.
+            ' --binary-mode '.
+            ' -u '.escapeshellarg($connectionConfig['username']).' '.
+            ' -P '.escapeshellarg($connectionConfig['port']).' '.
             escapeshellarg($connectionConfig['database']), // yanked -p since we pass via ENV
             [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
             $pipes,
