@@ -3,7 +3,9 @@
 namespace App\Presenters;
 
 /**
- * Class AssetModelPresenter
+ * Class MaintenancesPresenter
+ *
+ * @property \App\Models\Maintenance $model
  */
 class MaintenancesPresenter extends Presenter
 {
