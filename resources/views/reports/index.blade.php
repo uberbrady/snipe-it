@@ -14,19 +14,25 @@
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('reports.activity') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal;">
-                <x-icon type="reports"/> {{ trans('general.activity_report') }}
+                <x-icon type="history"/> {{ trans('general.activity_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/custom') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal;">
-                <x-icon type="reports"/> {{ trans('general.custom_report') }}
+                <x-icon type="assets"/> {{ trans('general.custom_report') }}
             </a>
         </div>
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ route('reports.custom.component') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal;">
-                <x-icon type="reports"/> {{ trans('general.custom_component_report') }}
+                <x-icon type="components"/> {{ trans('general.custom_component_report') }}
+            </a>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ route('reports.custom.consumable') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal;">
+                <x-icon type="consumables"/> {{ trans('general.custom_consumable_report') }}
             </a>
         </div>
 
@@ -38,7 +44,7 @@
 
         <div class="col-md-3 col-sm-6">
             <a href="{{ url('reports/depreciation') }}" class="btn btn-theme btn-block" style="margin-bottom: 10px; white-space: normal;">
-                <x-icon type="reports"/> {{ trans('general.depreciation_report') }}
+                <x-icon type="depreciation"/> {{ trans('general.depreciation_report') }}
             </a>
         </div>
 
