@@ -4345,7 +4345,9 @@
       "name": "Émile Plourde-Lavoie",
       "avatar_url": "https://avatars.githubusercontent.com/u/1145898?v=4",
       "profile": "https://www.echosvirtuels.com",
-      "contributions": []
+      "contributions": [
+        "code"
+      ]
     },
     {
       "login": "markof88",
