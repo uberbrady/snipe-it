@@ -4354,7 +4354,9 @@
       "name": "Marko Filipovic",
       "avatar_url": "https://avatars.githubusercontent.com/u/127741207?v=4",
       "profile": "https://github.com/markof88",
-      "contributions": []
+      "contributions": [
+        "code"
+      ]
     }
   ]
 }
