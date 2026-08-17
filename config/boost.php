@@ -30,7 +30,7 @@ return [
 
     'rules' => [
         'enabled' => true,
-        'scoped_guidelines' => false,
+        'scoped_guidelines' => true,
     ],
 
     /*
