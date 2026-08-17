@@ -29,6 +29,7 @@ use App\Http\Controllers\NotesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\Reports\CustomComponentReportController;
+use App\Http\Controllers\Reports\CustomConsumableReportController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ReportTemplatesController;
 use App\Http\Controllers\SettingsController;
@@ -668,6 +669,15 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
 
         Route::post('component', [CustomComponentReportController::class, 'run'])
             ->name('reports.custom.component.run');
+
+        Route::get('consumable', [CustomConsumableReportController::class, 'show'])
+            ->name('reports.custom.consumable')
+            ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
+                ->push(trans('general.reports'), route('reports.index'))
+                ->push(trans('general.custom_consumable_report'), route('reports.custom.consumable')));
+
+        Route::post('consumable', [CustomConsumableReportController::class, 'run'])
+            ->name('reports.custom.consumable.run');
     });
 
     Route::prefix('templates')
@@ -683,11 +693,11 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
                     $parent = match ($reportTemplate->type) {
                         'asset' => 'reports/custom',
                         'component' => 'reports.custom.component',
+                        'consumable' => 'reports.custom.consumable',
                     };
 
                     return $trail->parent($parent)
-                        ->push($reportTemplate->name, null)
-                        ->push(trans('general.customize_report'), '');
+                        ->push($reportTemplate->name, null);
                 });
 
             Route::get('/{reportTemplate}/edit', [ReportTemplatesController::class, 'edit'])
@@ -696,11 +706,12 @@ Route::group(['prefix' => 'reports', 'middleware' => ['auth']], function () {
                     $parent = match ($reportTemplate->type) {
                         'asset' => 'reports/custom',
                         'component' => 'reports.custom.component',
+                        'consumable' => 'reports.custom.consumable',
                     };
 
                     return $trail->parent($parent)
                         ->push($reportTemplate->name, route('report-templates.show', $reportTemplate))
-                        ->push(trans('general.customize_report'), '');
+                        ->push(trans('general.update'), '');
                 });
 
             Route::post('/{reportTemplate}', [ReportTemplatesController::class, 'update'])

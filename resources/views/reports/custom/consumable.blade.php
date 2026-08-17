@@ -5,9 +5,9 @@
     @if (request()->routeIs('report-templates.edit'))
         {{ trans('general.update') }} {{ $template->name }}
     @elseif(request()->routeIs('report-templates.show'))
-        {{ trans('general.custom_component_report') }}: {{ $template->name }}
+        {{ trans('general.custom_consumable_report') }}: {{ $template->name }}
     @else
-        {{ trans('general.custom_component_report') }}
+        {{ trans('general.custom_consumable_report') }}
     @endif
     @parent
 @stop
@@ -32,19 +32,18 @@
 {{-- Page content --}}
 @section('content')
 
-    <div class="row">
-        <div class="col-md-9">
+    <x-container columns="2">
+        <x-page-column class="col-md-9">
 
             <form
                 method="POST"
-                action="{{ request()->routeIs('report-templates.edit') ? route('report-templates.update', $template) : route('reports.custom.component.run') }}"
+                action="{{ request()->routeIs('report-templates.edit') ? route('report-templates.update', $template) : route('reports.custom.consumable.run') }}"
                 accept-charset="UTF-8"
                 class="form-horizontal"
                 id="custom-report-form"
             >
-                {{csrf_field()}}
+                {{ csrf_field() }}
 
-                <!-- Horizontal Form -->
                 <div class="box box-default">
                     <div class="box-header with-border">
                         <h2 class="box-title" style="padding-top: 7px;">
@@ -82,8 +81,8 @@
                             </label>
 
                             <label class="form-control">
-                                <input type="checkbox" name="component_name" value="1" @checked($template->checkmarkValue('component_name')) />
-                                {{ trans('admin/components/general.component_name') }}
+                                <input type="checkbox" name="consumable_name" value="1" @checked($template->checkmarkValue('consumable_name')) />
+                                {{ trans('admin/consumables/general.consumable_name') }}
                             </label>
 
                             <label class="form-control">
@@ -94,11 +93,6 @@
                             <label class="form-control">
                                 <input type="checkbox" name="model" value="1" @checked($template->checkmarkValue('model_number')) />
                                 {{ trans('general.model_no') }}
-                            </label>
-
-                            <label class="form-control">
-                                <input type="checkbox" name="serial" value="1" @checked($template->checkmarkValue('serial')) />
-                                {{ trans('general.serial_number') }}
                             </label>
 
                             <label class="form-control">
@@ -182,47 +176,46 @@
 
                             <br>
 
-                            @include ('partials.forms.edit.company-select', [
-                                    'translated_name' => trans('general.company'),
-                                    'fieldname' =>
-                                    'by_company_id[]',
-                                    'multiple' => 'true',
-                                    'hide_new' => 'true',
-                                    'selected' => $template->selectValues('by_company_id', \App\Models\Company::class),
-                            ])
+                            <x-input.company-select
+                                :label="trans('general.company')"
+                                name="by_company_id[]"
+                                multiple
+                                hideNewButton
+                                :selected="collect($template->selectValues('by_company_id', \App\Models\Company::class))->all()"
+                            />
 
-                            @include ('partials.forms.edit.category-select', [
-                                    'translated_name' => trans('general.category'),
-                                    'fieldname' => 'by_category_id[]',
-                                    'multiple' => 'true',
-                                    'hide_new' => 'true',
-                                    'category_type' => 'component',
-                                    'selected' => $template->selectValues('by_category_id', \App\Models\Category::class),
-                            ])
+                            <x-input.category-select
+                                :label="trans('general.category')"
+                                name="by_category_id[]"
+                                multiple
+                                hideNewButton
+                                categoryType="consumable"
+                                :selected="collect($template->selectValues('by_category_id', \App\Models\Category::class))->all()"
+                            />
 
-                            @include ('partials.forms.edit.manufacturer-select', [
-                                    'translated_name' => trans('general.manufacturer'),
-                                    'fieldname' => 'by_manufacturer_id[]',
-                                    'multiple' => 'true',
-                                    'hide_new' => 'true',
-                                    'selected' => $template->selectValues('by_manufacturer_id', \App\Models\Manufacturer::class),
-                            ])
+                            <x-input.manufacturer-select
+                                :label="trans('general.manufacturer')"
+                                name="by_manufacturer_id[]"
+                                multiple
+                                hideNewButton
+                                :selected="collect($template->selectValues('by_manufacturer_id', \App\Models\Manufacturer::class))->all()"
+                            />
 
-                            @include ('partials.forms.edit.supplier-select', [
-                                    'translated_name' => trans('general.supplier'),
-                                    'fieldname' => 'by_supplier_id[]',
-                                    'multiple' => 'true',
-                                    'hide_new' => 'true',
-                                    'selected' => $template->selectValues('by_supplier_id', \App\Models\Supplier::class),
-                            ])
+                            <x-input.supplier-select
+                                :label="trans('general.supplier')"
+                                name="by_supplier_id[]"
+                                multiple
+                                hideNewButton
+                                :selected="collect($template->selectValues('by_supplier_id', \App\Models\Supplier::class))->all()"
+                            />
 
-                            @include ('partials.forms.edit.location-select', [
-                                    'translated_name' => trans('general.location'),
-                                    'fieldname' => 'by_location_id[]',
-                                    'multiple' => 'true',
-                                    'hide_new' => 'true',
-                                    'selected' => $template->selectValues('by_location_id', \App\Models\Location::class),
-                            ])
+                            <x-input.location-select
+                                :label="trans('general.location')"
+                                name="by_location_id[]"
+                                multiple
+                                hideNewButton
+                                :selected="collect($template->selectValues('by_location_id', \App\Models\Location::class))->all()"
+                            />
 
                             <!-- Name -->
                             <div class="form-group">
@@ -247,6 +240,8 @@
                                     <input class="form-control" type="text" name="by_order_number" value="{{ $template->textValue('by_order_number', old('by_order_number')) }}" aria-label="by_order_number">
                                 </div>
                             </div>
+
+
 
                             <!-- Quantity -->
                             <div class="form-group quantity-range{{ ($errors->has('quantity_start') || $errors->has('quantity_end')) ? ' has-error' : '' }}">
@@ -299,6 +294,7 @@
                                 @endif
                             </div>
 
+
                             <!-- Purchase Date -->
                             <div class="form-group purchase-range{{ ($errors->has('purchase_start') || $errors->has('purchase_end')) ? ' has-error' : '' }}">
                                 <label for="purchase_start" class="col-md-3 control-label">{{ trans('general.purchase_date') }}</label>
@@ -314,8 +310,8 @@
 
                                 @if ($errors->has('purchase_start') || $errors->has('purchase_end'))
                                     <div class="col-md-9 col-lg-offset-3">
-                                        <x-form.error name="purchase_start"/>
-                                        <x-form.error name="purchase_end"/>
+                                        <x-form.error name="purchase_start" />
+                                        <x-form.error name="purchase_end" />
                                     </div>
                                 @endif
                             </div>
@@ -406,21 +402,22 @@
                             </div>
 
                             <x-form.radio-row
-                                name="deleted_components"
-                                :selected="$template->options['deleted_components'] ?? 'exclude_deleted'"
+                                name="deleted_consumables"
+                                :selected="$template->options['deleted_consumables'] ?? 'exclude_deleted'"
                                 :options="[
-                                    'exclude_deleted' => trans('admin/components/general.exclude_deleted'),
-                                    'include_deleted' => trans('admin/components/general.include_deleted'),
-                                    'only_deleted' => trans('admin/components/general.only_deleted'),
+                                    'exclude_deleted' => trans('admin/consumables/general.exclude_deleted'),
+                                    'include_deleted' => trans('admin/consumables/general.include_deleted'),
+                                    'only_deleted' => trans('admin/consumables/general.only_deleted'),
                                 ]"
                             />
                         </div>
 
                     </div> <!-- /.box-body-->
                     @unless (request()->routeIs('report-templates.edit'))
-                        {{-- See consumable blade for the edit-mode footer
-                             rationale (sidebar Save is the affordance
-                             there; download button belongs to preview). --}}
+                        {{-- In edit mode the sidebar Save button is the
+                             affordance for persisting template changes;
+                             the "Generate" download button here only
+                             makes sense on the config / preview page. --}}
                         <div class="box-footer text-right">
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-download icon-white" aria-hidden="true"></i>
@@ -430,13 +427,12 @@
                     @endunless
                 </div> <!--/.box.box-default-->
             </form>
-        </div>
+        </x-page-column>
 
-        <!-- Saved Reports right column -->
-        <div class="col-md-3">
-            <x-reports.custom-template-panel type="component" :template="$template"/>
-        </div>
-    </div>
+        <x-page-column class="col-md-3">
+            <x-reports.custom-template-panel type="consumable" :template="$template" />
+        </x-page-column>
+    </x-container>
 
 @stop
 

@@ -3403,16 +3403,29 @@ parameters:
 			path: app/Http/Controllers/Reports/CustomComponentReportController.php
 
 		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Reports/CustomConsumableReportController.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Reports/CustomComponentReportController.php
 
 		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Reports/CustomConsumableReportController.php
+
+		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 1
 			path: app/Http/Controllers/Reports/CustomComponentReportController.php
+
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
