@@ -1,0 +1,92 @@
+# AI Coding-Assistant Guidance (`.ai/`)
+
+This repository ships guidance for AI coding assistants, managed by
+[Laravel Boost](https://laravel.com/docs/13.x/boost). It comes in two layers.
+
+- **Always-on guidance** — composed into `CLAUDE.md` and `AGENTS.md` at the repository root.
+  "Always-on" means it is injected into the assistant's context on *every* request, regardless of
+  which file you are working on. Source lives in [`.ai/guidelines/`](guidelines).
+- **Path-scoped rules** — smaller, focused rules in [`.ai/rules/`](rules) that an assistant loads
+  **on demand**, only when you edit a file whose path matches the rule. The map from paths to rule
+  files is [`.ai/rules/index.md`](rules/index.md).
+
+Because `CLAUDE.md` and `AGENTS.md` are committed, contributors get this guidance even without
+running Boost themselves.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+    G[".ai/guidelines/*.md"]
+    CFG["config/boost.php"]
+    RR["record-rule<br/>(Boost MCP tool)"]
+
+    BI(["php artisan<br/>boost:install --guidelines"])
+
+    CLAUDE["CLAUDE.md"]
+    AGENTS["AGENTS.md"]
+    BR[".ai/rules/boost/*.md"]
+    IDX[".ai/rules/index.md"]
+    TR[".ai/rules/*.md"]
+
+    AI(["AI coding assistant"])
+
+    G --> BI
+    CFG -. controls .-> BI
+    BI --> CLAUDE
+    BI --> AGENTS
+    BI -. "@scoped blocks<br/>(scoped_guidelines = true)" .-> BR
+
+    RR --> TR
+    RR --> IDX
+    BR --> IDX
+
+    CLAUDE -->|always-on| AI
+    AGENTS -->|always-on| AI
+    IDX -. "path-scoped,<br/>on demand" .-> AI
+    TR -. on demand .-> AI
+
+    classDef generated fill:#f8d7da,stroke:#c0392b,color:#611;
+    class CLAUDE,AGENTS,BR,IDX generated;
+```
+
+Nodes shaded red are **generated** — see below.
+
+## What is generated — never hand-edit
+
+Boost regenerates these, so hand edits are overwritten on the next run:
+
+- `CLAUDE.md` and `AGENTS.md` (repository root)
+- `.ai/rules/index.md`
+- `.ai/rules/boost/*.md` (blocks extracted from `@scoped` guidelines)
+
+Edit the **sources** instead, then regenerate.
+
+## How to change the guidance
+
+**Change always-on guidance** (something every session should know — architecture, conventions):
+
+1. Edit the relevant file in [`.ai/guidelines/`](guidelines).
+2. Regenerate: `php artisan boost:install --guidelines`
+3. Commit the regenerated `CLAUDE.md` and `AGENTS.md` alongside your source edit.
+
+**Add a path-scoped rule** (advice that only matters for a certain area of the code):
+
+- Use Boost's `record-rule` tool with a `glob` (e.g. `app/Http/Controllers/**`), a short `title`,
+  and a few-line `note`. It writes the rule into the matching `.ai/rules/<area>.md` file and
+  regenerates `index.md` for you.
+- You can refine the wording of an existing rule by editing its `.ai/rules/*.md` file directly —
+  just don't hand-edit `index.md`.
+
+## Configuration (`config/boost.php`)
+
+This file is committed so everyone regenerates byte-identical output (no diff churn between
+contributors). Two settings shape the composed files:
+
+- `rules.scoped_guidelines` — when `true`, `@scoped([...])` blocks are pulled out of the
+  always-on files and written to `.ai/rules/boost/`, so they load only for matching paths.
+- `guidelines.exclude` — drops named guideline blocks from the composition entirely.
+
+## Learn more
+
+See the [Laravel Boost documentation](https://laravel.com/docs/13.x/boost).
