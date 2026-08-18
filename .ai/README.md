@@ -25,9 +25,9 @@ Boost combines the sources you edit with its own bundled guidance to (re)generat
 flowchart LR
     G[".ai/guidelines/*.md"]
     CFG["config/boost.php"]
-    V["Boost's bundled<br/>framework and package guidance"]
+    V["Boost's bundled guidance"]
 
-    BI(["php artisan<br/>boost:install --guidelines"])
+    BI(["php artisan boost:install --guidelines"])
 
     CLAUDE["CLAUDE.md"]
     AGENTS["AGENTS.md"]
@@ -66,10 +66,13 @@ flowchart LR
 
     AI(["AI coding assistant"])
 
-    CLAUDE -->|"always-on — every request"| AI
-    AGENTS -->|"always-on — every request"| AI
-    RULES -->|"on demand — when you edit a matching path"| AI
+    CLAUDE -->|always-on| AI
+    AGENTS -->|always-on| AI
+    RULES -->|on demand| AI
 ```
+
+*Always-on* files load on every request; *on-demand* rules load only when you edit a file whose
+path matches them.
 
 ## What is generated — never hand-edit
 
