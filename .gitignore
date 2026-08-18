@@ -77,7 +77,6 @@ storage/ldap_client_tls.key
 
 /.phpunit.cache
 
-/.ai/rules/boost
 /.mcp.json
 /.agents
 /.amp
