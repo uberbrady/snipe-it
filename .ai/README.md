@@ -15,11 +15,17 @@ running Boost themselves.
 
 ## How it fits together
 
+Two separate things happen at two separate times.
+
+### 1. Regenerating the files — `php artisan boost:install --guidelines`
+
+Boost combines the sources you edit with its own bundled guidance to (re)generate the committed files:
+
 ```mermaid
 flowchart LR
     G[".ai/guidelines/*.md"]
     CFG["config/boost.php"]
-    RR["record-rule<br/>(Boost MCP tool)"]
+    V["Boost's bundled<br/>framework and package guidance"]
 
     BI(["php artisan<br/>boost:install --guidelines"])
 
@@ -27,30 +33,43 @@ flowchart LR
     AGENTS["AGENTS.md"]
     BR[".ai/rules/boost/*.md"]
     IDX[".ai/rules/index.md"]
-    TR[".ai/rules/*.md"]
+
+    G --> BI
+    CFG --> BI
+    V --> BI
+    BI --> CLAUDE
+    BI --> AGENTS
+    BI --> BR
+    BI --> IDX
+
+    classDef edit fill:#d5f5e3,stroke:#1e8449,color:#145a32;
+    classDef gen fill:#f8d7da,stroke:#c0392b,color:#611;
+    classDef vendor fill:#eaecee,stroke:#7f8c8d,color:#2c3e50;
+    class G,CFG edit;
+    class CLAUDE,AGENTS,BR,IDX gen;
+    class V vendor;
+```
+
+**Green** = you edit these. **Red** = generated, never hand-edit (see below). **Grey** = Boost's own
+guidance, shipped inside the package.
+
+Path-scoped rules that we author (`.ai/rules/*.md`) are written by the `record-rule` tool, which also
+updates `.ai/rules/index.md` — see [How to change the guidance](#how-to-change-the-guidance).
+
+### 2. What a coding assistant loads
+
+```mermaid
+flowchart LR
+    CLAUDE["CLAUDE.md"]
+    AGENTS["AGENTS.md"]
+    RULES[".ai/rules/**<br/>(via index.md)"]
 
     AI(["AI coding assistant"])
 
-    G --> BI
-    CFG -. controls .-> BI
-    BI --> CLAUDE
-    BI --> AGENTS
-    BI -. "@scoped blocks<br/>(scoped_guidelines = true)" .-> BR
-
-    RR --> TR
-    RR --> IDX
-    BR --> IDX
-
-    CLAUDE -->|always-on| AI
-    AGENTS -->|always-on| AI
-    IDX -. "path-scoped,<br/>on demand" .-> AI
-    TR -. on demand .-> AI
-
-    classDef generated fill:#f8d7da,stroke:#c0392b,color:#611;
-    class CLAUDE,AGENTS,BR,IDX generated;
+    CLAUDE -->|"always-on — every request"| AI
+    AGENTS -->|"always-on — every request"| AI
+    RULES -->|"on demand — when you edit a matching path"| AI
 ```
-
-Nodes shaded red are **generated** — see below.
 
 ## What is generated — never hand-edit
 
