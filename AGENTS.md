@@ -20,8 +20,6 @@ Every API controller returns data through a **Transformer** in `app/Http/Transfo
 return (new AssetsTransformer)->transformAssets($assets, $assets->count());
 ```
 
-This supersedes the generic advice to reach for Eloquent API Resources — follow the existing transformer convention.
-
 ## Authorization
 
 - All authorization goes through **Policies** in `app/Policies/`.
