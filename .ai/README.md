@@ -27,7 +27,7 @@ flowchart LR
     CFG["config/boost.php"]
     V["Boost's bundled guidance"]
 
-    BI(["php artisan boost:install --guidelines"])
+    BI(["php artisan<br>boost:install --guidelines"])
 
     CLAUDE["CLAUDE.md"]
     AGENTS["AGENTS.md"]
