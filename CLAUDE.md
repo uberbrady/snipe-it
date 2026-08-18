@@ -105,23 +105,6 @@ php artisan optimize:clear
 herd coverage
 ```
 
-=== .ai/snipe-it-testing rules ===
-
-# Snipe-IT Testing
-
-- Feature tests live in `tests/Feature/`, organized by entity (e.g. `tests/Feature/Assets/AssetsTest.php`). Unit tests live in `tests/Unit/`.
-- Feature tests hit the database. The test environment uses `array` drivers for cache, session, and mail.
-- Always build test data with model factories. Check for an existing custom state before setting attributes by hand.
-- Test methods are named in snake_case: `test_page_renders()`, `test_requires_permission()`. Never camelCase.
-- UI GET routes should have both a `test_page_renders` test and a `test_requires_permission` test.
-
-```bash
-php artisan test tests/Feature/Assets/AssetsTest.php   # single file
-
-php artisan test --filter test_some_method             # single method
-
-```
-
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -135,10 +118,6 @@ This application is a Laravel application running on PHP 8.2. You are an expert 
 Before relying on a package's API, confirm its installed version:
 - PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
 - JS packages: check `package.json` for the installed versions.
-
-## Skills Activation
-
-This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
 ## Conventions
 
