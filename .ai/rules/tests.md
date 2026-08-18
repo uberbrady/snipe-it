@@ -5,11 +5,6 @@ paths:
 
 # Tests
 
-## Feature and Unit test layout
-
-Feature tests live in `tests/Feature/`, organized by entity (e.g. `tests/Feature/Assets/AssetsTest.php`). Unit tests
-live in `tests/Unit/`.
-
 ## Test environment uses array drivers
 
 Feature tests hit the database. The test environment uses `array` drivers for cache, session, and mail.
