@@ -21,3 +21,6 @@ Every UI GET route should have both a `test_page_renders` test and a `test_requi
 
 ## Authenticate API tests with actingAsForApi()
 Use `$this->actingAsForApi($user)` in API tests and `$this->actingAs($user)` in UI tests.
+
+## Feature and unit test placement
+Feature tests live in `tests/Feature/`, grouped by the feature or resource under test. A resource with both API and web controllers splits its tests into `Api/` and `Ui/` subfolders matching the layer under test; cross-cutting feature-area suites stay flat in their folder. Unit tests live in `tests/Unit/`, grouped by the type under test (`Models/`, `Presenters/`, `Transformers/`...).
