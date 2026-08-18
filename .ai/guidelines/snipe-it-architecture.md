@@ -56,10 +56,6 @@ After checkout, `Helper::getRedirectOption()` reads `$request->redirect_option`.
 - `checkout_to_type=user`
 - `assigned_user={{ $user->id }}`
 
-## Translations
-
-UI strings are translation keys in `resources/lang/en-US/general.php` and its sibling files. Always add a new key rather than hard-coding English in a view.
-
 ## Global View Variables
 
 `$snipeSettings` is shared with every view by `SettingsServiceProvider`. Use it directly in Blade — do not pass `Setting::getSettings()` from the controller.
