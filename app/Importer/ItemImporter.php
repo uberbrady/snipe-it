@@ -123,7 +123,11 @@ class ItemImporter extends Importer
         $checkoutClass = strtolower((string) $this->item['checkout_class']);
         $checkoutLocation = $this->findCsvMatch($row, 'checkout_location');
         $checkoutAsset = $this->findCsvMatch($row, 'checkout_asset');
-        $checkoutUser = $this->findCsvMatch($row, 'checkout_user');
+        // checkout_user is not read locally: createOrFetchUser looks it up
+        // via findCsvMatch as a username fallback, so the user path picks it
+        // up whether we reach it via the explicit checkout_class=user branch
+        // or the default fall-through. Populating $this->item here is
+        // deliberate so subclasses that inspect the item array see it.
 
         // Checkout intent is inferred from which target-shape column has a
         // value: checkout_asset (asset tag of parent asset), checkout_location
