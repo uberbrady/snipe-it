@@ -11761,3 +11761,9 @@ parameters:
 			count: 2
 			path: routes/web.php
 
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/PredefinedKitCheckoutService.php
