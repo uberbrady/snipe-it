@@ -4768,13 +4768,13 @@ parameters:
 		-
 			message: '#^Method App\\Importer\\ItemImporter\:\:determineCheckout\(\) should return App\\Importer\\SnipeModel\|null but returns App\\Models\\Location\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Location\>\.$#'
 			identifier: return.type
-			count: 1
+			count: 2
 			path: app/Importer/ItemImporter.php
 
 		-
 			message: '#^Method App\\Importer\\ItemImporter\:\:determineCheckout\(\) should return App\\Importer\\SnipeModel\|null but returns App\\Models\\User\.$#'
 			identifier: return.type
-			count: 1
+			count: 2
 			path: app/Importer/ItemImporter.php
 
 		-
