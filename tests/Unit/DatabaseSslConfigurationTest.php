@@ -14,6 +14,70 @@ use Tests\TestCase;
 class DatabaseSslConfigurationTest extends TestCase
 {
     /**
+     * Every DB_SSL_* key this test manipulates. The snapshot/restore in
+     * setUp and the reset in loadDatabaseConfig must cover the exact same
+     * set: any key mutated but not restored would bake into the *next*
+     * test's setUp config boot and break its mysql connection with "Cannot
+     * connect to MySQL using SSL". A single source of truth keeps them in sync.
+     */
+    private const SSL_KEYS = [
+        'DB_SSL',
+        'DB_SSL_IS_PAAS',
+        'DB_SSL_KEY_PATH',
+        'DB_SSL_CERT_PATH',
+        'DB_SSL_CA_PATH',
+        'DB_SSL_CIPHER',
+        'DB_SSL_VERIFY_SERVER',
+    ];
+
+    private array $originalSslEnv = [];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->snapshotSslEnv();
+
+        $this->beforeApplicationDestroyed(fn () => $this->restoreSslEnv());
+    }
+
+    /**
+     * Record every SSL env key as it stands before this test mutates it.
+     */
+    private function snapshotSslEnv(): void
+    {
+        foreach (self::SSL_KEYS as $key) {
+            $this->originalSslEnv[$key] = [
+                'env' => $_ENV[$key] ?? false,
+                'server' => $_SERVER[$key] ?? false,
+                'getenv' => getenv($key),
+            ];
+        }
+    }
+
+    /**
+     * Put every SSL env key back exactly as it was before this test ran, so
+     * a mutated value can't bake into the next test's config boot.
+     */
+    private function restoreSslEnv(): void
+    {
+        foreach ($this->originalSslEnv as $key => $original) {
+            unset($_ENV[$key], $_SERVER[$key]);
+            putenv($key);
+
+            if ($original['env'] !== false) {
+                $_ENV[$key] = $original['env'];
+            }
+            if ($original['server'] !== false) {
+                $_SERVER[$key] = $original['server'];
+            }
+            if ($original['getenv'] !== false) {
+                putenv("$key={$original['getenv']}");
+            }
+        }
+    }
+
+    /**
      * Set the env vars this test needs, re-require the config file, and
      * return the fully-built connections array. Any env key not passed is
      * unset so it doesn't leak in from the surrounding test env.
@@ -23,17 +87,7 @@ class DatabaseSslConfigurationTest extends TestCase
      */
     private function loadDatabaseConfig(array $env): array
     {
-        $keys = [
-            'DB_SSL',
-            'DB_SSL_IS_PAAS',
-            'DB_SSL_KEY_PATH',
-            'DB_SSL_CERT_PATH',
-            'DB_SSL_CA_PATH',
-            'DB_SSL_CIPHER',
-            'DB_SSL_VERIFY_SERVER',
-        ];
-
-        foreach ($keys as $key) {
+        foreach (self::SSL_KEYS as $key) {
             unset($_ENV[$key], $_SERVER[$key]);
             putenv($key);
         }
