@@ -18,14 +18,25 @@ class ConsumableRequestTest extends TestCase
 {
     public function test_requestable_index_lists_requestable_consumables(): void
     {
-        $consumable = Consumable::factory()->create(['requestable' => true]);
-        Consumable::factory()->create(['requestable' => false]);
+        // The consumables tab on /account/requestable-assets is now
+        // API-backed via api.consumables.requestable. See the sibling
+        // AccessoryRequestTest for the shell-page + API-shape rationale.
+        $requestable = Consumable::factory()->create(['requestable' => true]);
+        $nonRequestable = Consumable::factory()->create(['requestable' => false]);
 
         $this->actingAs(User::factory()->create())
             ->get(route('requestable-assets'))
             ->assertOk()
-            ->assertViewHas('consumables')
-            ->assertSeeText($consumable->name);
+            ->assertViewHas('consumables');
+
+        $rows = $this->actingAsForApi(User::factory()->create())
+            ->getJson(route('api.consumables.requestable'))
+            ->assertOk()
+            ->json('rows');
+
+        $ids = collect($rows)->pluck('id')->all();
+        $this->assertContains($requestable->id, $ids);
+        $this->assertNotContains($nonRequestable->id, $ids);
     }
 
     public function test_user_can_request_a_requestable_consumable(): void

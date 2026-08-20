@@ -11,14 +11,28 @@ class AccessoryRequestTest extends TestCase
 {
     public function test_requestable_index_lists_requestable_accessories(): void
     {
-        $accessory = Accessory::factory()->create(['requestable' => true]);
-        Accessory::factory()->create(['requestable' => false]);
+        // The accessories tab on /account/requestable-assets is now
+        // API-backed via api.accessories.requestable. Shell page still
+        // needs a non-empty $accessories view var so the tab-badge
+        // count renders (0 hides the tab entirely), and the API row
+        // shape has to include the requestable one + omit the
+        // non-requestable one.
+        $requestableAccessory = Accessory::factory()->create(['requestable' => true]);
+        $nonRequestable = Accessory::factory()->create(['requestable' => false]);
 
         $this->actingAs(User::factory()->create())
             ->get(route('requestable-assets'))
             ->assertOk()
-            ->assertViewHas('accessories')
-            ->assertSeeText($accessory->name);
+            ->assertViewHas('accessories');
+
+        $rows = $this->actingAsForApi(User::factory()->create())
+            ->getJson(route('api.accessories.requestable'))
+            ->assertOk()
+            ->json('rows');
+
+        $ids = collect($rows)->pluck('id')->all();
+        $this->assertContains($requestableAccessory->id, $ids);
+        $this->assertNotContains($nonRequestable->id, $ids);
     }
 
     public function test_user_can_request_a_requestable_accessory(): void
