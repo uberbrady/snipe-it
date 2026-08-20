@@ -75,9 +75,15 @@ class AssetModelRequestGateTest extends TestCase
     public function test_ignored_item_types_do_not_reach_the_controller(): void
     {
         // Belt-and-suspenders check for a couple more shapes.
+        // `component`, `consumable`, and `license` were removed from
+        // this list as each became a first-class requestable (see the
+        // matching ConsumableRequestTest / ComponentRequestTest /
+        // LicenseRequestTest for the coverage that replaced their
+        // slots here). `location` still route-rejects at the regex
+        // level.
         $user = User::factory()->create();
 
-        foreach (['location', 'component', 'consumable', 'license'] as $itemType) {
+        foreach (['location'] as $itemType) {
             $response = $this->actingAs($user)
                 ->post('/account/request/'.$itemType.'/1');
             $response->assertNotFound();

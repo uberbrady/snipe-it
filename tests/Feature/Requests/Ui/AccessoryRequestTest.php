@@ -89,21 +89,83 @@ class AccessoryRequestTest extends TestCase
         );
     }
 
-    public function test_admin_requested_index_renders_accessory_requests(): void
+    public function test_user_can_request_an_accessory_with_a_reservation_window(): void
+    {
+        // Reservation dates are optional (persist the "start blank ->
+        // no window" story), but when supplied both should land on the
+        // CheckoutRequest row so the future calendar-events pipeline
+        // has something to hydrate from.
+        $accessory = Accessory::factory()->create(['requestable' => true]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('account/request-item', [
+                'itemType' => 'accessory',
+                'itemId' => $accessory->id,
+            ]), [
+                'request-quantity' => 2,
+                'start_date' => '2026-09-01',
+                'end_date' => '2026-09-05',
+            ])
+            ->assertRedirect();
+
+        $request = CheckoutRequest::where('requestable_id', $accessory->id)
+            ->where('requestable_type', Accessory::class)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $this->assertNotNull($request);
+        $this->assertSame('2026-09-01', $request->start_date->toDateString());
+        $this->assertSame('2026-09-05', $request->end_date->toDateString());
+    }
+
+    public function test_request_is_rejected_when_end_date_precedes_start_date(): void
     {
         $accessory = Accessory::factory()->create(['requestable' => true]);
-        CheckoutRequest::factory()->create([
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('account/request-item', [
+                'itemType' => 'accessory',
+                'itemId' => $accessory->id,
+            ]), [
+                'request-quantity' => 1,
+                'start_date' => '2026-09-10',
+                'end_date' => '2026-09-05',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasErrors('end_date');
+
+        $this->assertNull(
+            CheckoutRequest::where('requestable_id', $accessory->id)
+                ->where('requestable_type', Accessory::class)
+                ->first(),
+            'A request with an inverted date range must not persist.'
+        );
+    }
+
+    public function test_admin_requested_api_endpoint_includes_accessory_requests(): void
+    {
+        // The admin "Requested" queue is a polymorphic list of all
+        // checkout requests. It renders from GET /api/v1/requests
+        // (the /hardware/requested Blade page is now a shell that
+        // hydrates from the same endpoint), so this test asserts on
+        // the API row rather than the server-rendered HTML.
+        $accessory = Accessory::factory()->create(['requestable' => true]);
+        $request = CheckoutRequest::factory()->create([
             'requestable_id' => $accessory->id,
             'requestable_type' => Accessory::class,
             'user_id' => User::factory()->create()->id,
         ]);
 
-        // The admin "Requested" queue is a polymorphic list of all checkout
-        // requests, so an accessory request should render there by name.
-        $this->actingAs(User::factory()->viewAssets()->create())
-            ->get(route('assets.requested'))
+        $rows = $this->actingAsForApi(User::factory()->viewAssets()->create())
+            ->getJson(route('api.requests.index'))
             ->assertOk()
-            ->assertViewHas('requestedItems')
-            ->assertSeeText($accessory->name);
+            ->json('rows');
+
+        $row = collect($rows)->firstWhere('id', $request->id);
+        $this->assertNotNull($row);
+        $this->assertSame($accessory->name, $row['requestable']['name']);
+        $this->assertSame('Accessory', $row['requestable']['type']);
     }
 }
