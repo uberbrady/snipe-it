@@ -280,6 +280,44 @@ $(function () {
         $modal.modal('show');
     });
 
+    // Request-item modal (on /account/requestable-assets). Trigger
+    // buttons carry data-request-url + data-item-name + data-current-qty
+    // so the modal can post to the correct endpoint and reset its
+    // qty/date fields between opens. Cancel case (the item is already
+    // requested by this user) POSTs synchronously via a small inline
+    // form on the row instead of routing through this modal, so a
+    // requested row never opens it.
+    $el.on('click', '.request-item', function () {
+        var $btn = $(this);
+        var $modal = $('#requestItemModal');
+        var $form = $('#requestItemForm');
+
+        $form.attr('action', $btn.data('request-url'));
+        $modal.find('.request-item-name').text($btn.data('item-name') || '');
+
+        var currentQty = parseInt($btn.data('current-qty'), 10);
+        $modal.find('#requestItemQuantity').val(!isNaN(currentQty) && currentQty > 0 ? currentQty : 1);
+
+        // Reset dates every open so a window left in the picker by an
+        // earlier click can't leak into the next request.
+        $modal.find('#requestItemStartDate').val('');
+        $modal.find('#requestItemEndDate').val('');
+
+        // Snapshot the tab the requester is on so the controller can
+        // restore it on the post-submit redirect. Walks up to the
+        // enclosing .tab-pane and reads its id; the assets tab uses
+        // an API-backed row-formatter that emits the same
+        // data-active-tab attr on its request button (see
+        // assetRequestActionsFormatter) so this handler works there
+        // too without needing the DOM parent.
+        var explicitTab = $btn.data('active-tab');
+        var $tabPane = $btn.closest('.tab-pane');
+        var activeTab = explicitTab || ($tabPane.length ? $tabPane.attr('id') : '');
+        $modal.find('#requestItemActiveTab').val(activeTab || '');
+
+        $modal.modal('show');
+    });
+
     // confirm delete modal
     $el.on('click', '.delete-asset', function (evnt) {
         var $context = $(this);
