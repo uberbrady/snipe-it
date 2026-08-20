@@ -813,7 +813,7 @@ class SnipeSCIMConfig
                             }
 
                             return [
-                                'value' => $object->manager->id, // TODO - ID's aren't unique like they're supposed to be :/
+                                'value' => (string) $object->manager->id, // TODO - ID's aren't unique like they're supposed to be :/
                                 '$ref' => route('scim.resource', ['resourceType' => 'User', 'resourceObject' => $object->manager->id]),
                                 'displayName' => $object->manager->display_name,
                             ];
