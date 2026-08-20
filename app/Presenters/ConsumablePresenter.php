@@ -179,6 +179,15 @@ class ConsumablePresenter extends Presenter
                 'title' => trans('general.notes'),
                 'formatter' => 'notesFormatter',
             ], [
+                'field' => 'requestable',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => true,
+                'switchable' => true,
+                'visible' => false,
+                'title' => trans('admin/hardware/general.requestable'),
+                'formatter' => 'trueFalseFormatter',
+            ], [
                 'field' => 'created_by',
                 'scope' => 'col',
                 'searchable' => false,
