@@ -11,9 +11,14 @@ class CheckoutRequest extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'quantity'];
+    protected $fillable = ['user_id', 'quantity', 'start_date', 'end_date'];
 
     protected $table = 'checkout_requests';
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
 
     public function user()
     {
