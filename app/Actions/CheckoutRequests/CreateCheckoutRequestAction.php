@@ -30,11 +30,12 @@ class CreateCheckoutRequestAction
             throw new AuthorizationException;
         }
 
-        // Enforce single-active-request-per-user-per-asset. Without this
-        // gate the same POST fires repeatedly, each firing adds an
-        // active CheckoutRequest row AND bumps requests_counter, but a
-        // single cancellation only decrements the counter by 1, so the
-        // counter and admin queue drift apart.
+        // Enforce single-active-request-per-user-per-asset. Without
+        // this gate the same POST fires repeatedly, adding duplicate
+        // pending rows for the same (user, asset) pair. Downstream
+        // aggregators (open_requests count, admin queue, requester
+        // tab) all reason in terms of "one open row per pair" so
+        // duplicates would double-count everywhere.
         if ($asset->isRequestedBy($user)) {
             throw new DuplicateCheckoutRequest;
         }
@@ -55,7 +56,10 @@ class CreateCheckoutRequestAction
 
         // Row write + counter increment share one transaction so a
         // partial failure can't leave the counter incremented without a
-        // matching row (or vice versa).
+        // matching row (or vice versa). Counter is the denormalized
+        // fast-path for open-request reads on the assets list; state
+        // on the row is the source of truth, counter is a materialized
+        // view kept in sync at write time.
         DB::transaction(function () use ($asset) {
             $asset->request();
             $asset->increment('requests_counter', 1);
