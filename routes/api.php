@@ -64,12 +64,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     Route::post('logout', [Api\ProfileController::class, 'logout'])
         ->name('api.logout');
 
-    /**
-     * Admin-scoped list of open checkout requests, mirroring the
-     * /requests Blade page. Ships as the read half of
-     * #15541; approval / fulfilment actions live in the
-     * CheckoutRequest v2 plan and are intentionally out of scope here.
-     */
+    
     Route::get('requests', [Api\CheckoutRequest::class, 'index'])
         ->name('api.requests.index');
 
