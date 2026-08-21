@@ -3,6 +3,7 @@
 namespace Tests\Feature\Requests\Api;
 
 use App\Models\Asset;
+use App\Models\AssetModel;
 use App\Models\CheckoutRequest;
 use App\Models\Company;
 use App\Models\User;
@@ -16,11 +17,15 @@ use Tests\TestCase;
  */
 class IndexCheckoutRequestsTest extends TestCase
 {
-    public function test_requires_view_assets_permission(): void
+    public function test_requires_checkout_permission_on_at_least_one_type(): void
     {
-        // Same gate as the Blade /hardware/requested page. A user with
-        // no view-assets permission (e.g. an ordinary requester) must
-        // not be able to enumerate every other user's request.
+        // The queue is polymorphic - a caller with checkout perm on
+        // any of the five checkoutable types is a legitimate
+        // consumer for that slice of the queue (admins who can
+        // fulfill accessory requests but not asset requests still
+        // get to see the accessory portion). A caller with no
+        // checkout perm on any type (e.g. an ordinary requester)
+        // can't see the queue at all.
         $user = User::factory()->create();
 
         $this->actingAsForApi($user)
@@ -28,9 +33,89 @@ class IndexCheckoutRequestsTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_non_asset_checkout_permission_gets_past_the_endpoint_gate(): void
+    {
+        // A caller who can checkout accessories but not assets must
+        // not be blocked at the endpoint gate. Pre-fix the gate was
+        // Asset-only, so an accessories-only admin got 403 even
+        // though the queue contains accessory rows they can fulfill.
+        $accessoryAdmin = User::factory()->checkoutAccessories()->create();
+
+        $this->actingAsForApi($accessoryAdmin)
+            ->getJson(route('api.requests.index'))
+            ->assertOk();
+    }
+
+    public function test_rows_are_filtered_by_per_type_checkout_permission(): void
+    {
+        // Complements the endpoint gate. A caller with only
+        // checkoutAccessories sees accessory rows in the queue;
+        // asset rows for the same user are filtered out because
+        // they can't fulfill them.
+        $accessoryAdmin = User::factory()->checkoutAccessories()->create();
+        $requester = User::factory()->create();
+        $accessory = \App\Models\Accessory::factory()->create();
+        $asset = Asset::factory()->create();
+
+        $accessoryRequest = CheckoutRequest::factory()->create([
+            'user_id' => $requester->id,
+            'requestable_id' => $accessory->id,
+            'requestable_type' => \App\Models\Accessory::class,
+        ]);
+        $assetRequest = CheckoutRequest::factory()->create([
+            'user_id' => $requester->id,
+            'requestable_id' => $asset->id,
+            'requestable_type' => Asset::class,
+        ]);
+
+        $ids = collect(
+            $this->actingAsForApi($accessoryAdmin)
+                ->getJson(route('api.requests.index'))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+
+        $this->assertContains($accessoryRequest->id, $ids);
+        $this->assertNotContains($assetRequest->id, $ids);
+    }
+
+    public function test_assetmodel_rows_ride_on_asset_checkout_permission(): void
+    {
+        // AssetModel requests fulfill via an asset checkout, so the
+        // permission gate for those rows uses checkoutAssets. A
+        // caller with checkoutAssets should see both Asset and
+        // AssetModel rows; a caller without any Asset permission
+        // (but with, say, checkoutAccessories) should see neither.
+        $assetAdmin = User::factory()->checkoutAssets()->create();
+        $accessoryOnlyAdmin = User::factory()->checkoutAccessories()->create();
+        $requester = User::factory()->create();
+        $model = AssetModel::factory()->create();
+        $modelRequest = CheckoutRequest::factory()->create([
+            'user_id' => $requester->id,
+            'requestable_id' => $model->id,
+            'requestable_type' => AssetModel::class,
+        ]);
+
+        $adminIds = collect(
+            $this->actingAsForApi($assetAdmin)
+                ->getJson(route('api.requests.index'))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+        $this->assertContains($modelRequest->id, $adminIds);
+
+        $accessoryIds = collect(
+            $this->actingAsForApi($accessoryOnlyAdmin)
+                ->getJson(route('api.requests.index'))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+        $this->assertNotContains($modelRequest->id, $accessoryIds);
+    }
+
     public function test_returns_all_open_requests_for_a_privileged_user(): void
     {
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $requesterA = User::factory()->create();
         $requesterB = User::factory()->create();
 
@@ -53,7 +138,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // the v2 state machine ships this test's expectation should
         // expand to also exclude denied / expired / fulfilled rows,
         // but for today only canceled rows are filtered.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
 
         $open = CheckoutRequest::factory()->create();
         $canceled = CheckoutRequest::factory()->create(['canceled_at' => now()]);
@@ -75,7 +160,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // "who is requesting what" UI without a follow-up round trip.
         // The admin /hardware/requested page hydrates itself from these
         // fields, so the shape doubles as internal-UI plumbing.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $requester = User::factory()->create([
             'first_name' => 'Alex',
             'last_name' => 'Requester',
@@ -113,7 +198,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // field via ordersSummaryFormatter. Excluding the current
         // row's requester keeps the column meaning "who ELSE is
         // waiting on this item", so a solo request renders empty.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
 
         $asset = Asset::factory()->requestable()->create();
         $alone = User::factory()->create(['first_name' => 'Alone', 'last_name' => 'Requester']);
@@ -168,7 +253,7 @@ class IndexCheckoutRequestsTest extends TestCase
     {
         // Canceled requests must not show up in the "also requested
         // by" list - the column is for OPEN requests only.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $asset = Asset::factory()->requestable()->create();
 
         $primaryRequester = User::factory()->create(['first_name' => 'Primary', 'last_name' => 'Requester']);
@@ -201,7 +286,11 @@ class IndexCheckoutRequestsTest extends TestCase
         // Fields feed the /requests page columns (quantity, remaining,
         // start_date, end_date, notes). All nullable, so a bare
         // "just get me one whenever" request stays clean.
-        $admin = User::factory()->viewAssets()->create();
+        // Admin needs checkoutConsumables because the fixture
+        // request targets a Consumable and the per-row checkout-
+        // permission filter in the endpoint drops rows for types
+        // the caller can't fulfill.
+        $admin = User::factory()->checkoutConsumables()->create();
         $consumable = \App\Models\Consumable::factory()->create(['qty' => 20, 'requestable' => true]);
         $request = CheckoutRequest::factory()->create([
             'requestable_id' => $consumable->id,
@@ -229,7 +318,7 @@ class IndexCheckoutRequestsTest extends TestCase
 
     public function test_row_leaves_reservation_fields_null_when_unset(): void
     {
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $request = CheckoutRequest::factory()->create();
 
         $row = collect(
@@ -251,7 +340,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // whether the asset is currently checked out. The transformer
         // surfaces that as requestable.assigned + available_actions,
         // so the JS formatter can pick a button without another lookup.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
 
         $availableAsset = Asset::factory()->requestable()->create(['assigned_to' => null]);
         $availableRequest = CheckoutRequest::factory()->create([
@@ -283,7 +372,7 @@ class IndexCheckoutRequestsTest extends TestCase
 
     public function test_user_id_filter_limits_results_to_that_requesters_rows(): void
     {
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $requesterA = User::factory()->create();
         $requesterB = User::factory()->create();
 
@@ -308,7 +397,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // separately below.
         [$companyA, $companyB] = Company::factory()->count(2)->create();
 
-        $adminInA = $companyA->users()->save(User::factory()->viewAssets()->make());
+        $adminInA = $companyA->users()->save(User::factory()->checkoutAssets()->make());
         $requesterInA = $companyA->users()->save(User::factory()->make());
         $requesterInB = $companyB->users()->save(User::factory()->make());
 
@@ -348,7 +437,7 @@ class IndexCheckoutRequestsTest extends TestCase
         // migration still honors it.
         [$companyA] = Company::factory()->count(2)->create();
 
-        $adminInA = $companyA->users()->save(User::factory()->viewAssets()->make());
+        $adminInA = $companyA->users()->save(User::factory()->checkoutAssets()->make());
         $floaterAsset = Asset::factory()->create(['company_id' => null]);
         $floaterRequest = CheckoutRequest::factory()->create([
             'requestable_id' => $floaterAsset->id,
@@ -390,5 +479,63 @@ class IndexCheckoutRequestsTest extends TestCase
 
         $this->assertContains($requestForA->id, $ids);
         $this->assertContains($requestForB->id, $ids);
+    }
+
+    public function test_search_matches_across_requester_and_requestable_and_notes(): void
+    {
+        // bs-table on /requests forwards its search-box value as
+        // ?search=. The endpoint filters in-PHP across the fields
+        // the presenter marks searchable so the search box isn't
+        // silently a no-op. Two request rows share a requestable;
+        // the search should isolate them by requester username,
+        // requestable name, and free-text notes independently.
+        $admin = User::factory()->checkoutAssets()->create();
+        $alice = User::factory()->create(['username' => 'alice-search-fixture']);
+        $bob = User::factory()->create(['username' => 'bob-search-fixture']);
+        $asset = Asset::factory()->create(['name' => 'SearchFixtureLaptop']);
+
+        $requestFromAlice = CheckoutRequest::factory()->create([
+            'user_id' => $alice->id,
+            'requestable_id' => $asset->id,
+            'requestable_type' => Asset::class,
+            'notes' => 'quarterly-offsite',
+        ]);
+        $requestFromBob = CheckoutRequest::factory()->create([
+            'user_id' => $bob->id,
+            'requestable_id' => $asset->id,
+            'requestable_type' => Asset::class,
+            'notes' => 'client-demo',
+        ]);
+
+        // By requester username: only Alice's row surfaces.
+        $ids = collect(
+            $this->actingAsForApi($admin)
+                ->getJson(route('api.requests.index', ['search' => 'alice-search-fixture']))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+        $this->assertContains($requestFromAlice->id, $ids);
+        $this->assertNotContains($requestFromBob->id, $ids);
+
+        // By notes: only Bob's row surfaces.
+        $ids = collect(
+            $this->actingAsForApi($admin)
+                ->getJson(route('api.requests.index', ['search' => 'client-demo']))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+        $this->assertContains($requestFromBob->id, $ids);
+        $this->assertNotContains($requestFromAlice->id, $ids);
+
+        // By requestable name: both rows surface (they target the
+        // same asset).
+        $ids = collect(
+            $this->actingAsForApi($admin)
+                ->getJson(route('api.requests.index', ['search' => 'SearchFixtureLaptop']))
+                ->assertOk()
+                ->json('rows')
+        )->pluck('id')->all();
+        $this->assertContains($requestFromAlice->id, $ids);
+        $this->assertContains($requestFromBob->id, $ids);
     }
 }

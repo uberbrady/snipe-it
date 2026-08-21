@@ -226,7 +226,7 @@ class AccessoryRequestTest extends TestCase
             'user_id' => User::factory()->create()->id,
         ]);
 
-        $rows = $this->actingAsForApi(User::factory()->viewAssets()->create())
+        $rows = $this->actingAsForApi(User::factory()->checkoutAccessories()->create())
             ->getJson(route('api.requests.index'))
             ->assertOk()
             ->json('rows');
