@@ -538,10 +538,10 @@ class AssetPresenter extends Presenter
     public function formattedTagLink()
     {
         if (auth()->user()->can('view', ['\App\Models\Asset', $this])) {
-            return '<a href="' . route('hardware.show', e($this->id)) . '" class="' . (($this->deleted_at != '') ? 'deleted' : '') . '">' . e($this->asset_tag) . '</a>';
+            return '<a href="'.route('hardware.show', e($this->id)).'" class="'.(($this->deleted_at != '') ? 'deleted' : '').'">'.e($this->asset_tag).'</a>';
         }
 
-        return '<span class="' . (($this->deleted_at != '') ? 'deleted' : '') . '">' . e($this->asset_tag) . '</span>';
+        return '<span class="'.(($this->deleted_at != '') ? 'deleted' : '').'">'.e($this->asset_tag).'</span>';
     }
 
     public function modelUrl()
@@ -769,5 +769,132 @@ class AssetPresenter extends Presenter
     public function glyph()
     {
         return '<x-icon type="assets" />';
+    }
+
+    /**
+     * Column layout for the assets tab on /account/requestable. Feeds
+     * <x-table> via api.assets.requestable. Row shape comes from
+     * AssetsTransformer with available_actions.request/cancel
+     * populated so the assetRequestActionsFormatter JS helper can
+     * render the request/cancel button-swap. Custom fields flagged
+     * show_in_requestable_list=1 append as extra columns so admin-
+     * defined per-asset attributes surface here without a code
+     * change.
+     */
+    public static function dataTableLayoutRequestable(): string
+    {
+        $layout = [
+            [
+                'field' => 'image',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => true,
+                'title' => trans('general.image'),
+                'formatter' => 'imageFormatter',
+            ], [
+                'field' => 'asset_tag',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('general.asset_tag'),
+            ], [
+                'field' => 'model',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/hardware/table.asset_model'),
+            ], [
+                'field' => 'model_number',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/models/table.modelnumber'),
+            ], [
+                'field' => 'name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/hardware/form.name'),
+            ], [
+                'field' => 'serial',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/hardware/table.serial'),
+            ], [
+                // Full object (not .name) so the formatter can read
+                // tag_color for the color-square icon prefix.
+                // Not searchable because Asset::$searchableRelations
+                // doesn't include category (Asset's category lives
+                // through the model relation, not a direct join),
+                // so a `search=` query wouldn't hit it.
+                'field' => 'category',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('general.category'),
+                'formatter' => 'categoriesLinkObjFormatter',
+            ], [
+                'field' => 'company.name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.company'),
+            ], [
+                'field' => 'location',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/hardware/table.location'),
+            ], [
+                'field' => 'status',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('admin/hardware/table.status'),
+            ], [
+                'field' => 'expected_checkin',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => true,
+                'title' => trans('admin/hardware/form.expected_checkin'),
+                'formatter' => 'dateDisplayFormatter',
+            ],
+        ];
+
+        // Custom fields flagged for the requestable list. Same
+        // fieldset-must-be-attached-to-a-model guard as the standard
+        // asset layout uses (see dataTableLayout above) so the JS
+        // side doesn't ask for row properties that never travel over
+        // the REST API.
+        $fields = CustomField::whereHas('fieldset', function ($query) {
+            $query->whereHas('models');
+        })->where('field_encrypted', 0)
+            ->where('show_in_requestable_list', 1)
+            ->get();
+
+        foreach ($fields as $field) {
+            $layout[] = [
+                'field' => 'custom_fields.'.$field->db_column,
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => e($field->name),
+            ];
+        }
+
+        $layout[] = [
+            'field' => 'actions',
+            'scope' => 'col',
+            'searchable' => false,
+            'sortable' => false,
+            'switchable' => false,
+            'title' => trans('table.actions'),
+            'formatter' => 'assetRequestActionsFormatter',
+            'printIgnore' => true,
+            'class' => 'hidden-print',
+        ];
+
+        return json_encode($layout);
     }
 }
