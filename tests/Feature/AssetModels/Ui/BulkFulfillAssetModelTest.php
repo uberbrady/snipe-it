@@ -63,7 +63,7 @@ class BulkFulfillAssetModelTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('models.fulfill-requests.store', $model), [
-                'enabled_requests' => [$aliceReq->id, $bobReq->id],
+                'enabled_requests' => [$aliceReq->id => '1', $bobReq->id => '1'],
                 'asset_id' => [
                     $aliceReq->id => $assetA->id,
                     $bobReq->id => $assetB->id,
@@ -106,7 +106,7 @@ class BulkFulfillAssetModelTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('models.fulfill-requests.store', $model), [
-                'enabled_requests' => [$aliceReq->id, $bobReq->id],
+                'enabled_requests' => [$aliceReq->id => '1', $bobReq->id => '1'],
                 'asset_id' => [
                     $aliceReq->id => $asset->id,
                     $bobReq->id => $asset->id,
@@ -144,7 +144,7 @@ class BulkFulfillAssetModelTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('models.fulfill-requests.store', $model), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'asset_id' => [$request->id => $offModelAsset->id],
                 'notes' => [],
             ])

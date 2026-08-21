@@ -168,18 +168,7 @@ class ViewAssetsController extends Controller
             'licenses' => License::RequestableLicenses()->count(),
         ];
 
-        // First tab with a non-zero reachable-count wins the active
-        // class. Null when every tab is empty; the view short-
-        // circuits to an empty-state alert in that case.
-        $activeTab = null;
-        foreach (['assets', 'models', 'accessories', 'consumables', 'components', 'licenses'] as $tab) {
-            if ($counts[$tab] > 0) {
-                $activeTab = $tab;
-                break;
-            }
-        }
-
-        return view('account/requestable-assets', compact('counts', 'activeTab'));
+        return view('account/requestable-assets', compact('counts'));
     }
 
     public function getRequestItem(Request $request, $itemType, $itemId = null, $requestingUser = null): RedirectResponse

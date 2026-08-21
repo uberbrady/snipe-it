@@ -14,24 +14,29 @@
 
 @section('content')
 
-    <x-container class="col-md-8 col-md-offset-2">
+    <x-container class="col-md-6 col-md-offset-3">
         <x-form :route="$formRoute" id="fulfill_multiple_form">
 
             <x-box :header="($item->display_name ?? $item->name).($remaining !== null ? ' ('.(int) $remaining.' '.trans('admin/components/general.remaining').')' : '')">
 
-                @if ($remaining !== null)
-                    <x-form.static :label="trans('admin/components/general.remaining')">
-                        {{ (int) $remaining }}
-                    </x-form.static>
-                @endif
-
-                @if ($item->company ?? null)
-                    <x-form.static :label="trans('general.company')">{!! $item->company->present()->formattedNameLink !!}</x-form.static>
-                @endif
-
-                @if ($item->category ?? null)
-                    <x-form.static :label="trans('general.category')">{!! $item->category->present()->formattedNameLink !!}</x-form.static>
-                @endif
+                {{-- Check-all toggle. Uses the shared
+                     data-toggle="check-all" handler from
+                     snipeit.js which toggles every non-disabled
+                     checkbox in the enclosing form. Rows whose
+                     available-asset set is empty render their
+                     checkbox disabled so this toggle skips them.
+                     Sits in the col-md-3 label slot so it lines
+                     up with each row's checkbox below; wrapped
+                     in a .form-control label so the checkbox +
+                     text stay inline. --}}
+                <div class="form-group">
+                    <div class="col-md-3">
+                        <label class="form-control">
+                            <input type="checkbox" data-toggle="check-all">
+                            {{ trans('general.select_all_none') }}
+                        </label>
+                    </div>
+                </div>
 
                 {{-- $rowContext[$requestId] = ['availableAssets' => Collection, 'emptyMessage' => ?string]
                      Rows whose availableAssets is empty render the

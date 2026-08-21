@@ -995,7 +995,7 @@ class AssetsController extends Controller
         $this->authorize('canCheckoutAtLeastOneItemType');
 
         $ids = $request->input('ids', []);
-        if (!is_array($ids) || empty($ids)) {
+        if (! is_array($ids) || empty($ids)) {
             return redirect()->route('requests.index')
                 ->with('error', trans('general.bulk.delete.nothing_selected', [
                     'object_type' => trans('admin/hardware/general.requested'),
@@ -1012,11 +1012,11 @@ class AssetsController extends Controller
         foreach ($requests as $checkoutRequest) {
             $requestable = $checkoutRequest->itemRequested();
 
-            if (!$requestable) {
+            if (! $requestable) {
                 continue;
             }
 
-            if (!Company::isCurrentUserHasAccess($requestable)) {
+            if (! Company::isCurrentUserHasAccess($requestable)) {
                 continue;
             }
 
@@ -1029,7 +1029,7 @@ class AssetsController extends Controller
             $permissionType = $checkoutRequest->requestable_type === AssetModel::class
                 ? Asset::class
                 : $checkoutRequest->requestable_type;
-            if (!$user->isSuperUser() && !$user->can('checkout', $permissionType)) {
+            if (! $user->isSuperUser() && ! $user->can('checkout', $permissionType)) {
                 continue;
             }
 

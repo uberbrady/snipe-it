@@ -64,7 +64,6 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
     Route::post('logout', [Api\ProfileController::class, 'logout'])
         ->name('api.logout');
 
-    
     Route::get('requests', [Api\CheckoutRequest::class, 'index'])
         ->name('api.requests.index');
 

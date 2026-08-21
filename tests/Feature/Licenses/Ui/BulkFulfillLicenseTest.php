@@ -74,7 +74,7 @@ class BulkFulfillLicenseTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('licenses.fulfill-requests.store', $license), [
-                'enabled_requests' => [$aliceReq->id, $bobReq->id],
+                'enabled_requests' => [$aliceReq->id => '1', $bobReq->id => '1'],
                 'user_id' => [
                     $aliceReq->id => $alice->id,
                     $bobReq->id => $bob->id,
@@ -115,7 +115,7 @@ class BulkFulfillLicenseTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('licenses.fulfill-requests.store', $license), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'user_id' => [$request->id => $requester->id],
                 'qty' => [$request->id => 99],
                 'notes' => [],

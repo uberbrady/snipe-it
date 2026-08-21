@@ -89,7 +89,7 @@ class BulkFulfillComponentTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('components.fulfill-requests.store', $component), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'asset_id' => [$request->id => $targetAsset->id],
                 'qty' => [$request->id => 2],
                 'notes' => [],
@@ -120,7 +120,7 @@ class BulkFulfillComponentTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('components.fulfill-requests.store', $component), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'asset_id' => [$request->id => $someoneElsesAsset->id],
                 'qty' => [$request->id => 1],
                 'notes' => [],
@@ -146,7 +146,7 @@ class BulkFulfillComponentTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('components.fulfill-requests.store', $component), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'asset_id' => [$request->id => $targetAsset->id],
                 'qty' => [$request->id => 2],
                 'notes' => [],

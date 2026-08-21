@@ -249,7 +249,10 @@ class AccessoryCheckoutController extends Controller
     {
         $this->authorize('checkout', $accessory);
 
-        $enabledIds = collect((array) $request->input('enabled_requests', []))
+        // Checkboxes post as enabled_requests[<request_id>]="1",
+        // keyed by request id (unchecked boxes don't post at all).
+        // Grab the array keys as the ticked-id list.
+        $enabledIds = collect(array_keys((array) $request->input('enabled_requests', [])))
             ->map(fn ($id) => (int) $id)
             ->filter()
             ->unique()

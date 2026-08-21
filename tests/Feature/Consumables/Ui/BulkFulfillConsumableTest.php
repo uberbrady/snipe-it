@@ -53,7 +53,7 @@ class BulkFulfillConsumableTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('consumables.fulfill-requests.store', $consumable), [
-                'enabled_requests' => [$aliceRequest->id],
+                'enabled_requests' => [$aliceRequest->id => '1'],
                 'user_id' => [$aliceRequest->id => $alice->id],
                 'qty' => [$aliceRequest->id => 2],
                 'notes' => [$aliceRequest->id => ''],
@@ -79,7 +79,7 @@ class BulkFulfillConsumableTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('consumables.fulfill-requests.store', $consumable), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'user_id' => [$request->id => $requester->id],
                 'qty' => [$request->id => 2],
                 'notes' => [$request->id => ''],

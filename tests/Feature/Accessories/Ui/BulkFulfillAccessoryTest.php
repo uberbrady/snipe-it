@@ -92,7 +92,7 @@ class BulkFulfillAccessoryTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('accessories.fulfill-requests.store', $accessory), [
-                'enabled_requests' => [$aliceRequest->id],
+                'enabled_requests' => [$aliceRequest->id => '1'],
                 'user_id' => [$aliceRequest->id => $alice->id],
                 'qty' => [$aliceRequest->id => 2],
                 'notes' => [$aliceRequest->id => ''],
@@ -121,7 +121,7 @@ class BulkFulfillAccessoryTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('accessories.fulfill-requests.store', $accessory), [
-                'enabled_requests' => [$request->id],
+                'enabled_requests' => [$request->id => '1'],
                 'user_id' => [$request->id => $requester->id],
                 'qty' => [$request->id => 1],
                 'notes' => [$request->id => ''],
@@ -162,7 +162,10 @@ class BulkFulfillAccessoryTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('accessories.fulfill-requests.store', $accessory), [
-                'enabled_requests' => [$canceledRequest->id, $stillPending->id],
+                'enabled_requests' => [
+                    $canceledRequest->id => '1',
+                    $stillPending->id => '1',
+                ],
                 'user_id' => [
                     $canceledRequest->id => $alice->id,
                     $stillPending->id => $bob->id,
