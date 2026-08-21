@@ -49,12 +49,12 @@ class CheckoutRequest extends Controller
     {
         // Endpoint-level gate: allow through when the caller can
         // checkout at least one of the five checkoutable types.
-        // The viewAnyCheckoutRequests gate (see AuthServiceProvider)
+        // The canCheckoutAtLeastOneItemType gate (see AuthServiceProvider)
         // wraps that OR - reused here + on the nav link in
         // layouts/default.blade.php so both surfaces answer the
         // "should this user see /requests at all?" question
         // identically.
-        $this->authorize('viewAnyCheckoutRequests');
+        $this->authorize('canCheckoutAtLeastOneItemType');
 
         $user = auth()->user();
 
