@@ -166,6 +166,12 @@ class LicenseImporter extends ItemImporter
         $this->setItemFromCsvIfPresent($row, 'reassignable');
         $this->setItemFromCsvIfPresent($row, 'min_amt');
         $this->setItemFromCsvIfPresent($row, 'seats');
+        // Persist the requestable flag on both create + update, matching
+        // the accessory / consumable / component importers now that
+        // License is a first-class Requestable. License's
+        // setRequestableAttribute normalizes "0"/"1"/"true"/"false"/""
+        // so any of the common CSV shapes lands correctly.
+        $this->setItemFromCsvIfPresent($row, 'requestable');
 
         // Dates need parseOrNullDate after the raw value is in $this->item.
         // Empty value stays null (which clears the DB field on update).
