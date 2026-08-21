@@ -43,6 +43,18 @@ class RequestAssetCancelation extends Notification
             $this->expected_checkin = Helper::getFormattedDateObject($this->item->expected_checkin, 'date',
                 false);
         }
+
+        // Reservation window (if the canceled request carried one).
+        // Callers that read the dates off the CheckoutRequest row
+        // before triggering the cancel can pass them through so the
+        // notification tells the admin exactly which reservation was
+        // scrapped.
+        $this->start_date = ! empty($params['start_date'])
+            ? Helper::getFormattedDateObject($params['start_date'], 'date', false)
+            : '';
+        $this->end_date = ! empty($params['end_date'])
+            ? Helper::getFormattedDateObject($params['end_date'], 'date', false)
+            : '';
     }
 
     /**
@@ -82,6 +94,12 @@ class RequestAssetCancelation extends Notification
         if (($this->expected_checkin) && ($this->expected_checkin != '')) {
             $fields['Expected Checkin'] = $this->expected_checkin;
         }
+        if ($this->start_date) {
+            $fields['Start Date'] = $this->start_date;
+        }
+        if ($this->end_date) {
+            $fields['End Date'] = $this->end_date;
+        }
 
         return (new SlackMessage)
             ->content(trans('mail.a_user_canceled'))
@@ -119,6 +137,8 @@ class RequestAssetCancelation extends Notification
                 'qty' => $this->item_quantity,
                 'last_checkout' => $this->last_checkout,
                 'expected_checkin' => $this->expected_checkin,
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
                 'intro_text' => trans('mail.a_user_canceled'),
             ])
             ->subject('⚠️ '.trans('general.request_canceled'))
