@@ -191,6 +191,7 @@ return [
         'no_target_assets_for_user' => ':user has no assets to install into.',
         'no_available_units' => 'No available units of this model to hand out.',
         'bulk_summary' => 'Fulfilled :fulfilled of :total requests.',
+        'bulk_fulfill_notification_intro' => 'The following will apply to each ticked request when fulfilled:',
     ],
 
 ];

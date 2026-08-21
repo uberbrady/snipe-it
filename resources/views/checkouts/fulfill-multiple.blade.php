@@ -31,6 +31,8 @@
                     </div>
                 </div>
 
+                <x-checkout.notification-callout :item="$item" />
+
                 {{-- One row per pending CheckoutRequest, ordered
                      oldest-first (waiting-list). Admin ticks the
                      ones to fulfill; rows left unchecked stay

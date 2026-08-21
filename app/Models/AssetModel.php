@@ -238,6 +238,11 @@ class AssetModel extends SnipeModel
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    public function requireAcceptance(): bool
+    {
+        return (bool) ($this->category?->require_acceptance ?? false);
+    }
+
     /**
      * Establishes the model -> depreciation relationship
      *

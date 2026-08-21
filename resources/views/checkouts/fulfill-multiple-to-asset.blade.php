@@ -38,6 +38,8 @@
                     </div>
                 </div>
 
+                <x-checkout.notification-callout :item="$item" />
+
                 {{-- $rowContext[$requestId] = ['availableAssets' => Collection, 'emptyMessage' => ?string]
                      Rows whose availableAssets is empty render the
                      row disabled (checkbox unavailable) with the
