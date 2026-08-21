@@ -14,57 +14,64 @@
 
 @section('content')
 
-<x-container class="col-md-12">
-    <x-form :route="$formRoute" id="fulfill_multiple_form">
+    <x-container class="col-md-8 col-md-offset-2">
+        <x-form :route="$formRoute" id="fulfill_multiple_form">
 
-        <x-box header="{{ $item->display_name ?? $item->name }}">
+            <x-box :header="($item->display_name ?? $item->name).($remaining !== null ? ' ('.(int) $remaining.' '.trans('admin/components/general.remaining').')' : '')">
 
-            @if ($remaining !== null)
-                <x-form.static :label="trans('admin/components/general.remaining')">
-                    {{ (int) $remaining }}
-                </x-form.static>
-            @endif
+                @if ($remaining !== null)
+                    <x-form.static :label="trans('admin/components/general.remaining')">
+                        {{ (int) $remaining }}
+                    </x-form.static>
+                @endif
 
-            @if ($item->company ?? null)
-                <x-form.static :label="trans('general.company')">{!! $item->company->present()->formattedNameLink !!}</x-form.static>
-            @endif
+                @if ($item->company ?? null)
+                    <x-form.static :label="trans('general.company')">{!! $item->company->present()->formattedNameLink !!}</x-form.static>
+                @endif
 
-            @if ($item->category ?? null)
-                <x-form.static :label="trans('general.category')">{!! $item->category->present()->formattedNameLink !!}</x-form.static>
-            @endif
+                @if ($item->category ?? null)
+                    <x-form.static :label="trans('general.category')">{!! $item->category->present()->formattedNameLink !!}</x-form.static>
+                @endif
 
-            {{-- $rowContext[$requestId] = ['availableAssets' => Collection, 'emptyMessage' => ?string]
-                 Rows whose availableAssets is empty render the
-                 row disabled (checkbox unavailable) with the
-                 empty message so the admin sees WHY that row
-                 can't be fulfilled from this screen. --}}
-            @foreach ($pendingRequests as $request)
-                @php ($context = $rowContext[$request->id] ?? ['availableAssets' => collect(), 'emptyMessage' => null])
-                <x-checkout.asset-picker-row
-                    :request="$request"
-                    :requester="$request->user"
-                    :available-assets="$context['availableAssets']"
-                    :empty-message="$context['emptyMessage']"
-                    :show-qty="! ($hideQty ?? false)"
-                    :max-qty="$remaining"
-                />
-            @endforeach
+                {{-- $rowContext[$requestId] = ['availableAssets' => Collection, 'emptyMessage' => ?string]
+                     Rows whose availableAssets is empty render the
+                     row disabled (checkbox unavailable) with the
+                     empty message so the admin sees WHY that row
+                     can't be fulfilled from this screen. --}}
+                @foreach ($pendingRequests as $request)
+                    @php ($context = $rowContext[$request->id] ?? ['availableAssets' => collect(), 'defaultAssetId' => null, 'emptyMessage' => null])
+                    <x-checkout.asset-picker-row
+                        :request="$request"
+                        :requester="$request->user"
+                        :available-assets="$context['availableAssets']"
+                        :default-asset-id="$context['defaultAssetId'] ?? null"
+                        :empty-message="$context['emptyMessage']"
+                        :show-qty="! ($hideQty ?? false)"
+                        :max-qty="$remaining"
+                    />
+                @endforeach
 
-            <x-slot:customfooter>
-                <div class="col-md-9 col-md-offset-3">
-                    <a href="{{ route('requests.index') }}" class="btn btn-default">
-                        {{ trans('button.cancel') }}
-                    </a>
-                    <button type="submit" class="btn btn-primary" id="submit_button">
-                        <x-icon type="checkmark" />
-                        {{ trans('admin/hardware/general.fulfill_multiple') }}
-                    </button>
-                </div>
-            </x-slot:customfooter>
+                <x-slot:customfooter>
+                    <div class="box-footer">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a class="btn btn-link" href="{{ route('requests.index') }}">
+                                    {{ trans('general.cancel') }}
+                                </a>
+                            </div>
+                            <div class="col-md-9 text-right">
+                                <x-input.button class="btn-success" id="submit_button">
+                                    <x-icon type="checkmark" class="icon-white" />
+                                    {{ trans('general.checkout') }}
+                                </x-input.button>
+                            </div>
+                        </div>
+                    </div>
+                </x-slot:customfooter>
 
-        </x-box>
+            </x-box>
 
-    </x-form>
-</x-container>
+        </x-form>
+    </x-container>
 
 @stop
