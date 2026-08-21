@@ -394,7 +394,7 @@ class AssetModelsController extends Controller
     {
         $query = AssetModel::with('category', 'manufacturer', 'requests')
             ->withCount('availableAssets as remaining')
-            ->RequestableModels();
+            ->Requestable();
 
         if ($request->filled('search')) {
             $query->TextSearch($request->input('search'));

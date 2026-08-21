@@ -91,7 +91,7 @@ class CheckoutRequestsTransformer
             ] : null,
             'requestable' => $item ? self::transformRequestable($item, $request) : null,
             'pending_requesters' => self::pendingRequestersFor($request, $requesterMap),
-            'available_actions' => self::availableActions($item, $request),
+            'available_actions' => self::availableActions($item),
         ];
     }
 
@@ -231,12 +231,6 @@ class CheckoutRequestsTransformer
         } else {
             $remainingCount = null;
         }
-        // Replenish gate below still uses the "tracks a qty column"
-        // set (accessory / consumable / component) because License
-        // + AssetModel don't have an adjust-quantity modal.
-        $tracksQty = $item instanceof Accessory
-            || $item instanceof Consumable
-            || $item instanceof Component;
 
         // Font Awesome class the JS name-formatter prefixes so the
         // admin queue reads at a glance which polymorphic type each
@@ -365,7 +359,7 @@ class CheckoutRequestsTransformer
     /**
      * @return array<string, mixed>
      */
-    private static function availableActions($item, CheckoutRequest $request): array
+    private static function availableActions($item): array
     {
         $cancelable = $item !== null;
 

@@ -58,6 +58,23 @@ trait Requestable
         return $this->requests()->where('state', CheckoutRequestState::Pending->value);
     }
 
+    /**
+     * True when this specific row passes the model's own scopeRequestable
+     * filter, which is the single source of truth for "an admin can
+     * receive a request against this item". Delegating to the scope
+     * keeps per-type semantics intact - Asset layers on a deployable-
+     * status check + explicit FMCS on top of the boolean flag, and the
+     * other five types just check the flag. Callers should use this
+     * instead of hand-rolling `Model::requestable()->find($id)`.
+     */
+    public function isFlaggedRequestable(): bool
+    {
+        return static::query()
+            ->requestable()
+            ->whereKey($this->getKey())
+            ->exists();
+    }
+
     public function isRequestedBy(User $user)
     {
         // Fresh query rather than filtering the loaded ->requests

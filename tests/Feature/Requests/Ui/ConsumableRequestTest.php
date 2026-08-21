@@ -111,7 +111,7 @@ class ConsumableRequestTest extends TestCase
     {
         // A user in company A must not be able to request a consumable
         // that belongs to company B. The requestable-flag gate loads
-        // through Consumable::RequestableConsumables which respects
+        // through Consumable::Requestable which respects
         // the CompanyableTrait global scope, so the item never
         // resolves for the cross-company caller and the request is
         // refused with the standard "not requestable" error.

@@ -82,6 +82,7 @@ class LicensesTransformer
         $userHasOpenRequest = auth()->check() && $license->relationLoaded('requests') && $license->requests->contains(
             fn ($request) => $request->user_id === auth()->id() && $request->canceled_at === null
         );
+        $permissions_array = [];
         $permissions_array['assigned_to_self'] = $userHasOpenRequest;
 
         $permissions_array['available_actions'] = [

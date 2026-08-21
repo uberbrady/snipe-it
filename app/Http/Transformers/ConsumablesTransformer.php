@@ -83,6 +83,7 @@ class ConsumablesTransformer
             'updated_at' => Helper::getFormattedDateObject($consumable->updated_at, 'datetime'),
         ];
 
+        $permissions_array = [];
         $permissions_array['user_can_checkout'] = false;
 
         if ($consumable->numRemaining() > 0) {

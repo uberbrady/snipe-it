@@ -373,7 +373,7 @@ class AssetModel extends SnipeModel
      *
      * @version v3.5
      */
-    public function scopeRequestableModels($query)
+    public function scopeRequestable($query)
     {
         return $query->where('requestable', '1');
     }

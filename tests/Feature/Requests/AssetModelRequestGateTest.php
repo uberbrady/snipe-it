@@ -15,7 +15,7 @@ use Tests\TestCase;
  * record for a model whose admin had explicitly set
  * `requestable = 0`. Fix extends the gate at
  * ViewAssetsController::getRequestItem to also validate
- * AssetModel::RequestableModels().
+ * AssetModel::Requestable().
  *
  * Also covers the adjacent hardening: the route parameter {itemType}
  * is now constrained to `asset|asset_model|accessory` at the route

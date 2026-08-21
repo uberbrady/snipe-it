@@ -153,7 +153,7 @@ class Consumable extends SnipeModel
      * applies without any additional wrapping here (matches the
      * Accessory scope's shape and rationale).
      */
-    public function scopeRequestableConsumables($query)
+    public function scopeRequestable($query)
     {
         return $query->where('consumables.requestable', '1');
     }

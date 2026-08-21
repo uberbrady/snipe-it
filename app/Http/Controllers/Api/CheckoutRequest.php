@@ -191,7 +191,7 @@ class CheckoutRequest extends Controller
 
     public function storeConsumable(Consumable $consumable): JsonResponse
     {
-        return $this->createRequestFor($consumable, Consumable::RequestableConsumables()->find($consumable->id));
+        return $this->createRequestFor($consumable);
     }
 
     public function destroyConsumable(Consumable $consumable): JsonResponse
@@ -201,7 +201,7 @@ class CheckoutRequest extends Controller
 
     public function storeComponent(Component $component): JsonResponse
     {
-        return $this->createRequestFor($component, Component::RequestableComponents()->find($component->id));
+        return $this->createRequestFor($component);
     }
 
     public function destroyComponent(Component $component): JsonResponse
@@ -211,7 +211,7 @@ class CheckoutRequest extends Controller
 
     public function storeLicense(License $license): JsonResponse
     {
-        return $this->createRequestFor($license, License::RequestableLicenses()->find($license->id));
+        return $this->createRequestFor($license);
     }
 
     public function destroyLicense(License $license): JsonResponse
@@ -220,24 +220,18 @@ class CheckoutRequest extends Controller
     }
 
     /**
-     * Shared create-request flow for Consumable + Component. Kept
-     * separate from the Asset store() path so the Asset flow can
+     * Shared create-request flow for Consumable + Component + License.
+     * Kept separate from the Asset store() path so the Asset flow can
      * continue to use CreateCheckoutRequestAction (which owns the
-     * assets-only requests_counter denormalization). Consumables and
-     * Components have no counter column, so the trait's request()
-     * method is sufficient here.
-     *
-     * The $requestable / $requestableInScope split is deliberate:
-     * $requestable is the row we authorize + operate on, while
-     * $requestableInScope is the same row re-fetched through the
-     * per-model Requestable*() scope. That second lookup enforces
-     * BOTH the requestable flag AND (via the CompanyableTrait global
-     * scope) the caller's FMCS + location reach. Missing = 403-ish.
+     * assets-only requests_counter denormalization). The trait's
+     * isFlaggedRequestable() check enforces BOTH the requestable flag
+     * AND (via the CompanyableTrait global scope) the caller's FMCS +
+     * location reach.
      */
-    private function createRequestFor($requestable, $requestableInScope): JsonResponse
+    private function createRequestFor($requestable): JsonResponse
     {
         try {
-            if (! $requestable || ! $requestableInScope) {
+            if (! $requestable || ! $requestable->isFlaggedRequestable()) {
                 return response()->json(
                     Helper::formatStandardApiResponse('error', null, trans('admin/hardware/message.requests.error')),
                     403,

@@ -99,6 +99,7 @@ class AccessoriesTransformer
             fn ($request) => $request->user_id === auth()->id() && $request->canceled_at === null
         );
 
+        $permissions_array = [];
         $permissions_array['assigned_to_self'] = $userHasOpenRequest;
 
         $permissions_array['available_actions'] = [
@@ -110,7 +111,7 @@ class AccessoriesTransformer
             'clone' => Gate::allows('create', Accessory::class),
             // Request / cancel: if the requestable flag is off the row
             // never surfaces on /account/requestable anyway (scoped out
-            // by RequestableAccessories()), but honor it here too for
+            // by Requestable()), but honor it here too for
             // any consumer hitting the standard index endpoint.
             'request' => (bool) $accessory->requestable && ! $userHasOpenRequest,
             'cancel' => (bool) $accessory->requestable && $userHasOpenRequest,

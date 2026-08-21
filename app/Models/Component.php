@@ -175,7 +175,7 @@ class Component extends SnipeModel
      * applies without any additional wrapping here (matches the
      * Accessory scope's shape and rationale).
      */
-    public function scopeRequestableComponents($query)
+    public function scopeRequestable($query)
     {
         return $query->where('components.requestable', '1');
     }

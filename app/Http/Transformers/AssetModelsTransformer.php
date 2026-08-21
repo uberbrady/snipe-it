@@ -111,7 +111,7 @@ class AssetModelsTransformer
             'restore' => (Gate::allows('create', AssetModel::class) && ($assetmodel->deleted_at != '')),
             // Request / cancel: if the requestable flag is off the row
             // never surfaces on /account/requestable anyway (scoped
-            // out by RequestableModels()), but honor it here too for
+            // out by Requestable()), but honor it here too for
             // any consumer hitting the standard index endpoint.
             'request' => (bool) $assetmodel->requestable && ! $userHasOpenRequest,
             'cancel' => (bool) $assetmodel->requestable && $userHasOpenRequest,

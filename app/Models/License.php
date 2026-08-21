@@ -207,7 +207,7 @@ class License extends Depreciable
      * applies without any additional wrapping here (matches the
      * Accessory / Consumable / Component scope shape).
      */
-    public function scopeRequestableLicenses($query)
+    public function scopeRequestable($query)
     {
         return $query->where('licenses.requestable', '1');
     }

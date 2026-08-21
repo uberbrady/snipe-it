@@ -553,7 +553,7 @@ class ComponentsController extends Controller
     {
         $query = Component::with('category', 'location', 'company', 'manufacturer', 'requests')
             ->withCount('assets as components_assets_count')
-            ->RequestableComponents();
+            ->Requestable();
 
         if ($request->filled('search')) {
             $query->TextSearch($request->input('search'));

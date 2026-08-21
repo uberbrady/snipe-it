@@ -508,7 +508,7 @@ class ConsumablesController extends Controller
     {
         $query = Consumable::with('category', 'location', 'company', 'manufacturer', 'requests')
             ->withCount('users as consumables_users_count')
-            ->RequestableConsumables();
+            ->Requestable();
 
         if ($request->filled('search')) {
             $query->TextSearch($request->input('search'));

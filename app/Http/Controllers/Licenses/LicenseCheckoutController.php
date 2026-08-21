@@ -439,7 +439,6 @@ class LicenseCheckoutController extends Controller
                 ->with('error', trans('admin/hardware/message.requests.no_selection'));
         }
 
-        $qtyInputs = (array) $request->input('qty', []);
         $userInputs = (array) $request->input('user_id', []);
         $noteInputs = (array) $request->input('notes', []);
 

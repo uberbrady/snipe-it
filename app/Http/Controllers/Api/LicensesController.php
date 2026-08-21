@@ -508,7 +508,7 @@ class LicensesController extends Controller
     public function requestable(Request $request): array
     {
         $query = License::with('category', 'company', 'manufacturer', 'requests')
-            ->RequestableLicenses();
+            ->Requestable();
 
         if ($request->filled('search')) {
             $query->TextSearch($request->input('search'));

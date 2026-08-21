@@ -23,7 +23,7 @@ class CreateCheckoutRequestAction
      */
     public static function run(Asset $asset, User $user): string
     {
-        if (is_null(Asset::RequestableAssets()->find($asset->id))) {
+        if (! $asset->isFlaggedRequestable()) {
             throw new AssetNotRequestable($asset);
         }
         if (! Company::isCurrentUserHasAccess($asset)) {

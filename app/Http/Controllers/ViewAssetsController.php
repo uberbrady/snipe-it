@@ -160,12 +160,12 @@ class ViewAssetsController extends Controller
         // filters, so the counts here stay consistent with what the
         // AJAX call will render.
         $counts = [
-            'assets' => Asset::Hardware()->RequestableAssets()->count(),
-            'models' => AssetModel::RequestableModels()->count(),
-            'accessories' => Accessory::RequestableAccessories()->count(),
-            'consumables' => Consumable::RequestableConsumables()->count(),
-            'components' => Component::RequestableComponents()->count(),
-            'licenses' => License::RequestableLicenses()->count(),
+            'assets' => Asset::Hardware()->Requestable()->count(),
+            'models' => AssetModel::Requestable()->count(),
+            'accessories' => Accessory::Requestable()->count(),
+            'consumables' => Consumable::Requestable()->count(),
+            'components' => Component::Requestable()->count(),
+            'licenses' => License::Requestable()->count(),
         ];
 
         return view('account/requestable-assets', compact('counts'));
@@ -182,8 +182,6 @@ class ViewAssetsController extends Controller
         // the auth id.
         $cancel_by_admin = $requestingUser !== null
             && (int) $requestingUser !== (int) auth()->id();
-        $data = [];
-        $item = null;
         $fullItemType = 'App\\Models\\'.studly_case($itemType);
 
         if ($itemType == 'asset_model') {
@@ -202,26 +200,67 @@ class ViewAssetsController extends Controller
         }
 
         $user = auth()->user();
+        $is_admin = $user->isSuperUser() || $user->isAdmin();
+
+        if ($cancel_by_admin && ! $is_admin) {
+            return redirect()->back()->with('error', trans('general.insufficient_permissions'));
+        }
+
+        $item_request = $item->isRequestedBy($user);
+
+        if ($item_request || ($is_admin && $cancel_by_admin)) {
+            return $this->handleCancelRequest(
+                $request,
+                $item,
+                $fullItemType,
+                $itemType,
+                $item_request ?: null,
+                $is_admin && $cancel_by_admin ? $requestingUser : null,
+            );
+        }
+
+        return $this->handleSubmitRequest($request, $item, $fullItemType, $itemType);
+    }
+
+    /**
+     * Assemble the shared notification/actionlog payload used by both
+     * the submit and cancel paths. Kept as a helper so the request
+     * dispatcher can stay focused on routing.
+     *
+     * @return array{0: Actionlog, 1: array<string, mixed>}
+     */
+    private function buildRequestContext(Request $request, $item, string $fullItemType, string $itemType): array
+    {
+        $user = auth()->user();
 
         $logaction = new Actionlog;
-        $logaction->item_id = $data['asset_id'] = $item->id;
+        $logaction->item_id = $item->id;
         $logaction->item_type = $fullItemType;
-        $logaction->created_at = $data['requested_date'] = date('Y-m-d H:i:s');
-
+        $logaction->created_at = date('Y-m-d H:i:s');
         if ($user->location_id) {
             $logaction->location_id = $user->location_id;
         }
-
-        $logaction->target_id = $data['user_id'] = auth()->id();
+        $logaction->target_id = auth()->id();
         $logaction->target_type = User::class;
 
-        $data['item_quantity'] = $request->has('request-quantity') ? e($request->input('request-quantity')) : 1;
-        $data['requested_by'] = $user->display_name;
-        $data['item'] = $item;
-        $data['item_type'] = $itemType;
-        $data['target'] = auth()->user();
+        $data = [
+            'asset_id' => $item->id,
+            'requested_date' => $logaction->created_at,
+            'user_id' => auth()->id(),
+            'item_quantity' => $request->has('request-quantity') ? e($request->input('request-quantity')) : 1,
+            'requested_by' => $user->display_name,
+            'item' => $item,
+            'item_type' => $itemType,
+            'target' => $user,
+            'item_url' => $this->resolveItemUrl($fullItemType, $item, $itemType),
+        ];
 
-        $data['item_url'] = match ($fullItemType) {
+        return [$logaction, $data];
+    }
+
+    private function resolveItemUrl(string $fullItemType, $item, string $itemType): string
+    {
+        return match ($fullItemType) {
             Asset::class => route('hardware.show', $item->id),
             AssetModel::class => route('view/model', $item->id),
             Accessory::class => route('accessories.show', $item->id),
@@ -230,121 +269,106 @@ class ViewAssetsController extends Controller
             License::class => route('licenses.show', $item->id),
             default => route("view/{$itemType}", $item->id),
         };
+    }
+
+    /**
+     * Prefer an explicit active_tab hint over a plain back() so the
+     * requester lands on the tab they submitted from. Falls back to
+     * back() for callers that don't carry the hint (e.g. admin
+     * cancel from /requests).
+     */
+    private function redirectAfterRequestAction(Request $request, string $successKey): RedirectResponse
+    {
+        if ($tab = $this->safeActiveTab($request->input('active_tab'))) {
+            return redirect()->route('account.requestable')
+                ->withFragment($tab)
+                ->with('success', trans($successKey));
+        }
+
+        return redirect()->back()->with('success', trans($successKey));
+    }
+
+    private function handleCancelRequest(Request $request, $item, string $fullItemType, string $itemType, $item_request, $requestingUser): RedirectResponse
+    {
+        [$logaction, $data] = $this->buildRequestContext($request, $item, $fullItemType, $itemType);
+
+        $item->cancelRequest($requestingUser);
+        $data['item_quantity'] = $item_request ? $item_request->quantity : 1;
+
+        if ($item_request) {
+            $data['start_date'] = $item_request->start_date;
+            $data['end_date'] = $item_request->end_date;
+            $data['note'] = $item_request->notes;
+        }
+
+        $logaction->logaction(ActionType::RequestCanceled);
 
         $settings = Setting::getSettings();
-
-        $is_admin = $user->isSuperUser() || $user->isAdmin();
-
-        if ($cancel_by_admin && ! $is_admin) {
-            return redirect()->back()->with('error', trans('general.insufficient_permissions'));
+        if (($settings->alert_email != '') && ($settings->alerts_enabled == '1') && (! config('app.lock_passwords'))) {
+            try {
+                $settings->notify((new RequestAssetCancelation($data))->locale($settings->locale));
+            } catch (Exception $e) {
+                Log::warning('Could not send request cancellation notification: '.$e->getMessage());
+            }
         }
 
-        if (($item_request = $item->isRequestedBy($user)) || ($is_admin && $cancel_by_admin)) {
-            $item->cancelRequest($is_admin && $cancel_by_admin ? $requestingUser : null);
-            $data['item_quantity'] = ($item_request) ? $item_request->quantity : 1;
-            // Surface the reservation window + notes (if any) on the
-            // cancel notification so the admin knows exactly which
-            // slot was scrapped and what the requester was originally
-            // asking for. Only the row we found survives cancellation
-            // long enough for us to read here (cancelRequest above
-            // sets canceled_at but leaves the other fields intact).
-            if ($item_request) {
-                $data['start_date'] = $item_request->start_date;
-                $data['end_date'] = $item_request->end_date;
-                $data['note'] = $item_request->notes;
-            }
-            $logaction->logaction(ActionType::RequestCanceled);
+        return $this->redirectAfterRequestAction($request, 'admin/hardware/message.requests.canceled');
+    }
 
-            if (($settings->alert_email != '') && ($settings->alerts_enabled == '1') && (! config('app.lock_passwords'))) {
-                try {
-                    $settings->notify((new RequestAssetCancelation($data))->locale($settings->locale));
-                } catch (Exception $e) {
-                    Log::warning('Could not send request cancellation notification: '.$e->getMessage());
-                }
-            }
-
-            // Prefer an explicit active_tab hint over a plain back()
-            // so the requester lands on the tab they submitted from;
-            // fall back to back() for callers that don't carry the
-            // hint (e.g. admin cancel from /requests).
-            if ($tab = $this->safeActiveTab($request->input('active_tab'))) {
-                return redirect()->route('account.requestable')
-                    ->withFragment($tab)
-                    ->with('success', trans('admin/hardware/message.requests.canceled'));
-            }
-
-            return redirect()->back()->with('success', trans('admin/hardware/message.requests.canceled'));
-        } else {
-            // AssetModel was previously missing from this gate, so a
-            // POST to /account/request/asset_model/{id} would bypass
-            // the model's `requestable` flag entirely and still
-            // create a request record. Consumable and Component both
-            // gained the Requestable trait alongside a per-row
-            // `requestable` flag; extending the gate here keeps the
-            // "must be flagged requestable" rule symmetric across
-            // every request-eligible type. The Requestable*() scopes
-            // rely on the model's global CompanyableScope, so FMCS
-            // (and location-scoping when enabled) apply automatically.
-            if (($fullItemType === Asset::class && is_null(Asset::RequestableAssets()->find($item->id)))
-                || ($fullItemType === Accessory::class && is_null(Accessory::RequestableAccessories()->find($item->id)))
-                || ($fullItemType === AssetModel::class && is_null(AssetModel::RequestableModels()->find($item->id)))
-                || ($fullItemType === Consumable::class && is_null(Consumable::RequestableConsumables()->find($item->id)))
-                || ($fullItemType === Component::class && is_null(Component::RequestableComponents()->find($item->id)))
-                || ($fullItemType === License::class && is_null(License::RequestableLicenses()->find($item->id)))) {
-                return redirect()->back()->with('error', trans('admin/hardware/message.requests.error'));
-            }
-
-            // Optional reservation window. Empty strings from the
-            // request-modal date pickers coerce to null so an "I need
-            // this whenever" request doesn't accidentally persist
-            // today's date as the start. Uses Laravel's built-in
-            // validation strings so a bad range gets the framework's
-            // localized "after or equal to" message rather than a
-            // hand-rolled key we'd have to translate ourselves.
-            $reservationValidator = validator($request->only(['start_date', 'end_date']), [
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-            ]);
-            if ($reservationValidator->fails()) {
-                return redirect()->back()->withInput()->withErrors($reservationValidator);
-            }
-            $startDate = $request->filled('start_date') ? $request->input('start_date') : null;
-            $endDate = $request->filled('end_date') ? $request->input('end_date') : null;
-            // Optional free-text notes the requester attaches to
-            // explain what they need. Empty string coerces to null so
-            // an untouched textarea doesn't persist a blank row and
-            // then leak an empty "Additional Notes" block into the
-            // admin's mail.
-            $notes = $request->filled('notes') ? $request->input('notes') : null;
-
-            // Also feed the notification, so admins see the window
-            // right in the "new request" email/slack. Blank values
-            // stay out of the mail per the template's isset+non-empty
-            // guards. `note` (singular) is the existing template key
-            // for the additional-notes row; reusing it means the mail
-            // + slack layouts pick this up without changes.
-            $data['start_date'] = $startDate;
-            $data['end_date'] = $endDate;
-            $data['note'] = $notes;
-
-            $item->request($data['item_quantity'], $startDate, $endDate, $notes);
-            if (($settings->alert_email != '') && ($settings->alerts_enabled == '1') && (! config('app.lock_passwords'))) {
-                $logaction->logaction('requested');
-                try {
-                    $settings->notify((new RequestAssetNotification($data))->locale($settings->locale));
-                } catch (Exception $e) {
-                    Log::warning('Could not send asset request notification: '.$e->getMessage());
-                }
-            }
-
-            $redirect = redirect()->route('account.requestable')
-                ->with('success', trans('admin/hardware/message.requests.success'));
-            if ($tab = $this->safeActiveTab($request->input('active_tab'))) {
-                $redirect->withFragment($tab);
-            }
-
-            return $redirect;
+    private function handleSubmitRequest(Request $request, $item, string $fullItemType, string $itemType): RedirectResponse
+    {
+        if (! $item->isFlaggedRequestable()) {
+            return redirect()->back()->with('error', trans('admin/hardware/message.requests.error'));
         }
+
+        // Optional reservation window. Empty strings from the
+        // request-modal date pickers coerce to null so an "I need
+        // this whenever" request doesn't accidentally persist today's
+        // date as the start. Uses Laravel's built-in validation
+        // strings so a bad range gets the framework's localized
+        // "after or equal to" message rather than a hand-rolled key
+        // we'd have to translate ourselves.
+        $reservationValidator = validator($request->only(['start_date', 'end_date']), [
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+        if ($reservationValidator->fails()) {
+            return redirect()->back()->withInput()->withErrors($reservationValidator);
+        }
+
+        $startDate = $request->filled('start_date') ? $request->input('start_date') : null;
+        $endDate = $request->filled('end_date') ? $request->input('end_date') : null;
+        // Optional free-text notes the requester attaches to explain
+        // what they need. Empty string coerces to null so an untouched
+        // textarea doesn't persist a blank row and then leak an empty
+        // "Additional Notes" block into the admin's mail.
+        $notes = $request->filled('notes') ? $request->input('notes') : null;
+
+        [$logaction, $data] = $this->buildRequestContext($request, $item, $fullItemType, $itemType);
+
+        // Feed the notification so admins see the window right in
+        // the "new request" email/slack. Blank values stay out of
+        // the mail per the template's isset+non-empty guards. `note`
+        // (singular) is the existing template key for the additional-
+        // notes row; reusing it means the mail + slack layouts pick
+        // this up without changes.
+        $data['start_date'] = $startDate;
+        $data['end_date'] = $endDate;
+        $data['note'] = $notes;
+
+        $item->request($data['item_quantity'], $startDate, $endDate, $notes);
+
+        $settings = Setting::getSettings();
+        if (($settings->alert_email != '') && ($settings->alerts_enabled == '1') && (! config('app.lock_passwords'))) {
+            $logaction->logaction('requested');
+            try {
+                $settings->notify((new RequestAssetNotification($data))->locale($settings->locale));
+            } catch (Exception $e) {
+                Log::warning('Could not send asset request notification: '.$e->getMessage());
+            }
+        }
+
+        return $this->redirectAfterRequestAction($request, 'admin/hardware/message.requests.success');
     }
 
     /**

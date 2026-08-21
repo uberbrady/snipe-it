@@ -565,7 +565,7 @@ class AccessoriesController extends Controller
      * current caller (per FMCS + location scoping). Hydrates the
      * accessories tab on /account/requestable. Deliberately
      * open to any authenticated user - the web page it feeds is open
-     * too, and the RequestableAccessories() scope layered on top of
+     * too, and the Requestable() scope layered on top of
      * the CompanyableTrait global scope ensures the caller only sees
      * rows they can act on.
      */
@@ -573,7 +573,7 @@ class AccessoriesController extends Controller
     {
         $query = Accessory::with('category', 'location', 'company', 'manufacturer', 'requests')
             ->withCount('checkouts as checkouts_count')
-            ->RequestableAccessories();
+            ->Requestable();
 
         if ($request->filled('search')) {
             $query->TextSearch($request->input('search'));

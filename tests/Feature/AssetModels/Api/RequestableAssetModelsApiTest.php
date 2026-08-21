@@ -112,7 +112,7 @@ class RequestableAssetModelsApiTest extends TestCase
         // model - but codify the isolation with a test so a future
         // refactor doesn't regress it.
         $user = User::factory()->create();
-        $model = AssetModel::factory()->create(['requestable' => 1]);
+        AssetModel::factory()->create(['requestable' => 1]);
         $accessory = Accessory::factory()->create();
         CheckoutRequest::factory()->create([
             'user_id' => $user->id,
