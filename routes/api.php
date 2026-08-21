@@ -65,6 +65,15 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         ->name('api.logout');
 
     /**
+     * Admin-scoped list of open checkout requests, mirroring the
+     * /requests Blade page. Ships as the read half of
+     * #15541; approval / fulfilment actions live in the
+     * CheckoutRequest v2 plan and are intentionally out of scope here.
+     */
+    Route::get('requests', [Api\CheckoutRequest::class, 'index'])
+        ->name('api.requests.index');
+
+    /**
      * Account routes
      */
     Route::group(['prefix' => 'account'], function () {
@@ -86,12 +95,49 @@ Route::group(['prefix' => 'v1', 'middleware' => ['api', 'api-throttle:api']], fu
         Route::post('request/{asset}', [Api\CheckoutRequest::class, 'store'])->name('api.assets.requests.store');
         Route::post('request/{asset}/cancel', [Api\CheckoutRequest::class, 'destroy'])->name('api.assets.requests.destroy');
 
+        // Consumable + Component request/cancel. Kept as type-prefixed
+        // routes rather than a polymorphic /request/{type}/{id} pattern
+        // so the existing /request/{asset} URL stays backwards-compat
+        // for API consumers already wired to it.
+        Route::post('request/consumable/{consumable}', [Api\CheckoutRequest::class, 'storeConsumable'])
+            ->name('api.consumables.requests.store');
+        Route::post('request/consumable/{consumable}/cancel', [Api\CheckoutRequest::class, 'destroyConsumable'])
+            ->name('api.consumables.requests.destroy');
+        Route::post('request/component/{component}', [Api\CheckoutRequest::class, 'storeComponent'])
+            ->name('api.components.requests.store');
+        Route::post('request/component/{component}/cancel', [Api\CheckoutRequest::class, 'destroyComponent'])
+            ->name('api.components.requests.destroy');
+        Route::post('request/license/{license}', [Api\CheckoutRequest::class, 'storeLicense'])
+            ->name('api.licenses.requests.store');
+        Route::post('request/license/{license}/cancel', [Api\CheckoutRequest::class, 'destroyLicense'])
+            ->name('api.licenses.requests.destroy');
+
         Route::get('requestable/hardware',
             [
                 Api\AssetsController::class,
                 'requestable',
             ]
         )->name('api.assets.requestable');
+
+        // Requestable-item endpoints for the /account/requestable
+        // tabs. Each returns just the requestable rows the caller can
+        // see (RequestableFoos() scope + CompanyableTrait global scope
+        // handle the FMCS + location gating).
+        Route::get('requestable/models',
+            [Api\AssetModelsController::class, 'requestable']
+        )->name('api.assetmodels.requestable');
+        Route::get('requestable/accessories',
+            [Api\AccessoriesController::class, 'requestable']
+        )->name('api.accessories.requestable');
+        Route::get('requestable/consumables',
+            [Api\ConsumablesController::class, 'requestable']
+        )->name('api.consumables.requestable');
+        Route::get('requestable/components',
+            [Api\ComponentsController::class, 'requestable']
+        )->name('api.components.requestable');
+        Route::get('requestable/licenses',
+            [Api\LicensesController::class, 'requestable']
+        )->name('api.licenses.requestable');
 
         Route::post('personal-access-tokens',
             [
