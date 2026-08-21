@@ -507,4 +507,54 @@ class LicensePresenter extends Presenter
     {
         return route('licenses.show', $this->id);
     }
+
+    /**
+     * Column layout for the licenses tab on /account/requestable.
+     * Licenses don't carry an image column; category + free-seats
+     * remaining stand in for the location + numRemaining pair the
+     * other tabs use. Paired with api.licenses.requestable +
+     * LicensesTransformer.
+     */
+    public static function dataTableLayoutRequestable(): string
+    {
+        return json_encode([
+            [
+                'field' => 'name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('general.name'),
+                'formatter' => 'licenseRequestableNameFormatter',
+            ], [
+                'field' => 'category',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.category'),
+                'formatter' => 'categoriesLinkObjFormatter',
+            ], [
+                'field' => 'company.name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.company'),
+            ], [
+                'field' => 'remaining',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('admin/licenses/form.remaining_seats'),
+            ], [
+                'field' => 'actions',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => false,
+                'title' => trans('table.actions'),
+                'formatter' => 'licenseRequestableActionsFormatter',
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+        ]);
+    }
 }
