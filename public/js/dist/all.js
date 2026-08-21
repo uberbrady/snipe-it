@@ -74845,10 +74845,37 @@ $(function () {
     var currentQty = parseInt($btn.data('current-qty'), 10);
     $modal.find('#requestItemQuantity').val(!isNaN(currentQty) && currentQty > 0 ? currentQty : 1);
 
-    // Reset dates every open so a window left in the picker by an
-    // earlier click can't leak into the next request.
+    // Hide the qty row for types where qty is meaningless.
+    // Assets are 1:1 (you request THE asset, not N of it).
+    // Licenses are one-seat-per-request by convention (nobody
+    // realistically asks for 3 seats of Photoshop for
+    // themselves). The input stays in the DOM with value=1 so
+    // the POST shape stays uniform across every requestable
+    // type; only the row is display:none.
+    var itemType = ($btn.data('item-type') || '').toString().toLowerCase();
+    var hidesQty = itemType === 'asset' || itemType === 'license';
+    $modal.find('#requestItemQuantityRow').toggle(!hidesQty);
+    if (hidesQty) {
+      $modal.find('#requestItemQuantity').val(1);
+    }
+
+    // Reset dates + notes every open so state left in the modal
+    // by an earlier click can't leak into the next request.
     $modal.find('#requestItemStartDate').val('');
     $modal.find('#requestItemEndDate').val('');
+    $modal.find('#requestItemNotes').val('');
+
+    // Snapshot the tab the requester is on so the controller can
+    // restore it on the post-submit redirect. Walks up to the
+    // enclosing .tab-pane and reads its id; the assets tab uses
+    // an API-backed row-formatter that emits the same
+    // data-active-tab attr on its request button (see
+    // assetRequestActionsFormatter) so this handler works there
+    // too without needing the DOM parent.
+    var explicitTab = $btn.data('active-tab');
+    var $tabPane = $btn.closest('.tab-pane');
+    var activeTab = explicitTab || ($tabPane.length ? $tabPane.attr('id') : '');
+    $modal.find('#requestItemActiveTab').val(activeTab || '');
     $modal.modal('show');
   });
 
@@ -74922,6 +74949,16 @@ $(function () {
             statusType: link.data("asset-status-type"),
             companyId: link.data("company-ids") || link.data("company-id"),
             excludeId: link.data("exclude-id"),
+            // Pre-scope the hardware picker to a user's
+            // assigned assets. Currently used by the
+            // components-checkout screen when reached via
+            // a /requests row (see the requesting_user
+            // wiring in ComponentsController + the checkout
+            // blade). The API endpoint gracefully falls
+            // back to the unfiltered list when the target
+            // user has no assigned assets, so an empty
+            // pre-filter doesn't lock the admin out.
+            assignedTo: link.data("assigned-to"),
             // When true, the companies selectlist marks child companies
             // (those with a parent of their own) as disabled — used by
             // the parent-company picker so users can't choose options
