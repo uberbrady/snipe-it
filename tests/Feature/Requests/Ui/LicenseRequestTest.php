@@ -18,14 +18,23 @@ class LicenseRequestTest extends TestCase
 {
     public function test_requestable_index_lists_requestable_licenses(): void
     {
-        $license = License::factory()->create(['requestable' => true]);
-        License::factory()->create(['requestable' => false]);
+        // API-backed. See AccessoryRequestTest for the rationale.
+        $requestable = License::factory()->create(['requestable' => true]);
+        $nonRequestable = License::factory()->create(['requestable' => false]);
 
         $this->actingAs(User::factory()->create())
-            ->get(route('requestable-assets'))
+            ->get(route('account.requestable'))
             ->assertOk()
-            ->assertViewHas('licenses')
-            ->assertSeeText($license->name);
+            ->assertViewHas('counts', fn ($counts) => ($counts['licenses'] ?? 0) > 0);
+
+        $rows = $this->actingAsForApi(User::factory()->create())
+            ->getJson(route('api.licenses.requestable'))
+            ->assertOk()
+            ->json('rows');
+
+        $ids = collect($rows)->pluck('id')->all();
+        $this->assertContains($requestable->id, $ids);
+        $this->assertNotContains($nonRequestable->id, $ids);
     }
 
     public function test_user_can_request_a_requestable_license(): void

@@ -20,15 +20,15 @@ class BulkCancelRequestTest extends TestCase
     public function test_requires_view_assets_permission(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post(route('assets.requested.bulk-cancel'), ['ids' => [1]])
+            ->post(route('requests.bulk-cancel'), ['ids' => [1]])
             ->assertForbidden();
     }
 
     public function test_empty_selection_flashes_an_error(): void
     {
         $this->actingAs(User::factory()->viewAssets()->create())
-            ->post(route('assets.requested.bulk-cancel'), ['ids' => []])
-            ->assertRedirectToRoute('assets.requested')
+            ->post(route('requests.bulk-cancel'), ['ids' => []])
+            ->assertRedirectToRoute('requests.index')
             ->assertSessionHas('error');
     }
 
@@ -38,10 +38,10 @@ class BulkCancelRequestTest extends TestCase
         $requests = CheckoutRequest::factory()->count(3)->create();
 
         $this->actingAs($admin)
-            ->post(route('assets.requested.bulk-cancel'), [
+            ->post(route('requests.bulk-cancel'), [
                 'ids' => $requests->pluck('id')->all(),
             ])
-            ->assertRedirectToRoute('assets.requested')
+            ->assertRedirectToRoute('requests.index')
             ->assertSessionHas('success');
 
         foreach ($requests as $request) {
@@ -59,10 +59,10 @@ class BulkCancelRequestTest extends TestCase
         $canceled = CheckoutRequest::factory()->create(['canceled_at' => now()->subMinute()]);
 
         $this->actingAs($admin)
-            ->post(route('assets.requested.bulk-cancel'), [
+            ->post(route('requests.bulk-cancel'), [
                 'ids' => [$canceled->id],
             ])
-            ->assertRedirectToRoute('assets.requested')
+            ->assertRedirectToRoute('requests.index')
             ->assertSessionHas('warning');
     }
 
@@ -84,10 +84,10 @@ class BulkCancelRequestTest extends TestCase
         ]);
 
         $this->actingAs($adminInA)
-            ->post(route('assets.requested.bulk-cancel'), [
+            ->post(route('requests.bulk-cancel'), [
                 'ids' => [$requestInB->id],
             ])
-            ->assertRedirectToRoute('assets.requested');
+            ->assertRedirectToRoute('requests.index');
 
         $this->assertNull(
             $requestInB->fresh()->canceled_at,
@@ -115,10 +115,10 @@ class BulkCancelRequestTest extends TestCase
         ]);
 
         $this->actingAs($superuser)
-            ->post(route('assets.requested.bulk-cancel'), [
+            ->post(route('requests.bulk-cancel'), [
                 'ids' => [$requestA->id, $requestB->id],
             ])
-            ->assertRedirectToRoute('assets.requested')
+            ->assertRedirectToRoute('requests.index')
             ->assertSessionHas('success');
 
         $this->assertNotNull($requestA->fresh()->canceled_at);

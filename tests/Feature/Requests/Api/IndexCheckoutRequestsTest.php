@@ -196,6 +196,55 @@ class IndexCheckoutRequestsTest extends TestCase
         $this->assertSame([], $rows[$primary->id]['pending_requesters']);
     }
 
+    public function test_row_exposes_reservation_window_qty_and_notes_when_set(): void
+    {
+        // Fields feed the /requests page columns (quantity, remaining,
+        // start_date, end_date, notes). All nullable, so a bare
+        // "just get me one whenever" request stays clean.
+        $admin = User::factory()->viewAssets()->create();
+        $consumable = \App\Models\Consumable::factory()->create(['qty' => 20, 'requestable' => true]);
+        $request = CheckoutRequest::factory()->create([
+            'requestable_id' => $consumable->id,
+            'requestable_type' => \App\Models\Consumable::class,
+            'quantity' => 4,
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-09-05',
+            'notes' => 'Q3 offsite kit',
+        ]);
+
+        $row = collect(
+            $this->actingAsForApi($admin)
+                ->getJson(route('api.requests.index'))
+                ->assertOk()
+                ->json('rows')
+        )->firstWhere('id', $request->id);
+
+        $this->assertNotNull($row);
+        $this->assertSame(4, $row['quantity']);
+        $this->assertSame(20, $row['requestable']['remaining']);
+        $this->assertNotNull($row['start_date']);
+        $this->assertNotNull($row['end_date']);
+        $this->assertSame('Q3 offsite kit', $row['notes']);
+    }
+
+    public function test_row_leaves_reservation_fields_null_when_unset(): void
+    {
+        $admin = User::factory()->viewAssets()->create();
+        $request = CheckoutRequest::factory()->create();
+
+        $row = collect(
+            $this->actingAsForApi($admin)
+                ->getJson(route('api.requests.index'))
+                ->assertOk()
+                ->json('rows')
+        )->firstWhere('id', $request->id);
+
+        $this->assertNotNull($row);
+        $this->assertNull($row['start_date']);
+        $this->assertNull($row['end_date']);
+        $this->assertNull($row['notes']);
+    }
+
     public function test_asset_requestable_exposes_assigned_flag_and_action_hints(): void
     {
         // The Blade page renders "Checkout" vs "Checkin" based on

@@ -11,7 +11,7 @@ class AccessoryRequestTest extends TestCase
 {
     public function test_requestable_index_lists_requestable_accessories(): void
     {
-        // The accessories tab on /account/requestable-assets is now
+        // The accessories tab on /account/requestable is now
         // API-backed via api.accessories.requestable. Shell page still
         // needs a non-empty $accessories view var so the tab-badge
         // count renders (0 hides the tab entirely), and the API row
@@ -21,9 +21,9 @@ class AccessoryRequestTest extends TestCase
         $nonRequestable = Accessory::factory()->create(['requestable' => false]);
 
         $this->actingAs(User::factory()->create())
-            ->get(route('requestable-assets'))
+            ->get(route('account.requestable'))
             ->assertOk()
-            ->assertViewHas('accessories');
+            ->assertViewHas('counts', fn ($counts) => ($counts['accessories'] ?? 0) > 0);
 
         $rows = $this->actingAsForApi(User::factory()->create())
             ->getJson(route('api.accessories.requestable'))
@@ -131,6 +131,60 @@ class AccessoryRequestTest extends TestCase
         $this->assertNotNull($request);
         $this->assertSame('2026-09-01', $request->start_date->toDateString());
         $this->assertSame('2026-09-05', $request->end_date->toDateString());
+    }
+
+    public function test_user_can_attach_notes_to_an_accessory_request(): void
+    {
+        // Notes are optional but persist end-to-end when supplied: on
+        // the row for admin-queue rendering and via the notification
+        // for the fulfillment email/slack.
+        $accessory = Accessory::factory()->create(['requestable' => true]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('account/request-item', [
+                'itemType' => 'accessory',
+                'itemId' => $accessory->id,
+            ]), [
+                'request-quantity' => 1,
+                'notes' => 'Needed for the Q3 offsite',
+            ])
+            ->assertRedirect();
+
+        $request = CheckoutRequest::where('requestable_id', $accessory->id)
+            ->where('requestable_type', Accessory::class)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $this->assertNotNull($request);
+        $this->assertSame('Needed for the Q3 offsite', $request->notes);
+    }
+
+    public function test_blank_notes_do_not_persist_as_empty_string(): void
+    {
+        // An untouched textarea shouldn't create an empty "Additional
+        // Notes" block in the admin's email. Controller coerces the
+        // empty string to null.
+        $accessory = Accessory::factory()->create(['requestable' => true]);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('account/request-item', [
+                'itemType' => 'accessory',
+                'itemId' => $accessory->id,
+            ]), [
+                'request-quantity' => 1,
+                'notes' => '',
+            ])
+            ->assertRedirect();
+
+        $request = CheckoutRequest::where('requestable_id', $accessory->id)
+            ->where('requestable_type', Accessory::class)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $this->assertNotNull($request);
+        $this->assertNull($request->notes);
     }
 
     public function test_request_is_rejected_when_end_date_precedes_start_date(): void
