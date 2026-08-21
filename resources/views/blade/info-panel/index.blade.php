@@ -176,6 +176,19 @@
             </x-info-element>
         @endif
 
+        {{-- Bulk-fulfill entry point. Requestable::bulkFulfillmentLink()
+             gates on: (a) type is one of the five bulk-eligible ones,
+             (b) caller can checkout the type, (c) >=2 open requests,
+             (d) stock available. Returns null when any gate fails so
+             the info-panel row is skipped without a Blade-side check. --}}
+        @if (method_exists($infoPanelObj, 'bulkFulfillmentLink') && $bulkFulfillmentLink = $infoPanelObj->bulkFulfillmentLink())
+            <x-info-element icon_type="fulfill_multiple" title="{{ trans('admin/hardware/general.fulfill_multiple') }}">
+                <a href="{{ $bulkFulfillmentLink['url'] }}">
+                    {{ trans_choice('admin/hardware/general.open_requests_count', $bulkFulfillmentLink['count'], ['count' => $bulkFulfillmentLink['count']]) }}
+                </a>
+            </x-info-element>
+        @endif
+
         @php
             // Prefer the most recent OrderItem's price + currency so the
             // Unit Cost row reflects the last acquisition, not the
