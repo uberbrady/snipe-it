@@ -7,24 +7,29 @@
 
 @section('content')
 
-    <x-container class="col-md-8 col-md-offset-2">
+    <x-container class="col-md-6 col-md-offset-3">
         <x-form :route="$formRoute" id="fulfill_multiple_form">
 
             <x-box header="{{ $item->display_name ?? $item->name }} ({{ (int) $item->numRemaining() }} {{ trans('admin/components/general.remaining') }})">
 
-                @if ($remaining !== null)
-                    <x-form.static :label="trans('admin/components/general.remaining')">
-                        {{ (int) $remaining }}
-                    </x-form.static>
-                @endif
-
-                @if ($item->company ?? null)
-                    <x-form.static :label="trans('general.company')">{!! $item->company->present()->formattedNameLink !!}</x-form.static>
-                @endif
-
-                @if ($item->category ?? null)
-                    <x-form.static :label="trans('general.category')">{!! $item->category->present()->formattedNameLink !!}</x-form.static>
-                @endif
+                {{-- Check-all toggle. Uses the shared
+                     data-toggle="check-all" handler from
+                     snipeit.js which walks the closest form and
+                     toggles every non-disabled checkbox. Sits in
+                     the col-md-3 label slot so it lines up with
+                     each row's checkbox below. Wrapped in a
+                     .form-control label (same shape as the row-
+                     level <x-form.checkbox-inline>) so the
+                     checkbox + text stay inline instead of
+                     wrapping to two lines. --}}
+                <div class="form-group">
+                    <div class="col-md-3">
+                        <label class="form-control">
+                            <input type="checkbox" data-toggle="check-all">
+                            {{ trans('general.select_all_none') }}
+                        </label>
+                    </div>
+                </div>
 
                 {{-- One row per pending CheckoutRequest, ordered
                      oldest-first (waiting-list). Admin ticks the

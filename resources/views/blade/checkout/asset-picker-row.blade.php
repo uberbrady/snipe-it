@@ -5,6 +5,7 @@
     'showQty' => true,
     'maxQty' => null,
     'defaultChecked' => false,
+    'defaultAssetId' => null,
     'emptyMessage' => null,
 ])
 
@@ -21,83 +22,82 @@
      typical scope, and the "auto-pick next available" default just
      falls out of pre-selecting the first option.
 
-     Field shape matches the user-target recipient-row so the
-     controller-side per-row iteration stays uniform:
+     Rows whose available-asset set is empty render as a short
+     info-only card (no fields, no submit checkbox) with an inline
+     explanation so the admin sees WHY that requester can't be
+     fulfilled from this screen. Rows with assets render the full
+     picker + qty + notes shape.
+
+     Field shape matches the user-target recipient-row:
          enabled_requests[]              = list of request ids ticked
          asset_id[<request_id>]          = target asset for that row
          qty[<request_id>]               = qty for that row (or 1 if showQty=false)
          notes[<request_id>]             = admin/checkout note --}}
-<fieldset class="form-group has-feedback" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
-    <legend class="col-sm-3 col-md-3 control-label" style="width: auto; padding: 0 10px; border: 0; margin-bottom: 0;">
-        <label class="form-control" style="display: inline-flex; align-items: center; gap: 8px; margin-bottom: 0;">
-            <input
-                type="checkbox"
-                name="enabled_requests[]"
-                value="{{ (int) $request->id }}"
-                @checked($defaultChecked || in_array((int) $request->id, (array) old('enabled_requests', []), true))
-                @if ($availableAssets->isEmpty()) disabled @endif
-                aria-label="{{ trans('general.fulfill') }} #{{ $request->id }}"
-            >
-            <span>#{{ $request->id }}</span>
-            @if ($requester)
-                <span class="text-muted">
-                    &mdash; {{ $requester->display_name }}
-                </span>
-            @endif
-        </label>
-    </legend>
 
-    <div class="form-group {{ $errors->has('asset_id.'.$request->id) ? 'has-error' : '' }}">
+<hr style="border-color: var(--table-border-row-color); margin-bottom: 15px;">
+
+<div class="form-group" style="{{ $availableAssets->isEmpty() ? 'opacity: 0.7;' : '' }}">
+    <div class="col-md-3">
+        <x-form.checkbox-inline
+            name="enabled_requests[{{ $request->id }}]"
+            value="1"
+            :checked="$defaultChecked || old('enabled_requests.'.$request->id) === '1'"
+            :disabled="$availableAssets->isEmpty()"
+            :label="$requester?->display_name ?? '#'.$request->id"
+        />
+    </div>
+    <div class="col-md-7" style="padding-top: 7px;">
+        @if ($request->notes)
+            &ldquo;{{ $request->notes }}&rdquo;
+        @endif
+        <span class="text-muted">
+            - {{ $request->created_at->diffForHumans() }}
+        </span>
+    </div>
+</div>
+
+@if ($availableAssets->isNotEmpty())
+    {{-- Native <x-input.asset-select> is ajax-select2 backed and
+         wants a data-endpoint feed; here we already have the small
+         deterministic pool in hand and want a plain <select>, so
+         hand-roll the picker inside a standard form-row shell. --}}
+    <div
+        @class([
+            'form-group',
+            'has-error' => $errors->has('asset_id.'.$request->id),
+        ])
+    >
         <label for="fulfill-asset-{{ $request->id }}" class="col-md-3 control-label">
             {{ trans('general.asset') }}
         </label>
         <div class="col-md-7">
-            @if ($availableAssets->isEmpty())
-                <p class="form-control-static text-muted">
-                    <em>{{ $emptyMessage ?? trans('general.no_results') }}</em>
-                </p>
-            @else
-                <select
-                    class="form-control select2"
-                    id="fulfill-asset-{{ $request->id }}"
-                    name="asset_id[{{ $request->id }}]"
-                    aria-label="{{ trans('general.asset') }}"
-                >
-                    @foreach ($availableAssets as $asset)
-                        <option
-                            value="{{ $asset->id }}"
-                            @selected(old('asset_id.'.$request->id, $availableAssets->first()->id) == $asset->id)
-                        >
-                            {{ $asset->present()->fullName }}
-                        </option>
-                    @endforeach
-                </select>
-            @endif
-            <div class="col-md-8" style="padding-left: 0;">
-                <x-form.error :name="'asset_id.'.$request->id" />
-            </div>
+            <select
+                class="form-control select2"
+                id="fulfill-asset-{{ $request->id }}"
+                name="asset_id[{{ $request->id }}]"
+                aria-label="{{ trans('general.asset') }}"
+            >
+                @foreach ($availableAssets as $asset)
+                    <option
+                        value="{{ $asset->id }}"
+                        @selected(old('asset_id.'.$request->id, $defaultAssetId ?? $availableAssets->first()->id) == $asset->id)
+                    >
+                        {{ $asset->present()->fullName }}
+                    </option>
+                @endforeach
+            </select>
+            <x-form.error :name="'asset_id.'.$request->id"/>
         </div>
     </div>
 
     @if ($showQty)
-        <div class="form-group {{ $errors->has('qty.'.$request->id) ? 'has-error' : '' }}">
-            <label for="fulfill-qty-{{ $request->id }}" class="col-md-3 control-label">{{ trans('general.qty') }}</label>
-            <div class="col-md-7 col-sm-12">
-                <div class="col-md-2" style="padding-left: 0">
-                    <input
-                        class="form-control"
-                        type="number"
-                        id="fulfill-qty-{{ $request->id }}"
-                        name="qty[{{ $request->id }}]"
-                        value="{{ old('qty.'.$request->id, (int) $request->quantity) }}"
-                        min="1"
-                        @if ($maxQty !== null) max="{{ $maxQty }}" @endif
-                        aria-label="{{ trans('general.qty') }}"
-                    >
-                </div>
-            </div>
-            <div class="col-md-8 col-md-offset-3"><x-form.error :name="'qty.'.$request->id" /></div>
-        </div>
+        <x-input.quantity
+            name="qty[{{ $request->id }}]"
+            :label="trans('general.qty')"
+            :min="1"
+            :max="$maxQty"
+            :value="old('qty.'.$request->id, (int) $request->quantity)"
+        />
     @else
         {{-- AssetModel rows fulfill one asset per request, so qty
              is fixed at 1. Hidden input keeps the POST shape
@@ -109,6 +109,7 @@
         :label="trans('admin/hardware/form.notes')"
         :name="'notes['.$request->id.']'"
         type="textarea"
-        :default="old('notes.'.$request->id, $request->notes ?? '')"
+        :rows="2"
+        :default="old('notes.'.$request->id, '')"
     />
-</fieldset>
+@endif
