@@ -26,7 +26,7 @@ class BulkCancelRequestTest extends TestCase
 
     public function test_empty_selection_flashes_an_error(): void
     {
-        $this->actingAs(User::factory()->viewAssets()->create())
+        $this->actingAs(User::factory()->checkoutAssets()->create())
             ->post(route('requests.bulk-cancel'), ['ids' => []])
             ->assertRedirectToRoute('requests.index')
             ->assertSessionHas('error');
@@ -34,7 +34,7 @@ class BulkCancelRequestTest extends TestCase
 
     public function test_cancels_every_selected_open_request(): void
     {
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $requests = CheckoutRequest::factory()->count(3)->create();
 
         $this->actingAs($admin)
@@ -55,7 +55,7 @@ class BulkCancelRequestTest extends TestCase
         // can go stale between "load table" and "click Go". Rows that
         // are already canceled don't count toward the summary but
         // don't trigger an error either.
-        $admin = User::factory()->viewAssets()->create();
+        $admin = User::factory()->checkoutAssets()->create();
         $canceled = CheckoutRequest::factory()->create(['canceled_at' => now()->subMinute()]);
 
         $this->actingAs($admin)
@@ -76,7 +76,7 @@ class BulkCancelRequestTest extends TestCase
 
         [$companyA, $companyB] = Company::factory()->count(2)->create();
 
-        $adminInA = $companyA->users()->save(User::factory()->viewAssets()->make());
+        $adminInA = $companyA->users()->save(User::factory()->checkoutAssets()->make());
         $assetInB = Asset::factory()->for($companyB)->requestable()->create();
         $requestInB = CheckoutRequest::factory()->create([
             'requestable_id' => $assetInB->id,
