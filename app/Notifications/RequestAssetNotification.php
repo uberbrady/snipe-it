@@ -14,6 +14,10 @@ class RequestAssetNotification extends Notification
 {
     private $params;
 
+    public $start_date;
+
+    public $end_date;
+
     /**
      * Create a new notification instance.
      */
@@ -43,6 +47,18 @@ class RequestAssetNotification extends Notification
             $this->expected_checkin = Helper::getFormattedDateObject($this->item->expected_checkin, 'date',
                 false);
         }
+
+        // Optional reservation window. Passed in from callers that
+        // capture the requester's date-range picker input (see
+        // ViewAssetsController::getRequestItem). Rendered by the
+        // markdown template only when set, so unspecified stays out
+        // of the mail entirely.
+        $this->start_date = ! empty($params['start_date'])
+            ? Helper::getFormattedDateObject($params['start_date'], 'date', false)
+            : '';
+        $this->end_date = ! empty($params['end_date'])
+            ? Helper::getFormattedDateObject($params['end_date'], 'date', false)
+            : '';
     }
 
     /**
@@ -78,6 +94,13 @@ class RequestAssetNotification extends Notification
             'Requested By' => '<'.$target->present()->viewUrl().'|'.$target->display_name.'>',
         ];
 
+        if ($this->start_date) {
+            $fields['Start Date'] = $this->start_date;
+        }
+        if ($this->end_date) {
+            $fields['End Date'] = $this->end_date;
+        }
+
         return (new SlackMessage)
             ->content(trans('mail.Item_Requested'))
             ->from($botname)
@@ -112,6 +135,8 @@ class RequestAssetNotification extends Notification
                 'fields' => $fields,
                 'last_checkout' => $this->last_checkout,
                 'expected_checkin' => $this->expected_checkin,
+                'start_date' => $this->start_date,
+                'end_date' => $this->end_date,
                 'intro_text' => trans('mail.a_user_requested'),
                 'qty' => $this->item_quantity,
             ])

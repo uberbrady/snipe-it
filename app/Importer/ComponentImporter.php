@@ -58,6 +58,12 @@ class ComponentImporter extends ItemImporter
         $this->setItemFromCsvIfPresent($row, 'min_amt');
         $this->setItemFromCsvIfPresent($row, 'qty', 'quantity');
         $this->setItemFromCsvIfPresent($row, 'serial');
+        // Persist the requestable flag on both create + update, matching
+        // the accessory / consumable importers now that Component is a
+        // first-class Requestable. Component::setRequestableAttribute
+        // normalizes "0"/"1"/"true"/"false"/"" so any of the common CSV
+        // shapes lands correctly.
+        $this->setItemFromCsvIfPresent($row, 'requestable');
 
         // asset_tag is not in Component's fillable but is used by the
         // checkout-to-asset path in createComponentIfNotExists.

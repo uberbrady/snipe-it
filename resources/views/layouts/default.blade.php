@@ -306,7 +306,7 @@
                                         @can('self.profile')
                                         <li {!! (request()->is('account/accept') ? ' class="active" aria-current="page"' : '') !!}>
                                             <a href="{{ route('account.accept') }}">
-                                                <x-icon type="checkmark" class="fa-fw" />
+                                                <x-icon type="signature" class="fa-fw"/>
                                                 {{ trans('general.accept_assets_menu') }}
                                             </a>
                                         </li>
@@ -510,10 +510,6 @@
                                             <a href="{{ route('hardware.bulkcheckout.show') }}">
                                                 {{ trans('general.bulk_checkout') }}
                                             </a>
-                                        </li>
-                                        <li{!! (request()->is('hardware/requested') ? ' class="active" aria-current="page"' : '') !!}>
-                                            <a href="{{ route('assets.requested') }}">
-                                                {{ trans('general.requested') }}</a>
                                         </li>
                                     @endcan
 
@@ -826,10 +822,18 @@
                                 </ul>
                             </li>
                         @endcan
+                            @can('canCheckoutAtLeastOneItemType')
+                                <li{!! (request()->is('requests.index') ? ' class="active" aria-current="page"' : '') !!}>
+                                    <a href="{{ route('requests.index') }}">
+                                        <i class="fa-solid fa-boxes-packing"></i>
+                                        <span>{{ trans('general.requested') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
 
                         @can('viewRequestable', \App\Models\Asset::class)
-                            <li{!! (request()->is('account/requestable-assets') ? ' class="active" aria-current="page"' : '') !!}>
-                                <a href="{{ route('requestable-assets') }}">
+                            <li{!! (request()->is('account/requestable') ? ' class="active" aria-current="page"' : '') !!}>
+                                <a href="{{ route('account.requestable') }}">
                                     <x-icon type="requestable" class="fa-fw" />
                                     <span>{{ trans('general.requestable_items') }}</span>
                                 </a>

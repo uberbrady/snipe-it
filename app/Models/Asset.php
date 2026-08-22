@@ -1878,7 +1878,7 @@ class Asset extends Depreciable
      * @param  \Illuminate\Database\Query\Builder  $query  Query builder instance
      * @return \Illuminate\Database\Query\Builder Modified query builder
      */
-    public function scopeRequestableAssets($query): Builder
+    public function scopeRequestable($query): Builder
     {
         $table = $query->getModel()->getTable();
 

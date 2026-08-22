@@ -308,6 +308,20 @@ class AssetsTransformer
             'expected_checkin' => Helper::getFormattedDateObject($asset->expected_checkin, 'datetime'),
             'location' => ($asset->location) ? e($asset->location->name) : null,
             'status' => ($asset->status) ? $asset->present()->statusMeta : null,
+            // Category is nested through model; emit the standard
+            // {id, name, tag_color} object so the requestable-tab
+            // categoriesLinkObjFormatter can render the tag_color
+            // icon + link. Company is direct on Asset; emit the
+            // matching {id, name} shape.
+            'category' => (($asset->model) && ($asset->model->category)) ? [
+                'id' => (int) $asset->model->category->id,
+                'name' => e($asset->model->category->name),
+                'tag_color' => ($asset->model->category->tag_color) ? e($asset->model->category->tag_color) : null,
+            ] : null,
+            'company' => ($asset->company) ? [
+                'id' => (int) $asset->company->id,
+                'name' => e($asset->company->name),
+            ] : null,
             'assigned_to_self' => ($asset->assigned_to == auth()->id()),
         ];
 
