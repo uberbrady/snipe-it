@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\CheckoutRequests\CancelCheckoutRequestAction;
 use App\Actions\CheckoutRequests\CreateCheckoutRequestAction;
 use App\Enums\ActionType;
-use App\Exceptions\AssetNotRequestable;
+use App\Exceptions\ItemNotRequestable;
 use App\Models\Accessory;
 use App\Models\Actionlog;
 use App\Models\Asset;
@@ -16,7 +16,6 @@ use App\Models\License;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\RequestAssetCancelation;
-use App\Notifications\RequestAssetNotification;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
@@ -219,7 +218,7 @@ class ViewAssetsController extends Controller
             );
         }
 
-        return $this->handleSubmitRequest($request, $item, $fullItemType, $itemType);
+        return $this->handleSubmitRequest($request, $item);
     }
 
     /**
@@ -315,12 +314,8 @@ class ViewAssetsController extends Controller
         return $this->redirectAfterRequestAction($request, 'admin/hardware/message.requests.canceled');
     }
 
-    private function handleSubmitRequest(Request $request, $item, string $fullItemType, string $itemType): RedirectResponse
+    private function handleSubmitRequest(Request $request, $item): RedirectResponse
     {
-        if (! $item->isFlaggedRequestable()) {
-            return redirect()->back()->with('error', trans('admin/hardware/message.requests.error'));
-        }
-
         // Optional reservation window. Empty strings from the
         // request-modal date pickers coerce to null so an "I need
         // this whenever" request doesn't accidentally persist today's
@@ -343,29 +338,25 @@ class ViewAssetsController extends Controller
         // textarea doesn't persist a blank row and then leak an empty
         // "Additional Notes" block into the admin's mail.
         $notes = $request->filled('notes') ? $request->input('notes') : null;
+        $qty = $request->has('request-quantity')
+            ? max(1, (int) $request->input('request-quantity'))
+            : 1;
 
-        [$logaction, $data] = $this->buildRequestContext($request, $item, $fullItemType, $itemType);
-
-        // Feed the notification so admins see the window right in
-        // the "new request" email/slack. Blank values stay out of
-        // the mail per the template's isset+non-empty guards. `note`
-        // (singular) is the existing template key for the additional-
-        // notes row; reusing it means the mail + slack layouts pick
-        // this up without changes.
-        $data['start_date'] = $startDate;
-        $data['end_date'] = $endDate;
-        $data['note'] = $notes;
-
-        $item->request($data['item_quantity'], $startDate, $endDate, $notes);
-
-        $settings = Setting::getSettings();
-        if (($settings->alert_email != '') && ($settings->alerts_enabled == '1') && (! config('app.lock_passwords'))) {
-            $logaction->logaction('requested');
-            try {
-                $settings->notify((new RequestAssetNotification($data))->locale($settings->locale));
-            } catch (Exception $e) {
-                Log::warning('Could not send asset request notification: '.$e->getMessage());
-            }
+        try {
+            CreateCheckoutRequestAction::run(
+                $item,
+                auth()->user(),
+                $qty,
+                $startDate,
+                $endDate,
+                $notes,
+            );
+        } catch (\App\Exceptions\ItemNotRequestable $e) {
+            return redirect()->back()->with('error', trans('admin/hardware/message.requests.error'));
+        } catch (AuthorizationException $e) {
+            return redirect()->back()->with('error', trans('general.insufficient_permissions'));
+        } catch (\App\Exceptions\DuplicateCheckoutRequest $e) {
+            return redirect()->back()->with('error', trans('admin/hardware/message.requests.duplicate'));
         }
 
         return $this->redirectAfterRequestAction($request, 'admin/hardware/message.requests.success');
@@ -388,7 +379,7 @@ class ViewAssetsController extends Controller
             }
 
             return $redirect;
-        } catch (AssetNotRequestable $e) {
+        } catch (ItemNotRequestable $e) {
             return redirect()->back()->with('error', 'Asset is not requestable');
         } catch (\App\Exceptions\DuplicateCheckoutRequest $e) {
             return redirect()->back()->with('error', trans('admin/hardware/message.requests.duplicate'));

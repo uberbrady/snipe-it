@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\CheckoutRequests\CancelCheckoutRequestAction;
 use App\Actions\CheckoutRequests\CreateCheckoutRequestAction;
-use App\Exceptions\AssetNotRequestable;
 use App\Exceptions\DuplicateCheckoutRequest;
+use App\Exceptions\ItemNotRequestable;
 use App\Exceptions\NoActiveCheckoutRequest;
 use App\Helpers\Helper;
 use App\Http\Controllers\Controller;
@@ -153,7 +153,7 @@ class CheckoutRequest extends Controller
             CreateCheckoutRequestAction::run($asset, auth()->user());
 
             return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/hardware/message.requests.success')));
-        } catch (AssetNotRequestable $e) {
+        } catch (ItemNotRequestable $e) {
             return response()->json(Helper::formatStandardApiResponse('error', 'Asset is not requestable'));
         } catch (DuplicateCheckoutRequest $e) {
             return response()->json(
@@ -221,42 +221,36 @@ class CheckoutRequest extends Controller
 
     /**
      * Shared create-request flow for Consumable + Component + License.
-     * Kept separate from the Asset store() path so the Asset flow can
-     * continue to use CreateCheckoutRequestAction (which owns the
-     * assets-only requests_counter denormalization). The trait's
-     * isFlaggedRequestable() check enforces BOTH the requestable flag
-     * AND (via the CompanyableTrait global scope) the caller's FMCS +
-     * location reach.
+     * Delegates to CreateCheckoutRequestAction, which owns the uniform
+     * actionlog + notification path across every requestable type
+     * (and gates the Asset-specific requests_counter increment).
      */
     private function createRequestFor($requestable): JsonResponse
     {
         try {
-            if (! $requestable || ! $requestable->isFlaggedRequestable()) {
-                return response()->json(
-                    Helper::formatStandardApiResponse('error', null, trans('admin/hardware/message.requests.error')),
-                    403,
-                );
-            }
-
-            $user = auth()->user();
-
-            if ($requestable->isRequestedBy($user)) {
-                return response()->json(
-                    Helper::formatStandardApiResponse('error', null, trans('admin/hardware/message.requests.duplicate')),
-                    409,
-                );
-            }
-
-            $requestable->request();
-
-            $this->fireRequestNotification($requestable, $user, 'requested');
-
-            return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/hardware/message.requests.success')));
+            CreateCheckoutRequestAction::run($requestable, auth()->user());
+        } catch (ItemNotRequestable $e) {
+            return response()->json(
+                Helper::formatStandardApiResponse('error', null, trans('admin/hardware/message.requests.error')),
+                403,
+            );
+        } catch (AuthorizationException $e) {
+            return response()->json(
+                Helper::formatStandardApiResponse('error', null, trans('general.insufficient_permissions')),
+                403,
+            );
+        } catch (DuplicateCheckoutRequest $e) {
+            return response()->json(
+                Helper::formatStandardApiResponse('error', null, trans('admin/hardware/message.requests.duplicate')),
+                409,
+            );
         } catch (Exception $e) {
             report($e);
 
             return response()->json(Helper::formatStandardApiResponse('error', null, trans('general.something_went_wrong')));
         }
+
+        return response()->json(Helper::formatStandardApiResponse('success', null, trans('admin/hardware/message.requests.success')));
     }
 
     /**
