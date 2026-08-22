@@ -45,6 +45,7 @@ class CheckoutRequestsTransformer
         // itemRequested() (which hydrates the model) rather than
         // requestedItem() (which returns the MorphTo relation itself).
         $item = $request->itemRequested();
+        /** @var \App\Models\User|null $requester */
         $requester = $request->user;
 
         return [

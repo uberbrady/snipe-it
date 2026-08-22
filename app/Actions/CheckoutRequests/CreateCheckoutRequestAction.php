@@ -4,9 +4,14 @@ namespace App\Actions\CheckoutRequests;
 
 use App\Exceptions\DuplicateCheckoutRequest;
 use App\Exceptions\ItemNotRequestable;
+use App\Models\Accessory;
 use App\Models\Actionlog;
 use App\Models\Asset;
+use App\Models\AssetModel;
 use App\Models\Company;
+use App\Models\Component;
+use App\Models\Consumable;
+use App\Models\License;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\RequestAssetNotification;
@@ -33,7 +38,7 @@ class CreateCheckoutRequestAction
      *     an Asset-specific denormalization; other types don't have one)
      *   - fires the admin-alert notification
      *
-     * @param  Model  $requestable  Must be a requestable-trait user
+     * @param  Accessory|Asset|AssetModel|Component|Consumable|License  $requestable
      * @param  int|null  $qty  Quantity for qty-tracked types (defaults to 1)
      * @param  string|null  $startDate  Optional reservation window start
      * @param  string|null  $endDate  Optional reservation window end
@@ -51,7 +56,7 @@ class CreateCheckoutRequestAction
         ?string $endDate = null,
         ?string $notes = null,
     ): bool {
-        if (! method_exists($requestable, 'isFlaggedRequestable') || ! $requestable->isFlaggedRequestable()) {
+        if (! $requestable->isFlaggedRequestable()) {
             throw new ItemNotRequestable;
         }
         if (! Company::isCurrentUserHasAccess($requestable)) {

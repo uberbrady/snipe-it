@@ -1942,7 +1942,7 @@ class AssetsController extends Controller
                 break;
         }
 
-        $assets->requestableAssets();
+        $assets->requestable();
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $total = $assets->count();

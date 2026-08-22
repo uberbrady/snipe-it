@@ -113,6 +113,9 @@ class CheckoutRequest extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
@@ -123,7 +126,7 @@ class CheckoutRequest extends Model
         return $this->user()->withTrashed()->first();
     }
 
-    public function requestedItem()
+    public function requestedItem(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo('requestable');
     }
@@ -135,7 +138,7 @@ class CheckoutRequest extends Model
      * requestable_type/requestable_id find it under the expected
      * key. Older callers keep using requestedItem() unchanged.
      */
-    public function requestable()
+    public function requestable(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo();
     }

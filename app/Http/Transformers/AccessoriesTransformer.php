@@ -96,7 +96,7 @@ class AccessoriesTransformer
         // standard index endpoint doesn't preload requests, so the
         // relationLoaded gate keeps a per-row query out of that path.
         $userHasOpenRequest = auth()->check() && $accessory->relationLoaded('requests') && $accessory->requests->contains(
-            fn ($request) => $request->user_id === auth()->id() && $request->canceled_at === null
+            fn (\App\Models\CheckoutRequest $request) => $request->user_id === auth()->id() && $request->canceled_at === null
         );
 
         $permissions_array = [];

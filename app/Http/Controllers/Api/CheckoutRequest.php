@@ -298,7 +298,7 @@ class CheckoutRequest extends Controller
     private function fireRequestNotification($requestable, User $user, string $action): void
     {
         $settings = Setting::getSettings();
-        if ($settings->alert_email === '' || $settings->alerts_enabled !== '1' || config('app.lock_passwords')) {
+        if ($settings->alert_email == '' || $settings->alerts_enabled != '1' || config('app.lock_passwords')) {
             return;
         }
 

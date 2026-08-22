@@ -15,6 +15,10 @@ class RequestAssetCancelation extends Notification
 {
     private $params;
 
+    public $start_date;
+
+    public $end_date;
+
     /**
      * Create a new notification instance.
      */

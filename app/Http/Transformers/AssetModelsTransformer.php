@@ -93,7 +93,7 @@ class AssetModelsTransformer
         // relationLoaded gate keeps a per-row query out of that path.
         // Mirrors the shape AccessoriesTransformer uses.
         $userHasOpenRequest = auth()->check() && $assetmodel->relationLoaded('requests') && $assetmodel->requests->contains(
-            fn ($request) => $request->user_id === auth()->id() && $request->canceled_at === null
+            fn (\App\Models\CheckoutRequest $request) => $request->user_id === auth()->id() && $request->canceled_at === null
         );
 
         $array['assigned_to_self'] = $userHasOpenRequest;

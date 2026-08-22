@@ -85,13 +85,9 @@ class FulfillCheckoutRequestListener
         // Pass the event's quantity through so partial-fulfillment
         // tracking works. A request for 5 pens that gets a checkout
         // of 3 should advance fulfilled_quantity by 3 (not by the
-        // full remainder). null qty on the event (older single-
-        // target flows without a qty concept) falls back to the
-        // "consume the whole remainder" default in the action.
-        $eventQty = property_exists($event, 'quantity') ? (int) $event->quantity : null;
-        if ($eventQty !== null && $eventQty < 1) {
-            $eventQty = null;
-        }
+        // full remainder). Non-positive falls back to "consume the
+        // whole remainder" in the action.
+        $eventQty = $event->quantity > 0 ? $event->quantity : null;
 
         foreach ($openRequests as $request) {
             try {

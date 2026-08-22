@@ -80,7 +80,7 @@ class LicensesTransformer
         // index endpoint doesn't preload requests, so gate on
         // relationLoaded to avoid a per-row query.
         $userHasOpenRequest = auth()->check() && $license->relationLoaded('requests') && $license->requests->contains(
-            fn ($request) => $request->user_id === auth()->id() && $request->canceled_at === null
+            fn (\App\Models\CheckoutRequest $request) => $request->user_id === auth()->id() && $request->canceled_at === null
         );
         $permissions_array = [];
         $permissions_array['assigned_to_self'] = $userHasOpenRequest;
