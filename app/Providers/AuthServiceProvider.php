@@ -180,6 +180,28 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
+        // True when the user has checkout permission on at least
+        // one of the five checkoutable types. Named for the
+        // underlying question ("can this user check out anything
+        // at all?") rather than a specific consumer surface, so
+        // it reads sensibly at every callsite:
+        //   - /requests page + API endpoint + nav link + bulk-
+        //     cancel bulk-actions widget: gate on this
+        //   - future consumers (any per-type checkout screen that
+        //     wants a "can this admin fulfill anything?" check)
+        //     inherit the same shape
+        // AssetModel isn't in the list because it has no
+        // models.checkout permission - model requests fulfill via
+        // checking out an Asset, so admins with assets.checkout
+        // implicitly cover both.
+        Gate::define('canCheckoutAtLeastOneItemType', function ($user) {
+            return $user->can('checkout', Asset::class)
+                || $user->can('checkout', Accessory::class)
+                || $user->can('checkout', Consumable::class)
+                || $user->can('checkout', Component::class)
+                || $user->can('checkout', License::class);
+        });
+
         Gate::define('assets.view.encrypted_custom_fields', function ($user) {
             if ($user->hasAccess('assets.view.encrypted_custom_fields')) {
                 return true;

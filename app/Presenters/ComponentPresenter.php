@@ -153,6 +153,16 @@ class ComponentPresenter extends Presenter
                 'class' => 'text-right',
                 'footerFormatter' => 'sumFormatter',
             ], [
+                // Field name matches transformer key + HasOrders relation).
+                'field' => 'orders',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'switchable' => true,
+                'visible' => true,
+                'title' => trans('general.order_number'),
+                'formatter' => 'ordersSummaryFormatter',
+            ], [
                 'field' => 'total_cost',
                 'scope' => 'col',
                 'searchable' => false,
@@ -168,6 +178,15 @@ class ComponentPresenter extends Presenter
                 'visible' => false,
                 'title' => trans('general.notes'),
                 'formatter' => 'notesFormatter',
+            ], [
+                'field' => 'requestable',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => true,
+                'switchable' => true,
+                'visible' => false,
+                'title' => trans('admin/hardware/general.requestable'),
+                'formatter' => 'trueFalseFormatter',
             ], [
                 'field' => 'created_by',
                 'scope' => 'col',
@@ -311,5 +330,66 @@ class ComponentPresenter extends Presenter
     public function viewUrl()
     {
         return route('components.show', $this->id);
+    }
+
+    /**
+     * Column layout for the components tab on /account/requestable.
+     * Same shape as AccessoryPresenter::dataTableLayoutRequestable;
+     * paired with api.components.requestable + ComponentsTransformer.
+     */
+    public static function dataTableLayoutRequestable(): string
+    {
+        return json_encode([
+            [
+                'field' => 'image',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('general.image'),
+                'formatter' => 'imageFormatter',
+            ], [
+                'field' => 'name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => true,
+                'title' => trans('general.name'),
+                'formatter' => 'componentRequestableNameFormatter',
+            ], [
+                'field' => 'category',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.category'),
+                'formatter' => 'categoriesLinkObjFormatter',
+            ], [
+                'field' => 'company.name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('general.company'),
+            ], [
+                'field' => 'location.name',
+                'scope' => 'col',
+                'searchable' => true,
+                'sortable' => false,
+                'title' => trans('admin/hardware/table.location'),
+            ], [
+                'field' => 'remaining',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'title' => trans('admin/components/general.remaining'),
+            ], [
+                'field' => 'actions',
+                'scope' => 'col',
+                'searchable' => false,
+                'sortable' => false,
+                'switchable' => false,
+                'title' => trans('table.actions'),
+                'formatter' => 'componentRequestableActionsFormatter',
+                'printIgnore' => true,
+                'class' => 'hidden-print',
+            ],
+        ]);
     }
 }

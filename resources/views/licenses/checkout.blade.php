@@ -46,7 +46,7 @@
                     <x-input.user-select
                         :label="trans('general.user')"
                         name="assigned_to"
-                        :selected="old('assigned_to')"
+                        :selected="old('assigned_to', $checkoutRequest?->user_id)"
                         :companyId="$license->company_id"
                         :style="(session('checkout_to_type') ?: 'user') == 'user' ? null : 'display: none;'"
                     />
@@ -131,6 +131,8 @@
         </x-page-column>
 
         <x-page-column class="col-md-5">
+            <x-checkout-request-context :request="$checkoutRequest ?? null" :requestable="$license" />
+
             <livewire:checkout-target-panel type="licenses" />
         </x-page-column>
 

@@ -58,6 +58,12 @@ class ComponentsTransformer
             'model_number' => ($component->model_number) ? e($component->model_number) : null,
             // See AccessoriesTransformer for why order_number is no longer
             // in the parent-level output.
+            //
+            // Distinct order numbers this component has been purchased on,
+            // pulled from the eager-loaded orderItems.order relation
+            // (Api\ComponentsController::index preloads it). Feeds the
+            // datatable's ordersSummaryFormatter.
+            'orders' => $component->orderItems->pluck('order.order_number')->filter()->unique()->values()->all(),
             'purchase_date' => ($lastDefaults['purchase_date'] ?? null) ? Helper::getFormattedDateObject($lastDefaults['purchase_date'], 'date') : null,
             'purchase_cost' => Helper::formatCurrencyOutput($lastDefaults['unit_cost'] ?? null),
             'total_cost' => Helper::formatCurrencyOutput($component->totalCostSum()),
@@ -69,6 +75,7 @@ class ComponentsTransformer
                 'tag_color' => $component->company->tag_color ? e($component->company->tag_color) : null,
             ] : null,
             'notes' => ($component->notes) ? Helper::parseEscapedMarkedownInline($component->notes) : null,
+            'requestable' => (bool) $component->requestable,
             'created_by' => ($component->adminuser) ? [
                 'id' => (int) $component->adminuser->id,
                 'name' => e($component->adminuser->display_name),
@@ -78,6 +85,16 @@ class ComponentsTransformer
             'user_can_checkout' => ($component->numRemaining() > 0) ? 1 : 0,
         ];
 
+        // See AccessoriesTransformer for the assigned_to_self /
+        // available_actions.request/cancel rationale. relationLoaded
+        // gate keeps the standard-index path from firing an N+1 (only
+        // the requestable() endpoint preloads `requests`).
+        $userHasOpenRequest = auth()->check() && $component->relationLoaded('requests') && $component->requests->contains(
+            fn (\App\Models\CheckoutRequest $request) => $request->user_id === auth()->id() && $request->canceled_at === null
+        );
+        $permissions_array = [];
+        $permissions_array['assigned_to_self'] = $userHasOpenRequest;
+
         $permissions_array['available_actions'] = [
             'checkout' => Gate::allows('checkout', Component::class),
             'checkin' => Gate::allows('checkin', Component::class),
@@ -85,6 +102,8 @@ class ComponentsTransformer
             'adjust_quantity' => Gate::allows('update', Component::class),
             'clone' => Gate::allows('create', Component::class),
             'delete' => $component->isDeletable(),
+            'request' => (bool) $component->requestable && ! $userHasOpenRequest,
+            'cancel' => (bool) $component->requestable && $userHasOpenRequest,
         ];
         $array += $permissions_array;
 

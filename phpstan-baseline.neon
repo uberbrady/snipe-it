@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Method App\\Actions\\CheckoutRequests\\CreateCheckoutRequestAction\:\:run\(\) should return string but returns true\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Actions/CheckoutRequests/CreateCheckoutRequestAction.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Company\:\:\$accessories_count\.$#'
 			identifier: property.notFound
 			count: 1
@@ -205,26 +199,14 @@ parameters:
 			path: app/Console/Commands/CheckinAndDeleteItems.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\CheckoutRequest\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/CleanOldCheckoutRequests.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\CheckoutRequest\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/CleanOldCheckoutRequests.php
-
-		-
-			message: '#^Relation ''requestedItem'' is not found in App\\Models\\CheckoutRequest model\.$#'
-			identifier: larastan.relationExistence
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:trashed\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Console/Commands/CleanOldCheckoutRequests.php
 
 		-
-			message: '#^Relation ''user'' is not found in App\\Models\\CheckoutRequest model\.$#'
-			identifier: larastan.relationExistence
+			message: '#^PHPDoc tag @var has invalid value \(\\Illuminate\\Database\\Eloquent\\Model&object\{trashed\(\)\: bool\} \$requestable\)\: Unexpected token "\(", expected ''\:'' at offset 59 on line 1$#'
+			identifier: phpDoc.parseError
 			count: 1
 			path: app/Console/Commands/CleanOldCheckoutRequests.php
 
@@ -625,6 +607,12 @@ parameters:
 			path: app/Console/Commands/Version.php
 
 		-
+			message: '#^Variable \$app_version might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: app/Console/Commands/Version.php
+
+		-
 			message: '#^Strict comparison using \=\=\= between bool\|null and 1 will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
@@ -951,7 +939,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\AccessoryCheckout\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
 
 		-
@@ -2023,12 +2011,6 @@ parameters:
 			path: app/Http/Controllers/Api/UploadedFilesController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/UsersController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withoutTrashed\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -2069,12 +2051,6 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/UsersController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetModelsController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\AssetModel\:\:\$created_by\.$#'
@@ -2263,12 +2239,6 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetsController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\CheckoutRequest\:\:\$requestable\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$asset_tag\.$#'
 			identifier: property.notFound
 			count: 2
@@ -2361,12 +2331,6 @@ parameters:
 		-
 			message: '#^Property App\\Models\\Asset\:\:\$id \(int\) does not accept null\.$#'
 			identifier: assign.propertyType
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\CheckoutRequest model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Assets/AssetsController.php
 
@@ -2757,7 +2721,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Components/ComponentCheckoutController.php
 
 		-
@@ -2835,7 +2799,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Consumables/ConsumableCheckoutController.php
 
 		-
@@ -3415,6 +3379,18 @@ parameters:
 			path: app/Http/Controllers/Reports/CustomComponentReportController.php
 
 		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:onlyTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Reports/CustomConsumableReportController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Reports/CustomConsumableReportController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
 			identifier: property.notFound
 			count: 2
@@ -3831,7 +3807,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Users/UsersController.php
 
 		-
@@ -3891,12 +3867,6 @@ parameters:
 		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$assetId$#'
 			identifier: parameter.notFound
-			count: 1
-			path: app/Http/Controllers/ViewAssetsController.php
-
-		-
-			message: '#^Relation ''requests'' is not found in App\\Models\\AssetModel model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/ViewAssetsController.php
 
@@ -4567,12 +4537,6 @@ parameters:
 			path: app/Importer/Importer.php
 
 		-
-			message: '#^Access to an undefined property App\\Importer\\Importer\:\:\$send_welcome\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Importer/Importer.php
-
-		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 5
@@ -4773,13 +4737,13 @@ parameters:
 		-
 			message: '#^Method App\\Importer\\ItemImporter\:\:determineCheckout\(\) should return App\\Importer\\SnipeModel\|null but returns App\\Models\\Location\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Location\>\.$#'
 			identifier: return.type
-			count: 1
+			count: 2
 			path: app/Importer/ItemImporter.php
 
 		-
 			message: '#^Method App\\Importer\\ItemImporter\:\:determineCheckout\(\) should return App\\Importer\\SnipeModel\|null but returns App\\Models\\User\.$#'
 			identifier: return.type
-			count: 1
+			count: 2
 			path: app/Importer/ItemImporter.php
 
 		-
@@ -5755,6 +5719,12 @@ parameters:
 			path: app/Models/Accessory.php
 
 		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Accessory\) and ''numRemaining'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
 			message: '#^Cannot access property \$id on class\-string\|object\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -5841,6 +5811,12 @@ parameters:
 		-
 			message: '#^Property App\\Models\\Accessory\:\:\$searchableRelations \(array\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
+			count: 1
+			path: app/Models/Accessory.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between class\-string\<static\(App\\Models\\Accessory\)\> and ''App\\\\Models\\\\AssetModel'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/Accessory.php
 
@@ -6133,6 +6109,12 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^Offset class\-string\<static\(App\\Models\\Asset\)\> on array\{App\\Models\\Accessory\: ''accessories\.fulfill…'', App\\Models\\Consumable\: ''consumables\.fulfill…'', App\\Models\\Component\: ''components\.fulfill…'', App\\Models\\License\: ''licenses\.fulfill…'', App\\Models\\AssetModel\: ''models\.fulfill…''\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/Asset.php
+
+		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$acceptedBy$#'
 			identifier: parameter.notFound
 			count: 1
@@ -6313,8 +6295,20 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
+			message: '#^Strict comparison using \=\=\= between null and null will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: app/Models/Asset.php
+
+		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Models/Asset.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
 			count: 1
 			path: app/Models/Asset.php
 
@@ -6511,6 +6505,12 @@ parameters:
 			path: app/Models/AssetModel.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>require_acceptance" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/AssetModel.php
+
+		-
 			message: '#^Method App\\Models\\Builders\\MaintenanceQueryBuilder\:\:active\(\) should return static\(App\\Models\\Builders\\MaintenanceQueryBuilder\) but returns App\\Models\\Builders\\MaintenanceQueryBuilder\.$#'
 			identifier: return.type
 			count: 1
@@ -6659,6 +6659,18 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Models/CheckoutAcceptance.php
+
+		-
+			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Models/CheckoutRequest.php
+
+		-
+			message: '#^Unsafe access to private property App\\Models\\CheckoutRequest\:\:\$customFieldFilterMapCache through static\:\:\.$#'
+			identifier: staticClassAccess.privateProperty
+			count: 4
+			path: app/Models/CheckoutRequest.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$category\.$#'
@@ -6991,6 +7003,12 @@ parameters:
 			path: app/Models/Component.php
 
 		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Component\) and ''numRemaining'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Component.php
+
+		-
 			message: '#^Cannot access property \$id on class\-string\|object\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -7041,6 +7059,12 @@ parameters:
 		-
 			message: '#^Property App\\Models\\Component\:\:\$searchableRelations \(array\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
+			count: 1
+			path: app/Models/Component.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between class\-string\<static\(App\\Models\\Component\)\> and ''App\\\\Models\\\\AssetModel'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/Component.php
 
@@ -7213,6 +7237,12 @@ parameters:
 			path: app/Models/Consumable.php
 
 		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\Consumable\) and ''numRemaining'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
 			message: '#^Cannot access property \$id on class\-string\|object\.$#'
 			identifier: property.nonObject
 			count: 1
@@ -7227,12 +7257,6 @@ parameters:
 		-
 			message: '#^Method App\\Models\\Consumable\:\:getLatestSignedAcceptance\(\) should return App\\Models\\Actionlog\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Models/Consumable.php
-
-		-
-			message: '#^Method App\\Models\\Consumable\:\:setRequestableAttribute\(\) should return Illuminate\\Database\\Eloquent\\Relations\\Relation but return statement is missing\.$#'
-			identifier: return.missing
 			count: 1
 			path: app/Models/Consumable.php
 
@@ -7275,6 +7299,12 @@ parameters:
 		-
 			message: '#^Property App\\Models\\Consumable\:\:\$searchableRelations \(array\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
+			count: 1
+			path: app/Models/Consumable.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between class\-string\<static\(App\\Models\\Consumable\)\> and ''App\\\\Models\\\\AssetModel'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/Consumable.php
 
@@ -7963,6 +7993,12 @@ parameters:
 			path: app/Models/License.php
 
 		-
+			message: '#^Call to function method_exists\(\) with \$this\(App\\Models\\License\) and ''numRemaining'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Models/License.php
+
+		-
 			message: '#^Method App\\Models\\License\:\:adjustSeatCount\(\) should return Illuminate\\Database\\Eloquent\\Relations\\Relation but returns false\.$#'
 			identifier: return.type
 			count: 1
@@ -8019,6 +8055,12 @@ parameters:
 		-
 			message: '#^Property App\\Models\\License\:\:\$searchableRelations \(array\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
+			count: 1
+			path: app/Models/License.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between class\-string\<static\(App\\Models\\License\)\> and ''App\\\\Models\\\\AssetModel'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Models/License.php
 
@@ -9285,13 +9327,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
+			count: 2
 			path: app/Notifications/CheckinAssetNotification.php
 
 		-
@@ -11035,6 +11071,12 @@ parameters:
 			path: app/Services/PredefinedKitCheckoutService.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/PredefinedKitCheckoutService.php
+
+		-
 			message: '#^Call to method getAttributes\(\) on an unknown class App\\Services\\OneLogin\\Saml2\\Auth\.$#'
 			identifier: class.notFound
 			count: 1
@@ -11765,4 +11807,3 @@ parameters:
 			identifier: match.unhandled
 			count: 2
 			path: routes/web.php
-

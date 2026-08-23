@@ -967,25 +967,87 @@ class AssetsController extends Controller
         return redirect()->back()->withInput()->withErrors($asset->getErrors());
     }
 
-    public function getRequestedIndex($user_id = null)
+    public function getRequestedIndex()
     {
-        $this->authorize('index', Asset::class);
+        $this->authorize('canCheckoutAtLeastOneItemType');
 
-        $requestedItems = CheckoutRequest::with('user', 'requestedItem')->whereNull('canceled_at');
+        return view('hardware/requested');
+    }
 
-        if ($user_id) {
-            $requestedItems->where('user_id', $user_id);
+    /**
+     * Bulk-cancel companion to the /requests admin page. Takes an
+     * ids[] payload of CheckoutRequest primary keys, cancels each open
+     * request the caller has FMCS access to, and flashes a summary.
+     *
+     * Idempotent: rows that are already canceled, rows the caller
+     * cannot see under FMCS, and rows whose requestable has been
+     * deleted all silently skip rather than error out - this endpoint
+     * is invoked from a checkbox selection where any subset can be
+     * stale between "load table" and "click Go".
+     */
+    public function bulkCancelRequests(Request $request): RedirectResponse
+    {
+        // Endpoint-level gate uses the shared canCheckoutAtLeastOneItemType
+        // check (same as the /requests page + API endpoint + nav
+        // link) so an accessories-only admin can access this
+        // handler for their in-scope rows. Per-row checkout-perm
+        // filtering below narrows to just the types they can act on.
+        $this->authorize('canCheckoutAtLeastOneItemType');
+
+        $ids = $request->input('ids', []);
+        if (! is_array($ids) || empty($ids)) {
+            return redirect()->route('requests.index')
+                ->with('error', trans('general.bulk.delete.nothing_selected', [
+                    'object_type' => trans('admin/hardware/general.requested'),
+                ]));
         }
 
-        $requestedItems = $requestedItems->orderBy('created_at', 'desc')->get();
+        $requests = CheckoutRequest::with('requestedItem')
+            ->whereIn('id', $ids)
+            ->whereNull('canceled_at')
+            ->get();
 
-        if (Company::isFullMultipleCompanySupportEnabled() && ! auth()->user()->isSuperUser()) {
-            $requestedItems = $requestedItems->filter(
-                fn (CheckoutRequest $request) => $request->requestable
-                    && Company::isCurrentUserHasAccess($request->requestable)
-            )->values();
+        $user = auth()->user();
+        $canceled = 0;
+        foreach ($requests as $checkoutRequest) {
+            $requestable = $checkoutRequest->itemRequested();
+
+            if (! $requestable) {
+                continue;
+            }
+
+            if (! Company::isCurrentUserHasAccess($requestable)) {
+                continue;
+            }
+
+            // Per-row checkout-permission filter. A hand-crafted
+            // POST from an accessories-only admin bundling asset
+            // request ids must not slip through the endpoint-level
+            // "checkout ANY" gate. Mirrors the per-row filter on
+            // Api\CheckoutRequest::index, with AssetModel riding
+            // on Asset checkout the same way.
+            $permissionType = $checkoutRequest->requestable_type === AssetModel::class
+                ? Asset::class
+                : $checkoutRequest->requestable_type;
+            if (! $user->isSuperUser() && ! $user->can('checkout', $permissionType)) {
+                continue;
+            }
+
+            // cancelRequest returns the affected row count. Only tally
+            // rows that this call actually flipped so the flash message
+            // reflects what really happened (not just what was asked).
+            $affected = $requestable->cancelRequest($checkoutRequest->user_id);
+            if ($affected > 0) {
+                $canceled += $affected;
+            }
         }
 
-        return view('hardware/requested', compact('requestedItems'));
+        if ($canceled === 0) {
+            return redirect()->route('requests.index')
+                ->with('warning', trans('admin/hardware/message.requests.no_active'));
+        }
+
+        return redirect()->route('requests.index')
+            ->with('success', trans('admin/hardware/message.requests.canceled'));
     }
 }

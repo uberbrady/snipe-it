@@ -22,6 +22,7 @@ class AssetObserver
         $attributesOriginal = $asset->getRawOriginal();
         $same_checkout_counter = false;
         $same_checkin_counter = false;
+        $same_requests_counter = false;
         $restoring_or_deleting = false;
 
         // This is a gross hack to prevent the double logging when restoring an asset
@@ -37,12 +38,21 @@ class AssetObserver
             $same_checkin_counter = (($attributes['checkin_counter'] == $attributesOriginal['checkin_counter']));
         }
 
+        // requests_counter is a denorm bump fired by CreateCheckoutRequestAction /
+        // CancelCheckoutRequestAction. The `requested` and `request canceled`
+        // actionlogs those actions write already cover the user-visible history;
+        // this gate keeps the counter save from adding a redundant `update` row
+        // for the same event.
+        if (array_key_exists('requests_counter', $attributes) && array_key_exists('requests_counter', $attributesOriginal)) {
+            $same_requests_counter = (($attributes['requests_counter'] == $attributesOriginal['requests_counter']));
+        }
+
         // If the asset isn't being checked out, log the update.
         // (Checkout/checkin/audit actions already create their own log entries; the audit
         // path uses unsetEventDispatcher() so it never reaches this observer.)
         if (array_key_exists('assigned_to', $attributes) && array_key_exists('assigned_to', $attributesOriginal)
             && ($attributes['assigned_to'] == $attributesOriginal['assigned_to'])
-            && ($same_checkout_counter) && ($same_checkin_counter)
+            && ($same_checkout_counter) && ($same_checkin_counter) && ($same_requests_counter)
             && ($attributes['last_checkout'] == $attributesOriginal['last_checkout']) && (! $restoring_or_deleting)) {
             $changed = [];
 

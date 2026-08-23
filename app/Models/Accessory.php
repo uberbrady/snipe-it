@@ -186,7 +186,7 @@ class Accessory extends SnipeModel
      * Scope query to only requestable accessories. Unlike assets, accessories
      * have no deployable status to check, so the flag is all we need here.
      */
-    public function scopeRequestableAccessories($query)
+    public function scopeRequestable($query)
     {
         return $query->where('accessories.requestable', '1');
     }
@@ -598,6 +598,6 @@ class Accessory extends SnipeModel
     {
         $direction = strtolower($order) === 'asc' ? 'asc' : 'desc';
 
-        return $query->orderByRaw('(accessories.qty - checkouts_count) ' . $direction);
+        return $query->orderByRaw('(accessories.qty - checkouts_count) '.$direction);
     }
 }

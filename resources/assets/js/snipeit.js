@@ -280,6 +280,59 @@ $(function () {
         $modal.modal('show');
     });
 
+    // Request-item modal (on /account/requestable-assets). Trigger
+    // buttons carry data-request-url + data-item-name + data-current-qty
+    // so the modal can post to the correct endpoint and reset its
+    // qty/date fields between opens. Cancel case (the item is already
+    // requested by this user) POSTs synchronously via a small inline
+    // form on the row instead of routing through this modal, so a
+    // requested row never opens it.
+    $el.on('click', '.request-item', function () {
+        var $btn = $(this);
+        var $modal = $('#requestItemModal');
+        var $form = $('#requestItemForm');
+
+        $form.attr('action', $btn.data('request-url'));
+        $modal.find('.request-item-name').text($btn.data('item-name') || '');
+
+        var currentQty = parseInt($btn.data('current-qty'), 10);
+        $modal.find('#requestItemQuantity').val(!isNaN(currentQty) && currentQty > 0 ? currentQty : 1);
+
+        // Hide the qty row for types where qty is meaningless.
+        // Assets are 1:1 (you request THE asset, not N of it).
+        // Licenses are one-seat-per-request by convention (nobody
+        // realistically asks for 3 seats of Photoshop for
+        // themselves). The input stays in the DOM with value=1 so
+        // the POST shape stays uniform across every requestable
+        // type; only the row is display:none.
+        var itemType = ($btn.data('item-type') || '').toString().toLowerCase();
+        var hidesQty = itemType === 'asset' || itemType === 'license';
+        $modal.find('#requestItemQuantityRow').toggle(!hidesQty);
+        if (hidesQty) {
+            $modal.find('#requestItemQuantity').val(1);
+        }
+
+        // Reset dates + notes every open so state left in the modal
+        // by an earlier click can't leak into the next request.
+        $modal.find('#requestItemStartDate').val('');
+        $modal.find('#requestItemEndDate').val('');
+        $modal.find('#requestItemNotes').val('');
+
+        // Snapshot the tab the requester is on so the controller can
+        // restore it on the post-submit redirect. Walks up to the
+        // enclosing .tab-pane and reads its id; the assets tab uses
+        // an API-backed row-formatter that emits the same
+        // data-active-tab attr on its request button (see
+        // assetRequestActionsFormatter) so this handler works there
+        // too without needing the DOM parent.
+        var explicitTab = $btn.data('active-tab');
+        var $tabPane = $btn.closest('.tab-pane');
+        var activeTab = explicitTab || ($tabPane.length ? $tabPane.attr('id') : '');
+        $modal.find('#requestItemActiveTab').val(activeTab || '');
+
+        $modal.modal('show');
+    });
+
     // confirm delete modal
     $el.on('click', '.delete-asset', function (evnt) {
         var $context = $(this);
@@ -357,6 +410,16 @@ $(function () {
                         statusType: link.data("asset-status-type"),
                         companyId: link.data("company-ids") || link.data("company-id"),
                         excludeId: link.data("exclude-id"),
+                        // Pre-scope the hardware picker to a user's
+                        // assigned assets. Currently used by the
+                        // components-checkout screen when reached via
+                        // a /requests row (see the requesting_user
+                        // wiring in ComponentsController + the checkout
+                        // blade). The API endpoint gracefully falls
+                        // back to the unfiltered list when the target
+                        // user has no assigned assets, so an empty
+                        // pre-filter doesn't lock the admin out.
+                        assignedTo: link.data("assigned-to"),
                         // When true, the companies selectlist marks child companies
                         // (those with a parent of their own) as disabled — used by
                         // the parent-company picker so users can't choose options
@@ -1330,6 +1393,87 @@ $(function () {
         var scope = $master.data('check-scope');
         var $container = scope ? $(scope) : $master.closest('form, table');
         $container.find('input[type="checkbox"]').not($master).not(':disabled').prop('checked', $master.prop('checked'));
+    });
+
+    // Shift-click a row checkbox to apply its new state to every visible,
+    // enabled checkbox between it and the last checkbox clicked in the same
+    // table and checkbox group.
+    var lastListCheckbox = null;
+    var updatingCheckboxRange = false;
+
+    document.addEventListener('click', function (event) {
+        var $checkbox = $(event.target);
+
+        if (updatingCheckboxRange
+            || !$checkbox.is('table tbody input[type="checkbox"]')
+            || $checkbox.is('[data-toggle="check-all"]')) {
+            return;
+        }
+
+        var checkbox = $checkbox[0];
+        var $table = $checkbox.closest('table');
+        var $checkboxes = $table.find('tbody input[type="checkbox"]')
+            .not(':disabled')
+            .not('[data-toggle="check-all"]')
+            .filter(':visible')
+            .filter(function () {
+                return !checkbox.name || this.name === checkbox.name;
+            });
+        var start = $checkboxes.index(lastListCheckbox);
+        var end = $checkboxes.index(checkbox);
+
+        if (event.shiftKey && start !== -1 && end !== -1 && start !== end) {
+            updatingCheckboxRange = true;
+
+            try {
+                $checkboxes.slice(Math.min(start, end), Math.max(start, end) + 1).each(function () {
+                    if (this !== checkbox && this.checked !== checkbox.checked) {
+                        var rowIndex = $(this).data('index');
+
+                        if ($table.data('bootstrap.table') && rowIndex !== undefined) {
+                            $table.bootstrapTable(checkbox.checked ? 'check' : 'uncheck', rowIndex);
+                        } else {
+                            $(this).trigger('click');
+                        }
+                    }
+                });
+            } finally {
+                updatingCheckboxRange = false;
+            }
+        }
+
+        lastListCheckbox = checkbox;
+    }, true);
+
+    // Custom-report "save template" flow. The three custom reports
+    // (asset / component / consumable) each have a small side-panel
+    // form that captures a template name and posts to the templates
+    // store endpoint carrying the current field selections of the
+    // report configuration form. This handler forwards the template
+    // name + report type into the main report form as hidden inputs,
+    // then submits the main form to templates.store. Report type comes
+    // from the save form's data-report-type attribute so a single JS
+    // path covers all three pages.
+    $(document).on('submit', 'form[data-report-save-template]', function (event) {
+        event.preventDefault();
+        var $saveForm = $(this);
+        var reportType = $saveForm.data('report-type');
+        var targetSelector = $saveForm.data('report-form') || '#custom-report-form';
+        var storeUrl = $saveForm.data('store-url') || $saveForm.attr('action');
+        var $targetForm = $(targetSelector);
+        var nameValue = $saveForm.find('[name="name"]').val();
+
+        $('<input>').attr({ type: 'hidden', name: 'name', value: nameValue }).appendTo($targetForm);
+        $('<input>').attr({ type: 'hidden', name: 'type', value: reportType }).appendTo($targetForm);
+
+        $targetForm.attr('action', storeUrl).submit();
+    });
+
+    // Custom-report saved-template select2: navigate to the route stored
+    // on the selected <option>'s data-route attribute. Shared by all
+    // three custom report pages.
+    $(document).on('select2:select', '#saved_report_select', function (event) {
+        window.location.href = event.params.data.element.dataset.route;
     });
 
     // When the "This user can login" (activated) checkbox is off, the

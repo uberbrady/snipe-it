@@ -655,6 +655,20 @@ class AssetsController extends Controller
             $assets->where('assets.id', '!=', (int) $request->input('excludeId'));
         }
 
+        // Pre-scope the picker to a specific user's assigned assets.
+        // Used by the components-checkout screen when reached via a
+        // /requests row: an admin fulfilling a component request wants
+        // to install the part into one of the requester's existing
+        // assets, not hunt across the whole fleet. Empty result is the
+        // honest answer here - if the requester has nothing assigned,
+        // there's no valid install target and the admin should see
+        // that instead of a fallback to the full fleet.
+        if ($request->filled('assignedTo')) {
+            $assignedUserId = (int) $request->input('assignedTo');
+            $assets->where('assets.assigned_to', $assignedUserId)
+                ->where('assets.assigned_type', User::class);
+        }
+
         if ($request->filled('statusType') && $request->input('statusType') === 'RTD') {
             $assets = $assets->RTD();
         }
@@ -1928,7 +1942,7 @@ class AssetsController extends Controller
                 break;
         }
 
-        $assets->requestableAssets();
+        $assets->requestable();
 
         // Make sure the offset and limit are actually integers and do not exceed system limits
         $total = $assets->count();

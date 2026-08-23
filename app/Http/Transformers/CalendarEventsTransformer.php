@@ -42,6 +42,7 @@ class CalendarEventsTransformer
         'license.expiration' => 'general.calendar_event_license_expiration',
         'license.termination' => 'general.calendar_event_license_termination',
         'user.end_date' => 'general.calendar_event_user_end_date',
+        'request.reservation' => 'general.calendar_event_request_reservation',
     ];
 
     /**
@@ -166,6 +167,14 @@ class CalendarEventsTransformer
 
     private function urlFor(Model $source): ?string
     {
+        // Source model can expose calendarUrl() directly (used by
+        // CheckoutRequest which doesn't ride the Presenter/Presentable
+        // chain) or via its presenter (Asset/License/etc use the
+        // presenter path).
+        if (method_exists($source, 'calendarUrl')) {
+            return $source->calendarUrl();
+        }
+
         if (method_exists($source, 'present')) {
             $presenter = $source->present();
             if (method_exists($presenter, 'calendarUrl')) {
@@ -183,6 +192,10 @@ class CalendarEventsTransformer
      */
     private function colorFor(Model $source): ?string
     {
+        if (method_exists($source, 'calendarColor')) {
+            return $source->calendarColor();
+        }
+
         if (method_exists($source, 'present')) {
             $presenter = $source->present();
             if (method_exists($presenter, 'calendarColor')) {

@@ -113,6 +113,10 @@ class AccessoriesController extends Controller
             $accessories->where('accessories.manufacturer_id', '=', $request->input('manufacturer_id'));
         }
 
+        if ($request->input('requestable') == 'true') {
+            $accessories->where('accessories.requestable', '=', '1');
+        }
+
         if ($request->filled('supplier_id')) {
             $accessories->where('accessories.default_supplier_id', '=', $request->input('supplier_id'));
         }
@@ -554,5 +558,36 @@ class AccessoriesController extends Controller
         $history = (clone $historyQuery)->skip($offset)->take($limit)->get();
 
         return response()->json((new ActionlogsTransformer)->transformActionlogs($history, $total), 200, ['Content-Type' => 'application/json;charset=utf8'], JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * List accessories that are requestable AND reachable by the
+     * current caller (per FMCS + location scoping). Hydrates the
+     * accessories tab on /account/requestable. Deliberately
+     * open to any authenticated user - the web page it feeds is open
+     * too, and the Requestable() scope layered on top of
+     * the CompanyableTrait global scope ensures the caller only sees
+     * rows they can act on.
+     */
+    public function requestable(Request $request): array
+    {
+        $query = Accessory::with('category', 'location', 'company', 'manufacturer', 'requests')
+            ->withCount('checkouts as checkouts_count')
+            ->Requestable();
+
+        if ($request->filled('search')) {
+            $query->TextSearch($request->input('search'));
+        }
+
+        $total = $query->count();
+        $offset = ($request->input('offset') > $total) ? $total : app('api_offset_value');
+        $limit = app('api_limit_value');
+
+        $order = $request->input('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($request->input('sort'), ['name', 'created_at'], true) ? $request->input('sort') : 'name';
+
+        $rows = $query->orderBy($sort, $order)->skip($offset)->take($limit)->get();
+
+        return (new AccessoriesTransformer)->transformAccessories($rows, $total);
     }
 }

@@ -2545,6 +2545,325 @@
         }
     }
 
+    // Compact display for the `orders` array on Accessory / Consumable /
+    // Component rows. These items can be tied to many orders as quantity
+    // is re-ordered over time, so a raw list would overwhelm the table
+    // on high-volume rows. Renders based on count:
+    //   0    empty cell
+    //   1    the single order number
+    //   2-3  comma-separated list
+    //   4+   first order number + "(+N more)" with the full list as tooltip
+    // Every rendered order number is passed through jQuery text() to
+    // defuse any HTML in the order_number string.
+    function ordersSummaryFormatter(value) {
+        if (!Array.isArray(value) || value.length === 0) {
+            return '';
+        }
+
+        var esc = function (v) {
+            return $('<div/>').text(v == null ? '' : v).html();
+        };
+
+        if (value.length === 1) {
+            return esc(value[0]);
+        }
+
+        if (value.length <= 3) {
+            return value.map(esc).join(', ');
+        }
+
+        var tooltip = esc(value.join(', '));
+        return esc(value[0]) + ' <span class="text-muted" data-tooltip="true" title="' + tooltip + '">(+' + (value.length - 1) + ' more)</span>';
+    }
+
+    // Formatters for the /requests admin page (paired with
+    // CheckoutRequestPresenter + CheckoutRequestsTransformer). Each row
+    // has a polymorphic requestable (Asset / AssetModel / Accessory /
+    // Consumable / Component) with a pre-resolved image, url, and name,
+    // so these formatters do not need per-type branching the way the
+    // old server-rendered blade did.
+
+    function requestableImageFormatter(value, row) {
+        if (!value || !row || !row.requestable) {
+            return '';
+        }
+        // Transformer already e()'d the name; the &quot; entities
+        // work fine inside an alt="..." attribute (browsers decode
+        // them there). A second $('<div/>').text().html() escape
+        // would double-escape.
+        var altName = row.requestable.name || '';
+        return '<a href="' + value + '" data-toggle="lightbox" data-type="image"><img src="' + value + '" style="max-height: {{ $snipeSettings->thumbnail_max_h }}px; width: auto;" class="img-responsive" alt="' + altName + '"></a>';
+    }
+
+    function requestableNameFormatter(value, row) {
+        if (!row || !row.requestable) {
+            return '';
+        }
+        // Transformer already ran e() on the name, so `value` is
+        // already HTML-safe. A second $('<div/>').text().html()
+        // escape here would double-escape (e.g. Macbook Pro 13"
+        // -> &quot; -> &amp;quot; rendered as &quot;).
+        var name = row.requestable.name || '';
+        // Type icon prefix (asset / accessory / consumable / etc).
+        // Sourced from the transformer via IconHelper so the icon
+        // stays consistent with the rest of the app's per-type
+        // iconography. Sits INSIDE the anchor to match how the
+        // rest of Snipe-IT renders icon+text links.
+        var icon = row.requestable.icon
+            ? '<i class="' + row.requestable.icon + ' fa-fw" aria-hidden="true" title="' + (row.requestable.type || '') + '"></i> '
+            : '';
+        if (row.requestable.url) {
+            return '<a href="' + row.requestable.url + '">' + icon + name + '</a>';
+        }
+        return icon + name;
+    }
+
+    function requesterFormatter(value, row) {
+        // value = row.user (object with id/name/url/deleted) or null
+        if (!value) {
+            return '{{ trans('admin/reports/general.deleted_user') }}';
+        }
+        // Same as requestableNameFormatter above - value.name is
+        // already e()'d by the transformer.
+        var name = value.name || '';
+        if (value.deleted || !value.url) {
+            return '{{ trans('admin/reports/general.deleted_user') }}';
+        }
+        return '<a href="' + value.url + '">' + name + '</a>';
+    }
+
+    // Renders the per-row action cluster: admin-cancel form + a
+    // checkout / checkin button per available_actions. All destination
+    // ids come from the transformer output, so no per-type URL
+    // branching lives in the JS.
+    function checkoutRequestActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        var actions = '';
+        var permissions = row.available_actions || {};
+
+        if (permissions.cancel && row.requestable && row.user) {
+            // Route path is /account/request/{itemType} (NOT
+            // /account/request-item, which is the route NAME with
+            // its unusual slash-separator - the path segment is
+            // just "request"). Slug map covers every polymorphic
+            // requestable type since the set is fixed.
+            var typeSlugs = {
+                Asset: 'asset',
+                AssetModel: 'asset_model',
+                Accessory: 'accessory',
+                Consumable: 'consumable',
+                Component: 'component',
+                License: 'license',
+            };
+            var typeSlug = typeSlugs[row.requestable.type];
+            if (!typeSlug) {
+                return actions; // Unknown type, don't render a broken cancel button.
+            }
+            // Same shape the old blade posted to. Includes the fifth
+            // "requestingUser" segment so an admin cancels the
+            // specific user's request rather than their own.
+            var cancelUrl = '{{ config('app.url') }}/account/request/' +
+                typeSlug + '/' + row.requestable.id + '/1/' + row.user.id;
+            // Pipe through the shared dataConfirmModal so this
+            // behaves like every other destructive action in the
+            // app (delete-asset class + data-href + data-content).
+            // The modal's #deleteForm posts with a DELETE method
+            // spoof; the route accepts both POST and DELETE for
+            // this reason.
+            var requesterName = (row.user && row.user.name) ? row.user.name : '';
+            var itemName = (row.requestable && row.requestable.name) ? row.requestable.name : '';
+            var confirmMsg = '{{ trans('admin/hardware/message.requests.confirm_cancel_by_admin') }}'
+                .replace(':user', requesterName)
+                .replace(':item', itemName);
+            actions += ' <a href="' + cancelUrl + '"' +
+                ' class="actions btn btn-danger btn-sm delete-asset"' +
+                ' data-toggle="modal" data-target="#dataConfirmModal"' +
+                ' data-content="' + confirmMsg + '"' +
+                ' data-title="{{ trans('general.cancel_request') }}"' +
+                ' data-icon="fa-trash"' +
+                ' data-tooltip="true" title="{{ trans('general.cancel_request') }}"' +
+                ' onClick="return false;">' +
+                '<x-icon type="delete" class="fa-fw" /><span class="sr-only">{{ trans('general.cancel_request') }}</span>' +
+                '</a>';
+        }
+
+        if (permissions.checkout && row.requestable) {
+            // Route per requestable type. The old code hardcoded
+            // /hardware/{id}/checkout which 404'd (or worse, opened
+            // the wrong asset) for non-Asset rows. Component
+            // additionally carries a ?requesting_user query so the
+            // components-checkout screen can pre-scope its target-
+            // asset picker to that user's assigned assets (see
+            // ComponentCheckoutController::create).
+            // Every single-target checkout URL carries ?request_id so
+            // the destination controller can hydrate the full
+            // request (requester, reservation window, notes) and
+            // pre-populate the form - saves the admin from re-
+            // selecting the user, the expected checkin date, etc.
+            var checkoutBase;
+            var requestQs = row.id ? ('?request_id=' + encodeURIComponent(row.id)) : '';
+            switch (row.requestable.type) {
+                case 'Component':
+                    checkoutBase = '{{ config('app.url') }}/components/' + row.requestable.id + '/checkout' + requestQs;
+                    break;
+                case 'Accessory':
+                    checkoutBase = '{{ config('app.url') }}/accessories/' + row.requestable.id + '/checkout' + requestQs;
+                    break;
+                case 'Consumable':
+                    checkoutBase = '{{ config('app.url') }}/consumables/' + row.requestable.id + '/checkout' + requestQs;
+                    break;
+                case 'License':
+                    checkoutBase = '{{ config('app.url') }}/licenses/' + row.requestable.id + '/checkout' + requestQs;
+                    break;
+                case 'AssetModel':
+                    // AssetModel requests fulfill by picking a
+                    // specific available asset OF the model. The
+                    // bulk-fulfill screen surfaces the picker even
+                    // for a single-row case, so route there instead
+                    // of a per-item checkout page (models have no
+                    // 1:1 checkout screen).
+                    checkoutBase = '{{ config('app.url') }}/models/' + row.requestable.id + '/fulfill-requests';
+                    break;
+                default:
+                    checkoutBase = '{{ config('app.url') }}/hardware/' + row.requestable.id + '/checkout' + requestQs;
+            }
+            // Disable the checkout button when the requested qty
+            // exceeds what's actually on hand. Requesters CAN ask
+            // for more than stock (that's intentional - see the
+            // discussion around the replenish button), but admin
+            // needs a visual "not fulfillable right now" signal
+            // instead of a working checkout link that would fail on
+            // the next screen. Only meaningful when the requestable
+            // exposes a `remaining` count (qty-tracked types); a
+            // null remaining means "not qty-tracked" and the link
+            // stays enabled.
+            var requestedQty = parseInt(row.quantity, 10);
+            var availableQty = (row.requestable && row.requestable.remaining != null)
+                ? parseInt(row.requestable.remaining, 10)
+                : null;
+            var shortStock = availableQty !== null && !isNaN(requestedQty) && requestedQty > availableQty;
+
+            if (shortStock) {
+                actions += ' <button type="button" class="actions btn btn-sm bg-maroon disabled" disabled data-tooltip="true"' +
+                    ' title="{{ trans('admin/hardware/message.requests.insufficient_stock') }}">' +
+                    '<x-icon type="checkout" class="fa-fw" /><span class="sr-only">{{ trans('general.checkout') }}</span>' +
+                    '</button>';
+            }
+            else {
+                actions += ' <a href="' + checkoutBase +
+                    '" class="actions btn btn-sm bg-maroon" data-tooltip="true" title="{{ trans('general.checkout_user_tooltip') }}">' +
+                    '<x-icon type="checkout" class="fa-fw" /><span class="sr-only">{{ trans('general.checkout') }}</span>' +
+                    '</a>';
+            }
+
+            // Bulk-fulfill entry-point on rows where >=2 people are
+            // waiting on the same item. pending_requesters is the
+            // list of OTHER open requesters for this row's
+            // requestable (excludes the current row), so a length
+            // >=1 means 2+ total pending on this (type, id) pair.
+            // Only rendered for the five bulk-eligible types -
+            // Asset is 1:1 (can't be bulk-fulfilled), and the
+            // shortStock branch above doesn't gate this since bulk-
+            // fulfill supports partial fulfillment anyway. Every
+            // row for the same requestable shows the same link
+            // (they all resolve to the same bulk-fulfill screen);
+            // one-click cost of the extra row is worth the "admin
+            // can start bulk from any row" ergonomics.
+            var pendingCount = (row.pending_requesters || []).length;
+            if (pendingCount >= 1) {
+                var bulkBase = null;
+                switch (row.requestable.type) {
+                    case 'Accessory':
+                        bulkBase = '{{ config('app.url') }}/accessories/' + row.requestable.id + '/fulfill-requests';
+                        break;
+                    case 'Consumable':
+                        bulkBase = '{{ config('app.url') }}/consumables/' + row.requestable.id + '/fulfill-requests';
+                        break;
+                    case 'Component':
+                        bulkBase = '{{ config('app.url') }}/components/' + row.requestable.id + '/fulfill-requests';
+                        break;
+                    case 'License':
+                        bulkBase = '{{ config('app.url') }}/licenses/' + row.requestable.id + '/fulfill-requests';
+                        break;
+                    case 'AssetModel':
+                        bulkBase = '{{ config('app.url') }}/models/' + row.requestable.id + '/fulfill-requests';
+                        break;
+                }
+                if (bulkBase) {
+                    actions += ' <a href="' + bulkBase +
+                        '" class="actions btn btn-sm btn-warning" data-tooltip="true" title="{{ trans('admin/hardware/general.fulfill_multiple') }}">' +
+                        '<x-icon type="fulfill_multiple" class="fa-fw" />' +
+                        '<span class="sr-only">{{ trans('admin/hardware/general.fulfill_multiple') }}</span>' +
+                        '</a>';
+                }
+            }
+        }
+        else if (permissions.checkin && row.requestable) {
+            actions += ' <a href="{{ config('app.url') }}/hardware/' + row.requestable.id +
+                '/checkin" class="btn btn-sm bg-purple" data-tooltip="true" title="{{ trans('general.checkin_tooltip') }}">' +
+                '{{ trans('general.checkin') }}</a>';
+        }
+
+        // Replenish button opens the shared adjust-quantity modal
+        // (via the .adjust-quantity class + snipeit.js handler) so
+        // an admin can top up stock straight from the request queue
+        // instead of hopping to the item's own page. Only rendered
+        // for qty-tracked types with update permission - the
+        // transformer gates both. URL map mirrors the per-type web
+        // adjust-quantity routes.
+        if (permissions.replenish && row.requestable) {
+            var adjustBase;
+            switch (row.requestable.type) {
+                case 'Accessory':
+                    adjustBase = '{{ config('app.url') }}/accessories/' + row.requestable.id + '/adjust-quantity';
+                    break;
+                case 'Consumable':
+                    adjustBase = '{{ config('app.url') }}/consumables/' + row.requestable.id + '/adjust-quantity';
+                    break;
+                case 'Component':
+                    adjustBase = '{{ config('app.url') }}/components/' + row.requestable.id + '/adjust-quantity';
+                    break;
+                default:
+                    adjustBase = null;
+            }
+            if (adjustBase) {
+                // Same plus-minus icon + sr-only label pattern the
+                // other adjust-quantity buttons use across the app
+                // (see the accessory / consumable / component index
+                // formatters), so the button looks familiar and
+                // stays icon-only next to the neighbouring cancel /
+                // checkout affordances. Name is already e()'d by
+                // the transformer, so no extra JS-side escape.
+                actions += ' <button type="button" class="actions btn btn-sm btn-primary adjust-quantity" data-tooltip="true"' +
+                    ' title="{{ trans('general.adjust_quantity') }}"' +
+                    ' data-adjust-url="' + adjustBase + '"' +
+                    ' data-item-name="' + (row.requestable.name || '') + '"' +
+                    ' data-available="' + (row.requestable.remaining != null ? row.requestable.remaining : '') + '">' +
+                    '<x-icon type="plus-minus" class="fa-fw" /><span class="sr-only">{{ trans('general.adjust_quantity') }}</span>' +
+                    '</button> ';
+            }
+        }
+
+        return actions;
+    }
+
+    // Self-cancel button for /account/requested. Row shape carries a
+    // ready-to-POST cancel_url (built server-side so the type/id path
+    // segments stay in sync with the route regex), which the user
+    // owns because ProfileController::requestedAssets scopes to the
+    // authed user in the first place.
+    function userRequestCancelFormatter(value, row) {
+        if (!value) {
+            return '';
+        }
+        return '<form style="display:inline;" method="POST" action="' + value + '" accept-charset="utf-8">' +
+            '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+            '<button class="btn btn-danger btn-sm" data-tooltip="true" title="{{ trans('general.cancel_request') }}">{{ trans('button.cancel') }}</button>' +
+            '</form>';
+    }
+
     // Check if checkbox should be selectable
     // Selectability is determined by the API field "selectable" which is set at the Presenter/API Transformer
     // However since different bulk actions have different requirements, we have to walk through the available_actions object
@@ -2632,15 +2951,204 @@
 
     }
 
+    // Requester-facing name column for accessories on the
+    // /account/requestable tabs. Links to the show page only
+    // when the caller has the view permission - otherwise plain
+    // text, so unprivileged requesters can still see what's
+    // requestable without being sent to a 403 on click.
+    //
+    // The name value is already e()'d by the transformer, so no
+    // extra JS-side escape (a second $('<div/>').text().html() would
+    // double-escape - Macbook Pro 13" -> &quot; -> &amp;quot;).
+    function accessoryRequestableNameFormatter(value, row) {
+        var name = value == null ? '' : value;
+        @can('view', \App\Models\Accessory::class)
+            return '<a href="{{ config('app.url') }}/accessories/' + row.id + '">' + name + '</a>';
+        @else
+            return name;
+        @endcan
+    }
+
+    // Action cell for the accessories tab on /account/requestable.
+    // Renders either the request-modal opener (row is requestable +
+    // not already claimed by this user) or an inline cancel form
+    // (row is requestable + this user has an open request). The
+    // requestable-scope on the endpoint guarantees requestable=true
+    // for every row that reaches this formatter.
+    function accessoryRequestableActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        if (row.assigned_to_self === true) {
+            return '<form style="display:inline;" action="{{ config('app.url') }}/account/request/accessory/' + row.id + '" method="POST" accept-charset="utf-8">' +
+                '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+                '<input type="hidden" name="active_tab" value="accessories">' +
+                '<button class="btn btn-danger btn-sm" type="submit">{{ trans('button.cancel') }}</button>' +
+                '</form>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm request-item"' +
+            ' data-request-url="{{ config('app.url') }}/account/request/accessory/' + row.id + '"' +
+            ' data-item-name="' + (row.name || '') + '"' +
+            ' data-active-tab="accessories"' +
+            ' data-current-qty="1">' +
+            '{{ trans('button.request') }}</button>';
+    }
+
+    // Requester-facing name column for asset models on the
+    // /account/requestable models tab. The link vs. plain-text
+    // decision comes from row.available_actions.view (populated by
+    // AssetModelsTransformer), NOT a compile-time permission gate
+    // inside the formatter - that way the check is one source of
+    // truth (the transformer) instead of split across server + JS.
+    function assetmodelRequestableNameFormatter(value, row) {
+        var name = value == null ? '' : value;
+        if (row && row.available_actions && row.available_actions.view) {
+            return '<a href="{{ config('app.url') }}/models/' + row.id + '">' + name + '</a>';
+        }
+        return name;
+    }
+
+    // Action cell for the models tab on /account/requestable. Same
+    // request/cancel button-swap contract as the accessory version;
+    // the POST goes to /account/request/asset_model/{id} (route
+    // param is asset_model per the itemType regex in web.php).
+    function assetmodelRequestableActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        if (row.assigned_to_self === true) {
+            return '<form style="display:inline;" action="{{ config('app.url') }}/account/request/asset_model/' + row.id + '" method="POST" accept-charset="utf-8">' +
+                '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+                '<input type="hidden" name="active_tab" value="models">' +
+                '<button class="btn btn-danger btn-sm" type="submit">{{ trans('button.cancel') }}</button>' +
+                '</form>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm request-item"' +
+            ' data-request-url="{{ config('app.url') }}/account/request/asset_model/' + row.id + '"' +
+            ' data-item-name="' + (row.name || '') + '"' +
+            ' data-active-tab="models"' +
+            ' data-current-qty="1">' +
+            '{{ trans('button.request') }}</button>';
+    }
+
+    // Same shape as accessoryRequestable*Formatter; type-specific
+    // so each can carry its own view-permission gate + POST URL
+    // segment without any JS-side branching on the row's type.
+    // See accessoryRequestableNameFormatter for the no-re-escape
+    // rationale.
+    function consumableRequestableNameFormatter(value, row) {
+        var name = value == null ? '' : value;
+        @can('view', \App\Models\Consumable::class)
+            return '<a href="{{ config('app.url') }}/consumables/' + row.id + '">' + name + '</a>';
+        @else
+            return name;
+        @endcan
+    }
+
+    function consumableRequestableActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        if (row.assigned_to_self === true) {
+            return '<form style="display:inline;" action="{{ config('app.url') }}/account/request/consumable/' + row.id + '" method="POST" accept-charset="utf-8">' +
+                '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+                '<input type="hidden" name="active_tab" value="consumables">' +
+                '<button class="btn btn-danger btn-sm" type="submit">{{ trans('button.cancel') }}</button>' +
+                '</form>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm request-item"' +
+            ' data-request-url="{{ config('app.url') }}/account/request/consumable/' + row.id + '"' +
+            ' data-item-name="' + (row.name || '') + '"' +
+            ' data-active-tab="consumables"' +
+            ' data-current-qty="1">' +
+            '{{ trans('button.request') }}</button>';
+    }
+
+    function componentRequestableNameFormatter(value, row) {
+        var name = value == null ? '' : value;
+        @can('view', \App\Models\Component::class)
+            return '<a href="{{ config('app.url') }}/components/' + row.id + '">' + name + '</a>';
+        @else
+            return name;
+        @endcan
+    }
+
+    function componentRequestableActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        if (row.assigned_to_self === true) {
+            return '<form style="display:inline;" action="{{ config('app.url') }}/account/request/component/' + row.id + '" method="POST" accept-charset="utf-8">' +
+                '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+                '<input type="hidden" name="active_tab" value="components">' +
+                '<button class="btn btn-danger btn-sm" type="submit">{{ trans('button.cancel') }}</button>' +
+                '</form>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm request-item"' +
+            ' data-request-url="{{ config('app.url') }}/account/request/component/' + row.id + '"' +
+            ' data-item-name="' + (row.name || '') + '"' +
+            ' data-active-tab="components"' +
+            ' data-current-qty="1">' +
+            '{{ trans('button.request') }}</button>';
+    }
+
+    function licenseRequestableNameFormatter(value, row) {
+        var name = value == null ? '' : value;
+        @can('view', \App\Models\License::class)
+            return '<a href="{{ config('app.url') }}/licenses/' + row.id + '">' + name + '</a>';
+        @else
+            return name;
+        @endcan
+    }
+
+    function licenseRequestableActionsFormatter(value, row) {
+        if (!row) {
+            return '';
+        }
+        if (row.assigned_to_self === true) {
+            return '<form style="display:inline;" action="{{ config('app.url') }}/account/request/license/' + row.id + '" method="POST" accept-charset="utf-8">' +
+                '<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">' +
+                '<input type="hidden" name="active_tab" value="licenses">' +
+                '<button class="btn btn-danger btn-sm" type="submit">{{ trans('button.cancel') }}</button>' +
+                '</form>';
+        }
+        return '<button type="button" class="btn btn-primary btn-sm request-item"' +
+            ' data-request-url="{{ config('app.url') }}/account/request/license/' + row.id + '"' +
+            ' data-item-name="' + (row.name || '') + '"' +
+            ' data-item-type="license"' +
+            ' data-active-tab="licenses"' +
+            ' data-current-qty="1">' +
+            '{{ trans('button.request') }}</button>';
+    }
 
     // This is only used by the requestable assets section
     function assetRequestActionsFormatter (row, value) {
         if (value.assigned_to_self == true){
             return '<button class="btn btn-danger btn-sm btn-block disabled" data-tooltip="true" title="{{ trans('admin/hardware/message.requests.cancel') }}">{{ trans('button.cancel') }}</button>';
         } else if (value.available_actions.cancel == true)  {
-            return '<form action="{{ config('app.url') }}/account/request-asset/' + value.id + '/cancel" method="POST">@csrf<button class="btn btn-danger btn-block btn-sm" data-tooltip="true" title="{{ trans('admin/hardware/message.requests.cancel') }}">{{ trans('button.cancel') }}</button></form>';
+            return '<form action="{{ config('app.url') }}/account/request-asset/' + value.id + '/cancel" method="POST">@csrf<input type="hidden" name="active_tab" value="assets"><button class="btn btn-danger btn-block btn-sm" data-tooltip="true" title="{{ trans('admin/hardware/message.requests.cancel') }}">{{ trans('button.cancel') }}</button></form>';
         } else if (value.available_actions.request == true)  {
-            return '<form action="{{ config('app.url') }}/account/request-asset/'+ value.id + '" method="POST">@csrf<button class="btn btn-block btn-primary btn-sm" data-tooltip="true" title="{{ trans('general.request_item') }}">{{ trans('button.request') }}</button></form>';
+            // Open the request-item modal instead of submitting a
+            // plain form, so the requester can enter a qty (assets
+            // always request qty 1, but the modal also collects the
+            // optional reservation dates that landed with the
+            // start_date / end_date columns on checkout_requests).
+            // data-active-tab is a defensive belt with the closest
+            // .tab-pane walk in snipeit.js: bs-tables re-renders rows
+            // into detached DOM during redraws, and the explicit attr
+            // survives that where the DOM-tree walk would fall short.
+            // Name / asset_tag are already e()'d by the transformer,
+            // so no extra JS-side escape.
+            var itemName = value.name || value.asset_tag || '';
+            var requestUrl = '{{ config('app.url') }}/account/request/asset/' + value.id;
+            return '<button type="button" class="btn btn-block btn-primary btn-sm request-item"' +
+                ' data-tooltip="true" title="{{ trans('general.request_item') }}"' +
+                ' data-request-url="' + requestUrl + '"' +
+                ' data-item-name="' + itemName + '"' +
+                ' data-item-type="asset"' +
+                ' data-active-tab="assets"' +
+                ' data-current-qty="1">' +
+                '{{ trans('button.request') }}</button>';
         }
 
     }
