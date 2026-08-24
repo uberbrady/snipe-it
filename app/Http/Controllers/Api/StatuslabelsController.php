@@ -321,6 +321,7 @@ class StatuslabelsController extends Controller
      */
     public function checkIfDeployable($id): string
     {
+        $this->authorize('view', Statuslabel::class);
         $statuslabel = Statuslabel::findOrFail($id);
         if (($statuslabel->getStatuslabelType() == 'pending') || ($statuslabel->getStatuslabelType() == 'deployable')) {
             return '1';
