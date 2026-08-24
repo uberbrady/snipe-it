@@ -245,6 +245,25 @@ class CheckoutRequest extends Model
         return $this->itemRequested()->name;
     }
 
+    /**
+     * Accessor mirror of name() so property-style access (`->name`) doesn't
+     * fall through Eloquent's __get to `getRelationValue('name')`, which
+     * treats the plain name() method as a candidate relation and throws
+     * `LogicException: name must return a relationship instance` when it
+     * gets a string back. `hasGetMutator('name')` fires first and returns
+     * this accessor's value before relation resolution ever runs.
+     *
+     * The specific symptom is `CalendarEventsTransformer::titleFor()` which
+     * coalesces `$source->display_name ?? $source->name ?? ...` for any
+     * source without a Presentable presenter (CheckoutRequest doesn't have
+     * one); pre-accessor, that crashed the calendar API for any install
+     * with a reservation-shape CheckoutRequest on the calendar.
+     */
+    public function getNameAttribute(): ?string
+    {
+        return $this->name();
+    }
+
     public function fulfilledBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'fulfilled_by', 'id');
