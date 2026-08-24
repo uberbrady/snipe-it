@@ -99,6 +99,12 @@
                             text: '{{ trans('general.calendar_event_user_end_date') }}'
                         },
                     @endcan
+                    @can('canCheckoutAtLeastOneItemType')
+                        {
+                            name: 'request.reservation',
+                            text: '{{ trans('general.calendar_event_request_reservation') }}'
+                        },
+                    @endcan
                 ],
             };
 

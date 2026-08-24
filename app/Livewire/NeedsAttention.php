@@ -108,15 +108,21 @@ class NeedsAttention extends Component
         // FMCS-scoped admins. whereHasMorph applies each requestable
         // type's own CompanyableTrait global scope (Asset is scoped,
         // AssetModel is intentionally not per its shared-catalog
-        // design) so the count matches what the requested-assets
-        // report page actually renders for the current viewer.
-        // Relationship method is requestedItem() (see CheckoutRequest
-        // model), even though the underlying columns are named
-        // requestable_id / requestable_type. whereHasMorph needs the
-        // method name, not the morph-column prefix.
-        $this->pendingRequestsCount = CheckoutRequest::whereNull('canceled_at')
-            ->whereNull('fulfilled_at')
-            ->whereHasMorph('requestedItem', [Asset::class, AssetModel::class])
+        // design) so the count matches what the /requests admin queue
+        // actually renders for the current viewer. All six requestable
+        // types are enumerated so accessory / consumable / component /
+        // license requests count too now that the queue is polymorphic.
+        // pending() reads from the state machine (source of truth) instead
+        // of the pre-refactor canceled_at + fulfilled_at columns.
+        $this->pendingRequestsCount = CheckoutRequest::pending()
+            ->whereHasMorph('requestedItem', [
+                Asset::class,
+                AssetModel::class,
+                Accessory::class,
+                Consumable::class,
+                SnipeComponent::class,
+                License::class,
+            ])
             ->count();
     }
 

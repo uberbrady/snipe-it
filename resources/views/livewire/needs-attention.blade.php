@@ -40,15 +40,15 @@
                     <span class="badge dashboard-attention-count">{{ number_format($pendingAcceptancesCount) }}</span>
                 </a>
             </li>
-            @canany(['checkout', 'checkin'], \App\Models\Asset::class)
+            @can('canCheckoutAtLeastOneItemType')
                 <li class="list-group-item">
-                    <a href="{{ route('assets.requested') }}">
+                    <a href="{{ route('requests.index') }}">
                         <x-icon type="asset" class="fa-fw"/>
                         <span class="dashboard-attention-label">{{ trans('general.dashboard_pending_requests') }}</span>
                         <span class="badge dashboard-attention-count">{{ number_format($pendingRequestsCount) }}</span>
                     </a>
                 </li>
-            @endcanany
+            @endcan
 
             @can('view', \App\Models\Asset::class)
                 <li class="list-group-item">

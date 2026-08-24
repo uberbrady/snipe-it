@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Livewire;
 
+use App\Enums\CheckoutRequestState;
 use App\Livewire\NeedsAttention;
 use App\Models\Asset;
 use App\Models\CheckoutRequest;
@@ -180,10 +181,20 @@ class NeedsAttentionTest extends TestCase implements TestsFullMultipleCompaniesS
         // CheckoutRequest's $fillable is narrow (user_id + quantity
         // only), so mass-assign the morphable fields via forceFill +
         // save. Matches how the application's Actions class writes
-        // these rows.
+        // these rows. State is the source of truth for the widget
+        // count now that the state machine landed - explicitly set
+        // it here alongside the terminal datetime column so the row
+        // shape matches what CancelCheckoutRequestAction and
+        // FulfillCheckoutRequestAction persist.
         (new CheckoutRequest)->forceFill($base)->save();
-        (new CheckoutRequest)->forceFill($base + ['canceled_at' => now()])->save();
-        (new CheckoutRequest)->forceFill($base + ['fulfilled_at' => now()])->save();
+        (new CheckoutRequest)->forceFill($base + [
+            'canceled_at' => now(),
+            'state' => CheckoutRequestState::Canceled,
+        ])->save();
+        (new CheckoutRequest)->forceFill($base + [
+            'fulfilled_at' => now(),
+            'state' => CheckoutRequestState::Fulfilled,
+        ])->save();
 
         Livewire::withoutLazyLoading();
         Livewire::actingAs(User::factory()->superuser()->create())
