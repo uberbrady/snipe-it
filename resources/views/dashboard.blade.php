@@ -380,7 +380,7 @@
                         data-show-export="false"
                         data-empty-message="{{ trans('general.dashboard_low_stock_empty') }}"
                         id="dashLowStock"
-                        class="table table-striped snipe-table"
+                        class="table table-striped snipe-table snipe-table--sticky-right-1"
                         data-url="{{ route('api.low-stock.index', ['limit' => 25]) }}">
                         <thead>
                             <tr>
