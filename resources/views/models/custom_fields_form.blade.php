@@ -46,9 +46,9 @@
                 @elseif ($field->element=='markdown-textarea')
                     <!-- Markdown Textarea -->
                     <textarea rows="6" class="col-md-6 form-control" id="{{ $field->db_column_name() }}" name="{{ $field->db_column_name() }}"{{ ($field->pivot->required=='1') ? ' required' : '' }}>{{ old($field->db_column_name(), Helper::customFieldFormValue($field, $item ?? null, $model)) }}</textarea>
-                    <p class="help-block">
-                        <i class="fab fa-markdown" aria-hidden="true"></i> {{ trans('general.markdown') }}
-                    </p>
+                    <x-form.help :name="$field->db_column_name()" icon="markdown">
+                        {{ trans('general.markdown') }}
+                    </x-form.help>
 
               @elseif ($field->element=='checkbox')
                   <!-- Checkbox -->
