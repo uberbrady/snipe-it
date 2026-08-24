@@ -75474,8 +75474,41 @@ $(document).ready(function () {
       }
     });
   }
+
+  // MAC-address input mask. Custom fields with format=MAC render as
+  // plain text inputs; without a mask the user only discovers the
+  // required colon-separated shape (see \App\Rules\MacEncrypted)
+  // after a failed submit. The mask strips every non-hex character
+  // on input, uppercases A-F, and re-inserts a colon after every
+  // second character, so common paste shapes (hyphen-separated from
+  // Windows ipconfig, Cisco-dotted aabb.ccdd.eeff, bare hex,
+  // space-separated) all normalize to the canonical AA:BB:CC:DD:EE:FF
+  // form the backend expects.
+  //
+  // Exposed on window (matching snipeitInitDatetimepickers above) so
+  // the asset edit form's AJAX custom-fields-reload handler can
+  // re-init the mask on inputs that only exist after the model
+  // changes and a fresh custom_fields_form.blade.php partial is
+  // swapped into place. Pass a jQuery selector or DOM node to narrow
+  // the scope; omit to init every .mac-address-input on the page.
+  //
+  // The .mac-address-input class is applied in resources/views/models/
+  // custom_fields_form.blade.php on both text-input branches
+  // (format-icon wrapper AND bare input) when $field->format === 'MAC'.
+  window.snipeitInitMacAddressMask = function (scope) {
+    var $targets = scope ? $(scope).find('.mac-address-input') : $('.mac-address-input');
+    $targets.off('input.snipeitMacMask').on('input.snipeitMacMask', function () {
+      var _hex$match;
+      // Trim leading/trailing whitespace first so a paste like
+      // "  AA:BB:CC:DD:EE:FF\n" from a spreadsheet cell doesn't
+      // eat one of the trailing hex chars into the substring cap.
+      var hex = this.value.trim().toUpperCase().replace(/[^0-9A-F]/g, '').substring(0, 12);
+      this.value = ((_hex$match = hex.match(/.{1,2}/g)) === null || _hex$match === void 0 ? void 0 : _hex$match.join(':')) || '';
+    });
+  };
   window.snipeitInitDatetimepickers();
   initDateRangeLinking();
+  window.snipeitInitMacAddressMask();
 });
 
 /**
