@@ -92,6 +92,7 @@ class CreateCheckoutRequestAction
         $logaction->item_id = $requestable->getKey();
         $logaction->item_type = $requestable::class;
         $logaction->created_at = $now;
+        $logaction->created_by = auth()->id();
         $logaction->target_id = auth()->id();
         $logaction->target_type = User::class;
         $logaction->location_id = $user->location_id ?? null;
