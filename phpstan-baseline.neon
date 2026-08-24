@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/CheckoutRequests/CreateCheckoutRequestAction.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Company\:\:\$accessories_count\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3865,6 +3871,12 @@ parameters:
 			path: app/Http/Controllers/Users/UsersController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ViewAssetsController.php
+
+		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$assetId$#'
 			identifier: parameter.notFound
 			count: 1
@@ -4177,33 +4189,9 @@ parameters:
 			path: app/Http/Transformers/LocationsTransformer.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$assigned\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Maintenance\:\:\$checkedOutTo\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Asset\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 4
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Supplier\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Transformers/MaintenancesTransformer.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 3
 			path: app/Http/Transformers/MaintenancesTransformer.php
 
 		-
