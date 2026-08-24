@@ -25,14 +25,15 @@ class CheckoutLicenseSeatNotification extends Notification implements ShouldQueu
     use Queueable;
 
     public License $item;
-    public User $admin;
-    public $note;
-    public $target;
 
+    public User $admin;
+
+    public $note;
+
+    public $target;
 
     /**
      * Create a new notification instance.
-     *
      */
     public function __construct(LicenseSeat $licenseSeat, $checkedOutTo, User $checkedOutBy, $acceptance, $note)
     {
@@ -82,10 +83,11 @@ class CheckoutLicenseSeatNotification extends Notification implements ShouldQueu
             trans('general.by') => '<'.$admin->present()->viewUrl().'|'.$admin->display_name.'>',
         ];
 
-        if ($item->location) {
-            $fields[trans('general.location')] = $item->location->name;
-        }
-
+        // License has no location relation (it's model-tier config,
+        // not a physical asset in a room), so no location field for
+        // the Slack payload. The `if ($item->location)` branch that
+        // used to sit here was dead code from a copy-paste of the
+        // Asset checkout notification.
         if ($item->company) {
             $fields[trans('general.company')] = $item->company->name;
         }

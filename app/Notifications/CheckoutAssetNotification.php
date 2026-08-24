@@ -26,6 +26,7 @@ class CheckoutAssetNotification extends Notification implements ShouldQueue
     use Queueable;
 
     public $last_checkout = '';
+
     public $expected_checkin = '';
 
     /**
@@ -37,10 +38,9 @@ class CheckoutAssetNotification extends Notification implements ShouldQueue
         public Asset $item,
         public $target,
         public User $admin,
-        public $acceptance, //???? what is this? (doesn't seem used)
+        public $acceptance, // ???? what is this? (doesn't seem used)
         public $note
-    )
-    {
+    ) {
         if ($this->item->last_checkout) {
             $this->last_checkout = Helper::getFormattedDateObject($this->item->last_checkout, 'date',
                 false);
@@ -83,7 +83,7 @@ class CheckoutAssetNotification extends Notification implements ShouldQueue
     public function toSlack(): SlackMessage
     {
         $target = $this->target;
-        $admin = $this->dmin;
+        $admin = $this->admin;
         $item = $this->item;
         $note = $this->note;
         $botname = ($this->settings->webhook_botname) ?: 'Snipe-Bot';
@@ -102,7 +102,7 @@ class CheckoutAssetNotification extends Notification implements ShouldQueue
             $fields[trans('general.company')] = $item->company->name;
         }
 
-        if (($this->expected_checkin) && ($this->expected_checkin !== '')) {
+        if ($this->expected_checkin) {
             $fields[trans('general.expected_checkin')] = $this->expected_checkin;
         }
 

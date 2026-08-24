@@ -8947,80 +8947,8 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$accepted_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$assigned_to\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$company_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$custom_fields\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$file\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$item_model\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$item_name\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$item_serial\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$item_status\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$item_tag\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedNotification\:\:\$settings\.$#'
-			identifier: property.notFound
+			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
+			identifier: parameter.notFound
 			count: 2
 			path: app/Notifications/AcceptanceItemAcceptedNotification.php
 
@@ -9028,175 +8956,7 @@ parameters:
 			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
 			identifier: parameter.notFound
 			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$accepted_date\.$#'
-			identifier: property.notFound
-			count: 2
 			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$assigned_to\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$company_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$custom_fields\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$file\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$item_model\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$item_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$item_serial\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$item_status\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$item_tag\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemAcceptedToUserNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
-			identifier: parameter.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemAcceptedToUserNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$assigned_to\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$company_name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$declined_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$item_model\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$item_name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$item_serial\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$item_status\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$item_tag\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AcceptanceItemDeclinedNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/AcceptanceItemDeclinedNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\AuditNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/AuditNotification.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>display_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -9213,36 +8973,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$admin\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$target\.$#'
-			identifier: property.notFound
 			count: 2
 			path: app/Notifications/CheckinAccessoryNotification.php
 
 		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
+			message: '#^Constructor of class App\\Notifications\\CheckinAccessoryNotification has an unused parameter \$admin\.$#'
+			identifier: constructor.unusedParameter
 			count: 1
 			path: app/Notifications/CheckinAccessoryNotification.php
 
@@ -9257,48 +8993,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$expected_checkin\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAssetNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/CheckinAssetNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckinAssetNotification.php
 
 		-
 			message: '#^Ternary operator condition is always true\.$#'
@@ -9325,38 +9019,8 @@ parameters:
 			path: app/Notifications/CheckinAssetNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinComponentNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckinComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinComponentNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinComponentNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinComponentNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckinComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinComponentNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinComponentNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
 			count: 1
 			path: app/Notifications/CheckinComponentNotification.php
 
@@ -9379,44 +9043,20 @@ parameters:
 			path: app/Notifications/CheckinComponentNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckinLicenseSeatNotification.php
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/CheckinComponentNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$item\.$#'
+			message: '#^Access to an undefined property App\\Models\\License\:\:\$location\.$#'
 			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckinLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckinLicenseSeatNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
 			count: 1
 			path: app/Notifications/CheckinLicenseSeatNotification.php
 
 		-
-			message: '#^Property App\\Notifications\\CheckinLicenseSeatNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
 			count: 1
 			path: app/Notifications/CheckinLicenseSeatNotification.php
 
@@ -9428,6 +9068,12 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>display_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/CheckinLicenseSeatNotification.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Notifications/CheckinLicenseSeatNotification.php
@@ -9439,54 +9085,6 @@ parameters:
 			path: app/Notifications/CheckoutAccessoryNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$acceptance\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$checkout_qty\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 11
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAccessoryNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckoutAccessoryNotification.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 1
@@ -9499,57 +9097,9 @@ parameters:
 			path: app/Notifications/CheckoutAccessoryNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$expected_checkin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
 			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$settings\.$#'
 			identifier: property.notFound
-			count: 6
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutAssetNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckoutAssetNotification.php
-
-		-
-			message: '#^Constructor of class App\\Notifications\\CheckoutAssetNotification has an unused parameter \$acceptance\.$#'
-			identifier: constructor.unusedParameter
-			count: 1
+			count: 5
 			path: app/Notifications/CheckoutAssetNotification.php
 
 		-
@@ -9567,60 +9117,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Component\:\:\$checkout_qty\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$acceptance\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutComponentNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckoutComponentNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\CheckoutComponentNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
 			count: 1
 			path: app/Notifications/CheckoutComponentNotification.php
 
@@ -9643,60 +9139,6 @@ parameters:
 			path: app/Notifications/CheckoutConsumableNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$acceptance\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutConsumableNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\CheckoutConsumableNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/CheckoutConsumableNotification.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 1
@@ -9715,48 +9157,6 @@ parameters:
 			path: app/Notifications/CheckoutLicenseSeatNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\CheckoutLicenseSeatNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/CheckoutLicenseSeatNotification.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 1
@@ -9769,92 +9169,26 @@ parameters:
 			path: app/Notifications/CheckoutLicenseSeatNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CurrentInventory\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/CurrentInventory.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/CurrentInventory.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
 			identifier: parameter.notFound
 			count: 1
 			path: app/Notifications/CurrentInventory.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\ExpectedCheckinAdminNotification\:\:\$assets\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/ExpectedCheckinAdminNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/ExpectedCheckinAdminNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\ExpectedCheckinAdminNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/ExpectedCheckinAdminNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/ExpectedCheckinNotification.php
-
-		-
 			message: '#^Access to an undefined property App\\Notifications\\ExpiringAssetsNotification\:\:\$assets\.$#'
 			identifier: property.notFound
-			count: 2
-			path: app/Notifications/ExpiringAssetsNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\ExpiringAssetsNotification\:\:\$threshold\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/ExpiringAssetsNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
 			count: 1
 			path: app/Notifications/ExpiringAssetsNotification.php
 
 		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$asset$#'
 			identifier: parameter.notFound
-			count: 1
-			path: app/Notifications/ExpiringAssetsNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\ExpiringAssetsNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
 			count: 1
 			path: app/Notifications/ExpiringAssetsNotification.php
 
 		-
 			message: '#^Access to an undefined property App\\Notifications\\ExpiringLicenseNotification\:\:\$licenses\.$#'
 			identifier: property.notFound
-			count: 2
-			path: app/Notifications/ExpiringLicenseNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\ExpiringLicenseNotification\:\:\$threshold\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/ExpiringLicenseNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
 			count: 1
 			path: app/Notifications/ExpiringLicenseNotification.php
 
@@ -9871,220 +9205,16 @@ parameters:
 			path: app/Notifications/ExpiringLicenseNotification.php
 
 		-
-			message: '#^Property App\\Notifications\\ExpiringLicenseNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/ExpiringLicenseNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/FirstAdminNotification.php
-
-		-
-			message: '#^Access to an undefined property \$this\(App\\Notifications\\InventoryAlert\)\:\:\$threshold\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/InventoryAlert.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\InventoryAlert\:\:\$items\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/InventoryAlert.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\InventoryAlert\:\:\$threshold\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/InventoryAlert.php
-
-		-
-			message: '#^Property App\\Notifications\\InventoryAlert\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/InventoryAlert.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/MailTest.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$expected_checkin\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$item_quantity\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$requested_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetCancelation\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
 			identifier: parameter.notFound
 			count: 2
 			path: app/Notifications/RequestAssetCancelation.php
 
 		-
-			message: '#^Property App\\Notifications\\RequestAssetCancelation\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/RequestAssetCancelation.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$expected_checkin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$item\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$item_quantity\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$item_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$last_checkout\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$note\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$requested_date\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$settings\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\RequestAssetNotification\:\:\$target\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$notifiable$#'
 			identifier: parameter.notFound
 			count: 1
 			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Property App\\Notifications\\RequestAssetNotification\:\:\$params is unused\.$#'
-			identifier: property.unused
-			count: 1
-			path: app/Notifications/RequestAssetNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\SendUpcomingAuditNotification\:\:\$assets\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Notifications/SendUpcomingAuditNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Notifications\\SendUpcomingAuditNotification\:\:\$threshold\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Notifications/SendUpcomingAuditNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/SendUpcomingAuditNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$expire_date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/WelcomeNotification.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$token\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Notifications/WelcomeNotification.php
-
-		-
-			message: '#^Attribute class App\\Notifications\\AllowDynamicProperties does not exist\.$#'
-			identifier: attribute.notFound
-			count: 1
-			path: app/Notifications/WelcomeNotification.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'

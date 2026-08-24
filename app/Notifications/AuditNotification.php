@@ -27,8 +27,7 @@ class AuditNotification extends Notification implements ShouldQueue
      */
     public function __construct(
         public $params
-    )
-    {
+    ) {
         $item = $params['item'];
         if (! $item || ! is_object($item)) {
             throw new \InvalidArgumentException('Notification requires a valid item.');
@@ -94,9 +93,10 @@ class AuditNotification extends Notification implements ShouldQueue
             return null;
         }
 
-        if (! Str::contains($setting->webhook_endpoint, 'workflows')) {
+        $webhookEndpoint = Setting::getSettings()->webhook_endpoint;
+        if (! Str::contains($webhookEndpoint, 'workflows')) {
             return MicrosoftTeamsMessage::create()
-                ->to($setting->webhook_endpoint)
+                ->to($webhookEndpoint)
                 ->type('success')
                 ->title(class_basename($item).' '.trans('general.audited'))
                 ->addStartGroupToSection('activityText')
@@ -129,7 +129,7 @@ class AuditNotification extends Notification implements ShouldQueue
         ]);
 
         return GoogleChatMessage::create()
-            ->to($setting->webhook_endpoint)
+            ->to(Setting::getSettings()->webhook_endpoint)
             ->card(
                 Card::create()
                     ->header($title, $subtitle)
