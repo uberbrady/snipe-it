@@ -564,7 +564,14 @@
                                 </li>
                             @endif
 
-                            
+                            @can('view', \App\Models\Asset::class)
+                                <li{!! (request()->routeIs('calendar.index') ? ' class="active" aria-current="page"' : '') !!}>
+                                    <a href="{{ route('calendar.index') }}">
+                                        <x-icon type="calendar" class="fa-fw"/>
+                                        <span>{{ trans('general.calendar') }}</span>
+                                    </a>
+                            </li>
+                        @endcan
                         @can('view', \App\Models\License::class)
                             <li{!! (request()->is('licenses*') ? ' class="active" aria-current="page"' : '') !!}>
                                 <a href="{{ route('licenses.index') }}">

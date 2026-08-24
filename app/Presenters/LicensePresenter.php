@@ -4,6 +4,8 @@ namespace App\Presenters;
 
 /**
  * Class LicensePresenter
+ *
+ * @property \App\Models\License $model
  */
 class LicensePresenter extends Presenter
 {
@@ -506,6 +508,18 @@ class LicensePresenter extends Presenter
     public function viewUrl()
     {
         return route('licenses.show', $this->id);
+    }
+
+    public function calendarUrl(): ?string
+    {
+        return route('licenses.show', $this->model->id);
+    }
+
+    public function calendarColor(): ?string
+    {
+        return $this->model->category?->tag_color
+            ?? $this->model->manufacturer?->tag_color
+            ?? $this->model->supplier?->tag_color;
     }
 
     /**

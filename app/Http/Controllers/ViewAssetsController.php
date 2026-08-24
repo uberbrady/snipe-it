@@ -236,6 +236,7 @@ class ViewAssetsController extends Controller
         $logaction->item_id = $item->id;
         $logaction->item_type = $fullItemType;
         $logaction->created_at = date('Y-m-d H:i:s');
+        $logaction->created_by = auth()->id();
         if ($user->location_id) {
             $logaction->location_id = $user->location_id;
         }

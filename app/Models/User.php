@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Http\Traits\UniqueUndeletedTrait;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasCalendarEvents;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
@@ -35,6 +36,7 @@ use Watson\Validating\ValidatingTrait;
 class User extends SnipeModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, HasLocalePreference
 {
     use CompanyableTrait;
+    use HasCalendarEvents;
     use HasFactory;
     use HasUploads;
 
@@ -662,6 +664,17 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         return Gate::allows('delete', $this)
             && $this->hasNoAssignmentBlockers()
             && ($this->deleted_at == '');
+    }
+
+    public function calendarEventDefinitions(): array
+    {
+        return [
+            [
+                'field' => 'end_date',
+                'event_type' => 'user.end_date',
+                'all_day' => true,
+            ],
+        ];
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CheckoutRequestState;
 use App\Exceptions\InvalidCheckoutRequestTransition;
+use App\Models\Traits\HasCalendarEvents;
 use App\Models\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ use Illuminate\Support\Collection;
  */
 class CheckoutRequest extends Model
 {
+    use HasCalendarEvents;
     use HasFactory;
     use Searchable;
     use SoftDeletes;
@@ -74,6 +76,82 @@ class CheckoutRequest extends Model
     public function remainingQuantity(): int
     {
         return max(0, (int) $this->quantity - (int) $this->fulfilled_quantity);
+    }
+
+    /**
+     * Only pending rows publish a calendar event. Accessors return
+     * null once the request has been fulfilled or canceled so the
+     * HasCalendarEvents trait's null-check deletes the row on the
+     * transition (state is listed in trigger_fields so the observer
+     * re-runs the sync when state changes).
+     */
+    protected function getCalendarStartAttribute(): mixed
+    {
+        return $this->state === CheckoutRequestState::Pending
+            ? $this->start_date
+            : null;
+    }
+
+    protected function getCalendarEndAttribute(): mixed
+    {
+        return $this->state === CheckoutRequestState::Pending
+            ? $this->end_date
+            : null;
+    }
+
+    /**
+     * Calendar-event URL / color for the requestable this row points
+     * at. Reused by CalendarEventsTransformer, which falls back to
+     * these methods when a source model isn't wired through the
+     * Presenter/Presentable chain (which CheckoutRequest isn't - it
+     * extends the plain Eloquent Model, not SnipeModel).
+     */
+    public function calendarUrl(): ?string
+    {
+        $item = $this->itemRequested();
+        if ($item && method_exists($item, 'present')) {
+            $presenter = $item->present();
+            if (method_exists($presenter, 'calendarUrl')) {
+                return $presenter->calendarUrl();
+            }
+        }
+
+        return null;
+    }
+
+    public function calendarColor(): ?string
+    {
+        $item = $this->itemRequested();
+        if ($item && method_exists($item, 'present')) {
+            $presenter = $item->present();
+            if (method_exists($presenter, 'calendarColor')) {
+                return $presenter->calendarColor();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Emit the reservation window as a single all-day range event.
+     * Uses the calendar_start / calendar_end accessors above so
+     * fulfilled + canceled rows drop off the calendar without
+     * touching the underlying date columns (which the notification
+     * templates and admin queue still read from).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function calendarEventDefinitions(): array
+    {
+        return [
+            [
+                'field' => 'calendar_start',
+                'end_field' => 'calendar_end',
+                'event_type' => 'request.reservation',
+                'trigger_fields' => ['state', 'start_date', 'end_date'],
+                'all_day' => true,
+            ],
+        ];
     }
 
     /**

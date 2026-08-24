@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Console\Commands\SendExpiringLicenseNotifications;
 use App\Helpers\Helper;
 use App\Models\Traits\CompanyableTrait;
+use App\Models\Traits\HasCalendarEvents;
 use App\Models\Traits\HasUploads;
 use App\Models\Traits\Loggable;
 use App\Models\Traits\Requestable;
@@ -29,6 +30,7 @@ class License extends Depreciable
     protected $presenter = LicensePresenter::class;
 
     use CompanyableTrait;
+    use HasCalendarEvents;
     use HasUploads;
     use Loggable, Presentable;
     use Requestable;
@@ -185,6 +187,20 @@ class License extends Depreciable
         return Gate::allows('delete', $this)
             && ($this->free_seats_count == $this->seats)
             && ($this->deleted_at == '');
+    }
+
+    public function calendarEventDefinitions(): array
+    {
+        return [
+            [
+                'field' => 'expiration_date',
+                'event_type' => 'license.expiration',
+            ],
+            [
+                'field' => 'termination_date',
+                'event_type' => 'license.termination',
+            ],
+        ];
     }
 
     /**
