@@ -231,7 +231,13 @@ class AssetModelsController extends Controller
      */
     public function getRestore($id): RedirectResponse
     {
-        $this->authorize('create', AssetModel::class);
+        // Restoring a soft-deleted record is a delete-tier action across the
+        // project (users, locations, manufacturers, assets, and this same
+        // model's API sibling Api\AssetModelsController::restore all
+        // authorize `delete`). The `create` gate was inconsistent and let
+        // an account holding models.create but not models.delete reverse
+        // an admin's soft-delete.
+        $this->authorize('delete', AssetModel::class);
 
         if ($model = AssetModel::withTrashed()->find($id)) {
 
@@ -317,6 +323,25 @@ class AssetModelsController extends Controller
      */
     public function getCustomFields($modelId): View
     {
+        // Endpoint fires from the asset create/edit form's model-select
+        // change handler (hardware/edit.blade.php's fetchCustomFields
+        // XHR) to swap in the picked model's custom-field form partial.
+        // Zero-permission accounts must be blocked. This used to have
+        // no guard at all, so anyone authenticated could enumerate every
+        // model's schema by iterating IDs. The guard has to accept
+        // the three legit caller shapes: asset creators (from /hardware/
+        // create), asset editors (from /hardware/{id}/edit), and model
+        // viewers (from /models/{id}/edit's custom-field preview). Any-of
+        // is cheaper than falling back on Gate::authorize's single-perm
+        // check because none of those three alone covers every legit
+        // caller.
+        $user = auth()->user();
+        if (! $user?->can('view', AssetModel::class)
+            && ! $user?->can('create', Asset::class)
+            && ! $user?->can('update', Asset::class)) {
+            abort(403);
+        }
+
         return view('models.custom_fields_form')->with('model', AssetModel::find($modelId));
     }
 

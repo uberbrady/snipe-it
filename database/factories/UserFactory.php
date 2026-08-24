@@ -290,6 +290,11 @@ class UserFactory extends Factory
         return $this->appendPermission(['assets.view.encrypted_custom_fields' => '1']);
     }
 
+    public function createAssetModels()
+    {
+        return $this->appendPermission(['models.create' => '1']);
+    }
+
     public function deleteAssetModels()
     {
         return $this->appendPermission(['models.delete' => '1']);
