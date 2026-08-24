@@ -8,6 +8,11 @@
     'required' => null,
     'disabled' => false,
     'help_text' => null,
+    // Opt-in raw-HTML help. Rendered UNESCAPED — only pass developer-authored
+    // strings (translation strings with anchors, <code>, <br>, etc.). Never
+    // pass anything that could contain user input without escaping it first.
+    // See x-form.row for the same prop with the same semantics.
+    'help_html' => null,
     'help_icon' => null,
     'info_tooltip_text' => null,
     // Optional left-column section header for single-checkbox rows that need
@@ -162,6 +167,22 @@
     @if ($help_text)
         <div class="col-md-8 col-md-offset-3">
             <x-form.help :name="$name" :icon="$help_icon">{!! $help_text !!}</x-form.help>
+        </div>
+    @elseif ($help_html)
+        {{-- Raw HTML help — caller has opted in via help_html rather than
+             help_text. Callers passing a trans() string with HTML MUST use
+             the static-attribute form  help_html="{!! trans('...') !!}"  —
+             the dynamic-binding form  :help_html="trans('...')"  runs the
+             value through BladeCompiler::sanitizeComponentAttribute() and
+             turns <a> tags into &lt;a&gt; entities. See x-form.row for the
+             same wiring. --}}
+        <div class="col-md-8 col-md-offset-3">
+            <p class="help-block" id="{{ $name }}-help">
+                @if ($help_icon)
+                    <x-icon :type="$help_icon" />
+                @endif
+                {!! $help_html !!}
+            </p>
         </div>
     @endif
 
