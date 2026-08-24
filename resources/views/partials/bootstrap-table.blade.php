@@ -123,6 +123,20 @@
                 return $('<div/>').text(value == null ? '' : value).html();
             };
 
+            // Attribute-context escape. Distinct from escapeAdvancedSearchValue
+            // (text-context) because the text-serializer does NOT encode `"`,
+            // so a value with a raw quote breaks out of `attr="..."` even after
+            // .text().html() "escaping". Any concat like `data-field="' + val + '"`
+            // MUST route through this, not escapeAdvancedSearchValue.
+            var escapeAdvancedSearchAttr = function (value) {
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            };
+
             // Safely decode HTML entities in a string WITHOUT parsing it as HTML.
             // `<textarea>` innerHTML is RCDATA — the parser decodes entity
             // references like `&lt;` but does not interpret `<tag>` as an
@@ -275,9 +289,19 @@
                     advancedSearchOperatorLabel + ': ' + (op === 'or' ? advancedSearchOrText : advancedSearchAndText) + '</span>';
 
                 Object.keys(filters).forEach(f => {
+                    // The filter name comes from the URL (deeplink hydration in
+                    // the block below), so it is attacker-controllable. Both
+                    // insertion points have to encode: the visible label needs
+                    // text-context encoding, the data-field attribute needs
+                    // attribute-context encoding (which additionally encodes
+                    // the double-quote so a crafted name cannot close the
+                    // attribute early and inject arbitrary HTML that
+                    // jQuery.html() would then parse and execute).
+                    var safeLabel = escapeAdvancedSearchValue(colMap[f] || f);
+                    var safeField = escapeAdvancedSearchAttr(f);
                     html += '<span class="label label-primary" style="font-size: 11px; margin-right:6px;display:inline-block;margin-bottom:6px;"><b>' +
-                        (colMap[f] || f).replace(/<[^>]*>/g, '') + ':</b> ' + escapeAdvancedSearchValue(filters[f]) +
-                        ' <a href="javascript:void(0)" class="snipe-advanced-search-tag-remove" data-field="' + f +
+                        safeLabel + ':</b> ' + escapeAdvancedSearchValue(filters[f]) +
+                        ' <a href="javascript:void(0)" class="snipe-advanced-search-tag-remove" data-field="' + safeField +
                         '" style="color:#fff;margin-left:6px;text-decoration:none;">&times;</a></span>';
                 });
 
@@ -388,19 +412,26 @@
                         // — the label, name, and placeholder all get untrusted content.
                         var title = decodeHtmlEntitiesSafely(column.title).trim();
                         var value = filterColumnsPartial[column.field] || '';
-                        var safeTitle = escapeAdvancedSearchValue(title);
-                        var safeField = escapeAdvancedSearchValue(column.field);
+                        // Label goes inside <label>...</label> (text context) so
+                        // .text().html() suffices. name / placeholder / value
+                        // all land inside attribute quotes, and the value comes
+                        // from filterColumnsPartial (URL-sourced), so they need
+                        // the attribute-safe encoder that also encodes `"`.
+                        var safeLabelText = escapeAdvancedSearchValue(title);
+                        var safeTitleAttr = escapeAdvancedSearchAttr(title);
+                        var safeFieldAttr = escapeAdvancedSearchAttr(column.field);
+                        var safeValueAttr = escapeAdvancedSearchAttr(value);
 
                         html.push(`
                             <div class="form-group row">
-                                <label class="col-sm-4 control-label">${safeTitle}</label>
+                                <label class="col-sm-4 control-label">${safeLabelText}</label>
                                 <div class="col-sm-6">
                                     <input
                                         type="text"
                                         class="form-control ${this.constants.classes.input}"
-                                        name="${safeField}"
-                                        placeholder="${safeTitle}"
-                                        value="${escapeAdvancedSearchValue(value)}"
+                                        name="${safeFieldAttr}"
+                                        placeholder="${safeTitleAttr}"
+                                        value="${safeValueAttr}"
                                     >
                                 </div>
                             </div>
