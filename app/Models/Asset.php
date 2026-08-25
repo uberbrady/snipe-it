@@ -1855,14 +1855,20 @@ class Asset extends Depreciable
      */
     public function calendarEventDefinitions(): array
     {
-        // Every entry marked all_day: true. Cast metadata on Asset is
-        // mixed (next_audit_date is 'datetime:m-d-Y', expected_checkin
-        // and last_checkout are 'datetime', asset_eol_date has no cast
-        // at all) so cast-based auto-detection wouldn't catch them
-        // uniformly. Calendar context also doesn't need hour-precision
-        // for any of these - an audit-due date, an EOL date, or the
-        // day something got checked out reads as an all-day marker on
-        // the calendar even for columns that happen to store a time.
+        // Most entries are marked all_day: true because they represent
+        // date-only obligations (an audit due on 2026-09-15, an EOL
+        // date, a warranty expiration). The mixed cast metadata on
+        // Asset (next_audit_date is 'datetime:m-d-Y', expected_checkin
+        // and last_checkout are 'datetime', asset_eol_date has no cast)
+        // means cast-based auto-detection wouldn't catch them
+        // uniformly, so the flag is explicit per entry.
+        //
+        // last_checkout is the one exception. Checkout happens at a
+        // specific moment in time, so the calendar shows it at that
+        // hour rather than as an all-day marker. The transformer's
+        // isAllDayField() reads all_day directly from this array, so
+        // flipping the flag here is all that's needed to switch the
+        // rendered event's shape.
         return [
             [
                 'field' => 'next_audit_date',
@@ -1877,7 +1883,7 @@ class Asset extends Depreciable
             [
                 'field' => 'last_checkout',
                 'event_type' => 'asset.checkout',
-                'all_day' => true,
+                'all_day' => false,
             ],
             [
                 'field' => 'asset_eol_date',
