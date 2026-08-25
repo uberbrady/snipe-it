@@ -31,11 +31,9 @@ class CheckinAccessoryNotification extends Notification implements ShouldQueue
     public function __construct(
         public Accessory $item,
         public $target,
-        User $admin,
+        public User $admin,
         public $note
-    )
-    {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
