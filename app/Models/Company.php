@@ -591,6 +591,21 @@ final class Company extends SnipeModel
     {
         $companyIds = self::getCurrentUserCompanyIds();
 
+        // Location scoping is opt-in even under FMCS: setting
+        // scope_locations_fmcs = 0 tells Snipe-IT that locations are meant
+        // to be shared across tenants. Without this short-circuit the
+        // global scope still filters locations by the caller's pivot
+        // memberships, which hides null-company locations from every
+        // non-superuser (strict mode) and breaks Location::find() lookups
+        // on the checkin / checkout / audit paths that were tightened in
+        // v8.7.0. CompanyableTrait::canCheckoutTo() and
+        // LocationsController::store already respect this setting; the
+        // global scope needs to as well.
+        if ($query->getModel()->getTable() === 'locations'
+            && ! Setting::getSettings()->scope_locations_fmcs) {
+            return $query;
+        }
+
         // If we are scoping the companies table itself, look for the company.id
         if ($query->getModel()->getTable() == 'companies') {
             if (empty($companyIds)) {
