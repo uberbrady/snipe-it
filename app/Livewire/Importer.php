@@ -617,6 +617,16 @@ class Importer extends Component
             'email' => trans('general.email'),
             'checkout_date' => trans('admin/hardware/table.checkout_date'),
             'checkin_date' => trans('admin/hardware/form.checkin_date'),
+            // Optional. Values "user" or "location" (case-insensitive)
+            // disambiguate what Name should resolve to. Absent or empty
+            // falls back to user for CSVs authored before the location
+            // branch existed.
+            'target_type' => trans('general.importer.checkout_type'),
+            // Optional per-row note that lands on the checkout
+            // actionlog. Legacy systems often carried a per-checkout
+            // narrative ("student damaged screen", "shipped to remote
+            // site"), and the column lets that history migrate through.
+            'notes' => trans('general.notes'),
         ];
 
         /**
