@@ -532,7 +532,15 @@ class ReportsController extends Controller
             }
 
             if ($request->filled('asset_name')) {
-                $header[] = trans('admin/hardware/form.name');
+                // Use the same trans key the import wizard uses for the
+                // Name target label so a custom-report CSV round-trips
+                // through the importer's auto-mapper. Prior key
+                // (admin/hardware/form.name) resolves to "Nombre del
+                // activo" in Spanish while the importer's Name label
+                // resolves to "Activo Nombre" via item_name_var, so the
+                // exact-label auto-map silently misses in every non-
+                // English locale where item_name_var reorders the words.
+                $header[] = trans('general.item_name_var', ['item' => trans('general.asset')]);
             }
 
             if ($request->filled('asset_tag')) {

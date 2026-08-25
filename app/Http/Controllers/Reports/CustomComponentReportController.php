@@ -153,7 +153,11 @@ class CustomComponentReportController extends Controller
             ],
             'include_assignments' => [
                 'headers' => [
-                    trans('admin/hardware/form.name'),
+                    // The include_assignments block lists the ASSET a
+                    // component is assigned to, not the component itself,
+                    // so use the asset-flavored variant of item_name_var
+                    // for consistency with the other asset-column exports.
+                    trans('general.item_name_var', ['item' => trans('general.asset')]),
                     trans('admin/hardware/form.tag'),
                     trans('admin/reports/general.custom_export.asset_company'),
                     trans('admin/reports/general.custom_export.asset_serial'),

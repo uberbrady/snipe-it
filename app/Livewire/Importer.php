@@ -639,6 +639,11 @@ class Importer extends Component
                 'name',
                 'supplier name',
                 'location name',
+                trans('general.name'),
+                trans('general.asset_name'),
+                trans('general.item_name'),
+                trans('general.model_name'),
+                trans('admin/hardware/form.name'),
             ],
             'item_no' => [
                 'item number',
