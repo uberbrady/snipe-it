@@ -111,7 +111,8 @@ return [
             'missing_asset_tag_identity' => '(missing asset tag)',
             'missing_asset_tag_message' => 'Row skipped: no asset tag provided.',
             'asset_not_found_message' => 'Asset with this tag does not exist. Import assets first, then re-run the history import.',
-            'user_not_matched_message' => 'No user matched ":name" - toggle the match-by options in step 1 or create the user first.',
+            'target_not_matched_message' => 'No :target_type matched ":name". For users, toggle the match-by options in step 1 or create the user first. For locations, make sure the CSV location name matches an existing location exactly.',
+            'invalid_target_type_message' => 'Target Type ":value" is not recognized. Use "user" or "location", or leave the column blank to default to user.',
         ],
         'wizard' => [
             'step_type' => 'Choose type',
