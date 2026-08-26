@@ -45,6 +45,8 @@ use Osama\LaravelTeamsNotification\TeamsNotification;
 
 abstract class CheckInOutNotificationsBase
 {
+    protected $skipNotificationsFor = [];
+
     protected function getCheckoutableForNotification(Model $checkoutable, bool $shouldRefresh): Model
     {
         if (!$shouldRefresh) {
@@ -178,6 +180,49 @@ abstract class CheckInOutNotificationsBase
         }
 
         return [$to, $cc];
+    }
+
+    protected function getCategoryFromCheckoutable(Model $checkoutable): ?Category
+    {
+        return match (true) {
+            $checkoutable instanceof Asset => $checkoutable->model->category,
+            $checkoutable instanceof Accessory,
+                $checkoutable instanceof Consumable,
+                $checkoutable instanceof Component => $checkoutable->category,
+            $checkoutable instanceof LicenseSeat => $checkoutable->license->category,
+        };
+    }
+
+    /**
+     * Generates a checkout acceptance
+     *
+     * @param  Event  $event
+     * @return mixed
+     */
+    protected function getCheckoutAcceptance($event)
+    {
+        $checkedOutToType = get_class($event->checkedOutTo);
+        if ($checkedOutToType != "App\Models\User") {
+            return null;
+        }
+
+        if (!$event->checkoutable->requireAcceptance()) {
+            return null;
+        }
+
+        // Both the email and webhook listeners react to this same event instance and both
+        // need the acceptance record. Whichever runs first creates it and caches it on the
+        // event so the other reuses it instead of creating a duplicate row.
+        if (!$event->checkoutAcceptance) {
+            $category = $this->getCategoryFromCheckoutable($event->checkoutable);
+            $alertOnResponseId = $category?->alert_on_response ? auth()->id() : null;
+            $event->checkoutAcceptance = CreateCheckoutAcceptanceAction::run(
+                $event->checkoutable,
+                $event->checkedOutTo,
+                $event->checkoutable->checkout_qty ?? 1,
+                $alertOnResponseId);
+        }
+        return $event->checkoutAcceptance;
     }
 
 }
