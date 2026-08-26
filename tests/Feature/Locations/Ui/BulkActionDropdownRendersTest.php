@@ -30,7 +30,7 @@ class BulkActionDropdownRendersTest extends TestCase
         // @can('delete', Location::class) gate in bulk-locations.blade.php
         // passes and the form actually reaches the DOM.
         Location::factory()->create();
-        $actor = User::factory()->deleteLocations()->create();
+        $actor = User::factory()->viewLocationHistory()->deleteLocations()->create();
 
         $html = $this->actingAs($actor)
             ->get(route('locations.index'))
