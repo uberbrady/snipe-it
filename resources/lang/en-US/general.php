@@ -646,6 +646,7 @@ return [
     'fmcs_location_select_note' => 'Full Multiple Company Support with location scoping is enabled. Only locations belonging to your company will appear in this list.',
     'fmcs_company_select_note' => 'Full Multiple Company Support is enabled. You can only assign companies you belong to.',
     'fmcs_company_select_superadmin_note' => 'Full Multiple Company Support is enabled. The company assigned here may affect visibility for non-superadmin users.',
+    'fmcs_import_restriction_note' => 'Full Multiple Company Support is enabled. CSV rows that reference companies or scoped locations outside your assigned companies will be rejected. Records outside your assigned companies cannot be updated.',
     'error_user_company' => 'Checkout target company and asset company do not match',
     'error_user_company_multiple' => 'One or more of the checkout target company and asset company do not match',
     'error_user_company_accept_view' => 'An Asset assigned to you belongs to a different company so you can\'t accept nor deny it, please check with your manager',

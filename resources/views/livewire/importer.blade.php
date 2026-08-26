@@ -20,6 +20,14 @@
     </div>
 @endif
 
+@if($this->showFmcsRestrictionNotice)
+    <div class="col-md-12">
+        <x-alert type="info" icon="tip">
+            {{ trans('general.fmcs_import_restriction_note') }}
+        </x-alert>
+    </div>
+@endif
+
         @if($import_errors)
           <div class="col-md-12">
             <div class="box box-default">
