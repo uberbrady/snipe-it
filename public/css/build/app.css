@@ -3715,6 +3715,20 @@ dl.table-display {
 .snipeit-calendar-filter-button.active:focus {
   box-shadow: inset 0 0 0 2px hsl(from var(--main-theme-color) h s calc(l - 25)), 0 0 0 3px hsl(from var(--main-theme-color) h s calc(l + 20) / 0.5) !important;
 }
+.btn-social.btn-google,
+.btn-social.btn-google:link,
+.btn-social.btn-google:visited {
+  background-color: var(--main-theme-color) !important;
+  color: var(--nav-primary-text-color) !important;
+  border-color: var(--main-theme-color) !important;
+}
+.btn-social.btn-google:hover,
+.btn-social.btn-google:focus,
+.btn-social.btn-google:active {
+  background-color: var(--main-theme-hover) !important;
+  color: var(--nav-primary-text-color) !important;
+  border-color: var(--main-theme-hover) !important;
+}
 
 
 /*# sourceMappingURL=app.css.map*/
