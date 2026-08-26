@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Listeners;
+
 use App\Events\UserMerged as UserMergedEvent;
 use App\Models\Actionlog;
 use App\Models\User;
