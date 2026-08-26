@@ -34,10 +34,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     // Auto-discovers plain handle()-style listeners in app/Listeners (e.g. LogSuccessfulLogin,
-    // LogFailedLogin). Subscriber-pattern listeners (LogListener, FulfillCheckoutRequestListener,
-    // CheckoutableListener, CheckoutablesCheckedOutInBulkListener) are unaffected - discovery has
-    // no concept of subscribers - and stay registered via $subscribe in
-    // App\Providers\EventServiceProvider (config/app.php), which is otherwise untouched.
     ->withEvents(true)
     ->withMiddleware(function (Middleware $middleware) {
         // --- Global stack ---
