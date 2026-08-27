@@ -14,14 +14,13 @@ use Illuminate\Support\Facades\Log;
 
 class BulkLocationsController extends Controller
 {
-
     public function edit(Request $request): View|RedirectResponse
     {
         $this->authorize('update', Location::class);
 
         $ids = $request->input('ids');
 
-        if (!is_array($ids) || count($ids) === 0) {
+        if (! is_array($ids) || count($ids) === 0) {
             return redirect()->route('locations.index')
                 ->with('error', trans('general.bulk.delete.nothing_selected', ['object_type' => trans_choice('general.location_plural', 2)]));
         }
@@ -52,7 +51,7 @@ class BulkLocationsController extends Controller
 
         $ids = $request->input('ids');
 
-        if (!is_array($ids) || count($ids) === 0) {
+        if (! is_array($ids) || count($ids) === 0) {
             return redirect()->route('locations.index')
                 ->with('error', trans('general.bulk.delete.nothing_selected', ['object_type' => trans_choice('general.location_plural', 2)]));
         }
@@ -74,7 +73,7 @@ class BulkLocationsController extends Controller
         $parentCompanyMismatchCount = 0;
 
         foreach (Location::whereIn('id', $ids)->get() as $location) {
-            if (!Gate::allows('update', $location)) {
+            if (! Gate::allows('update', $location)) {
                 continue;
             }
 
@@ -199,7 +198,7 @@ class BulkLocationsController extends Controller
 
         $ids = $request->input('ids');
 
-        if (!is_array($ids) || count($ids) === 0) {
+        if (! is_array($ids) || count($ids) === 0) {
             return redirect()->route('locations.index')
                 ->with('error', trans('general.bulk.nothing_selected', ['object_type' => trans('general.locations')]));
         }
@@ -227,8 +226,8 @@ class BulkLocationsController extends Controller
             }
         }
 
-        Log::debug('Success count: ' . $success_count);
-        Log::debug('Error count: ' . $error_count);
+        Log::debug('Success count: '.$success_count);
+        Log::debug('Error count: '.$error_count);
 
         if ($success_count === count($ids)) {
             return redirect()->route('locations.index')
@@ -280,7 +279,7 @@ class BulkLocationsController extends Controller
         // has amplified blast radius (accidental drop-down click hits
         // every selected row), and moving locations between tenants
         // affects visibility for every user in the source and target
-        // companies. Ship the more defensive default here; scoped
+        // companies. Ship the more defensive default here. Scoped
         // admins can still use the single-edit path row-by-row.
         if (Setting::getSettings()->full_multiple_companies_support == '1'
             && auth()->user()->isSuperUser()
