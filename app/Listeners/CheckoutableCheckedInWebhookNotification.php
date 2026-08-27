@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\CheckoutableCheckedin;
+use App\Events\CheckoutableCheckedIn;
 use App\Mail\CheckinAccessoryMail;
 use App\Mail\CheckinAssetMail;
 use App\Mail\CheckinComponentMail;
@@ -25,70 +25,17 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Osama\LaravelTeamsNotification\TeamsNotification;
 
-class CheckoutableCheckedInNotifications extends CheckInOutNotificationsBase
+class CheckoutableCheckedInWebhookNotification extends CheckInOutNotificationsBase
 {
     public function handle(CheckoutableCheckedIn $event)
     {
-        Log::debug('onCheckedIn in the Checkoutable listener fired');
+        Log::debug('CheckoutableCheckedInWebhookNotification fired');
 
         if ($this->shouldNotSendAnyNotifications($event->checkoutable)) {
             return;
         }
 
-        $shouldSendEmailToUser = $this->checkoutableCategoryShouldSendEmail($event->checkoutable);
-        $shouldSendEmailToAlertAddress = $this->shouldSendEmailToAlertAddress();
         $shouldSendWebhookNotification = $this->shouldSendWebhookNotification();
-        if (!$shouldSendEmailToUser && !$shouldSendEmailToAlertAddress && !$shouldSendWebhookNotification) {
-            return;
-        }
-
-        if ($shouldSendEmailToUser || $shouldSendEmailToAlertAddress) {
-            /**
-             * Send the appropriate notification
-             */
-            if ($event->checkedOutTo && $event->checkoutable) {
-                $acceptances = CheckoutAcceptance::where('checkoutable_id', $event->checkoutable->id)
-                    ->where('assigned_to_id', $event->checkedOutTo->id)
-                    ->get();
-
-                foreach ($acceptances as $acceptance) {
-                    if ($acceptance->isPending()) {
-                        $acceptance->delete();
-                    }
-                }
-            }
-
-            $mailable = $this->getCheckinMailType($event);
-            $notifiable = $this->getNotifiableUser($event);
-
-            $notifiableHasEmail = $notifiable instanceof User && $notifiable->email;
-
-            $shouldSendEmailToUser = $shouldSendEmailToUser && $notifiableHasEmail;
-
-            [$to, $cc] = $this->generateEmailRecipients($shouldSendEmailToUser, $shouldSendEmailToAlertAddress, $notifiable);
-
-            if (!empty($to)) {
-                try {
-                    $toMail = (clone $mailable)->locale($notifiable->locale);
-                    Mail::to(array_flatten($to))->send($toMail);
-                    Log::info('Checkin Mail sent to checkin target');
-                } catch (ClientException $e) {
-                    Log::debug('Exception caught during checkin email: ' . $e->getMessage());
-                } catch (Exception $e) {
-                    Log::debug('Exception caught during checkin email: ' . $e->getMessage());
-                }
-            }
-            if (!empty($cc)) {
-                try {
-                    $ccMail = (clone $mailable)->locale(Setting::getSettings()->locale);
-                    Mail::cc(array_flatten($cc))->send($ccMail);
-                } catch (ClientException $e) {
-                    Log::debug('Exception caught during checkin email: ' . $e->getMessage());
-                } catch (Exception $e) {
-                    Log::debug('Exception caught during checkin email: ' . $e->getMessage());
-                }
-            }
-        }
 
         if ($shouldSendWebhookNotification) {
             // Send Webhook notification
@@ -158,20 +105,6 @@ class CheckoutableCheckedInNotifications extends CheckInOutNotificationsBase
         Log::debug('Notification class: ' . $notificationClass);
 
         return new $notificationClass($checkoutable, $event->checkedOutTo, $event->checkedInBy, $event->note);
-    }
-
-    protected function getCheckinMailType($event)
-    {
-        $lookup = [
-            Accessory::class => CheckinAccessoryMail::class,
-            Asset::class => CheckinAssetMail::class,
-            LicenseSeat::class => CheckinLicenseMail::class,
-            Component::class => CheckinComponentMail::class,
-        ];
-        $mailable = $lookup[get_class($event->checkoutable)];
-
-        return new $mailable($event->checkoutable, $event->checkedOutTo, $event->checkedInBy, $event->note);
-
     }
 
 

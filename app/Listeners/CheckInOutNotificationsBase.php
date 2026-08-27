@@ -45,6 +45,8 @@ use Osama\LaravelTeamsNotification\TeamsNotification;
 
 abstract class CheckInOutNotificationsBase
 {
+    protected $skipNotificationsFor = [];
+
     protected function getCheckoutableForNotification(Model $checkoutable, bool $shouldRefresh): Model
     {
         if (!$shouldRefresh) {
@@ -179,5 +181,80 @@ abstract class CheckInOutNotificationsBase
 
         return [$to, $cc];
     }
+
+    protected function getCategoryFromCheckoutable(Model $checkoutable): ?Category
+    {
+        return match (true) {
+            $checkoutable instanceof Asset => $checkoutable->model->category,
+            $checkoutable instanceof Accessory,
+                $checkoutable instanceof Consumable,
+                $checkoutable instanceof Component => $checkoutable->category,
+            $checkoutable instanceof LicenseSeat => $checkoutable->license->category,
+        };
+    }
+
+    /**
+     * Generates a checkout acceptance
+     *
+     * @param  Event  $event
+     * @return mixed
+     */
+    protected function getCheckoutAcceptance($event)
+    {
+        // Resolve the acceptance target: the user who actually needs
+        // to accept. When the checkoutable was handed to a User
+        // directly, that's the target. When the checkoutable was
+        // handed to an Asset (which happens for Components checked
+        // out to an asset that's already assigned to a user), the
+        // asset's assigned User is the effective target, so they can
+        // accept the component from their profile. Any other target
+        // shape (Location, unassigned Asset, etc.) has no user on the
+        // hook, so no acceptance row is written. See GH #19570.
+        $acceptanceTarget = $this->resolveAcceptanceTarget($event->checkedOutTo);
+        if ($acceptanceTarget === null) {
+            return null;
+        }
+
+        if (!$event->checkoutable->requireAcceptance()) {
+            return null;
+        }
+
+        // Both the email and webhook listeners react to this same event instance and both
+        // need the acceptance record. Whichever runs first creates it and caches it on the
+        // event so the other reuses it instead of creating a duplicate row.
+        if (!$event->checkoutAcceptance) {
+            $category = $this->getCategoryFromCheckoutable($event->checkoutable);
+            $alertOnResponseId = $category?->alert_on_response ? auth()->id() : null;
+            $event->checkoutAcceptance = CreateCheckoutAcceptanceAction::run(
+                $event->checkoutable,
+                $event->checkedOutTo,
+                $event->checkoutable->checkout_qty ?? 1,
+                $alertOnResponseId
+            );
+        }
+        return $event->checkoutAcceptance;
+    }
+
+    /**
+     * Walks a checkout target down to the User who should sign the
+     * acceptance. Direct-user targets pass through. Asset targets
+     * unwrap to the asset's currently-assigned User (if any). Any
+     * other target shape returns null and the caller skips the
+     * acceptance write.
+     */
+
+    private function resolveAcceptanceTarget($checkedOutTo): ?User
+    {
+        if ($checkedOutTo instanceof User) {
+            return $checkedOutTo;
+        }
+
+        if ($checkedOutTo instanceof Asset && $checkedOutTo->assignedto instanceof User) {
+            return $checkedOutTo->assignedto;
+        }
+
+        return null;
+    }
+
 
 }
