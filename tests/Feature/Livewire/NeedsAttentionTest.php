@@ -121,14 +121,7 @@ class NeedsAttentionTest extends TestCase implements TestsFullMultipleCompaniesS
         $maintenanceAsset = Asset::factory()->create(['next_audit_date' => $farFuture]);
         $maintenanceAsset->forceFill(['asset_eol_date' => $farFuture])->save();
 
-        // Pin asset_id to the already-isolated $maintenanceAsset. Without
-        // this override MaintenanceFactory's default definition resolves
-        // asset_id via Asset::factory()->laptopZenbook(), spawning an
-        // extra asset whose asset_eol_date lands in the past on the ~5%
-        // chance leaked by AssetFactory's afterMaking hook. That was
-        // the source of a flaky assetsPastEol == 5 in CI.
         Maintenance::factory()->create([
-            'asset_id' => $maintenanceAsset->id,
             'item_id' => $maintenanceAsset->id,
             'item_type' => Asset::class,
             'start_date' => now()->subDays(20),
@@ -153,12 +146,7 @@ class NeedsAttentionTest extends TestCase implements TestsFullMultipleCompaniesS
         // should register.
         $asset = Asset::factory()->create();
 
-        // Pin asset_id on both maintenance rows for the same reason as
-        // test_counts_reflect_seeded_data: MaintenanceFactory's default
-        // asset_id resolver spawns an extra asset per call, which can
-        // leak into cross-cutting counts on adjacent tests.
         Maintenance::factory()->create([
-            'asset_id' => $asset->id,
             'item_id' => $asset->id,
             'item_type' => Asset::class,
             'start_date' => now()->subDays(20),
@@ -166,7 +154,6 @@ class NeedsAttentionTest extends TestCase implements TestsFullMultipleCompaniesS
             'completed_at' => now()->subDays(1),
         ]);
         Maintenance::factory()->create([
-            'asset_id' => $asset->id,
             'item_id' => $asset->id,
             'item_type' => Asset::class,
             'start_date' => now()->subDays(20),
