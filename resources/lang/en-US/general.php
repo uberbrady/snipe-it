@@ -723,6 +723,8 @@ return [
         'delete' => [
             'header' => 'Bulk Delete :object_type',
             'warn' => 'You are about to delete one :object_type|You are about to delete :count :object_type',
+            'warn_partial' => 'You selected :selected_count :object_type. :valid_count will be deleted. The rest are still in use and will be skipped.',
+            'blocking_dependencies' => 'Blocking Dependencies',
             'success' => ':object_type successfully deleted|Successfully deleted :count :object_type',
             'error' => 'Could not delete :object_type',
             'nothing_selected' => 'No :object_type selected - nothing to do',
@@ -739,6 +741,8 @@ return [
         'license_seats' => ':count License Seat|:count License Seats',
         'consumables' => ':count Consumable|:count Consumables',
         'components' => ':count Component|:count Components',
+        'users' => ':count User|:count Users',
+        'child_locations' => ':count Child Location|:count Child Locations',
     ],
 
     'show_inactive' => 'Expired or Terminated',
