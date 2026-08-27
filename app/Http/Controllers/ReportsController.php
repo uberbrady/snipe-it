@@ -745,9 +745,16 @@ class ReportsController extends Controller
                 // do we scope here or??
             }
 
-            $assets = Asset::select('assets.*')->with(
-                'location', 'status', 'company', 'defaultLoc', 'assignedTo',
-                'model.category', 'model.manufacturer', 'model.fieldset.fields', 'supplier');
+            $assets = Asset::select('assets.*')->with([
+                'location', 'status', 'company', 'defaultLoc',
+                'model.category', 'model.manufacturer', 'model.fieldset.fields', 'supplier',
+                // assignedTo is a morphTo. The user_company column below
+                // reads $assignee->companies when the assignee is a User,
+                // and only User has a companies pivot. morphWith constrains
+                // the .companies load to User targets so Assets / Locations
+                // resolving through assignedTo don't blow up. See #19568.
+                'assignedTo' => fn ($morph) => $morph->morphWith([\App\Models\User::class => ['companies']]),
+            ]);
 
             if ($request->filled('by_location_id')) {
                 $assets->whereIn('assets.location_id', $request->input('by_location_id'));
@@ -1026,7 +1033,15 @@ class ReportsController extends Controller
 
                     if ($request->filled('user_company')) {
                         if ($asset->checkedOutToUser()) {
-                            $row[] = ($asset->assignedto?->company) ? $asset->assignedto?->company?->display_name : '';
+                            // Under FMCS a user can belong to multiple companies via
+                            // the company_user pivot. Legacy $user->company reads the
+                            // scalar users.company_id mirror, which only holds ONE.
+                            // Report the full pivot set, alphabetized, pipe-joined.
+                            // See GH #19568.
+                            $row[] = $asset->assignedto?->companies
+                                ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+                                ->pluck('name')
+                                ->join(' | ') ?? '';
                         } else {
                             $row[] = ''; // Empty string if unassigned
                         }
