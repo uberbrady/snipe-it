@@ -3,6 +3,7 @@
 namespace Tests\Feature\Checkins\Api;
 
 use App\Models\Accessory;
+use App\Models\CheckoutAcceptance;
 use App\Models\Company;
 use App\Models\User;
 use Tests\Concerns\TestsFullMultipleCompaniesSupport;
@@ -84,5 +85,33 @@ class AccessoryCheckinTest extends TestCase implements TestsFullMultipleCompanie
             'item_id' => $accessory->id,
             'item_type' => Accessory::class,
         ]);
+    }
+
+    public function test_checkin_clears_pending_acceptance()
+    {
+        $user = User::factory()->create();
+        $accessory = Accessory::factory()->checkedOutToUser($user)->create();
+        $accessory->category->update(['require_acceptance' => true]);
+
+        $checkout = $accessory->checkouts()
+            ->where('assigned_type', User::class)
+            ->where('assigned_to', $user->id)
+            ->firstOrFail();
+
+        $acceptance = CheckoutAcceptance::factory()->forAccessory()->pending()->create([
+            'checkoutable_id' => $accessory->id,
+            'assigned_to_id' => $user->id,
+        ]);
+
+        $this->assertTrue($acceptance->isPending());
+
+        $this->actingAsForApi(User::factory()->checkinAccessories()->create())
+            ->postJson(route('api.accessories.checkin', $checkout))
+            ->assertStatusMessageIs('success');
+
+        $this->assertNotNull(
+            CheckoutAcceptance::withTrashed()->findOrFail($acceptance->id)->deleted_at,
+            'Pending acceptance survived accessory check-in.'
+        );
     }
 }
