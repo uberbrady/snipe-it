@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Helpers\Helper;
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,16 +14,27 @@ class AcceptanceItemAcceptedToUserNotification extends Notification implements S
     use Queueable;
 
     public $item_tag;
+
     public $item_name;
+
     public $item_model;
+
     public $item_serial;
+
     public $item_status;
+
     public $accepted_date;
+
     public $assigned_to;
+
     public $note;
+
     public $company_name;
+
     public $file;
+
     public $qty;
+
     public $custom_fields;
 
     /**
@@ -39,7 +49,10 @@ class AcceptanceItemAcceptedToUserNotification extends Notification implements S
         $this->item_model = $params['item_model'];
         $this->item_serial = $params['item_serial'];
         $this->item_status = $params['item_status'];
-        $this->accepted_date = Helper::getFormattedDateObject($params['accepted_date'], 'datetime', false);
+        // The controller already runs the accepted_date through
+        // Helper::getFormattedDateObject, so it arrives pre-formatted
+        // in the caller's locale. Don't invoke it here.
+        $this->accepted_date = $params['accepted_date'];
         $this->assigned_to = $params['assigned_to'];
         $this->note = $params['note'] ?? null;
         $this->company_name = $params['company_name'];
