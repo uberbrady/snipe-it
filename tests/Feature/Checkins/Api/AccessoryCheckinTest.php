@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Checkins\Api;
 
+use App\Mail\CheckinAccessoryMail;
 use App\Models\Accessory;
 use App\Models\CheckoutAcceptance;
 use App\Models\Company;
+use App\Models\Location;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\TestsFullMultipleCompaniesSupport;
 use Tests\Concerns\TestsPermissionsRequirement;
 use Tests\TestCase;
@@ -85,6 +88,52 @@ class AccessoryCheckinTest extends TestCase implements TestsFullMultipleCompanie
             'item_id' => $accessory->id,
             'item_type' => Accessory::class,
         ]);
+
+        $this->assertHasTheseActionLogs($accessory, ['create', 'checkin from']);
+    }
+
+    public function test_checkin_of_accessory_checked_out_to_location_is_logged_against_the_location()
+    {
+        $location = Location::factory()->create();
+        $actor = User::factory()->checkinAccessories()->create();
+
+        $accessory = Accessory::factory()->checkedOutToLocation($location)->create();
+        $accessoryCheckout = $accessory->checkouts->first();
+
+        $this->actingAsForApi($actor)
+            ->postJson(route('api.accessories.checkin', $accessoryCheckout))
+            ->assertStatusMessageIs('success');
+
+        $this->assertDatabaseHas('action_logs', [
+            'created_by' => $actor->id,
+            'action_type' => 'checkin from',
+            'target_id' => $location->id,
+            'target_type' => Location::class,
+            'item_id' => $accessory->id,
+            'item_type' => Accessory::class,
+        ]);
+
+        // todo: check action logs count == 1 instead of above
+    }
+
+    public function test_checkin_sends_checkin_email_to_user_when_category_enables_it()
+    {
+        Mail::fake();
+
+        $user = User::factory()->create();
+        $accessory = Accessory::factory()->checkedOutToUser($user)->create();
+        $accessory->category->update(['checkin_email' => true]);
+
+        $accessoryCheckout = $accessory->checkouts->first();
+
+        $this->actingAsForApi(User::factory()->checkinAccessories()->create())
+            ->postJson(route('api.accessories.checkin', $accessoryCheckout))
+            ->assertStatusMessageIs('success');
+
+        Mail::assertSent(
+            CheckinAccessoryMail::class,
+            fn ($mail) => $mail->hasTo($user->email),
+        );
     }
 
     public function test_checkin_clears_pending_acceptance()
