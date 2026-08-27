@@ -112,8 +112,6 @@ class AccessoryCheckinTest extends TestCase implements TestsFullMultipleCompanie
             'item_id' => $accessory->id,
             'item_type' => Accessory::class,
         ]);
-
-        // todo: check action logs count == 1 instead of above
     }
 
     public function test_checkin_sends_checkin_email_to_user_when_category_enables_it()
