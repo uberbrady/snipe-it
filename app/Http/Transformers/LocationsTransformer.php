@@ -83,9 +83,10 @@ class LocationsTransformer
             ];
 
             $permissions_array['available_actions'] = [
-                'update' => (Gate::allows('update', Location::class) && ($location->deleted_at == '')),
+                'update' => (Gate::allows('update', $location) && ($location->deleted_at == '')),
                 'delete' => $location->isDeletable(),
                 'bulk_selectable' => [
+                    'edit' => (Gate::allows('update', $location) && ($location->deleted_at == '')),
                     'delete' => $location->isDeletable(),
                 ],
                 'clone' => (Gate::allows('create', Location::class) && ($location->deleted_at == '')),

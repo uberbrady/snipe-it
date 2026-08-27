@@ -10,6 +10,7 @@
     'helpText' => null,
     'hideNewButton' => false,
     'companyId' => null,
+    'excludeIds' => null,
 ])
 
 @php
@@ -44,6 +45,9 @@
             @endif
             @if ($companyId)
                 data-company-id="{{ $companyId }}"
+            @endif
+            @if ($excludeIds)
+                data-exclude-ids="{{ is_array($excludeIds) ? implode(',', $excludeIds) : $excludeIds }}"
             @endif
         >
             <option value=""></option>

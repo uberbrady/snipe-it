@@ -410,6 +410,7 @@ $(function () {
                         statusType: link.data("asset-status-type"),
                         companyId: link.data("company-ids") || link.data("company-id"),
                         excludeId: link.data("exclude-id"),
+                        excludeIds: link.data("exclude-ids"),
                         // Pre-scope the hardware picker to a user's
                         // assigned assets. Currently used by the
                         // components-checkout screen when reached via

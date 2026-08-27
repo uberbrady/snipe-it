@@ -500,6 +500,11 @@ class UserFactory extends Factory
         return $this->appendPermission(['locations.delete' => '1']);
     }
 
+    public function editLocations()
+    {
+        return $this->appendPermission(['locations.edit' => '1']);
+    }
+
     public function canEditOwnLocation()
     {
         return $this->appendPermission(['self.edit_location' => '1']);
