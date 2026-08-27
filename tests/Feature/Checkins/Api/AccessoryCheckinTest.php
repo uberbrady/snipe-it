@@ -140,7 +140,7 @@ class AccessoryCheckinTest extends TestCase implements TestsFullMultipleCompanie
     {
         $user = User::factory()->create();
         $accessory = Accessory::factory()->checkedOutToUser($user)->create();
-        $accessory->category->update(['require_acceptance' => true]);
+        $accessory->category->update(['require_acceptance' => true, 'checkin_email' => true]);
 
         $checkout = $accessory->checkouts()
             ->where('assigned_type', User::class)
