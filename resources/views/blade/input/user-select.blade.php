@@ -2,13 +2,12 @@
 
 {{-- companyId scopes the ajax lookup to a specific company (via
      data-company-ids consumed by the js-data-ajax initializer in
-     snipeit.js). excludeId hides a specific user from the list — used
+     snipeit.js). excludeId hides a specific user from the list. Used
      by the users/edit page's manager picker so a user can't select
-     themselves as their own manager. wrapperId and id default to the
-     legacy "assigned_user" / "assigned_user_select" values so pages
-     with JS that toggles #assigned_user (asset checkout target
-     picker) keep working after the migration off
-     partials.forms.edit.user-select. --}}
+     themselves as their own manager. wrapperId and id default to
+     values derived from the name prop, so a manager picker with
+     name="manager_id" gets id="manager_id_select" and
+     wrapperId="manager_id" automatically.  --}}
 @props([
     'label',
     'name',
@@ -17,10 +16,15 @@
     'hideNewButton' => false,
     'companyId' => null,
     'excludeId' => null,
-    'wrapperId' => 'assigned_user',
-    'id' => 'assigned_user_select',
+    'wrapperId' => null,
+    'id' => null,
     'style' => null,
 ])
+
+@php
+    $wrapperId = $wrapperId ?? $name;
+    $id = $id ?? ($name.'_select');
+@endphp
 
 <div
     id="{{ $wrapperId }}"
