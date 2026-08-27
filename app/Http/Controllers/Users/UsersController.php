@@ -350,7 +350,7 @@ class UsersController extends Controller
         session()->put(['redirect_option' => $request->input('redirect_option')]);
 
         if ($user->save()) {
-            $user->syncCompaniesWithLogging(Company::getIdsForCurrentUser($companyIds));
+            $user->syncCompaniesPreservingInvisibleTo(auth()->user(), $companyIds);
 
             // Redirect to the user page
             return Helper::getRedirectOption($request, $user->id, 'Users')

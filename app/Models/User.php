@@ -836,6 +836,49 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
     }
 
     /**
+     * FMCS-safe wrapper around syncCompaniesWithLogging() for the user
+     * update path. Folds the target's memberships in companies the
+     * editor cannot see back into the submitted list before syncing,
+     * so a scoped editor's save can't silently detach the target from
+     * tenants outside the editing user's own membership.
+     *
+     * Superuser editors skip the merge because they can see every
+     * company, so their submission already represents full intent.
+     */
+    public function syncCompaniesPreservingInvisibleTo(User $editor, array $submittedCompanyIds): void
+    {
+        $submitted = array_map('intval', $submittedCompanyIds);
+
+        // FMCS is off, so every user can see every company
+        // and there is no invisible-to-editor set to preserve. Superuser
+        // editors also skip because their submission already
+        // represents full intent across all tenants.
+        $fmcsOn = (bool) Setting::getSettings()->full_multiple_companies_support;
+        if (!$fmcsOn || $editor->isSuperUser()) {
+            $this->syncCompaniesWithLogging($submitted);
+
+            return;
+        }
+
+        $editorVisible = $editor->companies()
+            ->pluck('companies.id')
+            ->map(fn($id) => (int) $id)
+            ->all();
+
+        $submittedVisible = array_values(array_intersect($submitted, $editorVisible));
+
+        $invisiblePreserved = $this->companies()
+            ->whereNotIn('companies.id', $editorVisible)
+            ->pluck('companies.id')
+            ->map(fn($id) => (int) $id)
+            ->all();
+
+        $this->syncCompaniesWithLogging(
+            array_values(array_unique(array_merge($submittedVisible, $invisiblePreserved))),
+        );
+    }
+
+    /**
      * Update the legacy users.company_id column so that it mirrors the
      * company_user pivot: empty pivot writes NULL; a non-empty pivot writes
      * the lowest-id pivot entry (arbitrary but stable).
