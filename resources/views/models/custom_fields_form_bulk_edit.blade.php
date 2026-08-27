@@ -55,8 +55,6 @@
                 @endif
                 @if(!$field->is_unique)
                     <textarea class="col-md-6 form-control" id="{{ $field->db_column_name() }}" name="{{ $field->db_column_name() }}">{{ old($field->db_column_name(), (isset($item) ? Helper::gracefulDecrypt($field, $item->{$field->db_column_name()}) : '')) }}</textarea>
-                        <textarea class="col-md-6 form-control" id="{{ $field->db_column_name() }}"
-                                  name="{{ $field->db_column_name() }}">{{ old($field->db_column_name(),(isset($item) ? Helper::gracefulDecrypt($field, $item->{$field->db_column_name()}) : '')) }}</textarea>
                 @endif
               @elseif ($field->element=='checkbox')
                     <!-- Checkboxes -->
