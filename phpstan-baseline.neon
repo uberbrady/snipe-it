@@ -3535,12 +3535,6 @@ parameters:
 			path: app/Http/Controllers/ReportsController.php
 
 		-
-			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/ReportsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 2
@@ -4664,12 +4658,6 @@ parameters:
 
 		-
 			message: '#^Method App\\Importer\\ItemImporter\:\:createOrFetchCategory\(\) should return int but returns null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Importer/ItemImporter.php
-
-		-
-			message: '#^Method App\\Importer\\ItemImporter\:\:createOrFetchCompany\(\) should return int but returns null\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Importer/ItemImporter.php
@@ -8971,18 +8959,6 @@ parameters:
 			path: app/Notifications/AuditNotification.php
 
 		-
-			message: '#^Access to an undefined property App\\Notifications\\CheckinAccessoryNotification\:\:\$admin\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
-			message: '#^Constructor of class App\\Notifications\\CheckinAccessoryNotification has an unused parameter \$admin\.$#'
-			identifier: constructor.unusedParameter
-			count: 1
-			path: app/Notifications/CheckinAccessoryNotification.php
-
-		-
 			message: '#^Ternary operator condition is always true\.$#'
 			identifier: ternary.alwaysTrue
 			count: 3
@@ -9243,7 +9219,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Asset\:\:\$created_by\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 3
 			path: app/Observers/AssetObserver.php
 
 		-
