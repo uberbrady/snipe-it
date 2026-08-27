@@ -38,7 +38,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     // CheckoutableListener, CheckoutablesCheckedOutInBulkListener) are unaffected - discovery has
     // no concept of subscribers - and stay registered via $subscribe in
     // App\Providers\EventServiceProvider (config/app.php), which is otherwise untouched.
-    ->withEvents(false)
+    ->withEvents(true)
     ->withMiddleware(function (Middleware $middleware) {
         // --- Global stack ---
         // ValidatePathEncoding, InvokeDeferredCallbacks, TrustProxies, HandleCors,
