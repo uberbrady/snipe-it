@@ -132,7 +132,7 @@ class LocationsTransformer
 
         $permissions_array['available_actions'] = [
             'checkout' => false,
-            'checkin' => Gate::allows('checkin', Accessory::class),
+            'checkin' => Gate::allows('checkin', $accessory_checkout->accessory),
         ];
 
         $array += $permissions_array;
