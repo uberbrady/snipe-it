@@ -66,6 +66,15 @@ class ItemImportRequest extends FormRequest
             ->setUsernameFormat('firstname.lastname')
             ->setFieldMappings($fieldMappings);
 
+        // "Skip updating fields with blank cells" opts out of the default
+        // clear-DB-on-blank behavior so an empty cell in the CSV keeps
+        // whatever value is already in the DB column. Only the update path
+        // is affected. New-row inserts ignore the flag entirely. See
+        // ItemImporter::$rejectEmptyOnUpdate.
+        if ($importer instanceof \App\Importer\ItemImporter) {
+            $importer->setRejectEmptyOnUpdate((bool) $this->input('import-preserve-blanks'));
+        }
+
         // Matcher options only apply to the asset history importer, which
         // resolves rows to existing users by name (not by creating new
         // users). Any other importer ignores these switches.

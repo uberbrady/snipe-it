@@ -4387,12 +4387,6 @@ parameters:
 			path: app/Importer/AccessoryImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/AccessoryImporter.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -4429,12 +4423,6 @@ parameters:
 			path: app/Importer/AssetImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 353 on line 7$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/AssetImporter.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between int and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -4459,12 +4447,6 @@ parameters:
 			path: app/Importer/AssetModelImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/AssetModelImporter.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Category\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4477,12 +4459,6 @@ parameters:
 			path: app/Importer/CategoryImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/CategoryImporter.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Component\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4491,12 +4467,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Importer/ComponentImporter.php
-
-		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
 			count: 1
 			path: app/Importer/ComponentImporter.php
 
@@ -4515,12 +4485,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:attach\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Importer/ConsumableImporter.php
-
-		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
 			count: 1
 			path: app/Importer/ConsumableImporter.php
 
@@ -4789,12 +4753,6 @@ parameters:
 			path: app/Importer/LicenseImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 355 on line 7$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/LicenseImporter.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -4819,12 +4777,6 @@ parameters:
 			path: app/Importer/LocationImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/LocationImporter.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Manufacturer\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4833,12 +4785,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Manufacturer\:\:\$errors\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Importer/ManufacturerImporter.php
-
-		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
 			count: 1
 			path: app/Importer/ManufacturerImporter.php
 
@@ -4855,21 +4801,9 @@ parameters:
 			path: app/Importer/SupplierImporter.php
 
 		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: app/Importer/SupplierImporter.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 4
-			path: app/Importer/UserImporter.php
-
-		-
-			message: '#^PHPDoc tag @SuppressWarnings has invalid value \(\(PHPMD\.UnusedFormalParameter\)\)\: Unexpected token "\.UnusedFormalParameter\)", expected ''\)'' at offset 166 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
 			path: app/Importer/UserImporter.php
 
 		-
