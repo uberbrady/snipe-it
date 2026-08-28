@@ -633,7 +633,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('requests', [\App\Http\Controllers\Assets\AssetsController::class, 'getRequestedIndex'])
         ->name('requests.index')
         ->breadcrumbs(fn (Trail $trail) => $trail->parent('home')
-            ->push(trans('general.requested'), route('requests.index'))
+            ->push(trans('general.pending_requests'), route('requests.index'))
         );
 
     Route::post('requests/bulk-cancel', [\App\Http\Controllers\Assets\AssetsController::class, 'bulkCancelRequests'])

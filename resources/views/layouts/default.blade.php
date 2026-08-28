@@ -833,7 +833,7 @@
                                 <li{!! (request()->is('requests.index') ? ' class="active" aria-current="page"' : '') !!}>
                                     <a href="{{ route('requests.index') }}">
                                         <i class="fa-solid fa-boxes-packing"></i>
-                                        <span>{{ trans('general.requested') }}</span>
+                                        <span>{{ trans('general.pending_requests') }}</span>
                                     </a>
                                 </li>
                             @endcan
