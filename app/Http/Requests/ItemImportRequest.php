@@ -32,8 +32,8 @@ class ItemImportRequest extends FormRequest
 
     public function import(Import $import)
     {
-        ini_set('max_execution_time', env('IMPORT_TIME_LIMIT', 600)); // 600 seconds = 10 minutes
-        ini_set('memory_limit', env('IMPORT_MEMORY_LIMIT', '500M'));
+        ini_set('max_execution_time', config('importer.time_limit')); // 600 seconds = 10 minutes
+        ini_set('memory_limit', config('importer.memory_limit'));
 
         $filename = config('app.private_uploads').'/imports/'.$import->file_path;
         $import->import_type = $this->input('import-type');
