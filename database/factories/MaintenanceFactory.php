@@ -72,16 +72,23 @@ class MaintenanceFactory extends Factory
             // Use item_id + item_type (the polymorphic FK) rather than the
             // legacy asset_id so callers can override the target with their
             // own asset instance and skip the default factory-created one.
-            // The legacy asset_id path still routes through the model's
-            // setAssetIdAttribute mutator, but the default path here no
-            // longer spawns an asset when a caller passes item_id, which
-            // was leaking spurious asset rows into cross-cutting counts
-            // (assetsPastEol on the Needs Attention widget hit this).
-            'item_id' => Asset::factory()->laptopZenbook()->afterMaking(function (Asset $asset) {
-                if ($asset->location_id === null) {
-                    $asset->location_id = $asset->rtd_location_id;
+            // A supplied asset_id routes through the model's
+            // setAssetIdAttribute mutator at save time. The closure below
+            // detects that up front and skips the default asset spawn so
+            // we don't leak a spurious asset row for cross-cutting counts
+            // to trip over (assetsPastEol on the Needs Attention widget,
+            // source_id collisions in the calendar events API test, etc.).
+            'item_id' => function (array $attributes) {
+                if (array_key_exists('asset_id', $attributes)) {
+                    return null;
                 }
-            }),
+
+                return Asset::factory()->laptopZenbook()->afterMaking(function (Asset $asset) {
+                    if ($asset->location_id === null) {
+                        $asset->location_id = $asset->rtd_location_id;
+                    }
+                });
+            },
             'item_type' => Asset::class,
             'supplier_id' => Supplier::factory(),
             'maintenance_type_id' => $maintenanceType->id,
