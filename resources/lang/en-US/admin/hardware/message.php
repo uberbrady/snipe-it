@@ -99,7 +99,6 @@ return [
             'errored' => 'Errored',
             'no_changes' => 'The import finished but nothing was created or updated. Every row was skipped, usually because the underlying records already existed. Check the counts below and adjust the CSV or import type if that is not what you expected.',
         ],
-        'update_mode_help' => 'When enabled, existing records matched by identity (serial, asset tag, username, etc.) are updated instead of skipped. Any column in your CSV with an empty value will clear the corresponding field on the existing record. Columns you leave out of your CSV entirely are not touched, so existing values are preserved. Required fields (like name and seats on a license) cannot be cleared. Leaving them empty will produce a validation error for that row.',
         'type_required' => 'Please select an import type before continuing.',
         'processing' => 'Processing your import. Please wait until this finishes before closing the page.',
         'backup_running' => 'Running backup before importing. This can take a while on larger files. Please wait.',
