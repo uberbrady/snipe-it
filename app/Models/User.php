@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -1081,7 +1082,7 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
      * and from responsibleParty() (whoever is responsible for completion).
      * Used by the user detail view's Maintenances tab and badge count.
      */
-    public function assignedMaintenances()
+    public function assignedMaintenances(): MorphMany
     {
         return $this->morphMany(Maintenance::class, 'checked_out_to')->withTrashed();
     }
