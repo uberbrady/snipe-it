@@ -1267,12 +1267,6 @@ parameters:
 			path: app/Http/Controllers/Api/CategoriesController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/Api/CategoriesController.php
-
-		-
 			message: '#^Method Illuminate\\Filesystem\\FilesystemAdapter\:\:url\(\) invoked with 2 parameters, 1 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -1771,12 +1765,6 @@ parameters:
 			path: app/Http/Controllers/Api/ManufacturersController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/Api/ManufacturersController.php
-
-		-
 			message: '#^Method Illuminate\\Filesystem\\FilesystemAdapter\:\:url\(\) invoked with 2 parameters, 1 required\.$#'
 			identifier: arguments.count
 			count: 1
@@ -1948,12 +1936,6 @@ parameters:
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
-			path: app/Http/Controllers/Api/SuppliersController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
 			path: app/Http/Controllers/Api/SuppliersController.php
 
 		-
@@ -2527,46 +2509,10 @@ parameters:
 			path: app/Http/Controllers/Auth/SamlController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkCategoriesController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkCompaniesController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkDepartmentsController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkDepreciationsController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Actionlog\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/BulkMaintenancesController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkManufacturersController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkStatuslabelsController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Supplier\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Supplier\>\:\:\$accessories_count\.$#'
@@ -2593,12 +2539,6 @@ parameters:
 			path: app/Http/Controllers/BulkSuppliersController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/BulkSuppliersController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Category\:\:\$created_by\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2608,12 +2548,6 @@ parameters:
 			message: '#^Call to an undefined method App\\Models\\SnipeModel\:\:getErrors\(\)\.$#'
 			identifier: method.notFound
 			count: 2
-			path: app/Http/Controllers/CategoriesController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
 			path: app/Http/Controllers/CategoriesController.php
 
 		-
@@ -3271,12 +3205,6 @@ parameters:
 			path: app/Http/Controllers/ManufacturersController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/ManufacturersController.php
-
-		-
 			message: '#^PHPDoc tag @param for parameter \$request with type Illuminate\\Http\\Request is not subtype of native type App\\Http\\Requests\\ImageUploadRequest\.$#'
 			identifier: parameter.phpDocType
 			count: 1
@@ -3649,12 +3577,6 @@ parameters:
 			path: app/Http/Controllers/SuppliersController.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/SuppliersController.php
-
-		-
 			message: '#^PHPDoc tag @param references unknown parameter\: \$supplierId$#'
 			identifier: parameter.notFound
 			count: 4
@@ -3737,12 +3659,6 @@ parameters:
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/Users/ImpersonateController.php
-
-		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Http/Controllers/Users/LDAPImportController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\AccessoryCheckout\:\:\$created_by\.$#'
@@ -7483,7 +7399,7 @@ parameters:
 			path: app/Models/Labels/FieldOption.php
 
 		-
-			message: '#^Dead catch \- Exception is never thrown in the try block\.$#'
+			message: '#^Dead catch \- Throwable is never thrown in the try block\.$#'
 			identifier: catch.neverThrown
 			count: 1
 			path: app/Models/Labels/FieldOption.php
