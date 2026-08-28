@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Intervention\Image\Exception\NotSupportedException;
@@ -194,9 +195,15 @@ class Handler extends ExceptionHandler
                 $route = 'home';
             }
 
+            // Normalize the space-separated derived name to underscore
+            // so compound class names (AssetModel -> "asset model" -> "asset_model")
+            // resolve to keys that actually exist in general.php.
+            $translationKey = 'general.' . str_replace(' ', '_', $model_name);
+            $translatedName = Lang::has($translationKey) ? trans($translationKey) : $model_name;
+
             return redirect()
                 ->route($route)
-                ->withError(trans('general.generic_model_not_found', ['model' => $model_name]));
+                ->withError(trans('general.generic_model_not_found', ['model' => $translatedName]));
         }
 
         if ($this->isHttpException($e) && (isset($statusCode)) && ($statusCode == '404')) {
