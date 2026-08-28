@@ -8,8 +8,6 @@ class _5520_B extends _5520
 
     private const BARCODE_MARGIN = 1.40;
 
-    private const TAG_SIZE = 0.125;
-
     private const TITLE_SIZE = 0.140;
 
     private const TITLE_MARGIN = 0.025;

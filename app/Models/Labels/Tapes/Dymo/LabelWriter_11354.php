@@ -22,8 +22,6 @@ class LabelWriter_11354 extends LabelWriter
 
     private const LABEL_SIZE = 2.8;
 
-    private const LABEL_MARGIN = 0.6;
-
     public function getUnit()
     {
         return 'mm';
