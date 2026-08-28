@@ -591,6 +591,7 @@ class CheckoutableListener
             $checkoutable instanceof Consumable,
             $checkoutable instanceof Component => $checkoutable->category,
             $checkoutable instanceof LicenseSeat => $checkoutable->license->category,
+            default => null,
         };
     }
 }

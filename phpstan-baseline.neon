@@ -757,12 +757,6 @@ parameters:
 			path: app/Helpers/Helper.php
 
 		-
-			message: '#^Match expression does not handle remaining value\: mixed$#'
-			identifier: match.unhandled
-			count: 4
-			path: app/Helpers/Helper.php
-
-		-
 			message: '#^Method App\\Helpers\\Helper\:\:ParseFloat\(\) should return string but returns float\.$#'
 			identifier: return.type
 			count: 1
@@ -903,12 +897,6 @@ parameters:
 		-
 			message: '#^Cannot access property \$assigned_type on array\<mixed\>\|object\.$#'
 			identifier: property.nonObject
-			count: 1
-			path: app/Http/Controllers/Accessories/AccessoryCheckinController.php
-
-		-
-			message: '#^Match expression does not handle remaining values\: string\|null$#'
-			identifier: match.unhandled
 			count: 1
 			path: app/Http/Controllers/Accessories/AccessoryCheckinController.php
 
@@ -2121,12 +2109,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\:\:disassociate\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckinController.php
-
-		-
-			message: '#^Match expression does not handle remaining values\: string\|null$#'
-			identifier: match.unhandled
 			count: 1
 			path: app/Http/Controllers/Assets/AssetCheckinController.php
 
@@ -4675,12 +4657,6 @@ parameters:
 			path: app/Listeners/CheckoutableListener.php
 
 		-
-			message: '#^Match expression does not handle remaining value\: true$#'
-			identifier: match.unhandled
-			count: 1
-			path: app/Listeners/CheckoutableListener.php
-
-		-
 			message: '#^PHPDoc tag @return with type Illuminate\\Support\\Facades\\Notification is incompatible with native type Illuminate\\Notifications\\Notification\.$#'
 			identifier: return.phpDocType
 			count: 2
@@ -4810,12 +4786,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$licenses\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Livewire/CheckoutTargetPanel.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 1
 			path: app/Livewire/CheckoutTargetPanel.php
 
 		-
@@ -10498,10 +10468,4 @@ parameters:
 			message: '#^Class App\\Mail\\CheckoutComponentMail constructor invoked with 0 parameters, 5 required\.$#'
 			identifier: arguments.count
 			count: 1
-			path: routes/web.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 2
 			path: routes/web.php
