@@ -69,8 +69,6 @@ class TZe_24mm_E extends TZe_24mm
         return true;
     }
 
-    public function preparePDF($pdf) {}
-
     public function write($pdf, $record)
     {
         $pa = $this->getPrintableArea();
