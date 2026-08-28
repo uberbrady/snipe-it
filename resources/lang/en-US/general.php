@@ -333,7 +333,7 @@ return [
     'requestable_models' => 'Requestable Models',
     'requestable_items' => 'Requestable Items',
     'requestable' => 'Requestable',
-    'requested' => 'requested',
+    'requested' => 'Pending Requests',
     'rtd' => 'Ready to Deploy',
     'requested_date' => 'Requested Date',
     'requested_assets' => 'Requested Items',

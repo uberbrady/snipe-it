@@ -3000,7 +3000,7 @@
         else if (permissions.checkin && row.requestable) {
             actions += ' <a href="{{ config('app.url') }}/hardware/' + row.requestable.id +
                 '/checkin" class="btn btn-sm bg-purple" data-tooltip="true" title="{{ trans('general.checkin_tooltip') }}">' +
-                '{{ trans('general.checkin') }}</a>';
+                '<x-icon type="checkin" class="fa-fw" /><span class="sr-only">{{ trans('general.checkin') }}</span></a>';
         }
 
         // Replenish button opens the shared adjust-quantity modal
