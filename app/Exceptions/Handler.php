@@ -15,7 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Intervention\Image\Exception\NotSupportedException;
 use JsonException;
@@ -60,12 +59,34 @@ class Handler extends ExceptionHandler
     public function report(Throwable $exception)
     {
         if ($this->shouldReport($exception)) {
-            if (class_exists(Log::class)) {
-                Log::error($exception);
-            }
-
             return parent::report($exception);
         }
+    }
+
+    /**
+     * Report a caught exception, and rethrow in dev when the underlying
+     * cause is a programmer-error \Error (TypeError, ArgumentCountError,
+     * etc.) so it fails loud with a stack trace in dev instead of hiding behind
+     * a friendly "something went wrong" flash. Plain \Exception (sub)types
+     * (QueryException, ItemStillHasAssets, etc.) *always* report + return so
+     * bulk operations can keep swallowing runtime-data failures per row.
+     *
+     * We should use this as a drop-in for `report($e)` inside the wide-net
+     * catch (\Throwable $e) blocks in the bulk destroy / import paths.
+     */
+    public static function reportOrRethrow(Throwable $e): void
+    {
+        // Both APP_DEBUG must be on AND the environment must
+        // not be production before the raw \Error is allowed to
+        // escape past the friendly user-facing error.
+        if (
+            config('app.debug')
+            && !app()->environment('production')
+            && $e instanceof \Error
+        ) {
+            throw $e;
+        }
+        report($e);
     }
 
     /**
