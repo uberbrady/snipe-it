@@ -75,8 +75,6 @@ class L7163_A extends L7163
         return true;
     }
 
-    public function preparePDF($pdf) {}
-
     public function write($pdf, $record)
     {
         $pa = $this->getLabelPrintableArea();

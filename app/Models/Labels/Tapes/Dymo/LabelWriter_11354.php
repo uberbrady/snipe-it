@@ -67,8 +67,6 @@ class LabelWriter_11354 extends LabelWriter
         return true;
     }
 
-    public function preparePDF($pdf) {}
-
     public function write($pdf, $record)
     {
         $pa = $this->getPrintableArea();
