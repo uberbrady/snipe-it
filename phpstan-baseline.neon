@@ -391,12 +391,6 @@ parameters:
 			path: app/Console/Commands/LdapTroubleshooter.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 3
-			path: app/Console/Commands/LdapTroubleshooter.php
-
-		-
 			message: '#^Variable \$conn might not be defined\.$#'
 			identifier: variable.undefined
 			count: 1
@@ -865,12 +859,6 @@ parameters:
 			path: app/Helpers/Helper.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
-			path: app/Helpers/Helper.php
-
-		-
 			message: '#^Variable \$permissions on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.variable
 			count: 1
@@ -991,12 +979,6 @@ parameters:
 			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/Accessories/AccessoryCheckoutController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -1013,18 +995,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Account/AcceptanceController.php
-
-		-
-			message: '#^If condition is always true\.$#'
-			identifier: if.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/ActionlogController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/ActionlogController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Accessory\:\:\$checkout_qty\.$#'
@@ -1125,12 +1095,6 @@ parameters:
 		-
 			message: '#^Relation ''lastCheckout'' is not found in App\\Models\\Accessory model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Api/AccessoriesController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: app/Http/Controllers/Api/AccessoriesController.php
 
@@ -2245,12 +2209,6 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetCheckoutController.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/Assets/AssetCheckoutController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -2371,21 +2329,9 @@ parameters:
 			path: app/Http/Controllers/Assets/AssetsController.php
 
 		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Database\\Eloquent\\Relations\\Relation\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
-			path: app/Http/Controllers/Assets/AssetsController.php
-
-		-
-			message: '#^Variable \$asset in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.variable
-			count: 1
 			path: app/Http/Controllers/Assets/AssetsController.php
 
 		-
@@ -2427,12 +2373,6 @@ parameters:
 		-
 			message: '#^Strict comparison using \=\=\= between bool and 1 will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Assets/BulkAssetsController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: app/Http/Controllers/Assets/BulkAssetsController.php
 
@@ -2985,12 +2925,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\SnipeModel\:\:\$rtd_location_id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Kits/CheckoutKitController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: app/Http/Controllers/Kits/CheckoutKitController.php
 

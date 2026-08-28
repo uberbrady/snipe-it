@@ -341,68 +341,64 @@ class AssetsController extends Controller
         $this->authorize('view', $asset);
         $settings = Setting::getSettings();
 
-        if (isset($asset)) {
-            $audit_log = Actionlog::where('action_type', '=', 'audit')
-                ->where('item_id', '=', $asset->id)
-                ->where('item_type', '=', Asset::class)
-                ->orderBy('created_at', 'DESC')->first();
+        $audit_log = Actionlog::where('action_type', '=', 'audit')
+            ->where('item_id', '=', $asset->id)
+            ->where('item_type', '=', Asset::class)
+            ->orderBy('created_at', 'DESC')->first();
 
-            if ($asset->location) {
-                $use_currency = $asset->location->currency;
+        if ($asset->location) {
+            $use_currency = $asset->location->currency;
+        } else {
+            if ($settings->default_currency != '') {
+                $use_currency = $settings->default_currency;
             } else {
-                if ($settings->default_currency != '') {
-                    $use_currency = $settings->default_currency;
-                } else {
-                    $use_currency = trans('general.currency');
-                }
+                $use_currency = trans('general.currency');
             }
-
-            $qr_code = (object) [
-                'display' => $settings->qr_code == '1',
-                'url' => route('qr_code/common', ['object_type' => 'hardware', 'id' => $asset->id]),
-            ];
-
-            $total_maintenance_cost = $asset->maintenances?->sum('cost');
-            $total_asset_cost = ($asset->assignedAssets()?->AssetsForShow()) ? $asset->assignedAssets()?->AssetsForShow()?->sum('purchase_cost') : 0;
-            $total_license_cost = ($asset->licenses) ? $asset->licenses->sum('purchase_cost') : 0;
-            // accessories.purchase_cost no longer exists; getAccessoryCost()
-            // walks lastOrderDefaults() per attached accessory so the total
-            // reflects each item's last acquisition (with the parent's
-            // default_purchase_cost as fallback).
-            $total_accessory_cost = $asset->getAccessoryCost();
-            $total_component_cost = ($asset->components) ? $asset->components->sum('calculated_purchase_cost') : 0;
-
-            $total_cost_for_asset = $asset->purchase_cost + $total_maintenance_cost + $total_asset_cost + $total_license_cost + $total_accessory_cost + $total_component_cost;
-
-            $audit_custom_field_columns = [];
-            if ($asset->model && $asset->model->fieldset) {
-                $audit_custom_field_columns = $asset->model->fieldset->fields
-                    ->where('display_audit', '1')
-                    ->map(fn ($field) => [
-                        'field' => $field->db_column,
-                        'searchable' => false,
-                        'sortable' => false,
-                        'switchable' => true,
-                        'title' => e($field->name),
-                        'visible' => true,
-                    ])
-                    ->values()
-                    ->all();
-            }
-
-            return view('hardware/view', compact('asset', 'qr_code', 'settings'))
-                ->with('total_maintenance_cost', $total_maintenance_cost)
-                ->with('total_asset_cost', $total_asset_cost)
-                ->with('total_license_cost', $total_license_cost)
-                ->with('total_accessory_cost', $total_accessory_cost)
-                ->with('total_component_cost', $total_component_cost)
-                ->with('total_cost_for_asset', $total_cost_for_asset)
-                ->with('use_currency', $use_currency)
-                ->with('audit_log', $audit_log)
-                ->with('audit_custom_field_columns', $audit_custom_field_columns);
         }
 
-        return redirect()->route('hardware.index')->with('error', trans('admin/hardware/message.does_not_exist'));
+        $qr_code = (object) [
+            'display' => $settings->qr_code == '1',
+            'url' => route('qr_code/common', ['object_type' => 'hardware', 'id' => $asset->id]),
+        ];
+
+        $total_maintenance_cost = $asset->maintenances?->sum('cost');
+        $total_asset_cost = ($asset->assignedAssets()?->AssetsForShow()) ? $asset->assignedAssets()?->AssetsForShow()?->sum('purchase_cost') : 0;
+        $total_license_cost = ($asset->licenses) ? $asset->licenses->sum('purchase_cost') : 0;
+        // accessories.purchase_cost no longer exists; getAccessoryCost()
+        // walks lastOrderDefaults() per attached accessory so the total
+        // reflects each item's last acquisition (with the parent's
+        // default_purchase_cost as fallback).
+        $total_accessory_cost = $asset->getAccessoryCost();
+        $total_component_cost = ($asset->components) ? $asset->components->sum('calculated_purchase_cost') : 0;
+
+        $total_cost_for_asset = $asset->purchase_cost + $total_maintenance_cost + $total_asset_cost + $total_license_cost + $total_accessory_cost + $total_component_cost;
+
+        $audit_custom_field_columns = [];
+        if ($asset->model && $asset->model->fieldset) {
+            $audit_custom_field_columns = $asset->model->fieldset->fields
+                ->where('display_audit', '1')
+                ->map(fn ($field) => [
+                    'field' => $field->db_column,
+                    'searchable' => false,
+                    'sortable' => false,
+                    'switchable' => true,
+                    'title' => e($field->name),
+                    'visible' => true,
+                ])
+                ->values()
+                ->all();
+        }
+
+        return view('hardware/view', compact('asset', 'qr_code', 'settings'))
+            ->with('total_maintenance_cost', $total_maintenance_cost)
+            ->with('total_asset_cost', $total_asset_cost)
+            ->with('total_license_cost', $total_license_cost)
+            ->with('total_accessory_cost', $total_accessory_cost)
+            ->with('total_component_cost', $total_component_cost)
+            ->with('total_cost_for_asset', $total_cost_for_asset)
+            ->with('use_currency', $use_currency)
+            ->with('audit_log', $audit_log)
+            ->with('audit_custom_field_columns', $audit_custom_field_columns);
     }
 
     /**
