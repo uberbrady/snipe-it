@@ -854,23 +854,34 @@ class User extends SnipeModel implements AuthenticatableContract, AuthorizableCo
         // editors also skip because their submission already
         // represents full intent across all tenants.
         $fmcsOn = (bool) Setting::getSettings()->full_multiple_companies_support;
-        if (!$fmcsOn || $editor->isSuperUser()) {
+        if (! $fmcsOn || $editor->isSuperUser()) {
             $this->syncCompaniesWithLogging($submitted);
 
             return;
         }
 
-        $editorVisible = $editor->companies()
-            ->pluck('companies.id')
-            ->map(fn($id) => (int) $id)
+        // Read editor + target memberships directly from the pivot so
+        // Company's global CompanyableScope does not filter Companies
+        // down to what the acting user (the editor) can see before we
+        // compute the invisible-to-editor set. Going through
+        // $editor->companies() / $this->companies() under a scoped
+        // non-superuser editor would return only the editor's own
+        // companies from the Companies side of the join, which turns
+        // the whereNotIn below into an empty result and drops every
+        // preserved company. See GH #19569.
+        $editorVisible = DB::table('company_user')
+            ->where('user_id', $editor->id)
+            ->pluck('company_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         $submittedVisible = array_values(array_intersect($submitted, $editorVisible));
 
-        $invisiblePreserved = $this->companies()
-            ->whereNotIn('companies.id', $editorVisible)
-            ->pluck('companies.id')
-            ->map(fn($id) => (int) $id)
+        $invisiblePreserved = DB::table('company_user')
+            ->where('user_id', $this->id)
+            ->whereNotIn('company_id', $editorVisible)
+            ->pluck('company_id')
+            ->map(fn ($id) => (int) $id)
             ->all();
 
         $this->syncCompaniesWithLogging(
