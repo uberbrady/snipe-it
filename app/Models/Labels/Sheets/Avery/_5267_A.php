@@ -8,13 +8,9 @@ class _5267_A extends _5267
 
     private const BARCODE_MARGIN = 0.000;
 
-    private const TAG_SIZE = 0.125;
-
     private const TITLE_SIZE = 0.140;
 
     private const FIELD_SIZE = 0.150;
-
-    private const FIELD_MARGIN = 0.012;
 
     public function getUnit()
     {

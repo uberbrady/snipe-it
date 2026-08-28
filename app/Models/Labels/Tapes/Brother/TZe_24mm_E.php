@@ -16,8 +16,6 @@ class TZe_24mm_E extends TZe_24mm
 
     private const LABEL_SIZE = 2.00;
 
-    private const LABEL_MARGIN = -0.75;
-
     private const FIELD_SIZE = 2.80;
 
     private const FIELD_MARGIN = 0.15;
