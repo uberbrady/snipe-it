@@ -81,7 +81,7 @@ class Handler extends ExceptionHandler
         // escape past the friendly user-facing error.
         if (
             config('app.debug')
-            && !app()->environment('production')
+            && ! app()->environment('production')
             && $e instanceof \Error
         ) {
             throw $e;
@@ -182,7 +182,7 @@ class Handler extends ExceptionHandler
         // This is traaaaash but it handles models that are not found while using route model binding :(
         // The only alternative is to set that at *each* route, which is crazypants
         if ($e instanceof ModelNotFoundException) {
-            $ids = method_exists($e, 'getIds') ? $e->getIds() : [];
+            $ids = $e->getIds();
 
             if (in_array('bulkedit', $ids, true)) {
                 $error_array = session()->get('bulk_asset_errors');
@@ -219,7 +219,7 @@ class Handler extends ExceptionHandler
             // Normalize the space-separated derived name to underscore
             // so compound class names (AssetModel -> "asset model" -> "asset_model")
             // resolve to keys that actually exist in general.php.
-            $translationKey = 'general.' . str_replace(' ', '_', $model_name);
+            $translationKey = 'general.'.str_replace(' ', '_', $model_name);
             $translatedName = Lang::has($translationKey) ? trans($translationKey) : $model_name;
 
             return redirect()

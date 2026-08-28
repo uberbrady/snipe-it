@@ -571,18 +571,6 @@ parameters:
 			path: app/Console/Commands/ToggleCustomfieldEncryption.php
 
 		-
-			message: '#^Call to function is_array\(\) with \*NEVER\* will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Console/Commands/ValidateAssets.php
-
-		-
-			message: '#^Instanceof between Illuminate\\Support\\MessageBag and Illuminate\\Support\\MessageBag will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: app/Console/Commands/ValidateAssets.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>model_number" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -646,12 +634,6 @@ parameters:
 			message: '#^Call to an undefined method Exception\:\:getStatusCode\(\)\.$#'
 			identifier: method.notFound
 			count: 2
-			path: app/Exceptions/Handler.php
-
-		-
-			message: '#^Call to function method_exists\(\) with Illuminate\\Database\\Eloquent\\ModelNotFoundException and ''getIds'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
 			path: app/Exceptions/Handler.php
 
 		-
@@ -3703,12 +3685,6 @@ parameters:
 			path: app/Http/Transformers/ActionlogsTransformer.php
 
 		-
-			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Http/Transformers/ActionlogsTransformer.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 5
@@ -4055,12 +4031,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Transformers/SuppliersTransformer.php
-
-		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Http/Transformers/UploadedFilesTransformer.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -4793,12 +4763,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Livewire/Importer.php
-
-		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Livewire/LdapSettings.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
