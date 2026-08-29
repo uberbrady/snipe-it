@@ -217,7 +217,7 @@ class ActionlogsTransformer
                 : null,
             'note' => ($actionlog->note) ? Helper::parseEscapedMarkedownInline($actionlog->note) : null,
             'signature_file' => (($actionlog->accept_signature) && Storage::exists('private_uploads/signatures/'.$actionlog->accept_signature)) ? route('log.signature.view', ['filename' => $actionlog->accept_signature]) : null,
-            'log_meta' => ((isset($clean_meta)) && (is_array($clean_meta))) ? $clean_meta : null,
+            'log_meta' => $clean_meta ?? null,
             'remote_ip' => e($actionlog->remote_ip) ?? null,
             'user_agent' => e($actionlog->user_agent) ?? null,
             'action_source' => ($actionlog->action_source) ?? null,

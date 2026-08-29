@@ -10,6 +10,7 @@ use App\Models\Traits\Searchable;
 use App\Presenters\CompanyPresenter;
 use App\Presenters\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -499,7 +500,7 @@ final class Company extends SnipeModel
      * on the index page. Hierarchy is metadata about a row the user already sees,
      * not an access decision, so unscoping here is semantically correct too.
      */
-    public function parent()
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id')->withoutGlobalScopes();
     }
