@@ -2827,30 +2827,6 @@ parameters:
 			path: app/Http/Controllers/Kits/PredefinedKitsController.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\Kits\\PredefinedKitsController\:\:updateAccessory\(\) should return Illuminate\\Contracts\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
-			identifier: return.type
-			count: 3
-			path: app/Http/Controllers/Kits/PredefinedKitsController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Kits\\PredefinedKitsController\:\:updateConsumable\(\) should return Illuminate\\Contracts\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
-			identifier: return.type
-			count: 3
-			path: app/Http/Controllers/Kits/PredefinedKitsController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Kits\\PredefinedKitsController\:\:updateLicense\(\) should return Illuminate\\Contracts\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
-			identifier: return.type
-			count: 3
-			path: app/Http/Controllers/Kits/PredefinedKitsController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\Kits\\PredefinedKitsController\:\:updateModel\(\) should return Illuminate\\Contracts\\View\\View but returns Illuminate\\Http\\RedirectResponse\.$#'
-			identifier: return.type
-			count: 3
-			path: app/Http/Controllers/Kits/PredefinedKitsController.php
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
 			count: 1
