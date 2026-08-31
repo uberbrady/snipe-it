@@ -844,7 +844,12 @@ class UsersController extends Controller
     {
         $this->authorize('view', User::class);
 
-        if (($user = User::find($id)) && ($user->activated == '1') && ($user->email != '') && ($user->ldap_import == '0')) {
+        $user = User::find($id);
+        if ($user) {
+            $this->authorize('view', $user);
+        }
+
+        if ($user && ($user->activated == '1') && ($user->email != '') && ($user->ldap_import == '0')) {
             $credentials = ['email' => trim($user->email)];
 
             try {
