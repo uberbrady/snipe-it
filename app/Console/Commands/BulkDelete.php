@@ -98,6 +98,10 @@ class BulkDelete extends Command
             options: function (string $value): array {
                 $results = [];
 
+                if ($value === '' || str_contains('(all companies)', strtolower($value))) {
+                    $results['__all__'] = '(All Companies + Unassigned)';
+                }
+
                 if ($value === '' || str_contains('(no company / unassigned)', strtolower($value))) {
                     $results['__null__'] = '(No Company / Unassigned)';
                 }
@@ -117,6 +121,17 @@ class BulkDelete extends Command
             required: 'Please select at least one company.',
             hint: 'If you\'re searching on several differently named companies, use the up-arrow to go back to the search box to search again. ',
         );
+
+        // "All Companies + Unassigned" expands to every company plus the
+        // no-company scope, so callers don't have to pick each one by
+        // hand. Any other selections alongside it are redundant, so we
+        // let it win by resetting the key list.
+        if (in_array('__all__', $selectedCompanyKeys, true)) {
+            $selectedCompanyKeys = array_merge(
+                Company::orderBy('name')->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                ['__null__'],
+            );
+        }
 
         $includeNullCompany = in_array('__null__', $selectedCompanyKeys);
         $selectedCompanyIds = array_values(array_filter(
