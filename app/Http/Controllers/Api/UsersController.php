@@ -942,6 +942,7 @@ class UsersController extends Controller
         $this->authorize('view', License::class);
 
         if ($user = User::where('id', $id)->withTrashed()->first()) {
+            $this->authorize('view', $user);
             $licenses = $user->licenses();
 
             $total = $licenses->count();
