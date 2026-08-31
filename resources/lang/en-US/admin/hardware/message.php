@@ -16,6 +16,8 @@ return [
     'create' => [
         'error' => 'Asset was not created, please try again. :(',
         'success' => 'Asset created successfully. :)',
+        'success_no_checkout' => 'Asset created successfully, but was not checked out because you do not have permission to check assets out.',
+        'checkout_skipped_no_permission' => 'The asset was created, but was not checked out to the requested target because you do not have permission to check assets out.',
         'success_linked' => 'Asset with tag :tag was created successfully. <strong><a href=":link" style="color: white;">Click here to view</a></strong>.',
         'multi_success_linked' => 'Asset with tag :links was created successfully.|:count assets were created succesfully. :links.',
         'partial_failure' => 'An asset was unable to be created. Reason: :failures|:count assets were unable to be created. Reasons: :failures',

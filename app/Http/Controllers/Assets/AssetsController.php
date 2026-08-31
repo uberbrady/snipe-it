@@ -107,6 +107,34 @@ class AssetsController extends Controller
     {
         $this->authorize(Asset::class);
 
+        // The create form accepts assigned_user / assigned_asset /
+        // assigned_location and normally triggers a real checkOut() on every
+        // newly-created asset in the multi-create loop. A role with only
+        // assets.create (and an explicit deny on assets.checkout) would
+        // otherwise land checkout events on the fabricated assets,
+        // bypassing the checkout permission entirely. Rather than reject
+        // the whole request, drop the checkout side and keep the create.
+        // The trailing flash notes the skipped checkout so the actor can
+        // see the partial success without hunting through the audit trail.
+        $requestedCheckout = $request->filled('assigned_user')
+            || $request->filled('assigned_asset')
+            || $request->filled('assigned_location');
+
+        $checkoutSkippedForPermission = $requestedCheckout && ! Gate::allows('checkout', Asset::class);
+        if ($checkoutSkippedForPermission) {
+            // Merge on both the injected FormRequest and the container's
+            // active Request instance so downstream `request()` helper
+            // reads inside the multi-create loop see the cleared values.
+            $clearAssignment = [
+                'assigned_user' => null,
+                'assigned_asset' => null,
+                'assigned_location' => null,
+                'assigned_to' => null,
+            ];
+            $request->merge($clearAssignment);
+            request()->merge($clearAssignment);
+        }
+
         // There are a lot more rules to add here but prevents
         // errors around `asset_tags` not being present below.
         $this->validate($request, ['asset_tags' => ['required', 'array']]);
@@ -282,22 +310,27 @@ class AssetsController extends Controller
         if ($successes) {
             if ($failures) {
                 // some succeeded, some failed
-                return Helper::getRedirectOption($request, $asset->id, 'Assets') // FIXME - not tested
+                $response = Helper::getRedirectOption($request, $asset->id, 'Assets') // FIXME - not tested
                     ->with('success-unescaped', trans_choice('admin/hardware/message.create.multi_success_linked', $successes, ['links' => implode(', ', $successes)]))
                     ->with('warning', trans_choice('admin/hardware/message.create.partial_failure', $failures, ['failures' => implode('; ', $failures)]));
             } else {
                 if (count($successes) == 1) {
                     // the most common case, keeping it so we don't have to make every use of that translation string be trans_choice'ed
                     // and re-translated
-                    return Helper::getRedirectOption($request, $asset->id, 'Assets')
+                    $response = Helper::getRedirectOption($request, $asset->id, 'Assets')
                         ->with('success-unescaped', trans('admin/hardware/message.create.success_linked', ['link' => route('hardware.show', $asset), 'id', 'tag' => e($asset->asset_tag)]));
                 } else {
                     // multi-success
-                    return Helper::getRedirectOption($request, $asset->id, 'Assets')
+                    $response = Helper::getRedirectOption($request, $asset->id, 'Assets')
                         ->with('success-unescaped', trans_choice('admin/hardware/message.create.multi_success_linked', $successes, ['links' => implode(', ', $successes)]));
                 }
             }
 
+            if ($checkoutSkippedForPermission) {
+                $response->with('warning', trans('admin/hardware/message.create.checkout_skipped_no_permission'));
+            }
+
+            return $response;
         }
 
         return redirect()->back()->withInput()->withErrors($asset->getErrors());
