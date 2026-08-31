@@ -344,13 +344,28 @@ class ReportsController extends Controller
                             $item_name = '';
                         }
 
+                        // Mask license serial when the current user
+                        // does not hold viewKeys. A license's serial is
+                        // the product key, and the licenses / index /
+                        // export sinks already treat it that way. Without
+                        // this the Activity report CSV leaks every key
+                        // for licenses in the caller's scope.
+                        $itemSerial = null;
+                        if ($actionlog->item && $actionlog->item->serial) {
+                            if ($actionlog->item instanceof License && ! Gate::allows('viewKeys', $actionlog->item)) {
+                                $itemSerial = License::PRODUCT_KEY_MASK;
+                            } else {
+                                $itemSerial = $actionlog->item->serial;
+                            }
+                        }
+
                         $row = [
                             $actionlog->created_at,
                             ($actionlog->adminuser) ? $actionlog->adminuser->display_name : '',
                             $actionlog->present()->actionType(),
                             e($actionlog->itemType()),
                             ($actionlog->itemType() == 'user') ? $actionlog->filename : $item_name,
-                            ($actionlog->item) ? $actionlog->item->serial : null,
+                            $itemSerial,
                             (($actionlog->item) && ($actionlog->item->model)) ? htmlspecialchars($actionlog->item->model->name, ENT_NOQUOTES) : null,
                             (($actionlog->item) && ($actionlog->item->model)) ? $actionlog->item->model->model_number : null,
                             $target_name,
@@ -432,9 +447,17 @@ class ReportsController extends Controller
 
             License::orderBy('created_at', 'DESC')->chunk(500, function ($licenses) use ($handle, $formatter) {
                 foreach ($licenses as $license) {
+                    // Mirror LicensesTransformer / /licenses/export. A
+                    // license's serial is the product key, so require the
+                    // viewKeys gate (licenses.keys / create / edit)
+                    // before disclosing it. Otherwise this legacy
+                    // export lets any reports.view holder read every
+                    // key in their scope.
+                    $serial = Gate::allows('viewKeys', $license) ? $license->serial : License::PRODUCT_KEY_MASK;
+
                     $row = [
                         $license->name,
-                        $license->serial,
+                        $serial,
                         $license->seats,
                         $license->remaincount(),
                         $license->expiration_date,
