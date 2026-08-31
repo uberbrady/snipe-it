@@ -8,12 +8,17 @@ use App\Models\Accessory;
 use App\Models\AccessoryCheckout;
 use App\Models\Actionlog;
 use App\Models\Asset;
+use App\Models\CalendarEvent;
 use App\Models\CheckoutAcceptance;
+use App\Models\CheckoutRequest;
 use App\Models\Company;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\License;
 use App\Models\LicenseSeat;
+use App\Models\Maintenance;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -482,20 +487,34 @@ class BulkDelete extends Command
                 // asset, and any other assets that were assigned to this one
                 $maintenanceImages = [];
                 if ($deleteType === 'hard') {
+                    $assetId = (int) $asset->getKey();
                     if ($deleteFiles) {
                         $maintenanceImages = $asset->maintenances()
                             ->whereNotNull('image')
                             ->pluck('image')
                             ->toArray();
                     }
+                    // Calendar events published by each maintenance must go with the
+                    // maintenance rows themselves. Nothing else observes maintenances
+                    // for calendar cleanup once the parent asset is gone.
+                    $maintenanceIds = Maintenance::where('item_id', $assetId)
+                        ->where('item_type', Asset::class)
+                        ->pluck('id')
+                        ->toArray();
+                    if (! empty($maintenanceIds)) {
+                        CalendarEvent::where('source_type', Maintenance::class)
+                            ->whereIn('source_id', $maintenanceIds)
+                            ->forceDelete();
+                    }
                     $asset->maintenances()->forceDelete();
-                    AccessoryCheckout::where('assigned_to', $asset->id)
+                    AccessoryCheckout::where('assigned_to', $assetId)
                         ->where('assigned_type', Asset::class)
                         ->delete();
                     DB::table('assets')
-                        ->where('assigned_to', $asset->id)
+                        ->where('assigned_to', $assetId)
                         ->where('assigned_type', Asset::class)
                         ->update(['assigned_to' => null, 'assigned_type' => null]);
+                    $this->purgeItemRelatedRecords(Asset::class, $assetId);
                 }
 
                 match ($deleteType) {
@@ -602,6 +621,7 @@ class BulkDelete extends Command
                         ->forceDelete();
                     $license->licenseseats()->forceDelete();
                     DB::table('kits_licenses')->where('license_id', $license->id)->delete();
+                    $this->purgeItemRelatedRecords(License::class, (int) $license->getKey());
                     $license->forceDelete();
                     $this->reportLines[] = "Hard-deleted license {$license->name}";
                 }
@@ -679,7 +699,18 @@ class BulkDelete extends Command
                 }
 
                 if ($deleteType === 'hard') {
-                    DB::table('kits_accessories')->where('accessory_id', $accessory->id)->delete();
+                    $accessoryId = (int) $accessory->getKey();
+                    if ($deleteFiles) {
+                        CheckoutAcceptance::where('checkoutable_type', Accessory::class)
+                            ->where('checkoutable_id', $accessoryId)
+                            ->get()
+                            ->each(fn (CheckoutAcceptance $ca) => $this->deleteAcceptanceFiles($ca));
+                    }
+                    CheckoutAcceptance::where('checkoutable_type', Accessory::class)
+                        ->where('checkoutable_id', $accessoryId)
+                        ->forceDelete();
+                    DB::table('kits_accessories')->where('accessory_id', $accessoryId)->delete();
+                    $this->purgeItemRelatedRecords(Accessory::class, $accessoryId);
                 }
 
                 match ($deleteType) {
@@ -765,6 +796,10 @@ class BulkDelete extends Command
                     $component->assetlog()->forceDelete();
                 }
 
+                if ($deleteType === 'hard') {
+                    $this->purgeItemRelatedRecords(Component::class, (int) $component->getKey());
+                }
+
                 match ($deleteType) {
                     'soft' => $component->delete(),
                     'hard' => $component->forceDelete(),
@@ -821,7 +856,18 @@ class BulkDelete extends Command
                 }
 
                 if ($deleteType === 'hard') {
-                    DB::table('kits_consumables')->where('consumable_id', $consumable->id)->delete();
+                    $consumableId = (int) $consumable->getKey();
+                    if ($deleteFiles) {
+                        CheckoutAcceptance::where('checkoutable_type', Consumable::class)
+                            ->where('checkoutable_id', $consumableId)
+                            ->get()
+                            ->each(fn (CheckoutAcceptance $ca) => $this->deleteAcceptanceFiles($ca));
+                    }
+                    CheckoutAcceptance::where('checkoutable_type', Consumable::class)
+                        ->where('checkoutable_id', $consumableId)
+                        ->forceDelete();
+                    DB::table('kits_consumables')->where('consumable_id', $consumableId)->delete();
+                    $this->purgeItemRelatedRecords(Consumable::class, $consumableId);
                 }
 
                 match ($deleteType) {
@@ -928,6 +974,17 @@ class BulkDelete extends Command
                 CheckoutAcceptance::where('assigned_to_id', $user->id)->forceDelete();
                 if ($deleteType === 'hard') {
                     DB::table('company_user')->where('user_id', $user->id)->delete();
+                    // User-side related-record purge. Checkout requests carry
+                    // a user_id column (the requester), and User is a
+                    // HasCalendarEvents publisher (end_date lane), so both
+                    // need to be cleaned when the user is hard-deleted.
+                    // Orders reference users via created_by only, which we
+                    // leave nullable rather than deleting the order.
+                    $userId = (int) $user->getKey();
+                    CheckoutRequest::where('user_id', $userId)->forceDelete();
+                    CalendarEvent::where('source_type', User::class)
+                        ->where('source_id', $userId)
+                        ->forceDelete();
                 }
 
                 if ($clearLogs) {
@@ -986,6 +1043,42 @@ class BulkDelete extends Command
         }
         if ($acceptance->stored_eula_file) {
             $this->deleteStorageFile('local', 'private_uploads/eula-pdfs/'.$acceptance->stored_eula_file);
+        }
+    }
+
+    /**
+     * Purge related records that reference a checkoutable (Asset, License,
+     * Accessory, Component, Consumable) via a polymorphic column. Called on
+     * hard-delete only; soft-delete keeps these records so a restore is
+     * meaningful. Covers checkout_requests, calendar_events, order_items,
+     * and empties out orders that lose their last item as a result.
+     */
+    private function purgeItemRelatedRecords(string $modelClass, int $itemId): void
+    {
+        CheckoutRequest::where('requestable_type', $modelClass)
+            ->where('requestable_id', $itemId)
+            ->forceDelete();
+
+        CalendarEvent::where('source_type', $modelClass)
+            ->where('source_id', $itemId)
+            ->forceDelete();
+
+        $affectedOrderIds = OrderItem::where('item_type', $modelClass)
+            ->where('item_id', $itemId)
+            ->pluck('order_id')
+            ->unique();
+
+        OrderItem::where('item_type', $modelClass)
+            ->where('item_id', $itemId)
+            ->forceDelete();
+
+        // An order with no remaining line items is a dangling shell,
+        // purge it so hard-delete leaves no orphans.
+        foreach ($affectedOrderIds as $orderId) {
+            $stillHasItems = OrderItem::where('order_id', $orderId)->exists();
+            if (! $stillHasItems) {
+                Order::where('id', $orderId)->forceDelete();
+            }
         }
     }
 }
