@@ -59,6 +59,15 @@ class ShowModalsTest extends TestCase
             ->assertOk();
     }
 
+    public function test_company_modal_renders()
+    {
+        $this->actingAs(User::factory()->superuser()->create())
+            ->get('modals/company')
+            ->assertOk()
+            ->assertSee(route('api.companies.store'))
+            ->assertSee(trans('admin/companies/table.create'));
+    }
+
     public function test_manufacturer_modal_renders()
     {
         $this->actingAs(User::factory()->superuser()->create())
