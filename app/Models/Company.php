@@ -43,6 +43,21 @@ final class Company extends SnipeModel
 
     protected $table = 'companies';
 
+    /**
+     * Fields that configure a per-company outbound webhook. These are the
+     * same fields the Livewire IntegrationSettingsForm gates on
+     * isSuperUser(), so the REST API must enforce the same control. Any
+     * controller / importer / job that mass-assigns from user input needs
+     * to reject the write when the user lacks superuser, rather than
+     * silently dropping the fields.
+     */
+    public const GATED_WEBHOOK_FIELDS = [
+        'webhook_selected',
+        'webhook_endpoint',
+        'webhook_channel',
+        'webhook_botname',
+    ];
+
     // Declare the rules for the model validation. The ExternalUrl rule
     // for webhook_endpoint is layered on in getRules() below because PHP
     // rejects `new` in a property-default array initializer.
