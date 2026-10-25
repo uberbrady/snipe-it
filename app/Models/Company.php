@@ -11,6 +11,7 @@ use App\Models\Traits\Loggable;
 use App\Models\Traits\Searchable;
 use App\Presenters\CompanyPresenter;
 use App\Presenters\Presentable;
+use App\Rules\ExternalUrl;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,7 @@ use Watson\Validating\ValidatingTrait;
  * Model for Companies.
  *
  * @version v1.8
+ *
  * @mixin IdeHelperCompany
  */
 final class Company extends SnipeModel
@@ -41,14 +43,30 @@ final class Company extends SnipeModel
 
     protected $table = 'companies';
 
-    // Declare the rules for the model validation
+    // Declare the rules for the model validation. The ExternalUrl rule
+    // for webhook_endpoint is layered on in getRules() below because PHP
+    // rejects `new` in a property-default array initializer.
     protected $rules = [
         'name' => 'required|max:255|unique_undeleted_in_scope:parent_id',
         'fax' => 'min:7|max:35|nullable',
         'phone' => 'min:7|max:35|nullable',
         'email' => 'email|max:150|nullable',
         'parent_id' => 'nullable|integer|exists:companies,id|parent_must_be_top_level:companies,id|must_have_no_children:companies,id|parent_within_scope',
+        'webhook_selected' => 'nullable|string|in:slack,general,google,microsoft',
+        'webhook_channel' => 'nullable|string',
+        'webhook_botname' => 'nullable|string|max:255',
     ];
+
+    /**
+     * PHP 8.2 doesn't allow `new` in a property default, so the ExternalUrl rule is added on here.
+     */
+    public function getRules()
+    {
+        $rules = $this->rules;
+        $rules['webhook_endpoint'] = ['nullable', 'url', new ExternalUrl('app.webhook_allow_internal_targets')];
+
+        return $rules;
+    }
 
     protected $casts = [
         'parent_id' => 'integer',
