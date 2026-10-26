@@ -365,7 +365,6 @@ class Importer extends Component
 
     public function mount()
     {
-        $this->authorize('import');
         $this->refreshExistingImportFiles();
         $this->importTypes = [
             'accessory' => trans('general.accessories'),
@@ -1246,8 +1245,6 @@ class Importer extends Component
 
     public function destroy($id)
     {
-        $this->authorize('import');
-
         if (config('app.lock_passwords')) {
             $this->message = trans('general.feature_disabled');
             $this->message_type = 'danger';
@@ -1537,8 +1534,6 @@ class Importer extends Component
      */
     public function bulkDestroy()
     {
-        $this->authorize('import');
-
         if (config('app.lock_passwords')) {
             $this->message = trans('general.feature_disabled');
             $this->message_type = 'danger';
