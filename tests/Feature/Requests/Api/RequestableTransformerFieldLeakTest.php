@@ -21,9 +21,12 @@ use Tests\TestCase;
  * `AssetsTransformer::transformRequestedAsset` already uses for the
  * hardware tab, and the four `requestable()` controllers now call it.
  *
- * Each test here is run as a user with no permissions, which is the
- * reporter's threat model (any authenticated account should be able to
- * reach these endpoints and get only the display fields the UI needs).
+ * Each test here is run as a user holding only `assets.view.requestable`
+ * (granted via `->viewRequestableAssets()`). That permission now gates
+ * all five requestable endpoints after GHSA-944j-96m5-3vpp +
+ * GHSA-wgj5-4mrx-52rx, which closed the "no authz check at all" gap on
+ * the four non-Asset variants. See `RequestableAuthzAndSearchOracleTest`
+ * for the gate + search-oracle regression coverage.
  */
 class RequestableTransformerFieldLeakTest extends TestCase
 {
@@ -31,7 +34,7 @@ class RequestableTransformerFieldLeakTest extends TestCase
     {
         Accessory::factory()->create(['requestable' => 1]);
 
-        $row = $this->actingAsForApi(User::factory()->create())
+        $row = $this->actingAsForApi(User::factory()->viewRequestableAssets()->create())
             ->getJson(route('api.accessories.requestable'))
             ->assertOk()
             ->json('rows.0');
@@ -57,7 +60,7 @@ class RequestableTransformerFieldLeakTest extends TestCase
     {
         Consumable::factory()->create(['requestable' => 1]);
 
-        $row = $this->actingAsForApi(User::factory()->create())
+        $row = $this->actingAsForApi(User::factory()->viewRequestableAssets()->create())
             ->getJson(route('api.consumables.requestable'))
             ->assertOk()
             ->json('rows.0');
@@ -80,7 +83,7 @@ class RequestableTransformerFieldLeakTest extends TestCase
     {
         Component::factory()->create(['requestable' => 1]);
 
-        $row = $this->actingAsForApi(User::factory()->create())
+        $row = $this->actingAsForApi(User::factory()->viewRequestableAssets()->create())
             ->getJson(route('api.components.requestable'))
             ->assertOk()
             ->json('rows.0');
@@ -111,7 +114,7 @@ class RequestableTransformerFieldLeakTest extends TestCase
             'license_email' => 'alice@internal.example',
         ]);
 
-        $row = $this->actingAsForApi(User::factory()->create())
+        $row = $this->actingAsForApi(User::factory()->viewRequestableAssets()->create())
             ->getJson(route('api.licenses.requestable'))
             ->assertOk()
             ->json('rows.0');

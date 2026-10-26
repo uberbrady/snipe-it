@@ -622,13 +622,19 @@ class ConsumablesController extends Controller
      */
     public function requestable(Request $request): array
     {
+        $this->authorize('viewRequestable', Consumable::class);
+
         $query = Consumable::with('category', 'location', 'company', 'manufacturer', 'requests')
             ->withCount('consumableAssignments as consumables_users_count')
             ->withCount('outstandingAssignments as outstanding_assignments_count')
             ->Requestable();
 
         if ($request->filled('search')) {
-            $query->TextSearch($request->input('search'));
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('consumables.name', 'LIKE', '%'.$search.'%')
+                    ->orWhere('consumables.model_number', 'LIKE', '%'.$search.'%');
+            });
         }
 
         $total = $query->count();
