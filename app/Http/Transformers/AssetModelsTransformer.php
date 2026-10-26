@@ -156,6 +156,7 @@ class AssetModelsTransformer
                 : (int) ($assetmodel->assets_count - (int) $assetmodel->assets_assigned_count) - (int) $assetmodel->assets_archived_count,
             'assigned_to_self' => $userHasOpenRequest,
             'available_actions' => [
+                'view' => Gate::allows('view', $assetmodel),
                 'request' => ! $userHasOpenRequest,
                 'cancel' => $userHasOpenRequest,
             ],
