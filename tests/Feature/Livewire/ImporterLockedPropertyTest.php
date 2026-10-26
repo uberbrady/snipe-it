@@ -110,8 +110,8 @@ class ImporterLockedPropertyTest extends TestCase
         foreach ($component->required_field_model_map as $type => $entry) {
             [$modelClass] = $entry;
             $this->assertTrue(
-                is_subclass_of($modelClass, \App\Models\Importable::class),
-                "map entry for type '{$type}' points at '{$modelClass}' which does not implement \\App\\Models\\Importable"
+                is_subclass_of($modelClass, \App\Models\Contracts\Importable::class),
+                "map entry for type '{$type}' points at '{$modelClass}' which does not implement \\App\\Models\\Contracts\\Importable"
             );
         }
     }

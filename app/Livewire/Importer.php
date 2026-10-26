@@ -10,9 +10,9 @@ use App\Models\Category;
 // Snipe-IT's Component model name clashes with Livewire\Component - alias it.
 use App\Models\Component as ComponentModel;
 use App\Models\Consumable;
+use App\Models\Contracts\Importable;
 use App\Models\CustomField;
 use App\Models\Import;
-use App\Models\Importable;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Manufacturer;
