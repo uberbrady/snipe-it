@@ -3,6 +3,7 @@
 namespace Tests\Feature\Requests\Api;
 
 use App\Models\Accessory;
+use App\Models\AssetModel;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\License;
@@ -97,6 +98,47 @@ class RequestableTransformerFieldLeakTest extends TestCase
             );
         }
 
+        $this->assertArrayHasKey('remaining', $row);
+        $this->assertArrayHasKey('assigned_to_self', $row);
+        $this->assertArrayHasKey('request', $row['available_actions']);
+    }
+
+    public function test_models_requestable_response_does_not_expose_sensitive_fields(): void
+    {
+        // GHSA-8m7q-2x28-8wh3 was the fifth requestable endpoint missed by
+        // the original g85w fix. AssetModelsTransformer had no reduced
+        // `transformRequested*` method, so the controller returned the
+        // full admin shape (notes, default_fieldset_values with every
+        // custom field's name / db_column / default / format / required,
+        // min_amt, eol, depreciation, require_serial, assets_count +
+        // _assigned + _archived, remaining, percent_remaining,
+        // created_by, qr_code_url) to any caller holding only
+        // `assets.view.requestable`.
+        AssetModel::factory()->create(['requestable' => 1]);
+
+        $row = $this->actingAsForApi(User::factory()->viewRequestableAssets()->create())
+            ->getJson(route('api.assetmodels.requestable'))
+            ->assertOk()
+            ->json('rows.0');
+
+        $this->assertNotNull($row);
+        foreach ([
+            'notes', 'default_fieldset_values', 'min_amt', 'created_by',
+            'depreciation', 'eol', 'require_serial', 'fieldset',
+            'assets_count', 'assets_assigned_count', 'assets_archived_count',
+            'percent_remaining', 'qr_code_url', 'category', 'manufacturer',
+        ] as $leakedField) {
+            $this->assertArrayNotHasKey(
+                $leakedField,
+                $row,
+                "Field `{$leakedField}` must not appear in the /account/requestable models response."
+            );
+        }
+
+        // Positive-path: the fields the UI tab's row formatter needs.
+        $this->assertArrayHasKey('id', $row);
+        $this->assertArrayHasKey('name', $row);
+        $this->assertArrayHasKey('model_number', $row);
         $this->assertArrayHasKey('remaining', $row);
         $this->assertArrayHasKey('assigned_to_self', $row);
         $this->assertArrayHasKey('request', $row['available_actions']);

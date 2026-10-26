@@ -3,6 +3,7 @@
 namespace Tests\Feature\Requests\Api;
 
 use App\Models\Accessory;
+use App\Models\AssetModel;
 use App\Models\Component;
 use App\Models\Consumable;
 use App\Models\License;
@@ -73,6 +74,36 @@ class RequestableAuthzAndSearchOracleTest extends TestCase
         $this->actingAsForApi(User::factory()->create())
             ->getJson(route('api.licenses.requestable'))
             ->assertForbidden();
+    }
+
+    public function test_models_requestable_requires_assets_view_requestable_permission(): void
+    {
+        AssetModel::factory()->create(['requestable' => 1]);
+
+        $this->actingAsForApi(User::factory()->create())
+            ->getJson(route('api.assetmodels.requestable'))
+            ->assertForbidden();
+    }
+
+    public function test_models_requestable_search_cannot_oracle_notes(): void
+    {
+        AssetModel::factory()->create([
+            'requestable' => 1,
+            'name' => 'MacBook Pro M3',
+            'notes' => self::NOTES_SENTINEL,
+        ]);
+
+        $caller = User::factory()->viewRequestableAssets()->create();
+
+        $this->assertSame(0, $this->actingAsForApi($caller)
+            ->getJson(route('api.assetmodels.requestable', ['search' => 'REORDER-FROM-ACME']))
+            ->assertOk()
+            ->json('total'));
+
+        $this->assertGreaterThan(0, $this->actingAsForApi($caller)
+            ->getJson(route('api.assetmodels.requestable', ['search' => 'MacBook']))
+            ->assertOk()
+            ->json('total'));
     }
 
     public function test_accessories_requestable_search_cannot_oracle_notes(): void
