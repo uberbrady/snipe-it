@@ -460,12 +460,7 @@ class BulkAssetsController extends Controller
                     }
 
                 }
-
-                // Default location + current location are two
-                // independent writes now. Each can be set to a new
-                // location or cleared via the null_* checkbox. Clear
-                // wins if both the picker and the checkbox are sent
-                // for the same field.
+                
                 if ($request->filled('rtd_location_id')) {
                     $this->update_array['rtd_location_id'] = $request->input('rtd_location_id');
                 }
