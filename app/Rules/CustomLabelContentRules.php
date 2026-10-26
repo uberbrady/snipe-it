@@ -30,6 +30,7 @@ class CustomLabelContentRules
 
             'content.title_font_size' => ['required', 'numeric'],
             'content.title_margin' => ['required', 'numeric'],
+            'content.title_offset_x' => ['required', 'numeric'],
 
             'content.field_label_font_size' => ['required', 'numeric'],
             'content.field_label_margin' => ['required', 'numeric'],

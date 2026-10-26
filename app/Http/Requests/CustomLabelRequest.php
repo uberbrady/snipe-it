@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Labels\CustomLabelFonts;
 use App\Rules\LabelGeometryRules;
 use App\Rules\CustomLabelContentRules;
 use Illuminate\Foundation\Http\FormRequest;
