@@ -6,8 +6,6 @@ use App\Rules\LabelGeometryRules;
 use App\Rules\CustomLabelContentRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\ValidationException;
 class CustomLabelRequest extends FormRequest
 {
     public function authorize(): bool
