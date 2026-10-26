@@ -92,6 +92,48 @@ class IntuneAdapterTest extends TestCase
         $this->assertNotNull($record->lastSeen);
     }
 
+    public function test_nextlink_pagination_follows_skiptoken_cursor_through_every_page()
+    {
+        // Regression for #19916. Before the fix, managedDevices() passed
+        // an empty-array $query to Http::get(), which Laravel forwards as
+        // Guzzle's `query` option. Guzzle replaces the URL's query string
+        // even when the option is an empty array, so the $skiptoken on
+        // the @odata.nextLink cursor got stripped and Graph served page 1
+        // forever. Tenants under ~1,000 devices never saw it because they
+        // only ever had one page.
+        $adapter = $this->configuredAdapter();
+
+        $callsPerPage = ['page1' => 0, 'page2' => 0];
+
+        Http::fake([
+            '*/oauth2/v2.0/token' => Http::response(['access_token' => 'stub-bearer', 'expires_in' => 3600]),
+            '*/v1.0/deviceManagement/managedDevices*' => function ($request) use (&$callsPerPage) {
+                if (str_contains($request->url(), '$skiptoken=cursor-abc')) {
+                    $callsPerPage['page2']++;
+
+                    return Http::response([
+                        'value' => [$this->intuneDevice(id: 'guid-page2', name: 'host-page2')],
+                    ]);
+                }
+
+                $callsPerPage['page1']++;
+
+                return Http::response([
+                    'value' => [$this->intuneDevice(id: 'guid-page1', name: 'host-page1')],
+                    '@odata.nextLink' => 'https://graph.microsoft.com/v1.0/deviceManagement/managedDevices?$skiptoken=cursor-abc',
+                ]);
+            },
+        ]);
+
+        $records = iterator_to_array($adapter->pull(), preserve_keys: false);
+
+        $ids = array_map(fn ($record) => $record->sourceId, $records);
+        $this->assertEqualsCanonicalizing(['guid-page1', 'guid-page2'], $ids,
+            'Pagination must follow @odata.nextLink and yield both pages, not loop on page 1.');
+        $this->assertSame(1, $callsPerPage['page1'], 'Page 1 should be fetched exactly once.');
+        $this->assertSame(1, $callsPerPage['page2'], 'Page 2 (via $skiptoken) should be fetched exactly once.');
+    }
+
     public function test_nextlink_cursor_cannot_redirect_bearer_to_arbitrary_host()
     {
         // Graph normally serves `@odata.nextLink` from the same host as
