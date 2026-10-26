@@ -36,11 +36,6 @@ class CustomLabelRequest extends FormRequest
             'template' => ['required', 'string'],
             'content' => ['required', 'array'],
             'supports' => ['required', 'array'],
-            'content.tag_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
-            'content.title_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
-            'content.field_label_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
-            'content.field_value_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
-            'content.title_offset_x' => ['required', 'numeric'],
         ];
     }
 
