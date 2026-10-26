@@ -71,18 +71,18 @@ namespace App\Models{
  * @property-read int|null $quantity_adjust_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manager_id
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manager_id
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccessoryCheckout> $users
@@ -136,10 +136,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\AccessoryQueryBuilder<static>|Accessory whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Accessory withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Accessory withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperAccessory {}
+	class Accessory extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -177,10 +175,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\AccessoryCheckoutQueryBuilder<static>|AccessoryCheckout whereId($value)
  * @method static \App\Models\Builders\AccessoryCheckoutQueryBuilder<static>|AccessoryCheckout whereNote($value)
  * @method static \App\Models\Builders\AccessoryCheckoutQueryBuilder<static>|AccessoryCheckout whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperAccessoryCheckout {}
+	class AccessoryCheckout extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -238,21 +234,21 @@ namespace App\Models{
  * @property-read \App\Models\Location|null $location
  * @property-read \App\Models\OrderItem|null $orderItem
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $target
  * @property-read \App\Models\User|null $user
  * @method static \App\Models\Builders\ActionlogQueryBuilder<static>|Actionlog applyOffsetAndLimit(int $total)
@@ -298,10 +294,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\ActionlogQueryBuilder<static>|Actionlog whereUserAgent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Actionlog withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Actionlog withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperActionlog {}
+	class Actionlog extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -309,20 +303,13 @@ namespace App\Models{
  * Model for Assets.
  *
  * @version v1.0
- * @property ?int $location_id
- * @property \Carbon\Carbon|string|null $next_audit_date
- * @property \Carbon\Carbon|string|null $last_audit_date
- * @property \Carbon\Carbon|string|null $asset_eol_date
- * @property ?int $company_id
- * @property \Carbon\Carbon|string|null $last_checkin
- * @property bool $requestable
- * @property Asset|Location|User|null $assigned Current checkout target. morphTo relation named `assigned` (declared on method `assignedTo()`). Eloquent resolves the dynamic property by the morphTo name arg, not the method name, so this `@property` is distinct from `@property ... $assignedTo` written by ide-helper.
  * @property int $id
  * @property string|null $name
  * @property string|null $asset_tag
  * @property int|null $model_id
  * @property string|null $serial
  * @property \Illuminate\Support\Carbon|null $purchase_date
+ * @property string|null $asset_eol_date
  * @property bool $eol_explicit
  * @property numeric|null $purchase_cost
  * @property string|null $order_number
@@ -339,11 +326,17 @@ namespace App\Models{
  * @property int|null $warranty_months
  * @property int|null $depreciate
  * @property int|null $supplier_id
+ * @property int $requestable
  * @property int|null $rtd_location_id
  * @property string|null $accepted
  * @property \Illuminate\Support\Carbon|null $last_checkout
+ * @property \Illuminate\Support\Carbon|null $last_checkin
  * @property \Illuminate\Support\Carbon|null $expected_checkin
+ * @property int|null $company_id
  * @property string|null $assigned_type
+ * @property \Illuminate\Support\Carbon|null $last_audit_date
+ * @property \Illuminate\Support\Carbon|null $next_audit_date
+ * @property int|null $location_id
  * @property int $checkin_counter
  * @property int $requests_counter
  * @property int $checkout_counter
@@ -424,14 +417,14 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $category_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $parent_id
+ * @property mixed $category_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $parent_id
  * @property-read \App\Models\Statuslabel|null $status
  * @property-read \App\Models\Supplier|null $supplier
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
@@ -549,10 +542,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\AssetQueryBuilder<static>|Asset whereWarrantyMonths($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Asset withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Asset withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperAsset {}
+	class Asset extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -596,10 +587,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AssetExternalSource wherePrimaryMac($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AssetExternalSource whereSource($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AssetExternalSource whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperAssetExternalSource {}
+	class AssetExternalSource extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -658,19 +647,19 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @method static \App\Models\Builders\AssetModelQueryBuilder<static>|AssetModel applyOffsetAndLimit(int $total)
@@ -712,10 +701,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\AssetModelQueryBuilder<static>|AssetModel whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AssetModel withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AssetModel withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperAssetModel {}
+	class AssetModel extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -759,10 +746,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CalendarEvent whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CalendarEvent withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CalendarEvent withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCalendarEvent {}
+	class CalendarEvent extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -809,23 +794,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetModel> $models
  * @property-read int|null $models_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset> $showableAssets
  * @property-read int|null $showable_assets_count
  * @method static \App\Models\Builders\CategoryQueryBuilder<static>|Category applyOffsetAndLimit(int $total)
@@ -856,10 +841,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\CategoryQueryBuilder<static>|Category whereUseDefaultEula($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Category withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCategory {}
+	class Category extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -913,15 +896,12 @@ namespace App\Models{
  * @method static \App\Models\Builders\CheckoutAcceptanceQueryBuilder<static>|CheckoutAcceptance whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CheckoutAcceptance withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CheckoutAcceptance withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCheckoutAcceptance {}
+	class CheckoutAcceptance extends \Eloquent {}
 }
 
 namespace App\Models{
 /**
- * @property \App\Enums\CheckoutRequestState $state
  * @property int $id
  * @property int $user_id
  * @property int $requestable_id
@@ -931,6 +911,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $start_date
  * @property \Illuminate\Support\Carbon|null $end_date
  * @property string|null $notes
+ * @property \App\Enums\CheckoutRequestState $state
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $canceled_at
@@ -978,10 +959,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\CheckoutRequestQueryBuilder<static>|CheckoutRequest whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CheckoutRequest withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CheckoutRequest withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCheckoutRequest {}
+	class CheckoutRequest extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1032,22 +1011,22 @@ namespace App\Models{
  * @property-read int|null $log_count
  * @property-read Company|null $parent
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
@@ -1085,10 +1064,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\CompanyQueryBuilder<static>|Company whereWebhookSelected($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Company withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Company withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	final class IdeHelperCompany {}
+	final class Company extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1151,18 +1128,18 @@ namespace App\Models{
  * @property-read int|null $quantity_adjust_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manager_id
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manager_id
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset> $unconstrainedAssets
  * @property-read int|null $unconstrained_assets_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
@@ -1217,10 +1194,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\ComponentQueryBuilder<static>|Component whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Component withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Component withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperComponent {}
+	class Component extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -1257,10 +1232,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\ComponentAssignmentQueryBuilder<static>|ComponentAssignment whereId($value)
  * @method static \App\Models\Builders\ComponentAssignmentQueryBuilder<static>|ComponentAssignment whereNote($value)
  * @method static \App\Models\Builders\ComponentAssignmentQueryBuilder<static>|ComponentAssignment whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperComponentAssignment {}
+	class ComponentAssignment extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1319,18 +1292,18 @@ namespace App\Models{
  * @property-read int|null $quantity_adjust_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manager_id
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manager_id
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $unconstrainedUsers
  * @property-read int|null $unconstrained_users_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
@@ -1387,10 +1360,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\ConsumableQueryBuilder<static>|Consumable whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Consumable withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Consumable withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperConsumable {}
+	class Consumable extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -1419,10 +1390,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ConsumableAssignment whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ConsumableAssignment whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ConsumableAssignment whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperConsumableAssignment {}
+	class ConsumableAssignment extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1476,10 +1445,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomField whereShowInListview($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomField whereShowInRequestableList($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomField whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCustomField {}
+	class CustomField extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1501,23 +1468,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetModel> $models
  * @property-read int|null $models_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomFieldset applyOffsetAndLimit(int $total)
  * @method static \Database\Factories\CustomFieldsetFactory factory($count = null, $state = [])
@@ -1529,10 +1496,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomFieldset whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomFieldset whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomFieldset whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCustomFieldset {}
+	class CustomFieldset extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1566,20 +1531,20 @@ namespace App\Models{
  * @property-read int|null $log_count
  * @property-read \App\Models\User|null $manager
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
@@ -1612,10 +1577,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\DepartmentQueryBuilder<static>|Department whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Department withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperDepartment {}
+	class Department extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1629,31 +1592,29 @@ namespace App\Models{
  * @property-read mixed $expires_diff_in_days
  * @property-read mixed $expires_formatted_date
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Depreciable applyOffsetAndLimit(int $total)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Depreciable newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Depreciable newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Depreciable query()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperDepreciable {}
+	class Depreciable extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1682,23 +1643,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetModel> $models
  * @property-read int|null $models_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \App\Models\Builders\DepreciationQueryBuilder<static>|Depreciation applyOffsetAndLimit(int $total)
  * @method static \Database\Factories\DepreciationFactory factory($count = null, $state = [])
  * @method static \App\Models\Builders\DepreciationQueryBuilder<static>|Depreciation newModelQuery()
@@ -1717,10 +1678,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\DepreciationQueryBuilder<static>|Depreciation whereName($value)
  * @method static \App\Models\Builders\DepreciationQueryBuilder<static>|Depreciation whereRateMultiplier($value)
  * @method static \App\Models\Builders\DepreciationQueryBuilder<static>|Depreciation whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperDepreciation {}
+	class Depreciation extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1741,23 +1700,23 @@ namespace App\Models{
  * @property-read mixed $expires_diff_in_days
  * @property-read mixed $expires_formatted_date
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|Group applyOffsetAndLimit(int $total)
@@ -1776,10 +1735,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|Group wherePermissions($value)
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|Group whereScimExternalid($value)
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|Group whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperGroup {}
+	class Group extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1815,10 +1772,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Import whereProcessingBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Import whereProcessingStartedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Import whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperImport {}
+	class Import extends \Eloquent {}
 }
 
 namespace App\Models\Labels{
@@ -1849,10 +1804,8 @@ namespace App\Models\Labels{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomUserLabel whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomUserLabel withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CustomUserLabel withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperCustomUserLabel {}
+	class CustomUserLabel extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1860,10 +1813,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ldap newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ldap newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Ldap query()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperLdap {}
+	class Ldap extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1931,15 +1882,15 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CheckoutRequest> $requests
  * @property-read int|null $requests_count
- * @property-write mixed $department_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $warranty_months
+ * @property mixed $department_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $warranty_months
  * @property-read \App\Models\Supplier|null $supplier
  * @property-read mixed $terminates_diff_for_humans
  * @property-read mixed $terminates_diff_in_days
@@ -1994,10 +1945,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\LicenseQueryBuilder<static>|License whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|License withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|License withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperLicense {}
+	class License extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -2029,23 +1978,23 @@ namespace App\Models{
  * @property-read int|null $log_count
  * @property-read mixed $name
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \App\Models\User|null $user
  * @method static \App\Models\Builders\LicenseSeatQueryBuilder<static>|LicenseSeat applyOffsetAndLimit(int $total)
  * @method static \App\Models\Builders\LicenseSeatQueryBuilder<static>|LicenseSeat byAssigned()
@@ -2070,10 +2019,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\LicenseSeatQueryBuilder<static>|LicenseSeat whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LicenseSeat withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LicenseSeat withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperLicenseSeat {}
+	class LicenseSeat extends \Eloquent implements \App\Models\Contracts\CompanyableChild {}
 }
 
 namespace App\Models{
@@ -2131,20 +2078,20 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Asset> $rtd_assets
  * @property-read int|null $rtd_assets_count
- * @property-write mixed $category_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
@@ -2185,10 +2132,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\LocationQueryBuilder<static>|Location whereZip($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperLocation {}
+	class Location extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -2196,14 +2141,6 @@ namespace App\Models{
  * Model for Asset Maintenances.
  *
  * @version v1.0
- * @property-read \App\Models\Asset|null $asset
- * @property-read \App\Models\Actionlog|null $assetlog
- * @property-read \App\Models\Supplier|null $supplier
- * @property-read \App\Models\MaintenanceType|null $maintenanceType
- * @property-read \App\Models\User|null $adminuser
- * @property-read \App\Models\User|null $responsibleParty
- * @property-read \App\Models\User|null $completedByUser
- * @property-read \Illuminate\Database\Eloquent\Model|null $item Polymorphic parent (usually Asset). See item() below.
  * @property int $id
  * @property int $item_id
  * @property string|null $item_type
@@ -2230,10 +2167,14 @@ namespace App\Models{
  * @property int|null $completed_by
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $actionlog
  * @property-read int|null $actionlog_count
+ * @property-read \App\Models\User|null $adminuser
+ * @property-read \App\Models\Asset|null $asset
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $assetlog
  * @property-read int|null $assetlog_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CalendarEvent> $calendarEvents
  * @property-read int|null $calendar_events_count
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent|null $checkedOutTo
+ * @property-read \App\Models\User|null $completedByUser
  * @property-read mixed $display_name
  * @property-read mixed $expires_diff_for_humans
  * @property-read mixed $expires_diff_in_days
@@ -2242,25 +2183,29 @@ namespace App\Models{
  * @property mixed $completion_date
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $history
  * @property-read int|null $history_count
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $item
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $log
  * @property-read int|null $log_count
+ * @property-read \App\Models\MaintenanceType|null $maintenanceType
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $warranty_months
+ * @property-read \App\Models\User|null $responsibleParty
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $warranty_months
+ * @property-read \App\Models\Supplier|null $supplier
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @method static \App\Models\Builders\MaintenanceQueryBuilder<static>|Maintenance active()
@@ -2313,10 +2258,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\MaintenanceQueryBuilder<static>|Maintenance whereUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Maintenance withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Maintenance withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperMaintenance {}
+	class Maintenance extends \Eloquent implements \App\Models\Contracts\CompanyableChild {}
 }
 
 namespace App\Models{
@@ -2338,23 +2281,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Maintenance> $maintenances
  * @property-read int|null $maintenances_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MaintenanceType applyOffsetAndLimit(int $total)
  * @method static \Database\Factories\MaintenanceTypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MaintenanceType newModelQuery()
@@ -2370,10 +2313,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MaintenanceType whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MaintenanceType withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MaintenanceType withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperMaintenanceType {}
+	class MaintenanceType extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2413,23 +2354,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetModel> $models
  * @property-read int|null $models_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \App\Models\Builders\ManufacturerQueryBuilder<static>|Manufacturer applyOffsetAndLimit(int $total)
  * @method static \Database\Factories\ManufacturerFactory factory($count = null, $state = [])
  * @method static \App\Models\Builders\ManufacturerQueryBuilder<static>|Manufacturer newModelQuery()
@@ -2456,10 +2397,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\ManufacturerQueryBuilder<static>|Manufacturer whereWarrantyLookupUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Manufacturer withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Manufacturer withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperManufacturer {}
+	class Manufacturer extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -2501,20 +2440,20 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $orderItems
  * @property-read int|null $order_items_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $warranty_months
  * @property-read \App\Models\Supplier|null $supplier
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order applyOffsetAndLimit(int $total)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newModelQuery()
@@ -2534,10 +2473,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperOrder {}
+	class Order extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2578,10 +2515,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperOrderItem {}
+	class OrderItem extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2613,23 +2548,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetModel> $models
  * @property-read int|null $models_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \App\Models\Builders\PredefinedKitQueryBuilder<static>|PredefinedKit applyOffsetAndLimit(int $total)
  * @method static \Database\Factories\PredefinedKitFactory factory($count = null, $state = [])
  * @method static \App\Models\Builders\PredefinedKitQueryBuilder<static>|PredefinedKit newModelQuery()
@@ -2643,10 +2578,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\PredefinedKitQueryBuilder<static>|PredefinedKit whereId($value)
  * @method static \App\Models\Builders\PredefinedKitQueryBuilder<static>|PredefinedKit whereName($value)
  * @method static \App\Models\Builders\PredefinedKitQueryBuilder<static>|PredefinedKit whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperPredefinedKit {}
+	class PredefinedKit extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2678,10 +2611,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReportTemplate whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReportTemplate withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReportTemplate withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperReportTemplate {}
+	class ReportTemplate extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2702,23 +2633,23 @@ namespace App\Models{
  * @property-read mixed $expires_diff_in_days
  * @property-read mixed $expires_formatted_date
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
  * @property-read int|null $users_count
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|SCIMGroup applyOffsetAndLimit(int $total)
@@ -2736,10 +2667,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|SCIMGroup wherePermissions($value)
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|SCIMGroup whereScimExternalid($value)
  * @method static \App\Models\Builders\GroupQueryBuilder<static>|SCIMGroup whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSCIMGroup {}
+	class SCIMGroup extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2853,20 +2782,20 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReportTemplate> $reportTemplates
  * @property-read int|null $report_templates_count
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Passport\Token> $tokens
  * @property-read int|null $tokens_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
@@ -2950,10 +2879,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\UserQueryBuilder<static>|SCIMUser withInventoryRelations(int $id, bool $withAssets = true, bool $withLicenses = true, bool $withAccessories = true, bool $withConsumables = true, bool $withComponents = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SCIMUser withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SCIMUser withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSCIMUser {}
+	class SCIMUser extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -2967,10 +2894,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SamlNonce whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SamlNonce whereNonce($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SamlNonce whereNotValidAfter($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSamlNonce {}
+	class SamlNonce extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -3328,10 +3253,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereWebhookSelected($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereWeekStart($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Setting whereZerofillCount($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSetting {}
+	class Setting extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -3344,31 +3267,29 @@ namespace App\Models{
  * @property-read mixed $expires_diff_in_days
  * @property-read mixed $expires_formatted_date
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SnipeModel applyOffsetAndLimit(int $total)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SnipeModel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SnipeModel newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SnipeModel query()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSnipeModel {}
+	class SnipeModel extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -3396,23 +3317,23 @@ namespace App\Models{
  * @property-read mixed $expires_diff_in_days
  * @property-read mixed $expires_formatted_date
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @method static \App\Models\Builders\StatuslabelQueryBuilder<static>|Statuslabel applyOffsetAndLimit(int $total)
  * @method static \App\Models\Builders\StatuslabelQueryBuilder<static>|Statuslabel archived()
  * @method static \App\Models\Builders\StatuslabelQueryBuilder<static>|Statuslabel deployable()
@@ -3441,10 +3362,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\StatuslabelQueryBuilder<static>|Statuslabel whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Statuslabel withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Statuslabel withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperStatuslabel {}
+	class Statuslabel extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -3495,23 +3414,23 @@ namespace App\Models{
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Maintenance> $maintenances
  * @property-read int|null $maintenances_count
  * @property-read mixed $purchase_date_formatted
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $department_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $location_id
- * @property-write mixed $manager_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $department_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $location_id
+ * @property mixed $manager_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
  * @property-read int|null $uploads_count
  * @method static \App\Models\Builders\SupplierQueryBuilder<static>|Supplier applyOffsetAndLimit(int $total)
@@ -3545,10 +3464,8 @@ namespace App\Models{
  * @method static \App\Models\Builders\SupplierQueryBuilder<static>|Supplier whereZip($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSupplier {}
+	class Supplier extends \Eloquent implements \App\Models\Contracts\Importable {}
 }
 
 namespace App\Models{
@@ -3589,10 +3506,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SyncAdapterInstance whereLastSyncedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SyncAdapterInstance whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SyncAdapterInstance whereUpdatedAt($value)
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperSyncAdapterInstance {}
+	class SyncAdapterInstance extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -3706,20 +3621,20 @@ namespace App\Models{
  * @property-read mixed $purchase_date_formatted
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReportTemplate> $reportTemplates
  * @property-read int|null $report_templates_count
- * @property-write mixed $category_id
- * @property-write mixed $company_id
- * @property-write mixed $depreciation_id
- * @property-write mixed $field_set_id
- * @property-write mixed $manufacturer_id
- * @property-write mixed $min_amt
- * @property-write mixed $model_id
- * @property-write mixed $parent_id
- * @property-write mixed $purchase_cost
- * @property-write mixed $purchase_date
- * @property-write mixed $rtd_location_id
- * @property-write mixed $status_id
- * @property-write mixed $supplier_id
- * @property-write mixed $warranty_months
+ * @property mixed $category_id
+ * @property mixed $company_id
+ * @property mixed $depreciation_id
+ * @property mixed $field_set_id
+ * @property mixed $manufacturer_id
+ * @property mixed $min_amt
+ * @property mixed $model_id
+ * @property mixed $parent_id
+ * @property mixed $purchase_cost
+ * @property mixed $purchase_date
+ * @property mixed $rtd_location_id
+ * @property mixed $status_id
+ * @property mixed $supplier_id
+ * @property mixed $warranty_months
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Passport\Token> $tokens
  * @property-read int|null $tokens_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Actionlog> $uploads
@@ -3804,9 +3719,7 @@ namespace App\Models{
  * @method static \App\Models\Builders\UserQueryBuilder<static>|User withInventoryRelations(int $id, bool $withAssets = true, bool $withLicenses = true, bool $withAccessories = true, bool $withConsumables = true, bool $withComponents = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
- * @mixin \Eloquent
  */
-	#[\AllowDynamicProperties]
-	class IdeHelperUser {}
+	class User extends \Eloquent implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\Access\Authorizable, \Illuminate\Contracts\Auth\CanResetPassword, \Illuminate\Contracts\Translation\HasLocalePreference, \App\Models\Contracts\Importable {}
 }
 
