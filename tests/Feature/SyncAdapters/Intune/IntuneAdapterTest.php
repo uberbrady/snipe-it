@@ -401,6 +401,44 @@ class IntuneAdapterTest extends TestCase
         $this->assertSame(0, Asset::query()->count(), 'No asset should be created when the model requires a serial and the vendor record has none.');
     }
 
+    public function test_vendor_record_with_serial_creates_when_model_requires_serial()
+    {
+        // Regression for #19901. Asset::save() injects a `required` rule
+        // on the serial field when the resolved model has
+        // require_serial = 1. The old shell-asset write ran save() before
+        // the mapping loop populated the serial, so Watson rejected
+        // records that DID carry a serial from the vendor. The reporter
+        // saw this on a tenant where 6 of 260 Intune devices had serials
+        // and ended up skipped with "The serial field is required."
+        AssetModel::factory()->create([
+            'name' => 'Generic Model',
+            'require_serial' => 1,
+        ]);
+
+        $adapter = $this->configuredAdapter();
+
+        Http::fake([
+            '*/oauth2/v2.0/token' => Http::response(['access_token' => 'stub-bearer', 'expires_in' => 3600]),
+            '*/v1.0/deviceManagement/managedDevices*' => Http::response([
+                'value' => [
+                    [
+                        'id' => 'guid-has-serial',
+                        'deviceName' => 'intune-host-with-serial',
+                        'serialNumber' => 'VENDOR-SERIAL-ABC123',
+                        'model' => 'Generic Model',
+                    ],
+                ],
+            ]),
+        ]);
+
+        foreach ($adapter->pull() as $record) {
+            SyncAdapter::syncFromRecord($record);
+        }
+
+        $this->assertDatabaseHas('asset_external_sources', ['source' => 'intune', 'external_id' => 'guid-has-serial']);
+        $this->assertDatabaseHas('assets', ['serial' => 'VENDOR-SERIAL-ABC123']);
+    }
+
     public function test_vendor_record_without_serial_still_creates_when_model_does_not_require_serial()
     {
         AssetModel::factory()->create([
