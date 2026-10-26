@@ -358,6 +358,11 @@ class Importer extends Component
         }
     }
 
+    public function boot(): void
+    {
+        $this->authorize('import');
+    }
+
     public function mount()
     {
         $this->authorize('import');

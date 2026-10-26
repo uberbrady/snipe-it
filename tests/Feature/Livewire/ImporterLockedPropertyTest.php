@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire;
 use App\Livewire\Importer;
 use App\Models\Asset;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -95,6 +96,32 @@ class ImporterLockedPropertyTest extends TestCase
             ['asset_tag', 'full_name', 'checkout_date'],
             $component->requiredForType('assetHistory')
         );
+    }
+
+    public function test_boot_rejects_action_calls_from_a_caller_without_import_permission(): void
+    {
+        $authorized = User::factory()->canImport()->create();
+        $unauthorized = User::factory()->create();
+
+        $component = Livewire::actingAs($authorized)->test(Importer::class);
+
+        // Simulate the "permission revoked mid-session" case: swap auth
+        // to a caller without `import` and attempt an action. boot()
+        // runs before the action and Livewire converts the resulting
+        // AuthorizationException to a 403 status on the component.
+        Auth::login($unauthorized);
+
+        $component->call('nextStep')->assertStatus(403);
+    }
+
+    public function test_mount_still_rejects_unauthorized_callers(): void
+    {
+        // Baseline: boot() firing in the same request means an initial
+        // mount by an unauthorized caller still fails. Guards against a
+        // future refactor that accidentally weakens boot without noticing.
+        Livewire::actingAs(User::factory()->create())
+            ->test(Importer::class)
+            ->assertStatus(403);
     }
 
     public function test_every_class_in_the_map_implements_importable(): void
