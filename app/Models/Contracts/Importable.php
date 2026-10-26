@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Contracts;
 
 /**
  * Marker interface for models the Importer wizard knows how to import.
@@ -13,21 +13,18 @@ namespace App\Models;
  * regression bypasses Locked, the `new` dispatch stays bounded to the
  * exact set of models that opt in by implementing this interface.
  *
- * No methods. The models that implement it already carry everything the
- * importer needs via their own `$rules` and attribute columns. Adding
- * this interface to a new model is the deliberate signal that "yes, the
- * importer wizard may instantiate this." Introduced with GHSA-r43j-45c3
- * -9vvw.
+ * The one declared method `getRules()` is already satisfied by every
+ * Snipe-IT model that implements this interface via Watson's
+ * ValidatingTrait, so declaring it here just codifies the existing
+ * contract so static analysis can see the shape. Adding this interface
+ * to a new model is the deliberate signal that "yes, the importer
+ * wizard may instantiate this."
  */
 interface Importable
 {
     /**
      * The validation-rule array the importer walks to decide which
-     * target columns are required at the mapping-wizard step. Every
-     * Snipe-IT model that implements this interface already exposes
-     * `getRules()` via Watson's ValidatingTrait, so declaring it here
-     * is just codifying the existing contract so static analysis can
-     * see the shape instead of resolving the call through the trait.
+     * target columns are required at the mapping-wizard step.
      *
      * @return array<string, mixed>
      */
