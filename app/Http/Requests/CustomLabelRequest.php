@@ -56,15 +56,4 @@ class CustomLabelRequest extends FormRequest
                 'label' => ['required', 'array'],
             ] + LabelGeometryRules::sheet();
     }
-
-    protected function failedValidation(Validator $validator)
-    {
-        logger()->debug('Custom label validation failed', [
-            'errors' => $validator->errors()->toArray(),
-            'type' => $this->input('type'),
-            'submitted_alignment' => $this->input('content.barcode2D_h_align'),
-        ]);
-
-        throw new ValidationException($validator);
-    }
 }
