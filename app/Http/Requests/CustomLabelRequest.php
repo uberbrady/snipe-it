@@ -4,9 +4,11 @@ namespace App\Http\Requests;
 
 use App\Models\Labels\CustomLabelFonts;
 use App\Rules\LabelGeometryRules;
+use App\Rules\CustomLabelContentRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Validation\ValidationException;
 class CustomLabelRequest extends FormRequest
 {
     public function authorize(): bool
@@ -16,7 +18,14 @@ class CustomLabelRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->commonRules() + ($this->input('type') === 'tape' ? $this->tapeRules() : $this->sheetRules());
+        $isTape = $this->input('type') === 'tape';
+
+        return array_merge(
+            $this->commonRules(),
+            CustomLabelContentRules::shared(),
+            $isTape ? CustomLabelContentRules::tape() : [],
+            $isTape ? $this->tapeRules() : $this->sheetRules(),
+        );
     }
 
     private function commonRules(): array
@@ -31,6 +40,7 @@ class CustomLabelRequest extends FormRequest
             'content.title_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
             'content.field_label_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
             'content.field_value_font' => ['nullable', 'string', Rule::in(CustomLabelFonts::ALLOWED)],
+            'content.title_offset_x' => ['required', 'numeric'],
         ];
     }
 
@@ -51,5 +61,16 @@ class CustomLabelRequest extends FormRequest
                 'grid' => ['required', 'array'],
                 'label' => ['required', 'array'],
             ] + LabelGeometryRules::sheet();
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        logger()->debug('Custom label validation failed', [
+            'errors' => $validator->errors()->toArray(),
+            'type' => $this->input('type'),
+            'submitted_alignment' => $this->input('content.barcode2D_h_align'),
+        ]);
+
+        throw new ValidationException($validator);
     }
 }

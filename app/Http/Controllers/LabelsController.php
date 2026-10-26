@@ -260,6 +260,12 @@ class LabelsController extends Controller
 
     public function store(CustomLabelRequest $request)
     {
+        logger()->debug('Custom label validation rules', [
+            'type' => $request->input('type'),
+            'alignment_rule' => $request->rules()['content.barcode2D_h_align'] ?? null,
+            'submitted_alignment' => $request->input('content.barcode2D_h_align'),
+            'validated_alignment' => data_get($request->validated(), 'content.barcode2D_h_align'),
+        ]);
         $validated = $request->validated();
 
         $type = $validated['type'];
@@ -284,7 +290,7 @@ class LabelsController extends Controller
         };
 
         $content = $castNumeric($validated['content']);
-
+       
         $template = $validated['template'] ?? null;
 
         if ($type === 'tape' && $template === 'StandardTape') {
