@@ -28,7 +28,7 @@ use Watson\Validating\ValidatingTrait;
 /**
  * @mixin IdeHelperConsumable
  */
-class Consumable extends SnipeModel
+class Consumable extends SnipeModel implements Importable
 {
     use HasFactory;
 

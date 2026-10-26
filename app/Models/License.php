@@ -26,7 +26,7 @@ use Watson\Validating\ValidatingTrait;
 /**
  * @mixin IdeHelperLicense
  */
-class License extends Depreciable
+class License extends Depreciable implements Importable
 {
     use HasFactory;
 

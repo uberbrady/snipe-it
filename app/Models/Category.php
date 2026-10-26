@@ -24,9 +24,10 @@ use Watson\Validating\ValidatingTrait;
  * send a EULA to the user, etc.
  *
  * @version v1.0
+ *
  * @mixin IdeHelperCategory
  */
-class Category extends SnipeModel
+class Category extends SnipeModel implements Importable
 {
     use HasFactory;
 

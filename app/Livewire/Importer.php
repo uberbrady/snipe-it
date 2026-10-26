@@ -12,6 +12,7 @@ use App\Models\Component as ComponentModel;
 use App\Models\Consumable;
 use App\Models\CustomField;
 use App\Models\Import;
+use App\Models\Importable;
 use App\Models\License;
 use App\Models\Location;
 use App\Models\Manufacturer;
@@ -21,6 +22,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\Reader;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -163,6 +165,10 @@ class Importer extends Component
     // / components / licenses use "item_name" for their name column;
     // asset models / locations / suppliers / manufacturers / categories
     // use "name" directly.
+    // requiredForType() cross-checks each class string against the
+    // Importable marker interface before `new`-ing. Defense in depth
+    // against future Livewire regressions that might bypass Locked.
+    #[Locked]
     public $required_field_model_map = [
         'asset' => [Asset::class, ['item_name' => 'name']],
         'assetModel' => [AssetModel::class, ['name' => 'name']],
@@ -176,7 +182,7 @@ class Importer extends Component
         // (2) update an existing License's capacity, (3) assign a user or
         // asset to one of an existing License's free seats. The importer
         // figures out which path each row takes at process time. seats is
-        // only needed for (1) and (2); (3) doesn't reference it. Since the
+        // only needed for (1) and (2), (3) doesn't reference it. Since the
         // wizard can't know per-row which path a caller intends, we don't
         // enforce seats at the wizard level. Server-side validation still
         // enforces `seats` on the create path per License::$rules. See
@@ -1080,7 +1086,17 @@ class Importer extends Component
         }
 
         [$modelClass, $translation] = $this->required_field_model_map[$type];
-        $rules = (new $modelClass)->getRules() ?? [];
+
+        // Defense in depth for GHSA-r43j-45c3-9vvw. #[Locked] on the
+        // property above should already reject client writes, but if a
+        // Livewire regression ever bypasses Locked, this interface check
+        // keeps the `new $modelClass` dispatch bounded to the set of
+        // models that opt in by implementing the Importable marker.
+        if (! is_string($modelClass) || ! class_exists($modelClass) || ! is_subclass_of($modelClass, Importable::class)) {
+            return [];
+        }
+
+        $rules = (new $modelClass)->getRules();
 
         $required = [];
         foreach ($translation as $importerKey => $modelAttr) {

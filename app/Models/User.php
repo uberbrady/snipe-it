@@ -40,7 +40,7 @@ use Watson\Validating\ValidatingTrait;
 /**
  * @mixin IdeHelperUser
  */
-class User extends SnipeModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, HasLocalePreference
+class User extends SnipeModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, HasLocalePreference, Importable
 {
     use CompanyableTrait;
     use HasCalendarEvents;

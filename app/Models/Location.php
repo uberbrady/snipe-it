@@ -22,7 +22,7 @@ use Watson\Validating\ValidatingTrait;
 /**
  * @mixin IdeHelperLocation
  */
-class Location extends SnipeModel
+class Location extends SnipeModel implements Importable
 {
     use CompanyableTrait;
     use HasFactory;
