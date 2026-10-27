@@ -1289,6 +1289,30 @@ class SettingsController extends Controller
                 ]));
             }
 
+            // Check that the last migration in the migrations dir actually ran.
+            $migrationFiles = glob(database_path('migrations/*.php'));
+            if ($migrationFiles !== false && $migrationFiles !== []) {
+                sort($migrationFiles);
+                $newestMigration = basename((string) end($migrationFiles), '.php');
+                $migrationApplied = DB::table('migrations')
+                    ->where('migration', $newestMigration)
+                    ->exists();
+                if (!$migrationApplied) {
+                    Log::error(
+                        'Migrate reported success after restore, but the newest migration ('
+                        . $newestMigration
+                        . ') is not recorded in the migrations table. Schema is out of date. Pre-restore backup available at '
+                        . $preBackupHint
+                    );
+
+                    Auth::logout();
+
+                    return redirect()->route('login')->with('error', trans('admin/settings/message.restore.failed_with_backup', [
+                        'backup' => $preRestoreBackupFilename,
+                    ]));
+                }
+            }
+
             $find_user = DB::table('users')->where('username', $user->username)->exists();
 
             if (! $find_user) {
