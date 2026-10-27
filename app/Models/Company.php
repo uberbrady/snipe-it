@@ -541,9 +541,9 @@ final class Company extends SnipeModel
             return $requestedIds;
         }
 
-        $current_user = auth()->user();
-
-        if ($current_user->isSuperUser()) {
+        // CLI contexts (snipeit:import, scheduled tasks) run without an
+        // auth user.
+        if (! Auth::hasUser() || auth()->user()->isSuperUser()) {
             return $requestedIds;
         }
 
