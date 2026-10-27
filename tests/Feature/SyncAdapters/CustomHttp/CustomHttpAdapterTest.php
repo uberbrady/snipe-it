@@ -8,7 +8,7 @@ use App\Models\Statuslabel;
 use App\Models\SyncAdapterConfig;
 use App\Models\SyncAdapterInstance;
 use App\SyncAdapters\CustomHttp\CustomHttpAdapter;
-use App\SyncAdapters\PushableAdapter;
+use App\SyncAdapters\PushableSyncAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -783,7 +783,7 @@ class CustomHttpAdapterTest extends TestCase
             'push_method' => 'PATCH',
         ]);
 
-        $this->assertInstanceOf(PushableAdapter::class, $adapter);
+        $this->assertInstanceOf(PushableSyncAdapter::class, $adapter);
         $this->assertTrue($adapter->canPush());
     }
 

@@ -4,7 +4,7 @@ namespace App\SyncAdapters\Mosyle;
 
 use App\Models\Asset;
 use App\SyncAdapters\HostInventoryRecord;
-use App\SyncAdapters\PushableAdapter;
+use App\SyncAdapters\PushableSyncAdapter;
 use App\SyncAdapters\SyncAdapter;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
  * expect Manager-shaped payloads, so Business tenants will see the
  * login succeed and device calls fail. See issue #19790.
  */
-class MosyleAdapter extends SyncAdapter implements PushableAdapter
+class MosyleAdapter extends PushableSyncAdapter
 {
     /**
      * Per-category-selector config keys -> friendly display name. Same

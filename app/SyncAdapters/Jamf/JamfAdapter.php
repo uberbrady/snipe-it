@@ -4,7 +4,7 @@ namespace App\SyncAdapters\Jamf;
 
 use App\Models\Asset;
 use App\SyncAdapters\HostInventoryRecord;
-use App\SyncAdapters\PushableAdapter;
+use App\SyncAdapters\PushableSyncAdapter;
 use App\SyncAdapters\SyncAdapter;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -19,7 +19,7 @@ use Illuminate\Support\Arr;
  * /api/v1/computers-inventory-detail/{id} PATCH endpoint using the
  * same exchanged bearer.
  */
-class JamfAdapter extends SyncAdapter implements PushableAdapter
+class JamfAdapter extends PushableSyncAdapter
 {
     public static function typeLabel(): string
     {

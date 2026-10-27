@@ -46,6 +46,7 @@ use Watson\Validating\ValidatingTrait;
  * @property \Carbon\Carbon|string|null $last_checkin
  * @property bool $requestable
  * @property Asset|Location|User|null $assigned Current checkout target. morphTo relation named `assigned` (declared on method `assignedTo()`). Eloquent resolves the dynamic property by the morphTo name arg, not the method name, so this `@property` is distinct from `@property ... $assignedTo` written by ide-helper.
+ * @property Asset|Location|User|null $assignedTo Current checkout target. morphTo relation named `assigned` (declared on method `assignedTo()`). Eloquent resolves the dynamic property by the morphTo name arg, not the method name, so this `@property` is distinct from `@property ... $assigned` written by ide-helper.
  *
  * @mixin IdeHelperAsset
  */
@@ -960,9 +961,8 @@ class Asset extends Depreciable implements Importable
      *
      * @since  [v4.0]
      *
-     * @return \ArrayObject
      */
-    public function assetLoc($iterations = 1, $first_asset = null)
+    public function assetLoc($iterations = 1, $first_asset = null): ?Location
     {
         if (! empty($this->assignedType())) {
             if ($this->assignedType() == self::ASSET) {

@@ -4,7 +4,7 @@ namespace App\SyncAdapters\MosyleBusiness;
 
 use App\Models\Asset;
 use App\SyncAdapters\HostInventoryRecord;
-use App\SyncAdapters\PushableAdapter;
+use App\SyncAdapters\PushableSyncAdapter;
 use App\SyncAdapters\SyncAdapter;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Log;
  * field. This adapter wires that up through the composed-notes
  * framework.
  */
-class MosyleBusinessAdapter extends SyncAdapter implements PushableAdapter
+class MosyleBusinessAdapter extends PushableSyncAdapter
 {
     public static function typeLabel(): string
     {
