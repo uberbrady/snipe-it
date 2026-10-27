@@ -416,6 +416,7 @@ class Importer extends Component
             'image' => trans('general.importer.image_filename'),
             'item_name' => trans('general.item_name_var', ['item' => trans('general.asset')]),
             'location' => trans('general.location'),
+            'default_location' => trans('admin/hardware/form.default_location'),
             'manufacturer' => trans('general.manufacturer'),
             'model_notes' => trans('general.item_notes', ['item' => trans('admin/hardware/form.model')]),
             'model_number' => trans('general.model_no'),
