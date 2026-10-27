@@ -9,15 +9,24 @@
 @section('header_right')
     <form method="POST" action="{{ route('settings.backups.create') }}" style="display: inline">
         @csrf
-        <button class="btn btn-primary" data-safety-timeout-ms="300000" @disabled(config('app.lock_passwords'))>
-            {{ trans('admin/settings/general.generate_backup') }}
-        </button>
+        {{-- Disabled when the shared backup+restore mutex is open. --}}
+        <span @if ($backupRestoreRunning) data-tooltip="true" title="{{ trans('general.operation_already_running', ['operation' => trans('general.backup_or_restore')]) }}" @endif>
+            <button type="submit" class="btn btn-primary" data-safety-timeout-ms="300000" @disabled(config('app.lock_passwords') || $backupRestoreRunning)>
+                {{ trans('admin/settings/general.generate_backup') }}
+            </button>
+        </span>
     </form>
 
 @stop
 
 {{-- Page content --}}
 @section('content')
+
+    @if ($backupRestoreRunning)
+        <x-callout type="warning" icon="warning" live="assertive">
+            {{ trans('general.operation_already_running', ['operation' => trans('general.backup_or_restore')]) }}
+        </x-callout>
+    @endif
 
     <div class="modal modal-warning fade" tabindex="-1" role="dialog" id="backupRestoreModal">
         <div class="modal-dialog" role="document">
@@ -116,15 +125,17 @@
                           </span>
                       @endif
 
-                      <button type="button"
-                              class="btn btn-warning btn-sm restore-backup"
-                              data-href="{{ route('settings.backups.restore', $file['filename']) }}"
-                              data-target="#backupRestoreModal"
-                              data-title="{{ trans('admin/settings/message.backup.restore_confirm', ['filename' => e($file['filename'])]) }}"
-                              @disabled(config('app.lock_passwords'))>
-                          <x-icon type="restore" />
-                          <span class="sr-only">{{ trans('general.restore') }}</span>
-                      </button>
+                          <span @if ($backupRestoreRunning) data-tooltip="true" title="{{ trans('general.operation_already_running', ['operation' => trans('general.backup_or_restore')]) }}" @endif>
+                          <button type="button"
+                                  class="btn btn-warning btn-sm restore-backup"
+                                  data-href="{{ route('settings.backups.restore', $file['filename']) }}"
+                                  data-target="#backupRestoreModal"
+                                  data-title="{{ trans('admin/settings/message.backup.restore_confirm', ['filename' => e($file['filename'])]) }}"
+                                  @disabled(config('app.lock_passwords') || $backupRestoreRunning)>
+                              <x-icon type="restore"/>
+                              <span class="sr-only">{{ trans('general.restore') }}</span>
+                          </button>
+                      </span>
                   @endcan
               </td>
             </tr>

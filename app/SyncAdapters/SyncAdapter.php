@@ -490,6 +490,16 @@ abstract class SyncAdapter
         return $this->instance->label;
     }
 
+    /**
+     * Public accessor for the backing instance. Blade views that need to
+     * reason about per-instance state (lock keys, mapping tables, etc)
+     * use through this vs relying on the protected constructor property.
+     */
+    public function instance(): SyncAdapterInstance
+    {
+        return $this->instance;
+    }
+
     public function companyId(): ?int
     {
         return $this->instance->company_id;
