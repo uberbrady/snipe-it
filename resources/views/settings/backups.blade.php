@@ -9,7 +9,7 @@
 @section('header_right')
     <form method="POST" action="{{ route('settings.backups.create') }}" style="display: inline">
         @csrf
-        <button class="btn btn-primary" @disabled(config('app.lock_passwords'))>
+        <button class="btn btn-primary" data-safety-timeout-ms="300000" @disabled(config('app.lock_passwords'))>
             {{ trans('admin/settings/general.generate_backup') }}
         </button>
     </form>
@@ -43,7 +43,10 @@
                         {{ method_field('POST') }}
                         <button type="button" class="btn btn-default pull-left"
                                 data-dismiss="modal">{{ trans('general.cancel') }}</button>
-                        <button type="submit" class="btn btn-outline">{{ trans('general.yes') }}</button>
+                        {{-- Restore is backup-plus-restore, so even longer than
+                             a plain backup. 5 min matches PHP's typical
+                             max_execution_time ceiling. --}}
+                        <button type="submit" class="btn btn-outline" data-safety-timeout-ms="300000">{{ trans('general.yes') }}</button>
                     </div>
                 </form>
             </div>
